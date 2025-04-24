@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
 const ROLES = require("../config/roles");
+const bcrypt = require('bcrypt');
 
 const UserSchema = new mongoose.Schema({
+    // required 
     username: { 
         type: String, 
         required: true,
@@ -18,11 +20,6 @@ const UserSchema = new mongoose.Schema({
         match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email address']
     },
     password: { 
-        type: String, 
-        required: true, 
-        minlength: 8 
-    },
-    confirmPassword: { 
         type: String, 
         required: true, 
         minlength: 8 
@@ -87,5 +84,26 @@ const UserSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 
-const User = mongoose.model("User", UserSchema);
-module.exports = User;
+
+
+// Pre-save hook to hash password
+UserSchema.pre('save', async function(next) {
+    if (!this.isModified('password')) return next();
+    
+    try {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+      return next();
+    } catch (error) {
+      return next(error);
+    }
+  });
+  
+  // Method to validate password
+  UserSchema.methods.validatePassword = async function(password) {
+    return await bcrypt.compare(password, this.password);
+  };
+
+
+ 
+module.exports = mongoose.model("User", UserSchema);
