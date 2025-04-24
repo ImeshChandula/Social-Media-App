@@ -12,7 +12,7 @@ import ProfilePage from "./components/ProfilePage";
 
 function App() {
   return (
-    <Router>
+    
       <div className="d-flex">
         <Sidebar />
         <div className="flex-grow-1 p-3 bg-dark text-white" style={{ minHeight: "100vh" }}>
@@ -25,7 +25,7 @@ function App() {
           </Routes>
         </div>
       </div>
-    </Router>
+    
   );
 }
 

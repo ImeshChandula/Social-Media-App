@@ -15,7 +15,7 @@ function Sidebar() {
             <NavLink
               to={item === "Home" ? "/" : `/${item.toLowerCase()}`}
               className={({ isActive }) =>
-                `nav-link text-white ${isActive ? "bg-secondary rounded" : ""}`
+                `nav-link text-white ${isActive ? "bg-secondary rounded fw-bold" : ""}`
               }
             >
               {item}
