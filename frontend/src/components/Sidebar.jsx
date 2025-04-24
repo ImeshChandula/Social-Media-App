@@ -11,47 +11,59 @@ function Sidebar() {
     { name: "Profile", icon: "bi-person-circle" },
   ];
 
-  const containerVariants = {
-    hidden: { opacity: 0, x: -30 },
+  const sidebarVariants = {
+    hidden: { x: -50, opacity: 0 },
     visible: {
-      opacity: 1,
       x: 0,
+      opacity: 1,
       transition: {
         type: "spring",
-        stiffness: 60,
-        damping: 12,
-        staggerChildren: 0.1,
+        stiffness: 70,
+        damping: 10,
         delayChildren: 0.2,
+        staggerChildren: 0.1,
       },
     },
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0 },
+  const navItemVariants = {
+    hidden: { opacity: 0, y: 10, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { type: "spring", stiffness: 100, damping: 12 },
+    },
+    whileHover: {
+      scale: 1.05,
+      backgroundColor: "#343a40",
+    },
   };
 
   return (
     <>
-      
-
-      <motion.div className="bg-black text-white d-flex flex-md-column flex-row align-items-center p-2 gap-2 ">
-
-
+      <motion.div
+        className="bg-black text-white d-flex flex-md-column flex-row align-items-center p-2 gap-2"
+        variants={sidebarVariants}
+        initial="hidden"
+        animate="visible"
+      >
         <motion.ul
           className="nav flex-md-column flex-row w-100 justify-content-around justify-content-md-start"
-          variants={containerVariants}
+          variants={sidebarVariants}
         >
           {navItems.map(({ name, icon }) => (
             <motion.li
               className="nav-item mb-md-2 text-center text-md-start"
               key={name}
-              variants={itemVariants}
+              variants={navItemVariants}
+              whileHover="whileHover"
             >
               <NavLink
                 to={name === "Home" ? "/" : `/${name.toLowerCase()}`}
                 className={({ isActive }) =>
-                  `nav-link d-flex flex-md-row flex-column align-items-center justify-content-start text-white gap-1 ${isActive ? "bg-secondary rounded fw-bold" : ""
+                  `nav-link d-flex flex-md-row flex-column align-items-center justify-content-start text-white gap-1 ${
+                    isActive ? "bg-secondary rounded fw-bold" : ""
                   }`
                 }
               >
