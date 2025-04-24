@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
-
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 import Sidebar from "./components/Sidebar";
 import Home from "./components/Home";
@@ -12,7 +12,6 @@ import ProfilePage from "./components/ProfilePage";
 
 function App() {
   return (
-    
       <div className="d-flex">
         <Sidebar />
         <div className="flex-grow-1 p-3 bg-dark text-white" style={{ minHeight: "100vh" }}>
@@ -25,7 +24,6 @@ function App() {
           </Routes>
         </div>
       </div>
-    
   );
 }
 
