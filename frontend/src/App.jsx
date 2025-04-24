@@ -15,12 +15,10 @@ function App() {
     <Router>
       <div className="container-fluid px-0">
         <div className="row gx-0">
-          {/* Sidebar on top for small, left for md+ */}
           <div className="col-12 col-md-3 bg-black">
             <Sidebar />
           </div>
 
-          {/* Main content */}
           <div className="col-12 col-md-9 bg-dark text-white p-3" style={{ minHeight: "100vh" }}>
             <Routes>
               <Route path="/" element={<Home />} />
