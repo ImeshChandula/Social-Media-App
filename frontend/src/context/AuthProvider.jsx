@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+import * as jwtDecode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "./AuthContextProvider";
+import AuthContext from "./AuthContext";
 
 
 export const AuthProvider = ({ children }) => {
@@ -12,21 +12,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        if (decoded.exp * 1000 > Date.now()) {
-          setUser(decoded); // Token is valid
-        } else {
-          logout(); // Token is expired
-        }
-      } catch (err) {
-        console.error("Invalid token:", err);
-        logout(); // If token is malformed
+      const decoded = jwtDecode.default(token);
+      if (decoded.exp * 1000 > Date.now()) { // Check if token is still valid
+        setUser(decoded);
+      } else {
+        logout(); // If expired, clear token and logout
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
 
 
 
@@ -42,11 +36,13 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true, role: decodedUser.role  };
     } catch (error) {
-      console.error("Login failed", error.response || error);
+      console.error("Login failed", error.response);
       return {  success: false, 
                 message: error?.response?.data?.message ?? error?.message ?? "Login failed" };
     }
   };
+
+
 
 
   // logout
@@ -62,3 +58,6 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+
+export default AuthProvider;
