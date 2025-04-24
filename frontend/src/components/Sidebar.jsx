@@ -1,17 +1,30 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React from "react";
+import { NavLink } from "react-router-dom";
 
-
-const Sidebar = () => {
+function Sidebar() {
   return (
-    <div className="sidebar p-3">
-      <Link to="/" className="nav-link">Home</Link>
-      <Link to="/members" className="nav-link">Members</Link>
-      <Link to="/videos" className="nav-link">Videos</Link>
-      <Link to="/notifications" className="nav-link">Notifications</Link>
-      <Link to="/profile" className="nav-link">Profile</Link>
+    <div className="bg-black text-white p-3" style={{ width: "200px" }}>
+      <input
+        className="form-control mb-3"
+        type="text"
+        placeholder="Search Facebook"
+      />
+      <ul className="nav flex-column">
+        {["Home", "Members", "Videos", "Notifications", "Profile"].map((item) => (
+          <li className="nav-item" key={item}>
+            <NavLink
+              to={item === "Home" ? "/" : `/${item.toLowerCase()}`}
+              className={({ isActive }) =>
+                `nav-link text-white ${isActive ? "bg-secondary rounded" : ""}`
+              }
+            >
+              {item}
+            </NavLink>
+          </li>
+        ))}
+      </ul>
     </div>
-  )
+  );
 }
 
-export default Sidebar
+export default Sidebar;

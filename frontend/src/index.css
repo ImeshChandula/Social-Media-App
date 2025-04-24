@@ -1,0 +1,17 @@
+.profile-tab.active {
+    background-color: #8e44ad;
+    border-radius: 8px;
+}
+
+.nav-link.active {
+    font-weight: bold;
+}
+
+.profile-tab {
+    background-color: #8e44ad;
+    border-radius: 8px;
+}
+
+.mt-n5 {
+    margin-top: -60px;
+}
