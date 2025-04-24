@@ -1,7 +1,7 @@
 const Videos = () => {
     return (
         <>
-            <h2>Videos Page</h2>;
+            <h2>Videos Page</h2>
         </>
     )
 }
