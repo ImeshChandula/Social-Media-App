@@ -13,16 +13,23 @@ import ProfilePage from "./components/ProfilePage";
 function App() {
   return (
     <Router>
-      <div className="d-flex">
-        <Sidebar />
-        <div className="flex-grow-1 p-3 bg-dark text-white" style={{ minHeight: "100vh" }}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/members" element={<Members />} />
-            <Route path="/videos" element={<Videos />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/profile" element={<ProfilePage />} />
-          </Routes>
+      <div className="container-fluid px-0">
+        <div className="row gx-0">
+          {/* Sidebar on top for small, left for md+ */}
+          <div className="col-12 col-md-3 bg-black">
+            <Sidebar />
+          </div>
+
+          {/* Main content */}
+          <div className="col-12 col-md-9 bg-dark text-white p-3" style={{ minHeight: "100vh" }}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/members" element={<Members />} />
+              <Route path="/videos" element={<Videos />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/profile" element={<ProfilePage />} />
+            </Routes>
+          </div>
         </div>
       </div>
     </Router>

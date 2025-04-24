@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 function Sidebar() {
   const navItems = [
@@ -11,24 +12,19 @@ function Sidebar() {
   ];
 
   return (
-    <div className="bg-black text-white p-3 vh-100" style={{ maxWidth: "200px" }}>
-      {/* Search Input (Only on md and up) */}
-      <div className="mb-4 d-none d-md-block">
-        <input
-          className="form-control"
-          type="text"
-          placeholder="Search Facebook"
-        />
+    <div className="bg-black text-white d-flex flex-md-column flex-row align-items-center p-2 gap-2 ">
+      {/* Search only show in large display */}
+      <div className="mt-2 d-none d-md-block mb-3 w-100 px-2">
+        <input className="form-control" type="text" placeholder="Search Facebook" />
       </div>
 
-      {/* Navigation List */}
-      <ul className="nav flex-column">
+      <ul className="nav flex-md-column flex-row w-100 justify-content-around justify-content-md-start">
         {navItems.map(({ name, icon }) => (
-          <li className="nav-item mb-2" key={name}>
+          <li className="nav-item mb-md-2 text-center text-md-start" key={name}>
             <NavLink
               to={name === "Home" ? "/" : `/${name.toLowerCase()}`}
               className={({ isActive }) =>
-                `nav-link d-flex align-items-center gap-2 text-white ${
+                `nav-link d-flex flex-md-row flex-column align-items-center justify-content-start text-white gap-1 ${
                   isActive ? "bg-secondary rounded fw-bold" : ""
                 }`
               }
