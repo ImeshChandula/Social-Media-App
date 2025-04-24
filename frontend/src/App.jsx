@@ -1,15 +1,14 @@
-import React from 'react';
-import './index.css'
-import 'bootstrap/dist/css/bootstrap.min.css';
-
-import UserProfile from './pages/UserProfile';
+// src/App.jsx
+import React from 'react'
+import { Routes, Route } from 'react-router-dom'
+import Home from './pages/Home'
 
 function App() {
   return (
-    <>
-      <UserProfile />
-    </>
-  );
+    <Routes>
+      <Route path="/" element={<Home />} />
+    </Routes>
+  )
 }
 
-export default App;
+export default App
