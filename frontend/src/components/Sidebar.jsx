@@ -13,13 +13,6 @@ function Sidebar() {
   return (
     <div className="bg-black text-white p-3 vh-100" style={{ maxWidth: "200px" }}>
       {/* Search Input (Only on md and up) */}
-      <div className="mb-4 d-none d-md-block">
-        <input
-          className="form-control"
-          type="text"
-          placeholder="Search Facebook"
-        />
-      </div>
 
       {/* Navigation List */}
       <ul className="nav flex-column">
