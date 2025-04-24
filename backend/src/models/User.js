@@ -3,7 +3,7 @@ const ROLES = require("../config/roles");
 const bcrypt = require('bcrypt');
 
 const UserSchema = new mongoose.Schema({
-    // required
+    // required 
     username: { 
         type: String, 
         required: true,
