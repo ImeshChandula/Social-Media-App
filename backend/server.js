@@ -2,26 +2,29 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { connectFirebase } = require("./src/config/firebase");
-const createDefaultSuperAdmin = require("./src/config/defaultSuperAdmin");
+const { initializeDefaultSuperAdmin } = require("./src/config/defaultSuperAdmin");
 require('dotenv').config();
 
 // connect to firebase
 connectFirebase();
 
+initializeDefaultSuperAdmin().then(() => {
+  console.log('Server initialization completed');
+});
+
 // starts the server
 const app = express();
 app.use(express.json()); 
-
-// functions on server start
-//createDefaultSuperAdmin();
-
 app.use(cors({ origin: "http://localhost:4000", credentials: true }));
 app.use(cookieParser());
 
+
+
+
 // Routes
 // http://localhost:5000
-//app.use('/api/auth', require('./src/routes/authRoutes'));
-
+app.use('/api/auth', require('./src/routes/authRoutes'));
+app.use('/api/users', require('./src/routes/userRoutes'));
 
 
 // Error handling middleware

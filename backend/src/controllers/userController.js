@@ -1,6 +1,5 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 
@@ -22,13 +21,11 @@ const registerUser = async (req, res) => {
             password,
             firstName,
             lastName,
-            role: role || 'user'
+            role: role || 'user',
+            _isPasswordModified: true, // Internal flag to trigger password hashing
         });
 
         await user.save();
-
-
-
 
         // create JWT token
         const payload = {
@@ -46,12 +43,32 @@ const registerUser = async (req, res) => {
             }
         );
 
+        console.log("User registered successfully.");
+        res.status(201).json({ msg: "User registered successfully" });
+
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
     }
 };
 
+
+//@desc     Login user
+const loginUser = async (req, res) => {
+
+};
+
+
+//@desc     Get current user profile
+const getCurrentUser  = async (req, res) => {
+
+};
+
+
+
+
 module.exports = {
     registerUser,
+    loginUser,
+    getCurrentUser
 };

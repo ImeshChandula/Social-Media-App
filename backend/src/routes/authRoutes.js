@@ -11,4 +11,15 @@ const router = express.Router();
 // @access  Public
 router.post('/register', userController.registerUser);
 
+// @route   POST api/auth/login
+// @desc    Login user & get token
+// @access  Public
+router.post('/login', userController.loginUser);
+
+// @route   GET api/auth
+// @desc    Get user data
+// @access  Private
+router.get('/getCurrentUser', authenticateUser, userController.getCurrentUser);
+
+
 module.exports = router;
