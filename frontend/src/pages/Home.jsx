@@ -23,7 +23,7 @@ const Home = () => {
   ];
 
   return (
-    <div className="container py-3">
+    <div className=" py-5 py-md-0 mt-2 mt-md-0">
       {/* Post Input */}
       <div className="card bg-dark text-white mb-4 p-3 rounded-4">
         <div className="d-flex align-items-center mb-3">
@@ -40,7 +40,7 @@ const Home = () => {
           />
         </div>
         <hr className="border-secondary" />
-        <div className="d-flex justify-content-around text-muted">
+        <div className="d-flex justify-content-around text-muted-dark">
           <div><i className="bi bi-image me-1 text-danger"></i> Photo</div>
           <div><i className="bi bi-camera-video me-1 text-success"></i> Video</div>
           <div><i className="bi bi-emoji-smile me-1 text-warning"></i> Feeling</div>
@@ -103,7 +103,7 @@ const Home = () => {
           />
           <div>
             <strong>John Doe</strong>
-            <div className="text-muted small">2 hrs ago</div>
+            <div className="text-muted-dark small">2 hrs ago</div>
           </div>
         </div>
         <p>This is a sample post from a friend. 👋</p>
