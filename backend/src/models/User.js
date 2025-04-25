@@ -7,7 +7,7 @@ const UserSchema = new mongoose.Schema({
     username: { 
         type: String, 
         required: true,
-        trim: true,
+        trim: true, //remove spaces
         minlength: 3,
         maxlength: 30
     },
@@ -75,7 +75,7 @@ const UserSchema = new mongoose.Schema({
         enum: Object.values(ROLES),
         default: ROLES.USER,
     },
-    status: {
+    accountStatus: {
         type: String,
         enum: ["active", "inactive", "banned"],
         default: "active",
@@ -88,7 +88,9 @@ const UserSchema = new mongoose.Schema({
 
 // Pre-save hook to hash password
 UserSchema.pre('save', async function(next) {
-    if (!this.isModified('password')) return next();
+    if (!this.isModified('password')) {
+      return next();
+    }
     
     try {
       const salt = await bcrypt.genSalt(10);
@@ -101,7 +103,7 @@ UserSchema.pre('save', async function(next) {
   
   // Method to validate password
   UserSchema.methods.validatePassword = async function(password) {
-    return await bcrypt.compare(password, this.password);
+    return await bcrypt.compare(password, this.password); //return true or false
   };
 
 
