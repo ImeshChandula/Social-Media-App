@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { admin } = require('../config/firebase');
 require('dotenv').config();
 
 const authenticateUser = (req, res, next) => {
