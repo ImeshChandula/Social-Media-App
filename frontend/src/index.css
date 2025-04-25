@@ -16,3 +16,24 @@
     transform: translateX(-50%) scale(0);
     opacity: 0;
 }
+
+.card {
+    border: none;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.text-muted-dark {
+    color: #ccc !important;
+}
+
+.card-img-top {
+    height: 160px;
+    object-fit: cover;
+}
+
+@media (max-width: 576px) {
+    .card-img-top {
+        height: 140px !important;
+    }
+}
