@@ -1,111 +1,50 @@
-const mongoose = require("mongoose");
-const ROLES = require("../config/roles");
+const { connectFirebase } = require('../config/firebase');
 const bcrypt = require('bcrypt');
 
-const UserSchema = new mongoose.Schema({
-    // required 
-    username: { 
-        type: String, 
-        required: true,
-        trim: true, //remove spaces
-        minlength: 3,
-        maxlength: 30
-    },
-    email: { 
-        type: String, 
-        required: true, 
-        unique: true,
-        trim: true,
-        lowercase: true,
-        match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email address']
-    },
-    password: { 
-        type: String, 
-        required: true, 
-        minlength: 8 
-    },
-    firstName: { 
-        type: String, 
-        required: true, 
-        trim: true 
-    },
-    lastName: { 
-        type: String, 
-        required: true, 
-        trim: true 
-    },
+const db = connectFirebase();
+const usersCollection = db.collection('users');
 
-    // not required
-    profilePicture: { type: String, default: 'default-profile.png' },
-    coverPhoto: { type: String, default: 'default-cover.png' },
-    bio: { type: String, maxlength: 250 },
-    location: { type: String },
-    birthday: { type: Date },
+const ROLES = {
+  USER: "user",
+  ADMIN: "admin",
+  SUPER_ADMIN: "super_admin",
+};
 
-
-    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
-    friendRequests: [{
-        from: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'User'
-        },
-        status: {
-          type: String,
-          enum: ['pending', 'accepted', 'rejected'],
-          default: 'pending'
-        },
-        createdAt: {
-          type: Date,
-          default: Date.now
-        }
-    }],
-
-    isActive: {
-        type: Boolean,
-        default: true
-    },
-    lastLogin: {
-        type: Date
-    },
-
-
-
-    role: {
-        type: String,
-        enum: Object.values(ROLES),
-        default: ROLES.USER,
-    },
-    accountStatus: {
-        type: String,
-        enum: ["active", "inactive", "banned"],
-        default: "active",
-    },
+class User {
+  constructor(userData) {
+    // Required fields trim: remove spaces
+    this.username = userData.username?.trim();
+    this.email = userData.email?.trim().toLowerCase();
+    this.password = userData.password;
+    this.firstName = userData.firstName?.trim();
+    this.lastName = userData.lastName?.trim();
     
-}, { timestamps: true });
 
+    // Optional fields with defaults
+    this.profilePicture = userData.profilePicture || 'default-profile.png';
+    this.coverPhoto = userData.coverPhoto || 'default-cover.png';
+    this.bio = userData.bio || '';
+    this.location = userData.location || '';
+    this.birthday = userData.birthday || null;
 
+    this.friends = userData.friends || [];
+    this.friendRequests = userData.friendRequests || [];
 
+    this.isActive = userData.isActive !== undefined ? userData.isActive : true;
+    this.lastLogin = userData.lastLogin || null;
 
-// Pre-save hook to hash password
-UserSchema.pre('save', async function(next) {
-    if (!this.isModified('password')) {
-      return next();
-    }
-    
-    try {
-      const salt = await bcrypt.genSalt(10);
-      this.password = await bcrypt.hash(this.password, salt);
-      return next();
-    } catch (error) {
-      return next(error);
-    }
-  });
-  
-  // Method to validate password
-  UserSchema.methods.validatePassword = async function(password) {
-    return await bcrypt.compare(password, this.password); //return true or false
-  };
+    // Validate role
+    this.role = Object.values(ROLES).includes(userData.role) ? userData.role : ROLES.USER;
 
+    // Validate account status
+    const allowedStatuses = ["active", "inactive", "banned"];
+    this.accountStatus = allowedStatuses.includes(userData.accountStatus)
+      ? userData.accountStatus
+      : "active";
 
- 
-module.exports = mongoose.model("User", UserSchema);
+     // Timestamps
+    this.createdAt = userData.createdAt || new Date();
+    this.updatedAt = userData.updatedAt || new Date();
+  }
+
+}
