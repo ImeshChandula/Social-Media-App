@@ -1,15 +1,16 @@
 const express = require("express");
-const dotenv = require("dotenv");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const connectDB = require("./src/config/db");
+const { connectFirebase } = require("./src/config/firebase");
 const createDefaultSuperAdmin = require("./src/config/defaultSuperAdmin");
+require('dotenv').config();
 
-dotenv.config();
-connectDB();
+// connect to firebase
+connectFirebase();
 
+// starts the server
 const app = express();
-app.use(express.json()); // starts the server
+app.use(express.json()); 
 
 // functions on server start
 //createDefaultSuperAdmin();
@@ -19,7 +20,7 @@ app.use(cookieParser());
 
 // Routes
 // http://localhost:5000
-app.use('/api/auth', require('./src/routes/authRoutes'));
+//app.use('/api/auth', require('./src/routes/authRoutes'));
 
 
 
