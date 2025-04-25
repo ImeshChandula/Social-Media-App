@@ -17,6 +17,7 @@
     opacity: 0;
 }
 
+/* Members Page */
 .card {
     border: none;
     border-radius: 8px;
@@ -35,5 +36,36 @@
 @media (max-width: 576px) {
     .card-img-top {
         height: 140px !important;
+    }
+}
+
+/* Fixed Sidebar */
+.fixed-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+/* Sidebar on small screens */
+@media (max-width: 767.98px) {
+    .fixed-sidebar {
+        position: fixed;
+        height: auto;
+        width: 100%;
+    }
+}
+
+/* Padding for content to avoid overlap */
+.main-content {
+    margin-left: 0;
+    margin-top: 0;
+}
+
+@media (min-width: 768px) {
+    .main-content {
+        margin-left: 16.666667%;
     }
 }
