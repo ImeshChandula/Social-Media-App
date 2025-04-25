@@ -8,7 +8,7 @@ const mockPeople = new Array(6).fill({
 
 function Members() {
     return (
-        <div className="text-white min-vh-100">
+        <div className="text-white min-vh-100 py-5 py-md-0 mt-2 mt-md-0">
 
             {/* Heading + Search */}
             <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
