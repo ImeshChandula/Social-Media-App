@@ -69,3 +69,29 @@
         margin-left: 16.666667%;
     }
 }
+
+/* Notification Panel */
+.notification-wrapper {
+    width: 100%;
+}
+
+/* Notification Panel Styling */
+.notification-item {
+    background-color: #2c2f38;
+    border-bottom: 1px solid #444;
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+    background-color: #3a3d45;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Responsive avatar shrink fix */
+.avatar {
+    flex-shrink: 0;
+}
