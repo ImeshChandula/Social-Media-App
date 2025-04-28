@@ -22,12 +22,28 @@ function App() {
         {/* Layout below Topbar */}
         <div className="d-flex" style={{ marginTop: "60px" }}>
           {/* Sidebar */}
-          <div className="bg-black" style={{ width: "250px", minHeight: "100vh", position: "fixed", top: "60px", left: 0 }}>
+          <div
+            className="bg-black"
+            style={{
+              width: "25vw", // 2/8 of the page width
+              minHeight: "100vh",
+              position: "fixed",
+              top: "60px",
+              left: 0,
+            }}
+          >
             <Sidebar />
           </div>
 
           {/* Main Content */}
-          <div className="bg-dark text-white p-3" style={{ marginLeft: "250px", flex: 1, minHeight: "100vh" }}>
+          <div
+            className="bg-dark text-white p-3"
+            style={{
+              marginLeft: "25vw", // Adjusting to match sidebar width (25%)
+              flex: 1,
+              minHeight: "100vh",
+            }}
+          >
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/members" element={<Members />} />
