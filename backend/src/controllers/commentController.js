@@ -1,3 +1,4 @@
+// backend/controllers/commentController.js
 const Comment = require('../models/Comment');
 const Post = require('../models/Post');
 
@@ -155,3 +156,53 @@ exports.deleteComment = async (req, res) => {
   }
 };
 
+// Add reply to comment
+exports.addReply = async (req, res) => {
+  try {
+    const { text } = req.body;
+    
+    const comment = await Comment.findById(req.params.commentId);
+    
+    if (!comment) {
+      return res.status(404).json({ msg: 'Comment not found' });
+    }
+    
+    const newReply = {
+      user: req.user.id,
+      text,
+      createdAt: new Date()
+    };
+    
+    comment.replies.push(newReply);
+    
+    await comment.save();
+    
+    // Get user data for reply
+    const user = await User.findById(req.user.id);
+    
+    // Populate user data in reply
+    const lastReplyIndex = comment.replies.length - 1;
+    const populatedReply = {
+      ...comment.replies[lastReplyIndex],
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        profilePicture: user.profilePicture
+      }
+    };
+    
+    // Create populated comment to return
+    const populatedComment = {
+      id: comment.id,
+      ...comment,
+      replies: [...comment.replies.slice(0, lastReplyIndex), populatedReply]
+    };
+    
+    res.json(populatedComment);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};
