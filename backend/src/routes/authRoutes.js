@@ -24,13 +24,13 @@ router.get('/getCurrentUser', authenticateUser, userController.getCurrentUser);
 
 // @route   GET api/auth/getAllUsers
 // @desc    Get All user data
-// @access  Private authenticateUser, authorizeRoles("super_admin"),
-router.get('/getAllUsers',  userController.getAllUsers);
+// @access  Private 
+router.get('/getAllUsers', authenticateUser, authorizeRoles("super_admin"), userController.getAllUsers);
 
 // @route   GET api/auth/deleteUser
 // @desc    Delete user by ID
 // @access  Private
-router.delete('/deleteUser/:id', userController.deleteUser)
+router.delete('/deleteUser/:id', authenticateUser, authorizeRoles("super_admin"), userController.deleteUser)
 
 
 
