@@ -113,7 +113,7 @@ class User {
       const snapshot = await usersCollection.get();
 
       if (snapshot.empty) {
-        return res.status(200).json([]); // No users found, return empty array
+        return []; // No users found, return empty array
       }
 
       const users = [];
@@ -174,7 +174,7 @@ class User {
     } catch (error) {
       throw error;
     }
-  }
+  };
 
   static async findByIdAndUpdate(id, updateData, options = {}) {
     try {
@@ -196,7 +196,24 @@ class User {
     } catch (error) {
       throw error;
     }
-  }
+  };
+
+  static async findByIdAndDelete(id) {
+    try{
+      const docRef = usersCollection.doc(id);
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        return null;
+      }
+      
+      await docRef.delete();
+      return { id };
+    } catch (error) {
+      throw error;
+    }
+  };
+
 
 }
 

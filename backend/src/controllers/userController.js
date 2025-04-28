@@ -1,6 +1,5 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
 const ROLES = require("../enums/roles");
 require('dotenv').config();
 
@@ -16,14 +15,11 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ msg: "User already exists" });
         }
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
         // create new user
         user = new User({
             username,
             email,
-            password: hashedPassword,
+            password,
             firstName,
             lastName,
             role: role || 'user',
@@ -91,7 +87,7 @@ const loginUser = async (req, res) => {
 //@desc     Get All Users
 const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find({}, "-password");
+        const users = await User.find();
 
         const rolePriority = {
             [ROLES.SUPER_ADMIN]: 3,
@@ -114,6 +110,26 @@ const getAllUsers = async (req, res) => {
     }
 };
 
+//@desc     Delete user by ID
+const deleteUser = async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        const result = await User.findByIdAndDelete(userId);
+        if (result) {
+            res.json({ msg: 'User deleted successfully' });
+        }
+    } catch (err) {
+        console.error("Error deleting user:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
 
 //@desc     Get current user profile
 const getCurrentUser  = async (req, res) => {
@@ -127,5 +143,6 @@ module.exports = {
     registerUser,
     loginUser,
     getAllUsers,
+    deleteUser,
     getCurrentUser
 };

@@ -22,10 +22,18 @@ router.post('/login', userController.loginUser);
 // @access  Private
 router.get('/getCurrentUser', authenticateUser, userController.getCurrentUser);
 
-
 // @route   GET api/auth/getAllUsers
-// @desc    Get user data
+// @desc    Get All user data
+// @access  Private authenticateUser, authorizeRoles("super_admin"),
+router.get('/getAllUsers',  userController.getAllUsers);
+
+// @route   GET api/auth/deleteUser
+// @desc    Delete user by ID
 // @access  Private
-router.get('/getAllUsers', authenticateUser, authorizeRoles("super_admin"), userController.getAllUsers);
+router.delete('/deleteUser/:id', userController.deleteUser)
+
+
+
+
 
 module.exports = router;
