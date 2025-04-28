@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { connectFirebase } = require("./src/config/firebase");
-const { initializeDefaultSuperAdmin } = require("./src/config/defaultSuperAdmin");
+const { initializeDefaultSuperAdmin } = require("./src/initialization/defaultSuperAdmin");
 require('dotenv').config();
 
 // connect to firebase
