@@ -1,24 +1,21 @@
 const { connectFirebase } = require('../config/firebase');
 const bcrypt = require('bcrypt');
+const ROLES = require("../enums/roles");
 
 const db = connectFirebase();
 const usersCollection = db.collection('users');
 
-const ROLES = {
-  USER: "user",
-  ADMIN: "admin",
-  SUPER_ADMIN: "super_admin",
-};
+
 
 class User {
   constructor(userData) {
     // Required fields trim: remove spaces
-    this.username = userData.username?.trim();
+    this.username = userData.username;
     this.email = userData.email?.trim().toLowerCase();
     this.password = userData.password;
     this.firstName = userData.firstName?.trim();
     this.lastName = userData.lastName?.trim();
-    
+    this._isPasswordModified = false;
 
     // Optional fields with defaults
     this.profilePicture = userData.profilePicture || 'default-profile.png';
@@ -47,12 +44,27 @@ class User {
     this.updatedAt = userData.updatedAt || new Date();
   }
 
+
+
+
+
+
+
+// You're not using MongoDB anymore
+// you're using Firebase Firestore with a custom class-based User model!
+// It has custom methods like save(), findOne(), findById(), findByIdAndUpdate() find()
+
   // save user to database
   async save(){
     try {
-      if (this.password && this._isPasswordModified) {
+      if (this.password && (this._isPasswordModified || !this.id)) {
+        console.log("Hashing password...");
+
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
+        
+        console.log("Password hashed:", this.password.substring(0, 20) + "...");
+        this._isPasswordModified = false;
       }
 
       this.updatedAt = new Date();
@@ -72,7 +84,6 @@ class User {
     }
   }
 
-
   // convert to firestore compatible
   toFirestore() {
     const user = { ...this };
@@ -81,13 +92,44 @@ class User {
     return user;
   }
 
-
   // validate password
   async validatePassword(password) {
-    return await bcrypt.compare(password, this.password);
+    console.log("Validating password");
+    console.log("Input password:", password);
+    console.log("Stored hash:", this.password.substring(0, 20) + "...");
+    
+    const result = await bcrypt.compare(password, this.password);
+    console.log("bcrypt.compare result:", result);
+    return result;
   }
 
 
+
+
+// static methods
+
+  static async find(){
+    try {
+      const snapshot = await usersCollection.get();
+
+      if (snapshot.empty) {
+        return res.status(200).json([]); // No users found, return empty array
+      }
+
+      const users = [];
+
+      snapshot.forEach(doc => {
+        const userData = doc.data();
+        userData.id = doc.id; // attach document id
+        delete userData.password; // don't send password to frontend
+        users.push(userData);
+    });
+
+    return users;
+    } catch (error) {
+      throw error;
+    }
+  };
 
   static async findById(id) {
     try {
@@ -124,6 +166,7 @@ class User {
 
       const doc = snapshot.docs[0];
       const userData = doc.data();
+
       const user = new User(userData);
       user.id = doc.id;
 
