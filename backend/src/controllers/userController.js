@@ -27,9 +27,21 @@ const registerUser = async (req, res) => {
 
         await user.save();
 
-        console.log("User registered successfully.");
-        res.status(201).json({ msg: "User registered successfully" });
+        // create JWT token
+        const payload = {
+            id: user.id,
+            username: user.username,
+            role: user.role,
+        };
 
+        const token = jwt.sign(
+            payload,
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        console.log("User registered successfully.");
+        res.status(201).json({ msg: "User registered successfully", token });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
@@ -50,9 +62,6 @@ const loginUser = async (req, res) => {
         }
 
         console.log(`User found: ${user.id}, checking password...`);
-
-        // For debugging - DO NOT keep in production code
-        console.log(`Stored password hash: ${user.password.substring(0, 20)}...`);
 
         // validate password
         const isMatch = await user.validatePassword(password);
