@@ -15,22 +15,29 @@ function App() {
   return (
     <Router>
       <div className="container-fluid px-0">
+        
+        {/* Topbar */}
+        <Topbar />
 
-        {/* Sidebar */}
-        <div className="fixed-sidebar col-md-2 bg-black">
-          <Sidebar />
+        {/* Layout below Topbar */}
+        <div className="d-flex" style={{ marginTop: "60px" }}>
+          {/* Sidebar */}
+          <div className="bg-black" style={{ width: "250px", minHeight: "100vh", position: "fixed", top: "60px", left: 0 }}>
+            <Sidebar />
+          </div>
+
+          {/* Main Content */}
+          <div className="bg-dark text-white p-3" style={{ marginLeft: "250px", flex: 1, minHeight: "100vh" }}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/members" element={<Members />} />
+              <Route path="/videos" element={<Videos />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/profile" element={<ProfilePage />} />
+            </Routes>
+          </div>
         </div>
 
-        {/* Scrollable Main Content */}
-        <div className="main-content bg-dark text-white p-3" style={{ minHeight: "100vh" }}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/members" element={<Members />} />
-            <Route path="/videos" element={<Videos />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/profile" element={<ProfilePage />} />
-          </Routes>
-        </div>
       </div>
     </Router>
   );
