@@ -142,7 +142,22 @@ const deleteUser = async (req, res) => {
 
 //@desc     Get current user profile
 const getCurrentUser  = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
 
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found'});
+        }
+
+        // Remove password before sending user
+        const userResponse = { ...user };
+        delete userResponse.password;
+
+        res.json(userResponse);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
 };
 
 

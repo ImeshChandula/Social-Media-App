@@ -5,7 +5,8 @@ const userController  = require('../controllers/userController');
 
 const router = express.Router();
 
-// http://localhost:5000/
+// Routes
+// http://localhost:5000/api/auth
 
 // @route   POST api/auth/register
 // @desc    Register user
@@ -20,7 +21,7 @@ router.post('/login', userController.loginUser);
 // @route   GET api/auth/getCurrentUser
 // @desc    Get user data
 // @access  Private
-router.get('/getCurrentUser', authenticateUser, userController.getCurrentUser);
+router.get('/me', authenticateUser, userController.getCurrentUser);
 
 // @route   GET api/auth/getAllUsers
 // @desc    Get All user data
