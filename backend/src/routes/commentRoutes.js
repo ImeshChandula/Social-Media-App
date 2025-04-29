@@ -1,7 +1,9 @@
 const express = require('express');
-const router = express.Router();
-const { authenticateUser, authorizeRoles } = require('../middleware/auth');
+const { authenticateUser, authorizeRoles } = require('../middleware/authMiddleware');
 const commentController = require('../controllers/commentController');
+
+
+const router = express.Router();
 
 // @route   POST api/comments/:postId
 // @desc    Comment on a post

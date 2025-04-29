@@ -50,9 +50,9 @@ class User {
 
 
 
-// You're not using MongoDB anymore
-// you're using Firebase Firestore with a custom class-based User model!
-// It has custom methods like save(), findOne(), findById(), findByIdAndUpdate() find()
+  // You're not using MongoDB anymore
+  // you're using Firebase Firestore with a custom class-based User model!
+  // It has custom methods like save(), findOne(), findById(), findByIdAndUpdate() find()
 
   // save user to database
   async save(){
@@ -82,7 +82,7 @@ class User {
     } catch (error) {
       throw error;
     }
-  }
+  };
 
   // convert to firestore compatible
   toFirestore() {
@@ -90,7 +90,7 @@ class User {
     delete user.id; // Remove id property as it's stored as document ID
     delete user._isPasswordModified; // Remove internal property
     return user;
-  }
+  };
 
   // validate password
   async validatePassword(password) {
@@ -101,13 +101,12 @@ class User {
     const result = await bcrypt.compare(password, this.password);
     console.log("bcrypt.compare result:", result);
     return result;
-  }
+  };
 
 
 
 
-// static methods
-
+  // static methods
   static async find(){
     try {
       const snapshot = await usersCollection.get();
@@ -146,7 +145,7 @@ class User {
     } catch (error) {
       throw error;
     }
-  }
+  };
 
 
   static async findOne(filter){

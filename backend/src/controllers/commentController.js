@@ -1,4 +1,3 @@
-// backend/controllers/commentController.js
 const Comment = require('../models/Comment');
 const Post = require('../models/Post');
 

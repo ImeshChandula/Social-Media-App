@@ -5,7 +5,7 @@ require('dotenv').config();
 const connectFirebase = () => {
   try {
     if (admin.apps.length === 0) {
-      // Use environment variables 
+      // Use environment variables (.env)
       admin.initializeApp({
         credential: admin.credential.cert({
           projectId: process.env.FIREBASE_PROJECT_ID,
