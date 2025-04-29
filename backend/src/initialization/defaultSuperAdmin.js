@@ -22,10 +22,9 @@ const createDefaultSuperAdmin = async (req, res) => {
                 firstName: defaultFirstName,
                 lastName: defaultLastName,
                 role: defaultRole,
-                _isPasswordModified: true, 
             });
     
-            await defaultSuperAdmin.save();
+            await superAdmin.save();
             console.log("Default Super Admin created: \nEmail: superadmin@test.lk \nPassword: super123");
         } else {
             superAdmin = existingSuperAdmin;

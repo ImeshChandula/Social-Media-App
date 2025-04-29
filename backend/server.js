@@ -2,14 +2,14 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { connectFirebase } = require("./src/config/firebase");
-const { initializeDefaultSuperAdmin } = require("./src/config/defaultSuperAdmin");
+const { initializeDefaultSuperAdmin } = require("./src/initialization/defaultSuperAdmin");
 require('dotenv').config();
 
 // connect to firebase
 connectFirebase();
 
 initializeDefaultSuperAdmin().then(() => {
-  console.log('Server initialization completed');
+  console.log('Server initialization completed\n\n');
 });
 
 // starts the server
@@ -25,7 +25,8 @@ app.use(cookieParser());
 // http://localhost:5000
 app.use('/api/auth', require('./src/routes/authRoutes'));
 app.use('/api/users', require('./src/routes/userRoutes'));
-
+//app.use('/api/posts', require('./routes'));
+//app.use('/api/comments', require('./routes/comments'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
