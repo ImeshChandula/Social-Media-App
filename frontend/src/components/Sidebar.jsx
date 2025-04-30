@@ -71,7 +71,7 @@ function Sidebar() {
 			</ul>
 
 			{/* Shortcuts */}
-			<h6 className="text-muted px-3">Your Shortcuts</h6>
+			<h6 className="text-muted-dark px-3">Your Shortcuts</h6>
 			<ul className="nav flex-column mb-4">
 				{shortcuts.map(({ name, path, icon }) => (
 					<li className="nav-item" key={name}>
