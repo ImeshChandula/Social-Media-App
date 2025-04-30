@@ -196,7 +196,7 @@ const getCurrentUser  = async (req, res) => {
 //@desc     Update user profile
 const updateUserProfile = async (req, res) => {
     try {
-        const { firstName, lastName, bio, birthday, location, profilePicture, coverPhoto } = req.body;
+        const { firstName, lastName, bio, birthday, location, profilePicture, coverPhoto, accountStatus } = req.body;
 
         console.log('Update profile request for user:', req.user.id);
 
@@ -210,6 +210,7 @@ const updateUserProfile = async (req, res) => {
         if (profilePicture) profileFields.profilePicture = profilePicture;
         if (coverPhoto) profileFields.coverPhoto = coverPhoto;
         if (birthday) profileFields.birthday = birthday;
+        if (accountStatus) profileFields.accountStatus = accountStatus;
 
         // update user
         const user = await User.findByIdAndUpdate(
