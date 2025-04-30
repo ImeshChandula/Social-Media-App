@@ -7,10 +7,13 @@ class Comment {
   constructor(commentData) {
     this.post = commentData.post;
     this.user = commentData.user;
+
     this.text = commentData.text;
     this.media = commentData.media || null;
+
     this.likes = commentData.likes || [];
     this.replies = commentData.replies || [];
+    
     this.createdAt = commentData.createdAt || new Date();
     this.updatedAt = commentData.updatedAt || new Date();
   }
@@ -18,10 +21,8 @@ class Comment {
   // Save comment to database
   async save() {
     try {
-      this.updatedAt = new Date(); // It sets the updatedAt property of the comment to the current date and time.
+      this.updatedAt = new Date(); 
 
-
-      
       if (this.id) {
         // Update existing comment
         await commentsCollection.doc(this.id).update(this.toFirestore());

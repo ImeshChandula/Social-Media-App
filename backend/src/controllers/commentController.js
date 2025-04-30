@@ -1,8 +1,9 @@
 const Comment = require('../models/Comment');
 const Post = require('../models/Post');
+const User = require('../models/User');
 
 // Add comment to post
-exports.addComment = async (req, res) => {
+const addComment = async (req, res) => {
   try {
     const { text, media } = req.body;
     
@@ -50,7 +51,7 @@ exports.addComment = async (req, res) => {
 };
 
 // Get comments for a post
-exports.getComments = async (req, res) => {
+const getComments = async (req, res) => {
   try {
     const commentsQuery = Comment.find({ post: req.params.postId });
     const commentsSnapshot = await commentsQuery.get();
@@ -97,7 +98,7 @@ exports.getComments = async (req, res) => {
 };
 
 // Update comment
-exports.updateComment = async (req, res) => {
+const updateComment = async (req, res) => {
   try {
     const { text, media } = req.body;
     
@@ -125,7 +126,7 @@ exports.updateComment = async (req, res) => {
 };
 
 // Delete comment
-exports.deleteComment = async (req, res) => {
+const deleteComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.id);
     
@@ -156,7 +157,7 @@ exports.deleteComment = async (req, res) => {
 };
 
 // Add reply to comment
-exports.addReply = async (req, res) => {
+const addReply = async (req, res) => {
   try {
     const { text } = req.body;
     
@@ -204,4 +205,14 @@ exports.addReply = async (req, res) => {
     console.error(err.message);
     res.status(500).send('Server error');
   }
+};
+
+
+
+module.exports = {
+  addComment,
+  getComments,
+  addReply,
+  deleteComment,
+  updateComment,
 };

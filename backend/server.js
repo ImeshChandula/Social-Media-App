@@ -25,7 +25,7 @@ app.use(cookieParser());
 // http://localhost:5000
 app.use('/api/auth', require('./src/routes/authRoutes'));
 app.use('/api/users', require('./src/routes/userRoutes'));
-//app.use('/api/posts', require('./routes'));
+app.use('/api/posts', require('./src/routes/postRoutes'));
 app.use('/api/comments', require('./src/routes/commentRoutes'));
 
 
