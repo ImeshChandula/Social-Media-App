@@ -232,6 +232,17 @@ class User {
   };
 
 
+  // get friends count
+  get friendsCount() {
+    return this.friends.length;
+  };
+
+  // get friends count
+  get friendRequestCount() {
+    return this.friendRequests.length;
+  };
+
+
 }
 
 module.exports = User;

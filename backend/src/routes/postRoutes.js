@@ -1,0 +1,15 @@
+const express = require('express');
+const { authenticateUser, authorizeRoles } = require('../middleware/authMiddleware');
+const postController  = require('../controllers/postController');
+
+const router = express.Router();
+
+// Routes
+// http://localhost:5000/api/posts
+
+// @route   POST api/posts/createPost
+// @desc    Create a post
+// @access  Private
+router.post('/createPost', authenticateUser, postController.createPost);
+
+module.exports = router;
