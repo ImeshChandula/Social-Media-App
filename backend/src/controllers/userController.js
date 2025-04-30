@@ -161,6 +161,46 @@ const getCurrentUser  = async (req, res) => {
 };
 
 
+//@desc     Update user profile
+const updateUserProfile = async (req, res) => {
+    try {
+        const { firstName, lastName, bio, birthday, location, profilePicture, coverPhoto } = req.body;
+
+        // build profile object
+        const profileFields = { $set: {} };
+
+        if (firstName) profileFields.$set.firstName = firstName;
+        if (lastName) profileFields.$set.lastName = lastName;
+        if (bio) profileFields.$set.bio = bio;
+        if (location) profileFields.$set.location = location;
+        if (profilePicture) profileFields.$set.profilePicture = profilePicture;
+        if (coverPhoto) profileFields.$set.coverPhoto = coverPhoto;
+        if (birthday) profileFields.$set.birthday = birthday;
+
+        // update user
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            profileFields,
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        // Remove password before sending response
+        const userResponse = { ...user };
+        delete userResponse.password;
+        
+        res.json(userResponse);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
+
 
 
 module.exports = {
@@ -168,5 +208,6 @@ module.exports = {
     loginUser,
     getAllUsers,
     deleteUser,
-    getCurrentUser
+    getCurrentUser,
+    updateUserProfile
 };

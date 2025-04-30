@@ -18,7 +18,7 @@ router.post('/register', userController.registerUser);
 // @access  Public
 router.post('/login', userController.loginUser);
 
-// @route   GET api/auth/getCurrentUser
+// @route   GET api/auth/me
 // @desc    Get user data
 // @access  Private
 router.get('/me', authenticateUser, userController.getCurrentUser);
