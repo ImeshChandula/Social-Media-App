@@ -5,15 +5,15 @@ const commentController = require('../controllers/commentController');
 
 const router = express.Router();
 
-// @route   POST api/comments/:postId
+// @route   POST api/comments/addComment/:postId
 // @desc    Comment on a post
 // @access  Private
-router.post('/:postId', authenticateUser, commentController.addComment);
+router.post('/addComment/:postId', authenticateUser, commentController.addComment);
 
 // @route   GET api/comments/:postId
 // @desc    Get comments for a post
 // @access  Private
-router.get('/:postId', authenticateUser, commentController.getComments);
+router.get('/getComments/:postId', authenticateUser, commentController.getComments);
 
 // @route   PUT api/comments/:id
 // @desc    Update a comment

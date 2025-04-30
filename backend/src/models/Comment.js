@@ -18,10 +18,8 @@ class Comment {
   // Save comment to database
   async save() {
     try {
-      this.updatedAt = new Date(); // It sets the updatedAt property of the comment to the current date and time.
+      this.updatedAt = new Date(); 
 
-
-      
       if (this.id) {
         // Update existing comment
         await commentsCollection.doc(this.id).update(this.toFirestore());
