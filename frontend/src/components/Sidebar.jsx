@@ -1,83 +1,57 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { motion } from "framer-motion";
+import {
+	FaHome,
+	FaUsers,
+	FaVideo,
+	FaBell,
+	FaUserCircle,
+	FaSearch
+} from "react-icons/fa";
+
+const navItems = [
+	{ name: "Home", path: "/", icon: <FaHome /> },
+	{ name: "Members", path: "/members", icon: <FaUsers /> },
+	{ name: "Videos", path: "/videos", icon: <FaVideo /> },
+	{ name: "Notifications", path: "/notifications", icon: <FaBell /> },
+	{ name: "Profile", path: "/profile", icon: <FaUserCircle /> },
+];
 
 function Sidebar() {
-	const navItems = [
-		{ name: "Home", icon: "bi-house-door" },
-		{ name: "Members", icon: "bi-people" },
-		{ name: "Videos", icon: "bi-camera-video" },
-		{ name: "Notifications", icon: "bi-bell" },
-		{ name: "Profile", icon: "bi-person-circle" },
-	];
-
-	const sidebarVariants = {
-		hidden: { x: -50, opacity: 0 },
-		visible: {
-			x: 0,
-			opacity: 1,
-			transition: {
-				type: "spring",
-				stiffness: 70,
-				damping: 10,
-				delayChildren: 0.2,
-				staggerChildren: 0.1,
-			},
-		},
-	};
-
-	const navItemVariants = {
-		hidden: { opacity: 0, y: 10, scale: 0.95 },
-		visible: {
-			opacity: 1,
-			y: 0,
-			scale: 1,
-			transition: { type: "spring", stiffness: 100, damping: 12 },
-		},
-		whileHover: {
-			scale: 1.05,
-			backgroundColor: "#343a40",
-		},
-	};
-
 	return (
-		<motion.div
-			className="bg-black text-white d-flex flex-md-column flex-row align-items-center p-2 gap-2"
-			style={{ width: "25vw", minHeight: "100vh" }}
-			variants={sidebarVariants}
-			initial="hidden"
-			animate="visible"
-		>
-			<motion.ul
-				className="nav flex-md-column flex-row w-100 justify-content-around justify-content-md-start"
-				variants={sidebarVariants}
-			>
-				{navItems.map(({ name, icon }) => (
-					<motion.li
-						className="nav-item mb-md-2 text-center text-md-start"
-						key={name}
-						variants={navItemVariants}
-						whileHover="whileHover"
-					>
+		<div className="bg-black text-white p-3" style={{ width: "220px" }}>
+			<div className="row mb-4">
+				<div className="input-group">
+					<span className="input-group-text bg-dark border-0 text-white">
+						<FaSearch />
+					</span>
+					<input
+						className="form-control bg-dark border-0 text-white"
+						type="text"
+						placeholder="Search Facebook"
+					/>
+				</div>
+			</div>
+
+			<ul className="nav flex-column">
+				{navItems.map(({ name, path, icon }) => (
+					<li className="nav-item" key={name}>
 						<NavLink
-							to={name === "Home" ? "/" : `/${name.toLowerCase()}`}
+							to={path}
 							className={({ isActive }) =>
-								`nav-link d-flex flex-md-row flex-column align-items-center text-white gap-1 ${
-									isActive ? "bg-secondary rounded fw-bold" : ""
+								`nav-link d-flex align-items-center gap-2 text-white px-3 py-2 ${
+									isActive ? "bg-secondary rounded" : "hover:bg-dark"
 								}`
 							}
-							style={{
-								fontSize: "1.25rem", // Adjusted font size
-								textDecoration: "none", // This removes the underline
-							}}
+							style={{ textDecoration: "none" }}
 						>
-							<i className={`bi ${icon} fs-4 text-white`}></i> {/* Icon size adjusted */}
-							<span className="d-none d-md-inline">{name}</span>
+							<span>{icon}</span>
+							<span>{name}</span>
 						</NavLink>
-					</motion.li>
+					</li>
 				))}
-			</motion.ul>
-		</motion.div>
+			</ul>
+		</div>
 	);
 }
 
