@@ -6,71 +6,76 @@ import GroupAdmin from '../components/GroupAdmin';
 import RestrictedUser from '../components/RestrictedUser';
 
 const Home = () => {
-  const [activeComponent, setActiveComponent] = useState('UserManagement')
+  const [activeComponent, setActiveComponent] = useState('UserManagement');
 
-  // Function to render the active component
   const renderComponent = () => {
     switch (activeComponent) {
       case 'RegularUserPage':
-        return <RegularUserPage />
+        return <RegularUserPage />;
       case 'AdminPage':
-        return <AdminPage />
+        return <AdminPage />;
       case 'GroupAdmin':
-        return <GroupAdmin />
+        return <GroupAdmin />;
       case 'Advertiser':
-        return <Advertiser />
+        return <Advertiser />;
       case 'RestrictedUser':
-        return <RestrictedUser />
+        return <RestrictedUser />;
       default:
-        return <RegularUserPage />
+        return <RegularUserPage />;
     }
-  }
-  return (
+  };
 
+  return (
     <div>
-      
-      <div className="dashboard-nav">
-        <div className="btn-group" role="group" aria-label="Dashboard Navigation">
-          <button 
-            className={`btn nav-button ${activeComponent === 'RegularUserPage' ? 'btn-primary' : 'btn-outline-primary'}`}
+      {/* Navigation Buttons */}
+      <div className="dashboard-nav text-center my-3">
+        <div className="d-flex flex-wrap justify-content-center gap-2">
+          <button
+            className={`btn text-white rounded-pill px-4 ${activeComponent === 'RegularUserPage' ? 'btn-success' : 'btn-outline-success'
+              }`}
             onClick={() => setActiveComponent('RegularUserPage')}
           >
-            <span className="btn-text">Regular User</span>
+            Regular User
           </button>
-          <button 
-            className={`btn nav-button ${activeComponent === 'AdminPage' ? 'btn-primary' : 'btn-outline-primary'}`}
+          <button
+            className={`btn text-white rounded-pill px-4 ${activeComponent === 'AdminPage' ? 'btn-success' : 'btn-outline-success'
+              }`}
             onClick={() => setActiveComponent('AdminPage')}
           >
-            <span className="btn-text">Admin Page</span>
+            Admin Page
           </button>
-          <button 
-            className={`btn nav-button ${activeComponent === 'GroupAdmin' ? 'btn-primary' : 'btn-outline-primary'}`}
+          <button
+            className={`btn text-white rounded-pill px-4 ${activeComponent === 'GroupAdmin' ? 'btn-success' : 'btn-outline-success'
+              }`}
             onClick={() => setActiveComponent('GroupAdmin')}
           >
-            <span className="btn-text">Group Admin</span>
+            Group Admin
           </button>
-          <button 
-            className={`btn nav-button ${activeComponent === 'Advertiser' ? 'btn-primary' : 'btn-outline-primary'}`}
+          <button
+            className={`btn text-white rounded-pill px-4 ${activeComponent === 'Advertiser' ? 'btn-success' : 'btn-outline-success'
+              }`}
             onClick={() => setActiveComponent('Advertiser')}
           >
-            <span className="btn-text">Advertiser</span>
+            Advertiser
           </button>
-          <button 
-            className={`btn nav-button ${activeComponent === 'RestrictedUser' ? 'btn-primary' : 'btn-outline-primary'}`}
+          <button
+            className={`btn text-white rounded-pill px-4 ${activeComponent === 'RestrictedUser' ? 'btn-success' : 'btn-outline-success'
+              }`}
             onClick={() => setActiveComponent('RestrictedUser')}
           >
-            <span className="btn-text">Restricted User</span>
+            Restricted User
           </button>
         </div>
       </div>
-      
-      <div className="bg-dark py-4">
-        <div className="component-container">
+
+      {/* Rendered Component */}
+      <div className="bg-dark py-4 text-white">
+        <div className="component-container container">
           {renderComponent()}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

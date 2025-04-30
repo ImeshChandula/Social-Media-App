@@ -30,7 +30,15 @@ const shortcuts = [
 
 function Sidebar() {
 	return (
-		<div className="bg-black text-white p-3 d-flex flex-column" style={{ width: "250px", height: "100vh" }}>
+		<div
+			className="bg-black text-white p-3 d-flex flex-column flex-shrink-0"
+			style={{
+				width: "100%",
+				maxWidth: "250px",
+				height: "100vh",
+				overflowY: "auto",
+			}}
+		>
 			{/* Search */}
 			<div className="input-group mb-4">
 				<span className="input-group-text bg-dark border-0 text-white">
@@ -50,8 +58,7 @@ function Sidebar() {
 						<NavLink
 							to={path}
 							className={({ isActive }) =>
-								`nav-link d-flex align-items-center gap-2 text-white px-3 py-2 ${
-									isActive ? "bg-secondary rounded" : "hover:bg-dark"
+								`nav-link d-flex align-items-center gap-2 text-white px-3 py-2 ${isActive ? "bg-secondary rounded" : "hover:bg-dark"
 								}`
 							}
 							style={{ textDecoration: "none" }}
