@@ -30,18 +30,34 @@ const registerUser = async (req, res) => {
         // create JWT token
         const payload = {
             id: user.id,
-            username: user.username,
+            username: user.firstName + ' ' + user.lastName || user.username,
             role: user.role,
         };
 
-        const token = jwt.sign(
+        jwt.sign(
             payload,
             process.env.JWT_SECRET,
-            { expiresIn: '7d' }
+            { expiresIn: '7d' },
+            (err, token) => {
+                if (err) {
+                    console.error('JWT sign error:', err);
+                    return res.status(500).json({ msg: 'Token generation failed' });
+                }
+
+                // Convert user to plain object
+                const userObj = user.toObject ? user.toObject() : {...user._doc};
+                delete userObj.password;
+                
+                // Return both token and user data
+                res.json({ 
+                    token,
+                    user: userObj,
+                    msg: "User registered successfully"
+                });
+            }
         );
 
         console.log("User registered successfully.");
-        res.status(201).json({ msg: "User registered successfully", token });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
@@ -53,7 +69,8 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(`Login attempt for email: ${email}`);
+
+        console.log('Login attempt for email:', email);
 
         // check if user exists
         const user = await User.findOne({ email });
@@ -76,17 +93,32 @@ const loginUser = async (req, res) => {
         // create JWT token
         const payload = {
             id: user.id,
-            username: user.username,
+            username: user.firstName + ' ' + user.lastName || user.username,
             role: user.role,
         };
 
-        const token = jwt.sign(
+        jwt.sign(
             payload,
             process.env.JWT_SECRET,
-            { expiresIn: '7d' }
+            { expiresIn: '7d' },
+            (err, token) => {
+                if (err) {
+                    console.error('JWT sign error:', err);
+                    return res.status(500).json({ msg: 'Token generation failed' });
+                }
+
+                // Convert user to plain object
+                const userObj = user.toObject ? user.toObject() : {...user._doc};
+                delete userObj.password;
+                
+                // Return both token and user data
+                res.json({ 
+                    token,
+                    user: userObj
+                });
+            }
         );
 
-        res.json({ token });
     } catch (err) {
         console.error("Login error:", err.message);
         res.status(500).send('Server Error');
@@ -164,35 +196,39 @@ const getCurrentUser  = async (req, res) => {
 //@desc     Update user profile
 const updateUserProfile = async (req, res) => {
     try {
-        const { firstName, lastName, bio, birthday, location, profilePicture, coverPhoto } = req.body;
+        const { firstName, lastName, bio, birthday, location, profilePicture, coverPhoto, accountStatus } = req.body;
+
+        console.log('Update profile request for user:', req.user.id);
 
         // build profile object
-        const profileFields = { $set: {} };
+        const profileFields = { };
 
-        if (firstName) profileFields.$set.firstName = firstName;
-        if (lastName) profileFields.$set.lastName = lastName;
-        if (bio) profileFields.$set.bio = bio;
-        if (location) profileFields.$set.location = location;
-        if (profilePicture) profileFields.$set.profilePicture = profilePicture;
-        if (coverPhoto) profileFields.$set.coverPhoto = coverPhoto;
-        if (birthday) profileFields.$set.birthday = birthday;
+        if (firstName) profileFields.firstName = firstName;
+        if (lastName) profileFields.lastName = lastName;
+        if (bio) profileFields.bio = bio;
+        if (location) profileFields.location = location;
+        if (profilePicture) profileFields.profilePicture = profilePicture;
+        if (coverPhoto) profileFields.coverPhoto = coverPhoto;
+        if (birthday) profileFields.birthday = birthday;
+        if (accountStatus) profileFields.accountStatus = accountStatus;
 
         // update user
         const user = await User.findByIdAndUpdate(
             req.user.id,
             profileFields,
-            { new: true }
+            { new: true } 
         );
 
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }
 
-        // Remove password before sending response
-        const userResponse = { ...user };
-        delete userResponse.password;
+        // Convert to plain object and remove password
+        const userObj = user.toObject ? user.toObject() : {...user};
+        delete userObj.password;
         
-        res.json(userResponse);
+        console.log('Profile updated successfully for user:', req.user.id);
+        res.json(userObj);
 
     } catch (err) {
         console.error(err.message);
@@ -200,6 +236,25 @@ const updateUserProfile = async (req, res) => {
     }
 };
 
+
+//@desc     Get users by username
+const getUsersByUsername = async (req, res) => {
+    try {
+        const user = await User.findByUsername(req.params.username);
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        // Remove password before sending response
+        const userResponse = { ...user };
+        delete userResponse.password;
+
+        res.json(userResponse);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
 
 
 
@@ -209,5 +264,5 @@ module.exports = {
     getAllUsers,
     deleteUser,
     getCurrentUser,
-    updateUserProfile
+    updateUserProfile,
 };
