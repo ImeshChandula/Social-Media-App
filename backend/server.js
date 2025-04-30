@@ -26,7 +26,10 @@ app.use(cookieParser());
 app.use('/api/auth', require('./src/routes/authRoutes'));
 app.use('/api/users', require('./src/routes/userRoutes'));
 //app.use('/api/posts', require('./routes'));
-//app.use('/api/comments', require('./routes/comments'));
+app.use('/api/comments', require('./src/routes/commentRoutes'));
+
+
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
