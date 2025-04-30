@@ -6,7 +6,11 @@ import {
 	FaVideo,
 	FaBell,
 	FaUserCircle,
-	FaSearch
+	FaSearch,
+	FaGamepad,
+	FaBasketballBall,
+	FaFilm,
+	FaShoppingBag,
 } from "react-icons/fa";
 
 const navItems = [
@@ -17,23 +21,30 @@ const navItems = [
 	{ name: "Profile", path: "/profile", icon: <FaUserCircle /> },
 ];
 
+const shortcuts = [
+	{ name: "Gaming", path: "/gaming", icon: <FaGamepad /> },
+	{ name: "Sports", path: "/sports", icon: <FaBasketballBall /> },
+	{ name: "Entertainment", path: "/entertainment", icon: <FaFilm /> },
+	{ name: "Shopping", path: "/shopping", icon: <FaShoppingBag /> },
+];
+
 function Sidebar() {
 	return (
-		<div className="bg-black text-white p-3" style={{ width: "220px" }}>
-			<div className="row mb-4">
-				<div className="input-group">
-					<span className="input-group-text bg-dark border-0 text-white">
-						<FaSearch />
-					</span>
-					<input
-						className="form-control bg-dark border-0 text-white"
-						type="text"
-						placeholder="Search Facebook"
-					/>
-				</div>
+		<div className="bg-black text-white p-3 d-flex flex-column" style={{ width: "250px", height: "100vh" }}>
+			{/* Search */}
+			<div className="input-group mb-4">
+				<span className="input-group-text bg-dark border-0 text-white">
+					<FaSearch />
+				</span>
+				<input
+					className="form-control bg-dark border-0 text-white"
+					type="text"
+					placeholder="Search Facebook"
+				/>
 			</div>
 
-			<ul className="nav flex-column">
+			{/* Main Navigation */}
+			<ul className="nav flex-column mb-4">
 				{navItems.map(({ name, path, icon }) => (
 					<li className="nav-item" key={name}>
 						<NavLink
@@ -45,8 +56,25 @@ function Sidebar() {
 							}
 							style={{ textDecoration: "none" }}
 						>
-							<span>{icon}</span>
-							<span>{name}</span>
+							{icon}
+							{name}
+						</NavLink>
+					</li>
+				))}
+			</ul>
+
+			{/* Shortcuts */}
+			<h6 className="text-muted px-3">Your Shortcuts</h6>
+			<ul className="nav flex-column mb-4">
+				{shortcuts.map(({ name, path, icon }) => (
+					<li className="nav-item" key={name}>
+						<NavLink
+							to={path}
+							className="nav-link d-flex align-items-center gap-2 text-white px-3 py-2 hover:bg-dark"
+							style={{ textDecoration: "none" }}
+						>
+							{icon}
+							{name}
 						</NavLink>
 					</li>
 				))}
