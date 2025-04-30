@@ -98,7 +98,7 @@ const getComments = async (req, res) => {
 };
 
 // Update comment
-exports.updateComment = async (req, res) => {
+const updateComment = async (req, res) => {
   try {
     const { text, media } = req.body;
     
@@ -126,7 +126,7 @@ exports.updateComment = async (req, res) => {
 };
 
 // Delete comment
-exports.deleteComment = async (req, res) => {
+const deleteComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.id);
     
@@ -157,7 +157,7 @@ exports.deleteComment = async (req, res) => {
 };
 
 // Add reply to comment
-exports.addReply = async (req, res) => {
+const addReply = async (req, res) => {
   try {
     const { text } = req.body;
     
@@ -212,4 +212,7 @@ exports.addReply = async (req, res) => {
 module.exports = {
   addComment,
   getComments,
+  addReply,
+  deleteComment,
+  updateComment,
 };

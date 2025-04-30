@@ -7,10 +7,13 @@ class Comment {
   constructor(commentData) {
     this.post = commentData.post;
     this.user = commentData.user;
+
     this.text = commentData.text;
     this.media = commentData.media || null;
+
     this.likes = commentData.likes || [];
     this.replies = commentData.replies || [];
+    
     this.createdAt = commentData.createdAt || new Date();
     this.updatedAt = commentData.updatedAt || new Date();
   }

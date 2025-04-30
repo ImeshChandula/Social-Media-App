@@ -18,7 +18,7 @@ router.get('/getComments/:postId', authenticateUser, commentController.getCommen
 // @route   PUT api/comments/:id
 // @desc    Update a comment
 // @access  Private
-router.put('/:id', authenticateUser, commentController.updateComment);
+router.patch('/:id', authenticateUser, commentController.updateComment);
 
 // @route   DELETE api/comments/:id
 // @desc    Delete a comment
