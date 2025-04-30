@@ -237,6 +237,25 @@ const updateUserProfile = async (req, res) => {
 };
 
 
+//@desc     Get users by username
+const getUsersByUsername = async (req, res) => {
+    try {
+        const user = await User.findByUsername(req.params.username);
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        // Remove password before sending response
+        const userResponse = { ...user };
+        delete userResponse.password;
+
+        res.json(userResponse);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
 
 
 module.exports = {

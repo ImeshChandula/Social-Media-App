@@ -148,6 +148,24 @@ class User {
   };
 
 
+  static async findByUsername(username) {
+    try {
+      const doc = await usersCollection.doc(username).get();
+      if(!doc.exists) {
+        return null;
+      }
+
+      const userData = doc.data();
+      const user = new User(userData);
+      user.username = doc.username;
+      
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+
   static async findOne(filter){
     try {
       let query = usersCollection;
