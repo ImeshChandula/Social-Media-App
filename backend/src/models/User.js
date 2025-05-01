@@ -92,9 +92,9 @@ class User {
     return user;
   };
 
+
   // validate password
   async validatePassword(password) {
-    console.log("Validating password");
     console.log("Input password:", password);
     console.log("Stored hash:", this.password.substring(0, 20) + "...");
     
@@ -150,15 +150,18 @@ class User {
 
   static async findByUsername(username) {
     try {
-      const doc = await usersCollection.doc(username).get();
-      if(!doc.exists) {
+      const snapshot = await usersCollection.where('username', '==', username).limit(1).get();
+    
+      if (snapshot.empty) {
         return null;
       }
 
+      const doc = snapshot.docs[0];
       const userData = doc.data();
       const user = new User(userData);
-      user.username = doc.username;
-      
+
+      user.id = doc.id;
+        
       return user;
     } catch (error) {
       throw error;
