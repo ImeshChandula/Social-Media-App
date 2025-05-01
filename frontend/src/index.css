@@ -1,10 +1,10 @@
 /* profile image animation*/
+
 @keyframes scaleIn {
     from {
         transform: translateX(-50%) scale(0);
         opacity: 0;
     }
-
     to {
         transform: translateX(-50%) scale(1);
         opacity: 1;
@@ -17,7 +17,9 @@
     opacity: 0;
 }
 
+
 /* Members Page */
+
 .card {
     border: none;
     border-radius: 8px;
@@ -39,7 +41,9 @@
     }
 }
 
+
 /* Fixed Sidebar */
+
 .fixed-sidebar {
     position: fixed;
     top: 0;
@@ -49,7 +53,9 @@
     z-index: 1000;
 }
 
+
 /* Sidebar on small screens */
+
 @media (max-width: 767.98px) {
     .fixed-sidebar {
         position: fixed;
@@ -58,7 +64,9 @@
     }
 }
 
+
 /* Padding for content to avoid overlap */
+
 .main-content {
     margin-left: 0;
     margin-top: 0;
@@ -70,12 +78,16 @@
     }
 }
 
+
 /* Notification Panel */
+
 .notification-wrapper {
     width: 100%;
 }
 
+
 /* Notification Panel Styling */
+
 .notification-item {
     background-color: #2c2f38;
     border-bottom: 1px solid #444;
@@ -91,7 +103,155 @@
     cursor: pointer;
 }
 
+
 /* Responsive avatar shrink fix */
+
 .avatar {
     flex-shrink: 0;
+}
+
+
+/* Reset and base styles */
+
+html,
+body,
+#root {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: #000;
+    color: #fff;
+    font-family: Arial, sans-serif;
+}
+
+
+/* Auth container (login/register box) */
+
+.auth-container {
+    max-width: 400px;
+    margin: 80px auto;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 0 25px rgba(0, 255, 0, 0.1);
+}
+
+
+/* Titles */
+
+.auth-title {
+    font-size: 32px;
+    font-weight: bold;
+    color: #07a207;
+    margin-bottom: 10px;
+}
+
+.auth-subtitle {
+    font-size: 16px;
+    margin-bottom: 20px;
+    color: #ccc;
+}
+
+
+/* Form inputs */
+
+.auth-form input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-size: 14px;
+}
+
+.auth-form input::placeholder {
+    color: #bbb;
+}
+
+
+/* Checkbox */
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #ccc;
+    margin: 12px 0;
+}
+
+.checkbox-label input {
+    margin-right: 8px;
+}
+
+
+/* Login button */
+
+.auth-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #07a207;
+    color: #000;
+    font-weight: bold;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.auth-button:hover {
+    background-color: #07a207;
+}
+
+
+/* Links */
+
+.auth-links {
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.auth-links a {
+    color: #07a207;
+    text-decoration: none;
+}
+
+.auth-links a:hover {
+    text-decoration: underline;
+}
+
+
+/* Utility for scrollbar hiding (optional) */
+
+.no-scrollbar {
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari */
+}
+
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 10px;
+    margin: 12px 0;
+    color: #ccc;
+    font-size: 14px;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #00ff00;
+    /* green checkbox */
 }

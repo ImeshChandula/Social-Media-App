@@ -22,7 +22,7 @@ const RegularUserPage = () => {
     return (
         <div className=" py-5 py-md-0 mt-2 mt-md-0">
             {/* Post Input */}
-            <div className="card bg-dark text-white mb-4 p-3 rounded-4">
+            <div className="card bg-secondary bg-opacity-10 border-secondary text-white mb-4 p-3 rounded-4">
                 <div className="d-flex align-items-center mb-3">
                     <img
                         src="https://randomuser.me/api/portraits/men/32.jpg"
@@ -90,7 +90,7 @@ const RegularUserPage = () => {
 
 
             {/* Feed Post */}
-            <div className="card bg-dark text-white mb-4 p-3 rounded-4">
+            <div className="card bg-secondary bg-opacity-10 border-secondary text-white mb-4 p-3 rounded-4">
                 <div className="d-flex align-items-center mb-3">
                     <img
                         src="https://randomuser.me/api/portraits/men/32.jpg"
