@@ -3,75 +3,82 @@ import React from 'react';
 const GroupAdmin = () => {
   return (
     <div style={{
-      backgroundColor: '#18191a',
-      color: '#ffffff',
+      backgroundColor: '#121212',
+      color: '#e0e0e0',
       minHeight: '100vh',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
       padding: '20px',
+      fontFamily: 'Arial, sans-serif',
     }}>
       <div style={{
-        backgroundColor: '#242526',
-        borderRadius: '16px',
-        padding: '24px',
-        width: '100%',
-        maxWidth: '800px',
-        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.3)',
+        borderBottom: '1px solid #3d3d3d',
+        paddingBottom: '16px',
+        marginBottom: '24px',
       }}>
-        <div style={{ marginBottom: '16px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>Group Name</h1>
-          <p style={{ fontSize: '14px', color: '#b0b3b8', marginTop: '4px' }}>Private Group • 5,732 members • Created Jan 15, 2021 • You're an admin</p>
-        </div>
+        <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#048904FF' }}>Group Name</h1>
+        <p style={{ fontSize: '14px', color: '#a0a0a0' }}>
+          Private Group • 5,732 members • Created Jan 15, 2021 • You're an admin
+        </p>
+      </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
-          <div style={{
-            backgroundColor: '#3a3b3c',
-            padding: '16px',
-            borderRadius: '8px',
-            textAlign: 'center',
-          }}>
-            <h2 style={{ fontSize: '16px', fontWeight: '600' }}>Members</h2>
-            <p style={{ fontSize: '20px', fontWeight: 'bold', marginTop: '8px' }}>5,732</p>
-          </div>
-          <div style={{
-            backgroundColor: '#3a3b3c',
-            padding: '16px',
-            borderRadius: '8px',
-            textAlign: 'center',
-          }}>
-            <h2 style={{ fontSize: '16px', fontWeight: '600' }}>New Posts</h2>
-            <p style={{ fontSize: '20px', fontWeight: 'bold', marginTop: '8px' }}>24</p>
-          </div>
-          <div style={{
-            backgroundColor: '#3a3b3c',
-            padding: '16px',
-            borderRadius: '8px',
-            textAlign: 'center',
-          }}>
-            <h2 style={{ fontSize: '16px', fontWeight: '600' }}>Reports</h2>
-            <p style={{ fontSize: '20px', fontWeight: 'bold', marginTop: '8px' }}>5</p>
-            <span style={{ fontSize: '12px', color: '#f7b731' }}>Needs review</span>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
-          <div style={{
-            backgroundColor: '#3a3b3c',
+      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '24px' }}>
+        {[
+          { label: 'Members', value: '5,732' },
+          { label: 'New Posts', value: '24' },
+          { label: 'Reports', value: '5', note: 'Needs review' },
+        ].map(({ label, value, note }) => (
+          <div key={label} style={{
+            backgroundColor: '#1e1e1e',
             padding: '16px',
             borderRadius: '8px',
             flex: '1',
+            minWidth: '200px',
           }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>Pending Approvals</h2>
-            <div style={{ marginBottom: '16px' }}>
-              <p><strong>John Smith</strong></p>
-              <p style={{ fontSize: '12px', color: '#b0b3b8' }}>2 hours ago</p>
-              <p>I'm selling my old gaming PC. Specs: i7, 32GB RAM, RTX 3070. DM if interested!</p>
+            <h2 style={{ fontSize: '16px', fontWeight: '500', color: '#048904FF' }}>{label}</h2>
+            <p style={{ fontSize: '20px', fontWeight: '600', margin: '8px 0' }}>{value}</p>
+            {note && <span style={{ fontSize: '12px', color: '#e41e3f' }}>{note}</span>}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+        {/* Pending Approvals */}
+        <div style={{
+          backgroundColor: '#1e1e1e',
+          padding: '16px',
+          borderRadius: '8px',
+          flex: '1',
+          minWidth: '300px',
+          border: '1px solid #3d3d3d',
+        }}>
+          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: '#048904FF' }}>
+            Pending Approvals
+          </h2>
+          {[
+            {
+              name: 'John Smith',
+              time: '2 hours ago',
+              message: "I'm selling my old gaming PC. Specs: i7, 32GB RAM, RTX 3070. DM if interested!",
+            },
+            {
+              name: 'Emma Thompson',
+              time: 'Yesterday',
+              message: "Hi, I'd love to join this group because I'm passionate about this topic!",
+            },
+          ].map((user, index) => (
+            <div key={index} style={{
+              marginBottom: '16px',
+              padding: '12px',
+              backgroundColor: '#2e2e2e',
+              borderRadius: '6px',
+            }}>
+              <p style={{ fontWeight: '600' }}>{user.name}</p>
+              <p style={{ fontSize: '12px', color: '#a0a0a0' }}>{user.time}</p>
+              <p>{user.message}</p>
               <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                 <button style={{
-                  backgroundColor: '#2d88ff',
+                  backgroundColor: '#048904FF',
                   border: 'none',
-                  color: '#ffffff',
+                  color: '#1e1e1e',
                   padding: '8px 12px',
                   borderRadius: '4px',
                   cursor: 'pointer',
@@ -86,96 +93,54 @@ const GroupAdmin = () => {
                 }}>Decline</button>
               </div>
             </div>
-            <div style={{ marginBottom: '16px' }}>
-              <p><strong>Emma Thompson</strong></p>
-              <p style={{ fontSize: '12px', color: '#b0b3b8' }}>Yesterday</p>
-              <p>Hi, I'd love to join this group because I'm passionate about this topic!</p>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                <button style={{
-                  backgroundColor: '#2d88ff',
-                  border: 'none',
-                  color: '#ffffff',
-                  padding: '8px 12px',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}>Approve</button>
-                <button style={{
-                  backgroundColor: '#e41e3f',
-                  border: 'none',
-                  color: '#ffffff',
-                  padding: '8px 12px',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}>Decline</button>
-              </div>
-            </div>
-          </div>
-
-          <div style={{
-            backgroundColor: '#3a3b3c',
-            padding: '16px',
-            borderRadius: '8px',
-            flex: '1',
-          }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>Group Rules & Settings</h2>
-            <ul style={{ listStyle: 'none', padding: '0', margin: '0' }}>
-              <li style={{ marginBottom: '8px' }}>✔ Be respectful and kind to other members</li>
-              <li style={{ marginBottom: '8px' }}>✔ No spam or self-promotion without approval</li>
-              <li style={{ marginBottom: '8px' }}>✔ Keep content relevant to the group topic</li>
-              <li style={{ marginBottom: '8px' }}>✔ No hate speech or discriminatory content</li>
-            </ul>
-            <button style={{
-              backgroundColor: '#2d88ff',
-              border: 'none',
-              color: '#ffffff',
-              padding: '8px 12px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginTop: '16px',
-            }}>Edit Group Settings</button>
-          </div>
+          ))}
         </div>
 
-        <div style={{ marginTop: '24px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>Moderator Team</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-            <div style={{
-              backgroundColor: '#3a3b3c',
+        {/* Group Rules */}
+        <div style={{
+          backgroundColor: '#1e1e1e',
+          padding: '16px',
+          borderRadius: '8px',
+          flex: '1',
+          minWidth: '300px',
+          border: '1px solid #3d3d3d',
+        }}>
+          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: '#048904FF' }}>
+            Group Rules & Settings
+          </h2>
+          <ul style={{ listStyle: 'none', padding: '0', margin: '0' }}>
+            <li style={{ marginBottom: '8px', color: '#a0a0a0' }}>✔ Be respectful and kind to other members</li>
+            <li style={{ marginBottom: '8px', color: '#a0a0a0' }}>✔ No spam or self-promotion without approval</li>
+            <li style={{ marginBottom: '8px', color: '#a0a0a0' }}>✔ Keep content relevant to the group topic</li>
+            <li style={{ marginBottom: '8px', color: '#a0a0a0' }}>✔ No hate speech or discriminatory content</li>
+          </ul>
+          <button style={{
+            backgroundColor: '#048904FF',
+            border: 'none',
+            color: '#1e1e1e',
+            padding: '8px 12px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            marginTop: '16px',
+          }}>Edit Group Settings</button>
+        </div>
+      </div>
+
+      {/* Moderator Team */}
+      <div style={{ marginTop: '32px' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px', color: '#048904FF' }}>Moderator Team</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+          {['Alex Johnson (Admin)', 'Sarah Williams (Moderator)', 'David Chen (Moderator)', 'Lisa Park (Moderator)'].map((mod, i) => (
+            <div key={i} style={{
+              backgroundColor: '#2e2e2e',
               padding: '16px',
               borderRadius: '8px',
               textAlign: 'center',
             }}>
-              <p><strong>Alex Johnson</strong></p>
-              <p>Admin</p>
+              <p><strong>{mod.split(' ')[0]} {mod.split(' ')[1]}</strong></p>
+              <p style={{ fontSize: '12px', color: '#a0a0a0' }}>{mod.includes('Admin') ? 'Admin' : 'Moderator'}</p>
             </div>
-            <div style={{
-              backgroundColor: '#3a3b3c',
-              padding: '16px',
-              borderRadius: '8px',
-              textAlign: 'center',
-            }}>
-              <p><strong>Sarah Williams</strong></p>
-              <p>Moderator</p>
-            </div>
-            <div style={{
-              backgroundColor: '#3a3b3c',
-              padding: '16px',
-              borderRadius: '8px',
-              textAlign: 'center',
-            }}>
-              <p><strong>David Chen</strong></p>
-              <p>Moderator</p>
-            </div>
-            <div style={{
-              backgroundColor: '#3a3b3c',
-              padding: '16px',
-              borderRadius: '8px',
-              textAlign: 'center',
-            }}>
-              <p><strong>Lisa Park</strong></p>
-              <p>Moderator</p>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>
