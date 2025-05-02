@@ -23,14 +23,13 @@ const Register = () => {
   };
 
   return (
-    <>
-      {/* Facebook title moved out of auth container */}
-      <h1 className="auth-title" style={{ textAlign: "center", marginBottom: "10px" }}>Facebook</h1>
-
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div className="auth-container">
+        <h1 className="auth-title">Facebook</h1>
         <h2 className="auth-subtitle">Create a new account</h2>
+
         <form onSubmit={handleSubmit} className="auth-form">
-          <div className="name-fields">
+          <div className="name-fields" style={{ display: "flex", gap: "10px" }}>
             <input
               type="text"
               name="firstName"
@@ -80,7 +79,7 @@ const Register = () => {
           <p style={{ marginTop: "10px" }}>Already have an account? <a href="/login">Log in</a></p>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

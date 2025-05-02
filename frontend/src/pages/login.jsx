@@ -23,7 +23,6 @@ const Login = ({ setIsLoggedIn }) => {
 
     const { emailOrPhone, password } = formData;
 
-    // Simple validation for phone number and password
     if (emailOrPhone === '011234567' && password === '1234') {
       setIsLoggedIn(true);
       navigate("/");
@@ -34,13 +33,12 @@ const Login = ({ setIsLoggedIn }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      {/* Facebook and subtitle closer to box */}
-      <h1 className="auth-title" style={{ marginBottom: '4px' }}>Facebook</h1>
-      <h2 className="auth-subtitle" style={{ marginBottom: '16px' }}>
-        Connect with friends and the world around you.
-      </h2>
-
       <div className="auth-container">
+        <h1 className="auth-title">Facebook</h1>
+        <h2 className="auth-subtitle">
+          Connect with friends and the world around you.
+        </h2>
+
         <form onSubmit={handleSubmit} className="auth-form">
           <input
             type="text"
@@ -56,7 +54,7 @@ const Login = ({ setIsLoggedIn }) => {
             value={formData.password}
             onChange={handleChange}
           />
-          <label className="checkbox-wrapper" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <label className="checkbox-wrapper">
             <input
               type="checkbox"
               name="rememberMe"
@@ -68,7 +66,7 @@ const Login = ({ setIsLoggedIn }) => {
           <button type="submit" className="auth-button">Log In</button>
         </form>
 
-        <div className="auth-links" style={{ textAlign: "left", marginTop: "10px" }}>
+        <div className="auth-links">
           <p><a href="/forgot-password">Forgot Password?</a></p>
           <p>Don't have an account? <a href="/register">Sign up</a></p>
         </div>
