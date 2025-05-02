@@ -27,36 +27,7 @@ const registerUser = async (req, res) => {
 
         await user.save();
 
-        // create JWT token
-        const payload = {
-            id: user.id,
-            username: user.firstName + ' ' + user.lastName || user.username,
-            role: user.role,
-        };
-
-        jwt.sign(
-            payload,
-            process.env.JWT_SECRET,
-            { expiresIn: '7d' },
-            (err, token) => {
-                if (err) {
-                    console.error('JWT sign error:', err);
-                    return res.status(500).json({ msg: 'Token generation failed' });
-                }
-
-                // Convert user to plain object
-                const userObj = user.toObject ? user.toObject() : {...user._doc};
-                delete userObj.password;
-                
-                // Return both token and user data
-                res.json({ 
-                    token,
-                    user: userObj,
-                    msg: "User registered successfully"
-                });
-            }
-        );
-
+        res.json({ msg: "User registered successfully" });
         console.log("User registered successfully.");
     } catch (err) {
         console.error(err.message);
@@ -95,6 +66,7 @@ const loginUser = async (req, res) => {
             id: user.id,
             username: user.firstName + ' ' + user.lastName || user.username,
             role: user.role,
+            accountStatus: user.accountStatus,
         };
 
         jwt.sign(
