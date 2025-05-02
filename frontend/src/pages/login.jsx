@@ -74,5 +74,68 @@ const Login = ({ setIsLoggedIn }) => {
     </div>
   );
 };
+// Styles
+const containerStyle = {
+  backgroundColor: "#000",
+  height: "100vh",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "#fff"
+};
+
+const titleStyle = {
+  color: "#00ff6a",
+  fontSize: "2rem",
+  marginBottom: "10px"
+};
+
+const subtitleStyle = {
+  marginBottom: "20px",
+  color: "#ccc"
+};
+
+const formStyle = {
+  backgroundColor: "#111827",
+  padding: "30px",
+  borderRadius: "10px",
+  width: "300px",
+  boxShadow: "0 0 15px rgba(0,0,0,0.6)"
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "10px",
+  marginBottom: "10px",
+  borderRadius: "5px",
+  border: "1px solid #333",
+  backgroundColor: "#1f2937",
+  color: "#fff"
+};
+
+const submitButtonStyle = {
+  width: "100%",
+  backgroundColor: "#00ff6a",
+  color: "#000",
+  padding: "10px",
+  border: "none",
+  borderRadius: "5px",
+  fontWeight: "bold",
+  marginBottom: "15px",
+  cursor: "pointer"
+};
+
+const optionsStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  marginBottom: "10px",
+  fontSize: "0.9rem"
+};
+
+const linkStyle = {
+  color: "#00ff6a",
+  textDecoration: "none"
+};
 
 export default Login;
