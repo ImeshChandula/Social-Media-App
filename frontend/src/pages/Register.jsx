@@ -29,8 +29,24 @@ const Register = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      fontFamily: 'Arial, sans-serif'
+      fontFamily: 'Arial, sans-serif',
+      flexDirection: 'column'
     }}>
+      {/* TEXT ABOVE THE BOX */}
+      <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+        <h1 style={{
+          color: '#00FF66',
+          fontSize: '32px',
+          marginBottom: '5px'
+        }}>facebook</h1>
+        <p style={{
+          fontSize: '14px',
+          color: '#ccc',
+          margin: 0
+        }}>Create a new account</p>
+      </div>
+
+      {/* FORM BOX */}
       <div style={{
         backgroundColor: '#121829',
         padding: '30px',
@@ -40,17 +56,6 @@ const Register = () => {
         boxShadow: '0 0 10px rgba(0,0,0,0.3)',
         textAlign: 'center'
       }}>
-        <h1 style={{
-          color: '#00FF66',
-          fontSize: '32px',
-          marginBottom: '5px'
-        }}>facebook</h1>
-        <p style={{
-          marginBottom: '20px',
-          fontSize: '14px',
-          color: '#ccc'
-        }}>Create a new account</p>
-
         <form onSubmit={handleSubmit}>
           <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
             <input
