@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FcGoogle } from "react-icons/fc";
+import { FaApple } from "react-icons/fa";
 
 const styles = {
   page: {
@@ -81,7 +83,7 @@ const styles = {
     gap: "10px",
   },
   socialBtn: {
-    backgroundColor: "#1f2937",
+    backgroundColor: "#1F29370D",
     color: "white",
     padding: "10px 16px",
     border: "none",
@@ -176,10 +178,16 @@ const Login = ({ setIsLoggedIn }) => {
           <div style={styles.divider}>Or continue with</div>
           <div style={styles.socialButtons}>
             <button type="button" style={styles.socialBtn}>
-              🔘 Google
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+            <FcGoogle style={{ marginRight: '8px'}} />
+               Google
+            </span>
             </button>
             <button type="button" style={styles.socialBtn}>
-              🔘 Apple
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+            <FaApple style={{ marginRight: '8px' }} />
+               Apple
+            </span>
             </button>
           </div>
         </form>

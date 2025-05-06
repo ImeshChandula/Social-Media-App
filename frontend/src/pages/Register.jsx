@@ -117,7 +117,7 @@ const Register = () => {
             <li><a href="/cookies" style={linkStyle}>Cookie Policy</a></li>
           </ul>
           <p style={{ marginTop: "10px", textAlign: 'center' }}>
-            Already have an account? <a href="/login" style={linkStyle}>Log in</a>
+            Already have an account? <a href="/login" style={{color: '#00FF66', textDecoration: 'none'}}>Log in</a>
           </p>
         </div>
       </div>
@@ -149,7 +149,7 @@ const submitButtonStyle = {
 };
 
 const linkStyle = {
-  color: '#00FF66',
+  color: '#FDFFFEB3',
   textDecoration: 'none'
 };
 
