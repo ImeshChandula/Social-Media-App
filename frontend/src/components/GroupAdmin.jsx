@@ -78,13 +78,17 @@ const GroupAdmin = () => {
       <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '24px' }}>
         {[
           { label: 'Members', value: '5,732' },
-          { label: 'New Posts', value: '24' },
+          { label: 'New Posts', value: '24',note: 'Today' },
           { label: 'Reports', value: '5', note: 'Needs review' },
         ].map(({ label, value, note }) => (
           <div key={label} style={statCardStyle}>
             <h2 style={{ fontSize: '16px', fontWeight: '500', color: '#048904' }}>{label}</h2>
             <p style={{ fontSize: '20px', fontWeight: '600', margin: '8px 0' }}>{value}</p>
-            {note && <span style={{ fontSize: '12px', color: '#e41e3f' }}>{note}</span>}
+            {note && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <span style={{ fontSize: '12px', color: '#464344FF' }}>{note}</span>
+              </div>
+              )}
           </div>
         ))}
       </div>

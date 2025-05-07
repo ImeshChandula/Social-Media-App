@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 import Sidebar from "./components/Sidebar";
 import RightSidebar from "./components/RightSidebar";
@@ -16,8 +16,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 
 function App() {
-  // Simulated login state
   const [isLoggedIn, setIsLoggedIn] = useState(false); // false by default
+  const [collapsed, setCollapsed] = useState(false); // Manage sidebar collapse state
 
   const scrollStyle = {
     height: "100vh",
@@ -28,7 +28,7 @@ function App() {
 
   const hideScrollbar = {
     ...scrollStyle,
-    width: "300px",
+    width: "250px",
     backgroundColor: "#111",
   };
 
@@ -54,13 +54,13 @@ function App() {
               <div className="d-flex" style={{ height: "100vh", overflow: "hidden" }}>
                 {/* Sidebar */}
                 <div style={hideScrollbar} className="no-scrollbar">
-                  <Sidebar />
+                  <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
                 </div>
 
                 {/* Main content */}
                 <div
                   className="flex-grow-1 bg-dark text-white no-scrollbar"
-                  style={{ ...scrollStyle, padding: "1rem" }}
+                  style={{ ...scrollStyle, padding: "1rem", transition: "margin-left 0.3s ease" }}
                 >
                   <Routes>
                     <Route path="/" element={<Home />} />

@@ -13,13 +13,12 @@ function RightSidebar() {
     { Icon: BsCameraVideo, title: "Video Chat" },
     { Icon: BsSearch, title: "Search" },
     { Icon: BsGear, title: "Settings" },
-    { Icon: BsThreeDots, title: "More Options" },
   ];
 
   return (
     <div
       className="bg-black text-white p-4"
-      style={{ width: "300px", height: "100vh", overflowY: "auto" }}
+      style={{ width: "250px", height: "100vh", overflowY: "auto" }}
     >
       {/* Centered row of clickable icons with tooltips */}
       <div className="d-flex justify-content-center align-items-center gap-3 mb-4">

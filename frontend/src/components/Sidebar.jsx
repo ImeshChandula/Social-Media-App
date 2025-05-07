@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   FaHome,
@@ -12,6 +12,8 @@ import {
   FaFilm,
   FaShoppingBag,
   FaFacebookF,
+  FaBars,
+  FaTimes,
 } from "react-icons/fa";
 
 const navItems = [
@@ -29,103 +31,113 @@ const shortcuts = [
   { name: "Shopping", path: "/shopping", icon: <FaShoppingBag /> },
 ];
 
-function Sidebar() {
+function Sidebar({ collapsed, setCollapsed }) {
   return (
     <div
       className="bg-black text-white p-3 d-flex flex-column flex-shrink-0"
       style={{
-        width: "100%",
-        maxWidth: "300px",
+        width: collapsed ? "70px" : "250px", // Adjust width based on collapsed state
         height: "100vh",
         overflowY: "auto",
         fontSize: "1.1rem",
+        transition: "width 0.3s ease",
       }}
     >
-      {/* Facebook Icon and Search Bar on One Line */}
-<div className="d-flex align-items-center mb-4 px-3">
-  {/* Facebook Icon */}
-  <FaFacebookF size={32} color="#1ecb73" className="me-3" />
-  
-  {/* Search Bar */}
-  <div
-    className="d-flex align-items-center"
-    style={{
-      backgroundColor: "#1e1e1e",
-      borderRadius: "8px",
-      padding: "8px 12px",
-      flexGrow: 1,
-    }}
-  >
-    <FaSearch className="text-white me-2" size={18} />
-    <input
-      type="text"
-      placeholder="Search Facebook"
-      className="form-control border-0 bg-transparent text-white"
-      style={{
-        fontSize: "1rem",
-        outline: "none",
-        boxShadow: "none",
-      }}
-    />
-  </div>
-</div>
+      {/* Toggle Button */}
+      <div className="text-end mb-3">
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="btn btn-sm btn-outline-light"
+        >
+          {collapsed ? <FaBars /> : <FaTimes />}
+        </button>
+      </div>
 
+      {/* Facebook Icon and Search */}
+      <div
+        className={`d-flex align-items-center mb-4 px-2 ${collapsed ? "justify-center" : ""}`}
+      >
+        <FaFacebookF size={32} color="#1ecb73" className="me-3" />
+        {!collapsed && (
+          <div
+            className="d-flex align-items-center"
+            style={{
+              backgroundColor: "#1e1e1e",
+              borderRadius: "8px",
+              padding: "8px 12px",
+              flexGrow: 1,
+            }}
+          >
+            <FaSearch className="text-white me-2" size={18} />
+            <input
+              type="text"
+              placeholder="Search Facebook"
+              className="form-control border-0 bg-transparent text-white"
+              style={{
+                fontSize: "1rem",
+                outline: "none",
+                boxShadow: "none",
+              }}
+            />
+          </div>
+        )}
+      </div>
 
-      {/* Main Navigation */}
+      {/* Nav Items */}
       <ul className="nav flex-column mb-5">
-  {navItems.map(({ name, path, icon }) => (
-    <li className="nav-item mb-3" key={name}>
-      <NavLink
-        to={path}
-        className={({ isActive }) =>
-          `nav-link d-flex align-items-center gap-3 px-3 py-2 rounded ${
-            isActive
-              ? "bg-secondary !text-green-400" // Force Tailwind green color
-              : "text-white hover:bg-dark"
-          }`
-        }
-        style={{
-          textDecoration: "none",
-          fontSize: "1.05rem",
-        }}
-      >
-        {icon}
-        {name}
-      </NavLink>
-    </li>
-  ))}
-</ul>
+        {navItems.map(({ name, path, icon }) => (
+          <li className="nav-item mb-3" key={name}>
+            <NavLink
+              to={path}
+              className={({ isActive }) =>
+                `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${
+                  isActive
+                    ? "bg-secondary text-success"
+                    : "text-white hover:bg-dark"
+                }`
+              }
+              style={{
+                textDecoration: "none",
+                fontSize: "1.05rem",
+              }}
+            >
+              {icon}
+              {!collapsed && name}
+            </NavLink>
+          </li>
+        ))}
+      </ul>
 
+      {/* Shortcuts */}
+      {!collapsed && (
+        <h6
+          className="px-2 mb-3"
+          style={{
+            fontSize: "1.2rem",
+            fontWeight: "bold",
+            color: "#ffffff",
+          }}
+        >
+          Your Shortcuts
+        </h6>
+      )}
 
-      {/* Shortcuts Header */}
-      <h6
-        className="px-3 mb-3"
-        style={{
-          fontSize: "1.2rem",
-          fontWeight: "bold",
-          color: "#ffffff",
-        }}
-      >
-        Your Shortcuts
-      </h6>
-
-      {/* Shortcuts List */}
       <ul className="nav flex-column">
         {shortcuts.map(({ name, path, icon }) => (
           <li className="nav-item mb-3" key={name}>
             <NavLink
               to={path}
               className={({ isActive }) =>
-                `nav-link d-flex align-items-center gap-3 px-3 py-2 rounded ${
+                `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${
                   isActive
-                    ? "bg-secondary text-green-400"
+                    ? "bg-secondary text-success"
                     : "text-white hover:bg-dark"
                 }`
               }
               style={{ textDecoration: "none", fontSize: "1.05rem" }}
             >
               {icon}
-              {name}
+              {!collapsed && name}
             </NavLink>
           </li>
         ))}

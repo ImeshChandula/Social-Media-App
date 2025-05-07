@@ -26,41 +26,36 @@ const Home = () => {
   };
 
   return (
-    <div>
+    <div className="container-fluid px-2 px-md-4">
       {/* Navigation Buttons */}
       <div className="dashboard-nav text-center my-3">
-        <div className="d-flex flex-wrap justify-content-center gap-2">
+        <div className="d-flex flex-column flex-md-row justify-content-center gap-2">
           <button
-            className={`btn text-white rounded-pill px-4 ${activeComponent === 'RegularUserPage' ? 'btn-success' : 'btn-outline-success'
-              }`}
+            className={`btn text-white rounded-pill px-4 w-100 w-md-auto ${activeComponent === 'RegularUserPage' ? 'btn-success' : 'btn-outline-success'}`}
             onClick={() => setActiveComponent('RegularUserPage')}
           >
             Regular User
           </button>
           <button
-            className={`btn text-white rounded-pill px-4 ${activeComponent === 'AdminPage' ? 'btn-success' : 'btn-outline-success'
-              }`}
+            className={`btn text-white rounded-pill px-4 w-100 w-md-auto ${activeComponent === 'AdminPage' ? 'btn-success' : 'btn-outline-success'}`}
             onClick={() => setActiveComponent('AdminPage')}
           >
             Admin Page
           </button>
           <button
-            className={`btn text-white rounded-pill px-4 ${activeComponent === 'GroupAdmin' ? 'btn-success' : 'btn-outline-success'
-              }`}
+            className={`btn text-white rounded-pill px-4 w-100 w-md-auto ${activeComponent === 'GroupAdmin' ? 'btn-success' : 'btn-outline-success'}`}
             onClick={() => setActiveComponent('GroupAdmin')}
           >
             Group Admin
           </button>
           <button
-            className={`btn text-white rounded-pill px-4 ${activeComponent === 'Advertiser' ? 'btn-success' : 'btn-outline-success'
-              }`}
+            className={`btn text-white rounded-pill px-4 w-100 w-md-auto ${activeComponent === 'Advertiser' ? 'btn-success' : 'btn-outline-success'}`}
             onClick={() => setActiveComponent('Advertiser')}
           >
             Advertiser
           </button>
           <button
-            className={`btn text-white rounded-pill px-4 ${activeComponent === 'RestrictedUser' ? 'btn-success' : 'btn-outline-success'
-              }`}
+            className={`btn text-white rounded-pill px-4 w-100 w-md-auto ${activeComponent === 'RestrictedUser' ? 'btn-success' : 'btn-outline-success'}`}
             onClick={() => setActiveComponent('RestrictedUser')}
           >
             Restricted User
@@ -69,8 +64,8 @@ const Home = () => {
       </div>
 
       {/* Rendered Component */}
-      <div className="bg-dark py-4">
-          {renderComponent()}
+      <div className="bg-dark py-4 px-2 rounded">
+        {renderComponent()}
       </div>
     </div>
   );
