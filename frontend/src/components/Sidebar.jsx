@@ -80,7 +80,7 @@ function Sidebar() {
         className={({ isActive }) =>
           `nav-link d-flex align-items-center gap-3 px-3 py-2 rounded ${
             isActive
-              ? "bg-secondary text-green-400" // Force Tailwind green color
+              ? "bg-secondary !text-green-400" // Force Tailwind green color
               : "text-white hover:bg-dark"
           }`
         }

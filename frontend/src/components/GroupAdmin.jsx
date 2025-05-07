@@ -49,7 +49,7 @@ const GroupAdmin = () => {
   };
 
   const buttonDecline = {
-    backgroundColor: '#e41e3f',
+    backgroundColor: '#444343FF',
     border: 'none',
     color: '#ffffff',
     padding: '8px 12px',
@@ -118,8 +118,8 @@ const GroupAdmin = () => {
               <p style={{ fontSize: '12px', color: '#a0a0a0' }}>{user.time}</p>
               <p>{user.message}</p>
               <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                <button style={buttonApprove}>Approve</button>
-                <button style={buttonDecline}>Decline</button>
+                <button style={buttonApprove}>✔️Approve</button>
+                <button style={buttonDecline}>✖️Decline</button>
               </div>
             </div>
           ))}
