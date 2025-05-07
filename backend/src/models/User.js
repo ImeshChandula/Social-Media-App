@@ -35,9 +35,7 @@ class User {
 
     // Validate account status
     const allowedStatuses = ["active", "inactive", "banned"];
-    this.accountStatus = allowedStatuses.includes(userData.accountStatus)
-      ? userData.accountStatus
-      : "active";
+    this.accountStatus = allowedStatuses.includes(userData.accountStatus) ? userData.accountStatus : "active";
 
      // Timestamps
     this.createdAt = userData.createdAt || new Date();

@@ -12,7 +12,7 @@ dotenv.config();
 connectFirebase();
 
 initializeDefaultSuperAdmin().then(() => {
-  console.log('Server initialization completed\n\n');
+  console.log('Server initialization completed\n');
 });
 
 // starts the server

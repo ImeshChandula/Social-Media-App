@@ -5,7 +5,7 @@ const createDefaultSuperAdmin = async (req, res) => {
     try {
         // check if super admin already exists
         const existingSuperAdmin = await User.findOne({ email: "superadmin@test.lk" });
-        let superAdmin; // Variable to store the admin reference regardless of creation path
+        
         
         if (!existingSuperAdmin) {
             const defaultUsername = "superAdmin";
@@ -15,7 +15,7 @@ const createDefaultSuperAdmin = async (req, res) => {
             const defaultLastName = "Admin";
             const defaultRole = "super_admin";
 
-            superAdmin = new User({
+            const superAdmin = new User({
                 username: defaultUsername,
                 email: defaultEmail,
                 password: defaultPassword,
@@ -30,27 +30,6 @@ const createDefaultSuperAdmin = async (req, res) => {
             superAdmin = existingSuperAdmin;
             console.log("Default Super Admin already exists. \nEmail: superadmin@test.lk \nPassword: super123");
         }
-
-        // Only proceed with token creation if req and res are provided
-        if (req && res) {
-            // create JWT token
-            const payload = {
-                id: defaultSuperAdmin.id,
-                role: defaultSuperAdmin.role
-            };
-
-            jwt.sign(
-                payload,
-                process.env.JWT_SECRET,
-                { expiresIn: '7d' },
-                (err, token) => {
-                    if (err) throw err;
-                    res.json({ token });
-                }
-            );
-        }
-        
-
     } catch (err) {
         console.error(err.message);
         if (req && res) {
