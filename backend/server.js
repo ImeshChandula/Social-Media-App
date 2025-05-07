@@ -1,18 +1,16 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const dotenv = require('dotenv');
+const dotenv = require('dotenv').config();
 const { connectFirebase } = require("./src/config/firebase");
 const { initializeDefaultSuperAdmin } = require("./src/initialization/defaultSuperAdmin");
 
-// config .env
-dotenv.config();
 
 // connect to firebase
 connectFirebase();
 
 initializeDefaultSuperAdmin().then(() => {
-  console.log('Server initialization completed\n');
+  console.log('Server initialization completed...\n');
 });
 
 // starts the server
@@ -34,12 +32,17 @@ app.use('/api/comments', require('./src/routes/commentRoutes'));
 
 
 
+//  route handler for the root path
+app.get('/', (req, res) => {
+  res.send('Its Working...!');
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: 'Server error', error: process.env.NODE_ENV === 'development' ? err.message : {} });
 });
 
-const PORT = process.env.PORT || 5000;
 
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
