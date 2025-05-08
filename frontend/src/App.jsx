@@ -28,13 +28,13 @@ function App() {
 
   const hideScrollbar = {
     ...scrollStyle,
-    width: "250px",
+    width: "300px",
     backgroundColor: "#111",
   };
 
   const rightSidebarStyle = {
     ...scrollStyle,
-    width: "250px",
+    width: "300px",
     backgroundColor: "#000",
   };
 

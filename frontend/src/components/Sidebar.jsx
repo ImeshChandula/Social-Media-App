@@ -36,23 +36,13 @@ function Sidebar({ collapsed, setCollapsed }) {
     <div
       className="bg-black text-white p-3 d-flex flex-column flex-shrink-0"
       style={{
-        width: collapsed ? "70px" : "250px", // Adjust width based on collapsed state
+        width:"300px",
         height: "100vh",
         overflowY: "auto",
         fontSize: "1.1rem",
         transition: "width 0.3s ease",
       }}
     >
-      {/* Toggle Button */}
-      <div className="text-end mb-3">
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="btn btn-sm btn-outline-light"
-        >
-          {collapsed ? <FaBars /> : <FaTimes />}
-        </button>
-      </div>
-
       {/* Facebook Icon and Search */}
       <div
         className={`d-flex align-items-center mb-4 px-2 ${collapsed ? "justify-center" : ""}`}
