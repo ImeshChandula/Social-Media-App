@@ -2,7 +2,6 @@ import React from "react";
 import {
   BsCameraVideo,
   BsSearch,
-  BsThreeDots,
   BsGear,
   BsPeopleFill,
 } from "react-icons/bs";
@@ -15,31 +14,28 @@ function RightSidebar() {
     { Icon: BsGear, title: "Settings" },
   ];
 
+  const contacts = ["Alice", "Bob", "Charlie", "David"];
+
   return (
     <div
-      className="bg-black text-white p-4"
-      style={{ width: "250px", height: "100vh", overflowY: "auto" }}
+      className="flex-column bg-black text-white px-2 pt-3"
+      style={{ width: "auto", height: "100vh", overflowY: "auto" }}
     >
-      {/* Centered row of clickable icons with tooltips */}
-      <div className="d-flex justify-content-center align-items-center gap-3 mb-4">
+      {/* Icons Section */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
         {icons.map(({ Icon, title }, index) => (
           <button
             key={index}
-            className="bg-dark border-0 rounded-circle d-flex align-items-center justify-content-center"
+            className="btn btn-dark rounded-circle d-flex align-items-center justify-content-center"
             style={{
-              width: "48px",   // Increased size for better visibility
-              height: "48px",  // Increased size for better visibility
-              padding: "0",
-              border: "2px solid #fff", // White border for better contrast
-              backgroundColor: "#444", // Default background color
-              transition: "background-color 0.3s ease", // Smooth transition for hover effect
+              width: "44px",
+              height: "44px",
+              border: "2px solid #fff",
+              backgroundColor: "#444",
+              transition: "all 0.3s",
             }}
-            title={title}
-            onClick={() => alert(`${title} clicked`)} // Replace with real actions
-            onMouseEnter={(e) => e.target.style.backgroundColor = "#00bcd4"} // Hover effect
-            onMouseLeave={(e) => e.target.style.backgroundColor = "#444"} // Reset background color
           >
-            <Icon size={24} color="white" /> {/* White color for the icon */}
+            <Icon size={20} color="white" />
           </button>
         ))}
       </div>
@@ -48,22 +44,29 @@ function RightSidebar() {
       <div className="mb-4">
         <h6 className="text-secondary mb-2">Sponsored</h6>
         <img
-          src="https://via.placeholder.com/260x120"
+          src="https://via.placeholder.com/230x110"
           className="img-fluid rounded mb-2"
           alt="Ad"
         />
-        <p className="small text-muted">Your ad here</p>
+        <p className="small text-secondary text-center mb-0">Your ad here</p>
       </div>
 
-      {/* Contacts List */}
+      {/* Contacts Section */}
       <div>
-        {["Alice", "Bob", "Charlie", "David"].map((contact) => (
+        <h6 className="text-secondary mb-3">Contacts</h6>
+        {contacts.map((name) => (
           <div
-            key={contact}
-            className="d-flex align-items-center mb-3 px-2 py-1"
+            key={name}
+            className="d-flex align-items-center mb-3 py-1 px-2 rounded hover-shadow"
+            style={{
+              cursor: "pointer",
+              transition: "background-color 0.3s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#222")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
           >
             <i className="bi bi-person-circle fs-4 me-3 text-success"></i>
-            <span className="fw-medium fs-6">{contact}</span>
+            <span className="fw-medium text-truncate">{name}</span>
           </div>
         ))}
       </div>

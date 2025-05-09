@@ -12,31 +12,12 @@ import Videos from "./pages/Videos";
 import Notifications from "./pages/Notifications";
 import ProfilePage from "./pages/ProfilePage";
 
-import Login from "./pages/Login";
+import Login from "./pages/login";
 import Register from "./pages/Register";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // false by default
-  const [collapsed, setCollapsed] = useState(false); // Manage sidebar collapse state
-
-  const scrollStyle = {
-    height: "100vh",
-    overflowY: "auto",
-    scrollbarWidth: "none",
-    msOverflowStyle: "none",
-  };
-
-  const hideScrollbar = {
-    ...scrollStyle,
-    width: "300px",
-    backgroundColor: "#111",
-  };
-
-  const rightSidebarStyle = {
-    ...scrollStyle,
-    width: "300px",
-    backgroundColor: "#000",
-  };
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <Router>
@@ -51,29 +32,37 @@ function App() {
           <Route
             path="*"
             element={
-              <div className="d-flex" style={{ height: "100vh", overflow: "hidden" }}>
-                {/* Sidebar */}
-                <div style={hideScrollbar} className="no-scrollbar">
-                  <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-                </div>
+              <div className="container-fluid vh-100 overflow-hidden bg-dark text-white">
+                <div className="row h-100">
+                  {/* Sidebar */}
+                  <div
+                    className={`col-12 col-md-3 col-lg-2 p-0 bg-black d-none d-md-block`}
+                    style={{ overflowY: "auto" }}
+                  >
+                    <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+                  </div>
 
-                {/* Main content */}
-                <div
-                  className="flex-grow-1 bg-dark text-white no-scrollbar"
-                  style={{ ...scrollStyle, padding: "1rem", transition: "margin-left 0.3s ease" }}
-                >
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/members" element={<Members />} />
-                    <Route path="/videos" element={<Videos />} />
-                    <Route path="/notifications" element={<Notifications />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                  </Routes>
-                </div>
+                  {/* Main Content */}
+                  <div
+                    className="col-12 col-md-6 col-lg-8 py-3 px-4"
+                    style={{ overflowY: "auto", height: "100vh" }}
+                  >
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/members" element={<Members />} />
+                      <Route path="/videos" element={<Videos />} />
+                      <Route path="/notifications" element={<Notifications />} />
+                      <Route path="/profile" element={<ProfilePage />} />
+                    </Routes>
+                  </div>
 
-                {/* Right Sidebar */}
-                <div style={rightSidebarStyle} className="no-scrollbar">
-                  <RightSidebar />
+                  {/* Right Sidebar */}
+                  <div
+                    className="col-12 col-md-3 col-lg-2 p-0 bg-black d-none d-md-block"
+                    style={{ overflowY: "auto" }}
+                  >
+                    <RightSidebar />
+                  </div>
                 </div>
               </div>
             }
