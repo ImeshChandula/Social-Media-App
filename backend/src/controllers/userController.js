@@ -25,7 +25,7 @@ const getAllUsers = async (req, res) => {
                 return priorityB - priorityA;
             }
 
-            return a.name.localeCompare(b.name);
+            return (a.name || '').localeCompare(b.name || '');
             })
         : [];
 
@@ -133,7 +133,12 @@ const updateUserProfile = async (req, res) => {
 const updateUserProfileImage = async (req, res) => {
     try {
         const { profilePicture } = req.body;
-        const userId = req.user.id;
+        const userIdToUpdate = req.params.id;
+        const currentUserId = req.user.id;
+
+        if (currentUserId !== userIdToUpdate) {
+            return res.status(403).json({ message: 'Not authorized to update this user' });
+        }
 
         if (!profilePicture) {
             return res.status(400).json({msg: "Profile picture is required"})
@@ -144,7 +149,7 @@ const updateUserProfileImage = async (req, res) => {
             profilePicture: uploadResponse.secure_url,
         };
 
-        const updatedUser = await User.updateById(userId, updatedData);
+        const updatedUser = await User.updateById(userIdToUpdate, updatedData);
 
         // remove password
         updatedUser.password = undefined;
@@ -161,7 +166,12 @@ const updateUserProfileImage = async (req, res) => {
 const updateUserProfileCoverPhoto = async (req, res) => {
     try {
         const { coverPhoto } = req.body;
-        const userId = req.user.id;
+        const userIdToUpdate = req.params.id;
+        const currentUserId = req.user.id;
+
+        if (currentUserId !== userIdToUpdate) {
+            return res.status(403).json({ message: 'Not authorized to update this user' });
+        }
 
         if (!coverPhoto) {
             return res.status(400).json({msg: "Cover Photo is required"})
@@ -172,7 +182,7 @@ const updateUserProfileCoverPhoto = async (req, res) => {
             coverPhoto: uploadResponse.secure_url,
         };
 
-        const updatedUser = await User.updateById(userId, updatedData);
+        const updatedUser = await User.updateById(userIdToUpdate, updatedData);
 
         // remove password
         updatedUser.password = undefined;

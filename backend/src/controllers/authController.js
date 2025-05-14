@@ -49,20 +49,16 @@ const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        console.log('Login attempt for email:', email);
-
         // check if user exists
         const user = await User.findByEmail(email);
         if (!user){
-            return res.status(400).json({ msg: 'Invalid credentials (Not a user..!)' });
+            return res.status(400).json({ msg: 'Invalid credentials' });
         }
-
-        console.log(`User found: ${user.id}, checking password...`);
 
         // validate password
         const isMatch = await User.comparePassword(password, user.password);
         if (!isMatch){
-            return res.status(400).json({ msg: 'Invalid credentials (Wrong password..!)' });
+            return res.status(400).json({ msg: 'Invalid credentials' });
         }
 
         // update last login

@@ -2,6 +2,7 @@ const express = require('express');
 const { authenticateUser, authorizeRoles } = require('../middleware/authMiddleware');
 const userController = require('../controllers/userController');
 const { validateUser } = require("../middleware/validator");
+const { validateUserData } = require("../middleware/validateData");
 
 const router = express.Router();
 
@@ -16,17 +17,17 @@ router.get("/myProfile", authenticateUser, userController.getCurrentUser);
 //@route   PATCH api/users/updateProfile
 //@desc    Update user profile data
 //@access  Private
-router.patch('/updateProfile', validateUser, authenticateUser, userController.updateUserProfile);
+router.patch('/updateProfile/:id', validateUserData, authenticateUser, userController.updateUserProfile);
 
 //@route   PATCH api/users/updateProfilePic
 //@desc    Update user profile Image
 //@access  Private
-router.patch("/updateProfilePic", validateUser, authenticateUser, userController.updateUserProfileImage);
+router.patch("/updateProfilePic/:id", validateUser, authenticateUser, userController.updateUserProfileImage);
 
 //@route   PATCH api/users/updateCoverPic
 //@desc    Update user profile Cover Photo
 //@access  Private
-router.patch("/updateCoverPic", validateUser, authenticateUser, userController.updateUserProfileCoverPhoto);
+router.patch("/updateCoverPic/:id", validateUser, authenticateUser, userController.updateUserProfileCoverPhoto);
 
 //@route   GET api/users/getAllUsers
 //@desc    Get All user data
