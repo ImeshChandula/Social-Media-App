@@ -33,7 +33,7 @@ const registerUser = async (req, res) => {
         };
 
         generateToken(payload, res);
-        user.password = undefined;
+        newUser.password = undefined;
 
         res.json({ msg: "User registered successfully", newUser });
         console.log("User registered successfully.");
