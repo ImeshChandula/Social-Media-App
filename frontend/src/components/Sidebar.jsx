@@ -15,6 +15,7 @@ import {
   FaBars,
   FaTimes,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const navItems = [
   { name: "Home", path: "/", icon: <FaHome /> },
@@ -33,6 +34,7 @@ const shortcuts = [
 
 function Sidebar({ collapsed, setCollapsed }) {
   const [mobileVisible, setMobileVisible] = useState(false);
+  const navigate = useNavigate();
 
   const toggleSidebar = () => {
     if (window.innerWidth < 768) {
@@ -40,6 +42,13 @@ function Sidebar({ collapsed, setCollapsed }) {
     } else {
       setCollapsed(!collapsed);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn"); // remove login flag
+    // You can also clear tokens here if stored
+    navigate("/"); // redirect to login
+    window.location.reload(); // force app re-evaluation of login state
   };
 
   return (
@@ -102,6 +111,19 @@ function Sidebar({ collapsed, setCollapsed }) {
               </NavLink>
             </li>
           ))}
+
+          {/* Logout Button */}
+          <li className="nav-item mb-2">
+            <button
+              className="nav-link d-flex align-items-center gap-3 px-2 py-2 rounded text-white w-100 text-start border-0 bg-transparent"
+              onClick={handleLogout}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#222")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+            >
+              <FaTimes />
+              {!collapsed && "Logout"}
+            </button>
+          </li>
         </ul>
 
         {/* Shortcuts */}

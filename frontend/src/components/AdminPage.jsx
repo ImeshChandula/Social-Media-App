@@ -10,7 +10,6 @@ const PageAdmin = () => {
   }, []);
 
   const containerStyle = {
-    backgroundColor: '#000',
     color: '#fff',
     minHeight: '100vh',
     padding: isMobile ? '1rem' : '2rem',
