@@ -514,3 +514,18 @@ body,
     accent-color: #00ff00;
     /* green checkbox */
 }
+
+
+/* Hide scrollbars for all elements */
+
+* {
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Opera */
+}

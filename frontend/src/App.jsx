@@ -16,8 +16,27 @@ import Login from "./pages/login";
 import Register from "./pages/Register";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // false by default
+  const [collapsed, setCollapsed] = useState(false); // Manage sidebar collapse state
+
+  const scrollStyle = {
+    height: "100vh",
+    overflowY: "auto",
+    scrollbarWidth: "none",
+    msOverflowStyle: "none",
+  };
+
+  const hideScrollbar = {
+    ...scrollStyle,
+    width: "300px",
+    backgroundColor: "#111",
+  };
+
+  const rightSidebarStyle = {
+    ...scrollStyle,
+    width: "300px",
+    backgroundColor: "#000",
+  };
 
   return (
     <Router>
