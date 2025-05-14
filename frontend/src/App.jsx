@@ -1,42 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-import Sidebar from "./components/Sidebar";
-import RightSidebar from "./components/RightSidebar";
-
-import Home from "./pages/Home";
-import Members from "./pages/Members";
-import Videos from "./pages/Videos";
-import Notifications from "./pages/Notifications";
-import ProfilePage from "./pages/ProfilePage";
-
 import Login from "./pages/login";
 import Register from "./pages/Register";
+import MainLayout from "./routes/MainLayout";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // false by default
-  const [collapsed, setCollapsed] = useState(false); // Manage sidebar collapse state
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem("isLoggedIn") === "true";
+  });
 
-  const scrollStyle = {
-    height: "100vh",
-    overflowY: "auto",
-    scrollbarWidth: "none",
-    msOverflowStyle: "none",
-  };
-
-  const hideScrollbar = {
-    ...scrollStyle,
-    width: "300px",
-    backgroundColor: "#111",
-  };
-
-  const rightSidebarStyle = {
-    ...scrollStyle,
-    width: "300px",
-    backgroundColor: "#000",
-  };
+  useEffect(() => {
+    localStorage.setItem("isLoggedIn", isLoggedIn ? "true" : "false");
+  }, [isLoggedIn]);
 
   return (
     <Router>
@@ -45,47 +23,12 @@ function App() {
           <>
             <Route path="/" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
             <Route path="/register" element={<Register />} />
-            <Route path="*" element={<Navigate to="/" />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </>
         ) : (
-          <Route
-            path="*"
-            element={
-              <div className="container-fluid vh-100 overflow-hidden bg-dark text-white">
-                <div className="row h-100">
-                  {/* Sidebar */}
-                  <div
-                    className={`col-12 col-md-3 col-lg-2 p-0 bg-black d-none d-md-block`}
-                    style={{ overflowY: "auto" }}
-                  >
-                    <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
-                  </div>
-
-                  {/* Main Content */}
-                  <div
-                    className="col-12 col-md-6 col-lg-8 py-3 px-4"
-                    style={{ overflowY: "auto", height: "100vh" }}
-                  >
-                    <Routes>
-                      <Route path="/" element={<Home />} />
-                      <Route path="/members" element={<Members />} />
-                      <Route path="/videos" element={<Videos />} />
-                      <Route path="/notifications" element={<Notifications />} />
-                      <Route path="/profile" element={<ProfilePage />} />
-                    </Routes>
-                  </div>
-
-                  {/* Right Sidebar */}
-                  <div
-                    className="col-12 col-md-3 col-lg-2 p-0 bg-black d-none d-md-block"
-                    style={{ overflowY: "auto" }}
-                  >
-                    <RightSidebar />
-                  </div>
-                </div>
-              </div>
-            }
-          />
+          <>
+            <Route path="/*" element={<MainLayout />} />
+          </>
         )}
       </Routes>
     </Router>

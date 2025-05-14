@@ -2,7 +2,6 @@ import React from 'react';
 
 const GroupAdmin = () => {
   const containerStyle = {
-    backgroundColor: '#121212',
     color: '#e0e0e0',
     minHeight: '100vh',
     padding: '20px',

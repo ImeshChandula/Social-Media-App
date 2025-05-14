@@ -1,0 +1,45 @@
+import React, { useState } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+
+import Sidebar from "../components/Sidebar";
+import RightSidebar from "../components/RightSidebar";
+
+import Home from "../pages/Home";
+import Members from "../pages/Members";
+import Videos from "../pages/Videos";
+import NotificationPage from "../pages/Notifications";
+import ProfilePage from "../pages/ProfilePage";
+
+const MainLayout = () => {
+  const [collapsed, setCollapsed] = useState(false);
+
+  return (
+    <div className="container-fluid vh-100 overflow-hidden bg-dark text-white">
+      <div className="row h-100">
+        {/* Sidebar */}
+        <div className="col-12 col-md-3 col-lg-2 p-0 bg-black d-none d-md-block" style={{ overflowY: "auto" }}>
+          <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+        </div>
+
+        {/* Main Content */}
+        <div className="col-12 col-md-6 col-lg-8 py-3 px-4" style={{ overflowY: "auto", height: "100vh" }}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/members" element={<Members />} />
+            <Route path="/videos" element={<Videos />} />
+            <Route path="/notifications" element={<NotificationPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+
+        {/* Right Sidebar */}
+        <div className="col-12 col-md-3 col-lg-2 p-0 bg-black d-none d-md-block" style={{ overflowY: "auto" }}>
+          <RightSidebar />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MainLayout;
