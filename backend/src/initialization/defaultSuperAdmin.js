@@ -1,27 +1,22 @@
 const User = require("../models/User");
-const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 const createDefaultSuperAdmin = async (req, res) => {
     try {
         // check if super admin already exists
-        const existingSuperAdmin = await User.findOne({ email: "superadmin@test.lk" });
+        const email = process.env.SUPER_ADMIN_EMAIL;
+        const existingSuperAdmin = await User.findOne(email);
         
         
         if (!existingSuperAdmin) {
-            const defaultUsername = "superAdmin";
-            const defaultEmail = "superadmin@test.lk";
-            const defaultPassword = "super123";
-            const defaultFirstName = "Super";
-            const defaultLastName = "Admin";
-            const defaultRole = "super_admin";
-
+            // user data object
             const superAdmin = new User({
-                username: defaultUsername,
-                email: defaultEmail,
-                password: defaultPassword,
-                firstName: defaultFirstName,
-                lastName: defaultLastName,
-                role: defaultRole,
+                username: process.env.SUPER_ADMIN_USER_NAME,
+                email: process.env.SUPER_ADMIN_EMAIL,
+                password: process.env.SUPER_ADMIN_PASSWORD,
+                firstName: process.env.SUPER_ADMIN_FIRST_NAME,
+                lastName: process.env.SUPER_ADMIN_LAST_NAME,
+                role: "super_admin",
             });
     
             await superAdmin.save();
