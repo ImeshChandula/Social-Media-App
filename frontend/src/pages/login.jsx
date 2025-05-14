@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
+import axios from "axios";
 
 const styles = {
   page: {
@@ -103,11 +104,12 @@ const styles = {
 
 const Login = ({ setIsLoggedIn }) => {
   const [formData, setFormData] = useState({
-    emailOrPhone: "",
+    email: "",
     password: "",
     rememberMe: false,
   });
 
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -118,15 +120,25 @@ const Login = ({ setIsLoggedIn }) => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const { emailOrPhone, password } = formData;
+    setError("");
 
-    if (emailOrPhone === "011234567" && password === "1234") {
-      setIsLoggedIn(true);
-      navigate("/");
-    } else {
-      alert("Invalid phone number or password.");
+    try {
+      const response = await axios.post("http://localhost:5000/api/auth/login", {
+        email: formData.email,
+        password: formData.password,
+      }, {
+        withCredentials: true, // important if using cookies for JWT
+      });
+
+      if (response.data?.user) {
+        setIsLoggedIn(true);
+        navigate("/");
+      }
+    } catch (err) {
+      console.error("Login error:", err.response?.data?.msg || err.message);
+      setError(err.response?.data?.msg || "Login failed. Please try again.");
     }
   };
 
@@ -141,9 +153,9 @@ const Login = ({ setIsLoggedIn }) => {
         <form onSubmit={handleSubmit}>
           <input
             type="text"
-            name="emailOrPhone"
-            placeholder="Email or Phone Number"
-            value={formData.emailOrPhone}
+            name="email"
+            placeholder="Email"
+            value={formData.email}
             onChange={handleChange}
             style={styles.input}
           />
@@ -171,6 +183,10 @@ const Login = ({ setIsLoggedIn }) => {
             </a>
           </div>
 
+          {error && (
+            <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>
+          )}
+
           <button type="submit" style={styles.button}>
             Log In
           </button>
@@ -178,16 +194,16 @@ const Login = ({ setIsLoggedIn }) => {
           <div style={styles.divider}>Or continue with</div>
           <div style={styles.socialButtons}>
             <button type="button" style={styles.socialBtn}>
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-            <FcGoogle style={{ marginRight: '8px'}} />
-               Google
-            </span>
+              <span style={{ display: "flex", alignItems: "center" }}>
+                <FcGoogle style={{ marginRight: "8px" }} />
+                Google
+              </span>
             </button>
             <button type="button" style={styles.socialBtn}>
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-            <FaApple style={{ marginRight: '8px' }} />
-               Apple
-            </span>
+              <span style={{ display: "flex", alignItems: "center" }}>
+                <FaApple style={{ marginRight: "8px" }} />
+                Apple
+              </span>
             </button>
           </div>
         </form>
