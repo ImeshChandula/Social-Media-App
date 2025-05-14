@@ -26,10 +26,10 @@ app.use(cookieParser());
 // Routes
 // http://localhost:5000
 app.use('/api/auth', require('./src/routes/authRoutes'));
-// app.use('/api/users', require('./src/routes/userRoutes'));
-// app.use('/api/posts', require('./src/routes/postRoutes'));
-// app.use('/api/comments', require('./src/routes/commentRoutes'));
-//app.use('/api/stories', require('./src/routes/storyRoutes')); // Add this line to include story routes
+app.use('/api/users', require('./src/routes/userRoutes'));
+app.use('/api/posts', require('./src/routes/postRoutes'));
+app.use('/api/comments', require('./src/routes/commentRoutes'));
+app.use('/api/stories', require('./src/routes/storyRoutes')); // Add this line to include story routes
 
 
 
