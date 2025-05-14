@@ -3,18 +3,20 @@ const bcrypt = require('bcrypt');
 const ROLES = require("../enums/roles");
 
 const db = connectFirebase();
-const usersCollection = db.collection('users');
+const userCollection = db.collection('users');
 
 
 
 class User {
-  constructor(userData) {
+  constructor(id, userData) {
+    this.id = id;
+
     // Required fields trim: remove spaces
     this.username = userData.username;
-    this.email = userData.email?.trim().toLowerCase();
+    this.email = userData.email;
     this.password = userData.password;
-    this.firstName = userData.firstName?.trim();
-    this.lastName = userData.lastName?.trim();
+    this.firstName = userData.firstName;
+    this.lastName = userData.lastName;
     this._isPasswordModified = false;
 
     // Optional fields with defaults
@@ -52,185 +54,138 @@ class User {
   // you're using Firebase Firestore with a custom class-based User model!
   // It has custom methods like save(), findOne(), findById(), findByIdAndUpdate() find()
 
-  // save user to database
-  async save(){
-    try {
-      if (this.password && (this._isPasswordModified || !this.id)) {
-        console.log("Hashing password...");
+  /// Create a new user
+    static async create(userData) {
+        try {
+            // Validate userData
+            if (!userData || !userData.email || !userData.password) {
+                throw new Error('Email and password are required');
+            }
 
-        const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
+            const salt = await bcrypt.genSalt(10);
+            userData.password = await bcrypt.hash(userData.password, salt);
+
+            const userRef = await userCollection.add({...userData,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            });
+
+            return new User(userRef.id, userData);
+        } catch (error) {
+            console.error('Error creating user:', error);
+            throw error;
+        }
+    };
+
+  // Compare password
+    static async comparePassword(plainPassword, hashedPassword) {
+        return await bcrypt.compare(plainPassword, hashedPassword);
+    };
+
+
+  // Get all users
+    static async findAll() {
+        try {
+            const usersRef = await userCollection.get();
+
+            if (usersRef.empty) {
+                return [];
+            }
+
+            return usersRef.docs.map(doc => new User(doc.id, doc.data()));
+        } catch (error) {
+            console.error('Error finding all users:', error);
+            throw error;
+        }
+    };
+
+  // Get a user by ID
+    static async findById(id) {
+        try {
+            const userDoc = await userCollection.doc(id).get();
+            if (!userDoc.exists) {
+                return null;
+            }
         
-        console.log("Password hashed:", this.password.substring(0, 20) + "...");
-        this._isPasswordModified = false;
-      }
+            const userData = userDoc.data();
+            return new User(userDoc.id, userData);
+        } catch (error) {
+            console.error('Error finding user for that ID:', error);
+            throw error;
+        }
+    };
 
-      this.updatedAt = new Date();
-
-      if (this.id) {
-        // update existing user
-        await usersCollection.doc(this.id).update(this.toFirestore());
-        return this.id;
-      } else {
-        // create new user
-        const docRef = await usersCollection.add(this.toFirestore());
-        this.id = docRef.id;
-        return this.id;
-      }
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // convert to firestore compatible
-  toFirestore() {
-    const user = { ...this };
-    delete user.id; // Remove id property as it's stored as document ID
-    delete user._isPasswordModified; // Remove internal property
-    return user;
-  };
-
-
-  // validate password
-  async validatePassword(password) {
-    console.log("Input password:", password);
-    console.log("Stored hash:", this.password.substring(0, 20) + "...");
-    
-    const result = await bcrypt.compare(password, this.password);
-    console.log("bcrypt.compare result:", result);
-    return result;
-  };
-
-
-
-
-  // static methods
-  static async find(){
-    try {
-      const snapshot = await usersCollection.get();
-
-      if (snapshot.empty) {
-        return []; // No users found, return empty array
-      }
-
-      const users = [];
-
-      snapshot.forEach(doc => {
-        const userData = doc.data();
-        userData.id = doc.id; // attach document id
-        delete userData.password; // don't send password to frontend
-        users.push(userData);
-    });
-
-    return users;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  static async findById(id) {
-    try {
-      const doc = await usersCollection.doc(id).get();
-      if(!doc.exists) {
-        return null;
-      }
-
-      const userData = doc.data();
-      const user = new User(userData);
-      user.id = doc.id;
-      
-      return user;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-
+// Get a user by username
   static async findByUsername(username) {
     try {
-      const snapshot = await usersCollection.where('username', '==', username).limit(1).get();
+      const snapshot = await userCollection.where('username', '==', username).limit(1).get();
     
       if (snapshot.empty) {
         return null;
       }
 
-      const doc = snapshot.docs[0];
-      const userData = doc.data();
-      const user = new User(userData);
+      const userDoc = snapshot.docs[0];
+      return new User(userDoc.id, userDoc.data());
+    } catch (error) {
+      console.error('Error finding user by username:', error);
+      throw error;
+    }
+  };
 
-      user.id = doc.id;
+
+  // Get a user by email
+    static async findByEmail(email) {
+        try {
+            const userRef = await userCollection.where('email', '==', email).get();
+            
+            if (userRef.empty){
+                return null;
+            }
+
+            const userDoc = userRef.docs[0];
+            return new User(userDoc.id, userDoc.data());
+        } catch (error) {
+            console.error('Error finding user by email:', error);
+            throw error;
+        }
+    };
+
+  // Update a user
+    static async updateById(id, updateData) {
+        try {
+            const userDoc = await userCollection.doc(id).get();
+
+            if (!userDoc.exists) {
+                return false;
+            }
+            
+            updateData.updatedAt = new Date().toISOString();
         
-      return user;
-    } catch (error) {
-      throw error;
-    }
-  };
+            await userCollection.doc(id).update(updateData);
+        
+            const updatedUser = await User.findById(id);
+            return updatedUser;
+        } catch (error) {
+            throw error;
+        }
+    };
 
+  // Delete a user
+    static async deleteById(id) {
+        try {
+            const userDoc = await userCollection.doc(id).get();
 
-  static async findOne(filter){
-    try {
-      let query = usersCollection;
+            if (!userDoc.exists) {
+                return false;
+            }
 
-      // build query from filter
-      Object.keys(filter).forEach(key => {
-        query = query.where(key, '==', filter[key]);
-      });
-
-      const snapshot = await query.limit(1).get();
-
-      if (snapshot.empty){
-        return null;
-      }
-
-      const doc = snapshot.docs[0];
-      const userData = doc.data();
-
-      const user = new User(userData);
-      user.id = doc.id;
-
-      return user;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  static async findByIdAndUpdate(id, updateData, options = {}) {
-    try {
-      const user = await this.findById(id);
-      if(!user) {
-        return null;
-      }
-
-      // update fields
-      Object.keys(updateData.$set || updateData).forEach(key => {
-        user[key] = (updateData.$set || updateData)[key];
-      });
-      
-      await user.save();
-      
-      // If options.new is true, return updated document
-      if (options.new) return user;
-      return user;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  static async findByIdAndDelete(id) {
-    try{
-      const docRef = usersCollection.doc(id);
-      const doc = await docRef.get();
-
-      if (!doc.exists) {
-        return null;
-      }
-      
-      await docRef.delete();
-      return { id };
-    } catch (error) {
-      throw error;
-    }
-  };
+            await userCollection.doc(id).delete();
+            return true;
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            throw error;
+        }
+    };
 
 
   // get friends count

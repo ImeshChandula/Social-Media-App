@@ -1,6 +1,7 @@
 const express = require('express');
-const { authenticateUser, authorizeRoles } = require('../middleware/authMiddleware');
-const userController  = require('../controllers/userController');
+const { authenticateUser } = require('../middleware/authMiddleware');
+const { validateUser } = require("../middleware/validator");
+const authController  = require('../controllers/authController');
 
 
 const router = express.Router();
@@ -11,27 +12,22 @@ const router = express.Router();
 // @route   POST api/auth/register
 // @desc    Register user
 // @access  Public
-router.post('/register', userController.registerUser);
+router.post("/register", validateUser, authController.registerUser);
 
 // @route   POST api/auth/login
-// @desc    Login user & get token
+// @desc    Login user 
 // @access  Public
-router.post('/login', userController.loginUser);
+router.post('/login', authController.loginUser);
 
-// @route   GET api/auth/me
-// @desc    Get user data
-// @access  Private
-router.get('/me', authenticateUser, userController.getCurrentUser);
+//@route   POST api/auth/logout
+//@desc    Logout user
+//@access  Private
+router.post("/logout", authenticateUser, authController.logout);
 
-// @route   GET api/auth/getAllUsers
-// @desc    Get All user data
-// @access  Private 
-router.get('/getAllUsers', authenticateUser, authorizeRoles("super_admin"), userController.getAllUsers);
-
-// @route   GET api/auth/deleteUser
-// @desc    Delete user by ID
-// @access  Private
-router.delete('/deleteUser/:id', authenticateUser, authorizeRoles("super_admin"), userController.deleteUser)
+//@route   POST api/auth/checkCurrent
+//@desc    Get current user profile(by token)
+//@access  Private
+router.get("/checkCurrent", authenticateUser,  authController.checkCurrent);
 
 
 

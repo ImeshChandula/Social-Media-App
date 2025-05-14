@@ -5,7 +5,7 @@ const createDefaultSuperAdmin = async (req, res) => {
     try {
         // check if super admin already exists
         const email = process.env.SUPER_ADMIN_EMAIL;
-        const existingSuperAdmin = await User.findOne(email);
+        const existingSuperAdmin = await User.findByEmail(email);
         
         
         if (!existingSuperAdmin) {

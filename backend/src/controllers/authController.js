@@ -1,7 +1,120 @@
 const User = require('../models/User');
-const jwt = require('jsonwebtoken');
-const ROLES = require("../enums/roles");
+const { generateToken } = require("../utils/jwtToken");
 require('dotenv').config();
 
+//@desc    Register user
+const registerUser = async (req, res) => {
+    try {
+        const { username, email, password, firstName, lastName, role } = req.body;
 
-module.exports = {};
+        // check if user already exists
+        let user = await User.findByEmail(email);
+        if (user) {
+            return res.status(400).json({ msg: "User already exists" });
+        }
+
+        // create new user
+        const newUser = {
+            username,
+            email,
+            password,
+            firstName,
+            lastName,
+            role: role || 'user',
+        };
+
+        await User.create(newUser);
+
+        // create JWT token
+        const payload = {
+            id: newUser.id,
+            username: newUser.username,
+            role: newUser.role,
+        };
+
+        generateToken(payload, res);
+        user.password = undefined;
+
+        res.json({ msg: "User registered successfully", newUser });
+        console.log("User registered successfully.");
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
+
+//@desc     Login user
+const loginUser = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        console.log('Login attempt for email:', email);
+
+        // check if user exists
+        const user = await User.findByEmail(email);
+        if (!user){
+            return res.status(400).json({ msg: 'Invalid credentials (Not a user..!)' });
+        }
+
+        console.log(`User found: ${user.id}, checking password...`);
+
+        // validate password
+        const isMatch = await User.comparePassword(password, user.password);
+        if (!isMatch){
+            return res.status(400).json({ msg: 'Invalid credentials (Wrong password..!)' });
+        }
+
+        // update last login
+        const updateData = {
+            lastLogin : new Date(),
+        };
+        
+        await User.updateById(user.id, updateData);
+
+        // create JWT token
+        const payload = {
+            id: user.id,
+            username: user.firstName + ' ' + user.lastName || user.username,
+            role: user.role,
+            accountStatus: user.accountStatus,
+        };
+
+        generateToken(payload, res);
+        user.password = undefined;
+
+        res.status(201).json({message: 'Login successful', user });
+    } catch (err) {
+        console.error("Login error:", err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+
+// Get current user profile
+const checkCurrent = async (req, res) => {
+  try {
+    const user = req.user;
+    user.password = undefined;
+    
+    res.json(user);
+  } catch (error) {
+    console.error('Get current user error:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+
+const logout = async (req, res) => {
+    try {
+        res.cookie("jwt", "", {maxAge: 0});
+        res.status(201).json({
+            message: 'Logout successful'
+        });
+    } catch (error) {
+        console.error('Logout error:', error.message);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+module.exports = {registerUser, loginUser, checkCurrent, logout};
