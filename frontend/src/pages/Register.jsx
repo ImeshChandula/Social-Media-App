@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { axiosInstance } from '../lib/axios';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -40,7 +41,7 @@ const Register = () => {
     }
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/register', trimmedData, {
+      const res = await axiosInstance.post('/auth/register', trimmedData, {
         withCredentials: true
       });
 
