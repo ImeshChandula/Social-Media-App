@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const ROLES = require("../enums/roles");
+const bcrypt = require('bcrypt');
+const cloudinary =  require("../config/cloudinary");
 require('dotenv').config();
 
 
@@ -33,12 +35,13 @@ const getAllUsers = async (req, res) => {
             return user;
         });
 
-        res.json({count: sanitizedUsers.length, data: sanitizedUsers});
+        res.status(200).json({count: sanitizedUsers.length, data: sanitizedUsers});
     } catch (err) {
         console.error("Error fetching users:", err);
         res.status(500).json({ message: "Server error" });
     }
 };
+
 
 //@desc     Delete user by ID
 const deleteUser = async (req, res) => {
@@ -56,7 +59,7 @@ const deleteUser = async (req, res) => {
         }
 
         await User.deleteById(req.params.id);   
-        res.json({ message: 'User deleted successfully' });
+        res.status(200).json({ message: 'User deleted successfully' });
     } catch (err) {
         console.error("Error deleting user:", err);
         res.status(500).json({ message: "Server error" });
@@ -76,7 +79,7 @@ const getCurrentUser  = async (req, res) => {
         // Remove password before sending user
         user.password = undefined;
 
-        res.json({msg: "User found: ", user});
+        res.status(200).json({msg: "User found: ", user});
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -117,7 +120,7 @@ const updateUserProfile = async (req, res) => {
         updatedUser.password = undefined;
         
         console.log('Profile updated successfully for user:', req.user.id);
-        res.json({mag:"Profile updated successfully.", user: updatedUser});
+        res.status(201).json({mag:"Profile updated successfully.", user: updatedUser});
 
     } catch (err) {
         console.error(err.message);
@@ -126,12 +129,66 @@ const updateUserProfile = async (req, res) => {
 };
 
 
+//@desc     Update user profile image
+const updateUserProfileImage = async (req, res) => {
+    try {
+        const { profilePicture } = req.body;
+        const userId = req.user.id;
+
+        if (!profilePicture) {
+            return res.status(400).json({msg: "Profile picture is required"})
+        }
+
+        const uploadResponse = await cloudinary.uploader.upload(profilePicture);
+        const updatedData = {
+            profilePicture: uploadResponse.secure_url,
+        };
+
+        const updatedUser = await User.updateById(userId, updatedData);
+
+        // remove password
+        updatedUser.password = undefined;
+
+        res.status(201).json({msg: "Profile picture updated successfully", updatedUser})
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server error');
+    }
+};
 
 
+//@desc     Update user profile image
+const updateUserProfileCoverPhoto = async (req, res) => {
+    try {
+        const { coverPhoto } = req.body;
+        const userId = req.user.id;
+
+        if (!coverPhoto) {
+            return res.status(400).json({msg: "Cover Photo is required"})
+        }
+
+        const uploadResponse = await cloudinary.uploader.upload(coverPhoto);
+        const updatedData = {
+            coverPhoto: uploadResponse.secure_url,
+        };
+
+        const updatedUser = await User.updateById(userId, updatedData);
+
+        // remove password
+        updatedUser.password = undefined;
+
+        res.status(201).json({msg: "Cover Photo updated successfully", updatedUser})
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server error');
+    }
+};
 
 module.exports = {
     getAllUsers,
     deleteUser,
     getCurrentUser,
     updateUserProfile,
+    updateUserProfileImage,
+    updateUserProfileCoverPhoto
 };

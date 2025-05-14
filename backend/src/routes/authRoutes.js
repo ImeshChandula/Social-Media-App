@@ -25,7 +25,7 @@ router.post('/login', authController.loginUser);
 router.post("/logout", authenticateUser, authController.logout);
 
 //@route   POST api/auth/checkCurrent
-//@desc    Get current user profile(by token)
+//@desc    Get current user (checkAuth)
 //@access  Private
 router.get("/checkCurrent", authenticateUser,  authController.checkCurrent);
 

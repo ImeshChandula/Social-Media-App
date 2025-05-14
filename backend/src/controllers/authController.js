@@ -35,7 +35,7 @@ const registerUser = async (req, res) => {
         generateToken(payload, res);
         newUser.password = undefined;
 
-        res.json({ msg: "User registered successfully", newUser });
+        res.status(201).json({ msg: "User registered successfully", newUser });
         console.log("User registered successfully.");
     } catch (err) {
         console.error(err.message);
@@ -83,7 +83,7 @@ const loginUser = async (req, res) => {
         generateToken(payload, res);
         user.password = undefined;
 
-        res.status(201).json({message: 'Login successful', user });
+        res.status(200).json({message: 'Login successful', user });
     } catch (err) {
         console.error("Login error:", err.message);
         res.status(500).send('Server Error');
@@ -97,7 +97,7 @@ const checkCurrent = async (req, res) => {
     const user = req.user;
     user.password = undefined;
     
-    res.json(user);
+    res.status(200).json(user);
   } catch (error) {
     console.error('Get current user error:', error);
     res.status(500).json({ message: 'Server Error' });
@@ -108,7 +108,7 @@ const checkCurrent = async (req, res) => {
 const logout = async (req, res) => {
     try {
         res.cookie("jwt", "", {maxAge: 0});
-        res.status(201).json({
+        res.status(200).json({
             message: 'Logout successful'
         });
     } catch (error) {
