@@ -37,4 +37,57 @@ const validateUser = (req, res, next) => {
 
 
 
-module.exports = {validateUser};
+// Validate post creation
+const validatePost = (req, res, next) => {
+  const schema = Joi.object({
+    author: Joi.string().required(), // typically user ID
+    content: Joi.string().required(),
+    media: Joi.array().items(Joi.string().uri()).optional(),
+    tags: Joi.array().items(Joi.string()).optional(),
+    privacy: Joi.string().valid('public', 'private', 'friends').default('public'),
+    location: Joi.string().allow('', null).optional(),
+
+    // Optional but structured
+    likes: Joi.array().items(Joi.string()).optional(),
+    comments: Joi.array().items(Joi.object()).optional(),
+    shares: Joi.array().items(Joi.string()).optional(),
+
+    isEdited: Joi.boolean().optional(),
+    editHistory: Joi.array().items(Joi.object()).optional(),
+
+    createdAt: Joi.date().optional(),
+    updatedAt: Joi.date().optional(),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  next();
+};
+
+
+
+// Validate comment creation
+const validateComment = (req, res, next) => {
+  const schema = Joi.object({
+    post: Joi.string().required(),              // ID of the post the comment belongs to
+    user: Joi.string().required(),              // ID of the user making the comment
+    text: Joi.string().required(),              // Text content of the comment
+    media: Joi.string().uri().allow(null, ''),  // Optional media (URL)
+    likes: Joi.array().items(Joi.string()).optional(),     // Array of user IDs who liked
+    replies: Joi.array().items(Joi.object()).optional(),   // Array of replies (optional objects)
+    createdAt: Joi.date().optional(),
+    updatedAt: Joi.date().optional(),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  next();
+};
+
+
+
+module.exports = {validateUser, validatePost, validateComment};
