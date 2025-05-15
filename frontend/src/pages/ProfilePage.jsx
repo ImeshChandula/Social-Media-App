@@ -1,10 +1,37 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
+import { axiosInstance } from "../lib/axios";
 
 function ProfilePage() {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const res = await axiosInstance.get('/users/myProfile');
+        setProfile(res.data);
+      } catch (error) {
+        console.error('Failed to fetch profile', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProfile();
+  }, []);
+
+  if (loading) {
+    return <div className="text-center py-5">Loading profile...</div>;
+  }
+
+  if (!profile) {
+    return <div className="text-center py-5">Profile not found</div>;
+  }
+  
   return (
     <motion.div
-      className="container text-center py-5 py-md-0 mt-2 mt-md-0"
+      className="container text-center py-5 py-md-0 mt-5 mt-md-0"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
@@ -12,7 +39,7 @@ function ProfilePage() {
       <div className="position-relative mb-5">
         {/* Cover Image */}
         <motion.img
-          src="https://placehold.co/1000x200"
+          src={profile.coverPic}
           alt="Cover"
           className="img-fluid w-100 rounded"
           style={{ objectFit: "cover", height: "200px" }}
@@ -23,7 +50,7 @@ function ProfilePage() {
 
         {/* Profile Picture */}
         <img
-          src="https://randomuser.me/api/portraits/men/32.jpg"
+          src={profile.profilePic}
           alt="Profile"
           className="profile-pic-animate rounded-circle border border-white shadow"
           style={{
@@ -46,7 +73,7 @@ function ProfilePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, duration: 0.4 }}
       >
-        <h4 className="fw-bold">Shen Fernando</h4>
+        <h4 className="fw-bold">{profile.firstName} {profile.firstName}</h4>
         <div className="d-flex justify-content-center flex-wrap gap-2 mt-2">
           <motion.button
             className="btn btn-success"
@@ -73,15 +100,15 @@ function ProfilePage() {
         transition={{ delay: 0.7, duration: 0.5 }}
       >
         <div className="col-4 col-md-2 offset-md-3">
-          <div><strong>1234</strong></div>
+          <div><strong>{profile.friendsCount}</strong></div>
           <div>Friends</div>
         </div>
         <div className="col-4 col-md-2">
-          <div><strong>468</strong></div>
+          <div><strong>{profile.photosCount}</strong></div>
           <div>Photos</div>
         </div>
         <div className="col-4 col-md-2">
-          <div><strong>15</strong></div>
+          <div><strong>{profile.videosCount}</strong></div>
           <div>Videos</div>
         </div>
       </motion.div>
