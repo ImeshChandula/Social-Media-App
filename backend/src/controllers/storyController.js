@@ -27,14 +27,14 @@ const createStory = async (req, res) => {
       privacy: req.body.privacy
     };
     
-    const story = new Story(storyData);
-    await story.save();
+    const story = new Story(storyData);//Creates a new Story instance using the data
+    await story.save(); //Saves the story to the database
     
-    res.status(201).json({ 
+    res.status(201).json({ // Returns a success response with status 201 (Created) and the story data
       message: 'Story created successfully', 
       story: { ...story, id: story.id } 
     });
-  } catch (error) {
+  } catch (error) { // Handles any errors that occur during the process
     console.error('Error creating story:', error);
     res.status(500).json({ message: 'Server error' });
   }
@@ -43,10 +43,11 @@ const createStory = async (req, res) => {
 // Get current user's stories
 const getCurrentUserStories = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const stories = await Story.findByUserId(userId);
+    const userId = req.user.id;//Gets the current user's ID from the authentication middleware
+    const stories = await Story.findByUserId(userId); //Uses the Story model to find all stories created by this user
+
     
-    res.json(stories);
+    res.json(stories); // Returns those stories as a JSON response
   } catch (error) {
     console.error('Error fetching user stories:', error);
     res.status(500).json({ message: 'Server error' });
@@ -68,13 +69,24 @@ const getStoriesFeed = async (req, res) => {
     const friendIds = currentUser.friends;
     
     // Add current user's ID to get their stories too
-    const userIds = [userId, ...friendIds];
+    const userIds = [userId, ...friendIds]; // Creates an array containing both the user's ID and their friends' IDs. this will list all the users whose stories we want to fetch 
     
     // Get stories from these users
+    //Fetches all stories from these users using a special method in the Story model
     const stories = await Story.getFriendsStories(userIds);
     
     // Group stories by user
     const storiesByUser = {};
+
+    /*
+    Loops through each story:
+
+    If this is the first story from this user, adds user details and creates an empty stories array
+    Adds the story to the appropriate user's stories array
+
+
+    This creates a structure like: { userId: { user: {...}, stories: [...] } }
+  */
     
     for (const story of stories) {
       if (!storiesByUser[story.userId]) {
@@ -100,7 +112,10 @@ const getStoriesFeed = async (req, res) => {
   }
 };
 
-// Get a specific story by ID
+// Get a specific story by 
+//Gets the story ID from the URL parameters
+// and fetches the story from the database using the Story model
+// and checks if the story is expired. If it is, returns a 404 Gone status
 const getStoryById = async (req, res) => {
   try {
     const storyId = req.params.id;
@@ -110,7 +125,9 @@ const getStoryById = async (req, res) => {
       return res.status(404).json({ message: 'Story not found' });
     }
     
-    // Check if story is expired
+    // Check if story is 
+    //Calls the isExpired() method on the story object to check if it's older than 24 hours
+    //Returns 410 (Gone) status code if the story has expired
     if (story.isExpired()) {
       return res.status(410).json({ message: 'Story has expired' });
     }
@@ -119,10 +136,19 @@ const getStoryById = async (req, res) => {
     const user = await User.findById(story.userId);
     
     // Check if the current user has permission to view the story
+    //Gets the user who created the story and checks the privacy settings
+    /*
+      Checks privacy settings:
+      If the story is set to 'friends' privacy
+      And the current user is not in the creator's friends list
+      And the current user is not the creator
+      Then returns 403 (Forbidden) error
+    */
     if (story.privacy === 'friends' && !user.friends.includes(req.user.id) && story.userId !== req.user.id) {
       return res.status(403).json({ message: 'You do not have permission to view this story' });
     }
     
+    //Returns both the story data and minimal user data for displaying
     res.json({ 
       story,
       user: {
@@ -184,6 +210,12 @@ const deleteStory = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized to delete this story' });
     }
     
+    // Delete media file from storage if it exists in the firebase storage
+    //Checks if the story has a media URL and deletes it from storage using the deleteFileFromStorage function
+    if (story.mediaUrl) {
+      await deleteFileFromStorage(story.mediaUrl);
+    }
+
     // Delete the story
     await Story.findByIdAndDelete(storyId);
     
