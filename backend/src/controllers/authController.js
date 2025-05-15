@@ -63,7 +63,8 @@ const loginUser = async (req, res) => {
 
         // update last login
         const updateData = {
-            lastLogin : new Date(),
+            isActive: true,
+            lastLogin : new Date().toISOString(),
         };
         
         await User.updateById(user.id, updateData);
@@ -103,6 +104,12 @@ const checkCurrent = async (req, res) => {
 
 const logout = async (req, res) => {
     try {
+        const updateData = {
+            isActive: false,
+        };
+
+        await User.updateById(req.user.id, updateData);
+
         res.cookie("jwt", "", {maxAge: 0});
         res.status(200).json({
             message: 'Logout successful'

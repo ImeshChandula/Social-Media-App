@@ -40,8 +40,8 @@ class User {
     this.accountStatus = allowedStatuses.includes(userData.accountStatus) ? userData.accountStatus : "active";
 
      // Timestamps
-    this.createdAt = userData.createdAt || new Date();
-    this.updatedAt = userData.updatedAt || new Date();
+    this.createdAt = userData.createdAt || new Date().toISOString();
+    this.updatedAt = new Date().toISOString();
   }
 
 
