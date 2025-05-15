@@ -4,7 +4,8 @@ const db = connectFirebase();
 const postCollection = db.collection('posts');
 
 class Post {
-    constructor(postData) {
+    constructor(id, postData) {
+        this.id = id;
         this.author = postData.author;
         this.content = postData.content;
         this.media = postData.media || [];
