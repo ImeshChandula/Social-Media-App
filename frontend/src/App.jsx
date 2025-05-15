@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-import Login from "./pages/login";
-import Register from "./pages/Register";
+import Login from "./routes/login";
+import Register from "./routes/Register";
 import MainLayout from "./routes/MainLayout";
 
 function App() {
