@@ -36,7 +36,7 @@ const registerUser = async (req, res) => {
 
         generateToken(payload, res);
         newUser.password = undefined;
-        user._isPasswordModified = undefined;
+        newUser._isPasswordModified = undefined;
 
         res.status(201).json({ msg: "User registered successfully", newUser });
         console.log("User registered successfully.");
