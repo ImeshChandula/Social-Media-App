@@ -345,3 +345,27 @@ body,
     color: #00FF66;
     text-decoration: none;
 }
+
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full height to center vertically */
+  width: 100vw;  /* Full width to center horizontally */
+  background-color: #f9f9f9; /* Optional: light background */
+}
+
+.loader {
+  width: 60px;
+  height: 60px;
+  border: 6px solid #ccc;
+  border-top: 6px solid #3498db; /* Highlighted top border */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Spinning animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
