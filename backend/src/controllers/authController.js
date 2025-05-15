@@ -34,6 +34,7 @@ const registerUser = async (req, res) => {
 
         generateToken(payload, res);
         newUser.password = undefined;
+        user._isPasswordModified = undefined;
 
         res.status(201).json({ msg: "User registered successfully", newUser });
         console.log("User registered successfully.");
@@ -79,6 +80,7 @@ const loginUser = async (req, res) => {
 
         generateToken(payload, res);
         user.password = undefined;
+        user._isPasswordModified = undefined;
 
         res.status(200).json({message: 'Login successful', user });
     } catch (err) {
@@ -93,6 +95,7 @@ const checkCurrent = async (req, res) => {
   try {
     const user = req.user;
     user.password = undefined;
+    user._isPasswordModified = undefined;
     
     res.status(200).json(user);
   } catch (error) {

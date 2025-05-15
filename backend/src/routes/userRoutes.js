@@ -14,6 +14,11 @@ const router = express.Router();
 //@access  Private 
 router.get("/myProfile", authenticateUser, userController.getCurrentUser);
 
+//@route   GET api/users/getUserByUsername/:username
+//@desc    Get user by username
+//@access  Private 
+router.get("/getUserByUsername/:username", authenticateUser, userController.getUserByUsername);
+
 //@route   PATCH api/users/updateProfile
 //@desc    Update user profile data
 //@access  Private
