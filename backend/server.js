@@ -28,6 +28,7 @@ app.use("/api/auth", require("./src/routes/authRoutes"));
 app.use("/api/users", require("./src/routes/userRoutes"));
 app.use("/api/posts", require("./src/routes/postRoutes"));
 app.use("/api/comments", require("./src/routes/commentRoutes"));
+app.use("/api/friends", require("./src/routes/friendRoutes"));
 //app.use("/api/stories", require("./src/routes/storyRoutes")); 
 
 
