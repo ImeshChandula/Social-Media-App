@@ -40,7 +40,7 @@ function ProfilePage() {
           {/* Cover Image */}
           <div className="position-relative mb-5">
             <motion.img
-              src={user?.coverPhoto ||"https://placehold.co/1000x200"}
+              src={user?.coverPhoto || "https://placehold.co/1000x200"}
               alt="Cover"
               className="img-fluid w-100 rounded"
               style={{ objectFit: "cover", height: "200px" }}
@@ -74,7 +74,11 @@ function ProfilePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.4 }}
           >
-            <h4 className="fw-bold">{user?.firstName || "User Name"}</h4>
+            <h4 className="fw-bold">
+              {user?.firstName && user?.lastName
+                ? `${user.firstName} ${user.lastName}`
+                : "User Name"}
+            </h4>
             <p className="text-white-50">{user.email}</p>
             <div className="d-flex justify-content-center flex-wrap gap-2 mt-2">
               <motion.button
