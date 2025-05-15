@@ -51,7 +51,7 @@ class Post {
     };
 
     // Update post
-    static async update(id, updateData) {
+    static async updateById(id, updateData) {
         try {
             updateData.updatedAt = new Date().toISOString();
         
@@ -84,6 +84,33 @@ class Post {
         }
     };
     
+    // Find posts by user ID
+    static async findByUserId(userId) {
+        try {
+            const postRef = await postCollection.where('author', '==', userId).orderBy('createdAt', 'desc').get();
+            return postRef.docs.map(doc => new Post(doc.id, doc.data()));
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    // Here you might want more complex logic depending on your feed requirements
+    // For example, getting posts from users the current user follows
+    // This is a simple implementation that gets the most recent posts
+    // Find posts for feed (could be based on user's following list or other criteria)
+    static async findForFeed(userId, limit = 10) {
+        try {
+            const postRef = await postCollection
+                .where('privacy', '==', 'public')
+                .orderBy('createdAt', 'desc')
+                .limit(limit)
+                .get();
+            
+            return postRef.docs.map(doc => new Post(doc.id, doc.data()));
+        } catch (error) {
+            throw error;
+        }
+    };
 
 
     // get comment count

@@ -12,11 +12,19 @@ const router = express.Router();
 // @access  Private
 router.post('/createPost', authenticateUser, postController.createPost);
 
-// @route   POST api/posts/getAllPostsByUser
-// @desc    Get all posts by logged user (latest at top)
+// @route   GET /api/posts/me
+// @desc    Get all posts by the logged-in user (latest at top)
 // @access  Private
-router.get('/getAllPostsByUser', authenticateUser, postController.getAllPostsByUser);
+router.get('/me', authenticateUser, postController.getAllPostsByUserId);
 
+// @route   POST api/posts/getAllPostsByUserId/:id
+// @desc    Get all posts by user ID (latest at top)
+// @access  Private
+router.get('/getAllPostsByUserId/:id', authenticateUser, postController.getAllPostsByUserId);
 
+// @route   GET /api/posts/feed
+// @desc    Get posts for user's feed
+// @access  Private
+router.get('/feed', authenticateUser, postController.getAllPostsInFeed);
 
 module.exports = router;
