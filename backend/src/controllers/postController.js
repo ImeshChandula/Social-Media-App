@@ -7,16 +7,16 @@ const createPost = async (req, res) => {
     try {
         const { content, media, tags, privacy, location } = req.body;
 
-        const newPost = new Post({
+        const postData = {
             author: req.user.id,
             content,
             tags,
             media,
             privacy,
             location
-        });
+        };
 
-        await newPost.save();
+        await Post.create(postData);
 
         // get author details
         const author = await User.findById(req.user.id);
@@ -39,7 +39,7 @@ const createPost = async (req, res) => {
             author: authorData
         };
 
-        res.json(populatedPost);
+        res.status(201).json(populatedPost);
         
     } catch (err) {
         console.error('Post creation error:', err.message);
@@ -48,67 +48,9 @@ const createPost = async (req, res) => {
 };
 
 
-//@desc     Get all posts by logged user
-const getAllPostsByUser = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        if (!userId) {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'User not authenticated' 
-            });
-        }
-
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'User not found' 
-            });
-        }
-
-        // Query for posts where author equals the user ID
-        // Order by createdAt in descending order (latest first)
-        const postsQuery = await Post.find({ author: userId });
-        const sortedQuery = postsQuery.orderBy('createdAt', 'desc');
-        const postsSnapshot = await sortedQuery.get();
-
-        if (postsSnapshot.empty) {
-            return res.status(200).json({ 
-                success: true, 
-                message: 'No posts found for this user',
-                data: []
-            });
-        }
-
-        // transform the post data
-        const posts = [];
-        postsSnapshot.forEach(doc => {
-            const postData = doc.data();
-            postData.id = doc.id;
-            
-            // Add computed properties
-            postData.commentCount = postData.comments.length;
-            postData.likeCount = postData.likes.length;
-            postData.shareCount = postData.shares.length;
-            
-            posts.push(postData);
-        });
-
-        return res.status(200).json({
-            success: true,
-            count: posts.length,
-            data: posts
-        });
-
-    } catch (error) {
-        console.error('Error fetching user posts:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Server error while fetching posts',
-            error: error.message
-        });
-    }
+//@desc     Get all posts by id
+const getAllPostsByUserId = async (req, res) => {
+    
 };
 
 
