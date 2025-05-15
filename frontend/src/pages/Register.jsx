@@ -24,7 +24,6 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Trim values and validate password length
     const trimmedData = {
       username: formData.username.trim(),
       firstName: formData.firstName.trim(),
@@ -56,15 +55,13 @@ const Register = () => {
   };
 
   return (
-    <div style={containerStyle}>
-      {/* HEADER */}
-      <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-        <h1 style={{ color: '#00FF66', fontSize: '32px', marginBottom: '5px' }}>facebook</h1>
-        <p style={{ fontSize: '14px', color: '#ccc', margin: 0 }}>Create a new account</p>
+    <div className="register-container">
+      <div className="register-header">
+        <h1 className="register-title">facebook</h1>
+        <p className="register-subtitle">Create a new account</p>
       </div>
 
-      {/* FORM BOX */}
-      <div style={formBoxStyle}>
+      <div className="register-form-box">
         <form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -73,9 +70,9 @@ const Register = () => {
             value={formData.username}
             onChange={handleChange}
             required
-            style={inputStyle}
+            className="register-input"
           />
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+          <div className="register-input-group">
             <input
               type="text"
               name="firstName"
@@ -83,7 +80,7 @@ const Register = () => {
               value={formData.firstName}
               onChange={handleChange}
               required
-              style={inputStyle}
+              className="register-input"
             />
             <input
               type="text"
@@ -92,7 +89,7 @@ const Register = () => {
               value={formData.lastName}
               onChange={handleChange}
               required
-              style={inputStyle}
+              className="register-input"
             />
           </div>
           <input
@@ -102,7 +99,7 @@ const Register = () => {
             value={formData.email}
             onChange={handleChange}
             required
-            style={inputStyle}
+            className="register-input"
           />
           <input
             type="password"
@@ -111,82 +108,28 @@ const Register = () => {
             value={formData.password}
             onChange={handleChange}
             required
-            style={inputStyle}
+            className="register-input"
           />
-          <button type="submit" style={submitButtonStyle}>
+          <button type="submit" className="register-button">
             Sign Up
           </button>
         </form>
 
-        <div style={infoStyle}>
-          <p style={{ marginBottom: '5px' }}>By clicking Sign Up, you agree to our:</p>
-          <ul style={{ paddingLeft: '20px', margin: 0 }}>
-            <li><a href="/terms" style={linkStyle}>Terms of Service</a></li>
-            <li><a href="/privacy" style={linkStyle}>Privacy Policy</a></li>
-            <li><a href="/cookies" style={linkStyle}>Cookie Policy</a></li>
+        <div className="register-info">
+          <p>By clicking Sign Up, you agree to our:</p>
+          <ul>
+            <li><a href="/terms" className="register-link">Terms of Service</a></li>
+            <li><a href="/privacy" className="register-link">Privacy Policy</a></li>
+            <li><a href="/cookies" className="register-link">Cookie Policy</a></li>
           </ul>
-          <p style={{ marginTop: '10px', textAlign: 'center' }}>
-            Already have an account? <a href="/login" style={{ color: '#00FF66', textDecoration: 'none' }}>Log in</a>
+          <p style={{ textAlign: 'center' }}>
+            Already have an account?{" "}
+            <a href="/login" className="register-login-link">Log in</a>
           </p>
         </div>
       </div>
     </div>
   );
-};
-
-const containerStyle = {
-  minHeight: '100vh',
-  backgroundColor: '#000',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontFamily: 'Arial, sans-serif',
-  flexDirection: 'column'
-};
-
-const formBoxStyle = {
-  backgroundColor: '#121829',
-  padding: '30px',
-  borderRadius: '10px',
-  width: '100%',
-  maxWidth: '400px',
-  boxShadow: '0 0 10px rgba(0,0,0,0.3)',
-  textAlign: 'center'
-};
-
-const inputStyle = {
-  width: '100%',
-  padding: '10px',
-  marginBottom: '10px',
-  borderRadius: '5px',
-  border: '1px solid #333',
-  backgroundColor: '#1E293B',
-  color: '#fff',
-  outline: 'none'
-};
-
-const submitButtonStyle = {
-  width: '100%',
-  padding: '10px',
-  backgroundColor: '#00FF66',
-  color: '#000',
-  border: 'none',
-  borderRadius: '5px',
-  fontWeight: 'bold',
-  cursor: 'pointer',
-  marginTop: '10px'
-};
-
-const linkStyle = {
-  color: '#FDFFFEB3',
-  textDecoration: 'none'
-};
-
-const infoStyle = {
-  textAlign: 'left',
-  marginTop: '15px',
-  fontSize: '12px',
-  color: '#ccc'
 };
 
 export default Register;
