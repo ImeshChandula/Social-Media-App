@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { axiosInstance } from '../lib/axios';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ const Register = () => {
     password: ''
   });
 
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -19,6 +21,10 @@ const Register = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
   };
 
   const handleSubmit = async (e) => {
@@ -39,9 +45,7 @@ const Register = () => {
     }
 
     try {
-      const res = await axiosInstance.post('/auth/register', trimmedData, {
-        withCredentials: true
-      });
+      const res = await axiosInstance.post('/auth/register', trimmedData);
 
       console.log('User registered:', res.data);
       alert('Registration successful!');
@@ -72,7 +76,9 @@ const Register = () => {
             required
             className="register-input"
           />
+
           <div className="register-input-group">
+
             <input
               type="text"
               name="firstName"
@@ -82,6 +88,7 @@ const Register = () => {
               required
               className="register-input"
             />
+
             <input
               type="text"
               name="lastName"
@@ -91,7 +98,9 @@ const Register = () => {
               required
               className="register-input"
             />
+
           </div>
+
           <input
             type="email"
             name="email"
@@ -101,18 +110,31 @@ const Register = () => {
             required
             className="register-input"
           />
-          <input
-            type="password"
-            name="password"
-            placeholder="🔒 New Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            className="register-input"
-          />
+
+          <div className="input-with-icon">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              placeholder="🔒 New Password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              className="register-input-password"
+            />
+            <span
+              className="input-icon"
+              onClick={togglePasswordVisibility}
+              title={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
+
+
           <button type="submit" className="register-button">
             Sign Up
           </button>
+
         </form>
 
         <div className="register-info">
