@@ -32,6 +32,7 @@ const getAllUsers = async (req, res) => {
         // Remove passwords from response
         const sanitizedUsers = sortedUsers.map(user => {
             user.password = undefined;
+            user._isPasswordModified = undefined;
             return user;
         });
 
@@ -78,10 +79,33 @@ const getCurrentUser  = async (req, res) => {
 
         // Remove password before sending user
         user.password = undefined;
+        user._isPasswordModified = undefined;
 
         res.status(200).json({msg: "User found: ", user});
     } catch (err) {
         console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+
+//@desc     Get user by username
+const getUserByUsername = async (req,res) => {
+    try {
+        const username = req.params.username;
+
+        const user = await User.findByUsername(username);
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found'});
+        }
+
+        // remove password
+        user.password = undefined;
+        user._isPasswordModified = undefined;
+
+        res.status(200).json({msg: "User found: ", user});
+    } catch (error) {
+        console.error(error.message);
         res.status(500).send('Server Error');
     }
 };
@@ -118,6 +142,7 @@ const updateUserProfile = async (req, res) => {
 
         // remove password
         updatedUser.password = undefined;
+        updatedUser._isPasswordModified = undefined;
         
         console.log('Profile updated successfully for user:', req.user.id);
         res.status(201).json({mag:"Profile updated successfully.", user: updatedUser});
@@ -153,6 +178,7 @@ const updateUserProfileImage = async (req, res) => {
 
         // remove password
         updatedUser.password = undefined;
+        updatedUser._isPasswordModified = undefined;
 
         res.status(201).json({msg: "Profile picture updated successfully", updatedUser})
     } catch (error) {
@@ -186,6 +212,7 @@ const updateUserProfileCoverPhoto = async (req, res) => {
 
         // remove password
         updatedUser.password = undefined;
+        updatedUser._isPasswordModified = undefined;
 
         res.status(201).json({msg: "Cover Photo updated successfully", updatedUser})
     } catch (error) {
@@ -198,6 +225,7 @@ module.exports = {
     getAllUsers,
     deleteUser,
     getCurrentUser,
+    getUserByUsername,
     updateUserProfile,
     updateUserProfileImage,
     updateUserProfileCoverPhoto

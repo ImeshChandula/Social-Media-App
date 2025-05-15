@@ -118,7 +118,7 @@ class User {
 // Get a user by username
   static async findByUsername(username) {
     try {
-      const snapshot = await userCollection.where('username', '==', username).limit(1).get();
+      const snapshot = await userCollection.where('username', '==', username).get();
     
       if (snapshot.empty) {
         return null;
