@@ -13,9 +13,11 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ msg: "User already exists" });
         }
 
+        const lowercaseUsername = username.toLowerCase();
+
         // create new user
         const newUser = {
-            username,
+            username: lowercaseUsername,
             email,
             password,
             firstName,
