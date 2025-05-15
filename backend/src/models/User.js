@@ -20,8 +20,8 @@ class User {
     this._isPasswordModified = false;
 
     // Optional fields with defaults
-    this.profilePicture = userData.profilePicture || 'default-profile.png';
-    this.coverPhoto = userData.coverPhoto || 'default-cover.png';
+    this.profilePicture = userData.profilePicture;
+    this.coverPhoto = userData.coverPhoto;
     this.bio = userData.bio || '';
     this.location = userData.location || '';
     this.birthday = userData.birthday || null;

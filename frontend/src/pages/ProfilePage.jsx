@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+//import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
+import avatar from "../assets/avatar.jpg";
 
 function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -51,7 +52,7 @@ function ProfilePage() {
 
             {/* Profile Picture */}
             <img
-              src={user?.profilePicture || "https://randomuser.me/api/portraits/men/32.jpg"}
+              src={user?.profilePicture || avatar }
               alt="Profile"
               className="rounded-circle border border-white shadow"
               style={{
