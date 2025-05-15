@@ -23,6 +23,17 @@ body,
     /* Chrome, Safari, Opera */
 }
 
+/* Left Side Bar */
+.logout-button {
+  transition: background-color 0.2s ease-in-out !important;
+}
+
+.logout-button:hover {
+  background-color: #222 !important;
+  border-radius: 5px !important;
+}
+
+
 /* profile page */
 
 /* profile image animation*/
@@ -43,7 +54,6 @@ body,
     transform: translateX(-50%) scale(0);
     opacity: 0;
 }
-
 
 /* Members Page */
 .card {
@@ -271,6 +281,40 @@ body,
     background-color: #1E293B;
     color: #fff;
     outline: none;
+}
+
+.input-with-icon {
+    position: relative;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.register-input-password,
+.login-input-password {
+    width: 100%;
+    padding: 10px 40px 10px 10px;
+    border-radius: 5px;
+    border: 1px solid #333;
+    background-color: #1E293B;
+    color: #fff;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.input-icon {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #ccc;
+    font-size: 1.1rem;
+    z-index: 1;
+    user-select: none;
+}
+
+.input-icon:hover {
+    color: #fff;
 }
 
 .register-button {

@@ -14,8 +14,10 @@ import {
   FaFacebookF,
   FaBars,
   FaTimes,
+  FaSignOutAlt
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { axiosInstance } from "../lib/axios";
 
 const navItems = [
   { name: "Home", path: "/", icon: <FaHome /> },
@@ -44,11 +46,22 @@ function Sidebar({ collapsed, setCollapsed }) {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn"); // remove login flag
-    // You can also clear tokens here if stored
-    navigate("/"); // redirect to login
-    window.location.reload(); // force app re-evaluation of login state
+  const handleLogout = async () => {
+    try {
+      // Send logout request to backend
+      await axiosInstance.post("/auth/logout");
+
+      // Remove login state client-side
+      localStorage.removeItem("isLoggedIn");
+      navigate("/");
+
+      // Reload to refresh app state
+      window.location.reload();
+
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // Optionally show user feedback here
+    }
   };
 
   return (
@@ -113,14 +126,13 @@ function Sidebar({ collapsed, setCollapsed }) {
           ))}
 
           {/* Logout Button */}
-          <li className="nav-item mb-2">
+          <li className="logout-button nav-item mb-2">
             <button
               className="nav-link d-flex align-items-center gap-3 px-2 py-2 rounded text-white w-100 text-start border-0 bg-transparent"
               onClick={handleLogout}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#222")}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+              style={{ fontSize: "1rem" }}
             >
-              <FaTimes />
+              <FaSignOutAlt />
               {!collapsed && "Logout"}
             </button>
           </li>

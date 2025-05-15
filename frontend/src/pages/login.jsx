@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
-import { FaApple } from "react-icons/fa";
+import { FaApple, FaEye, FaEyeSlash } from "react-icons/fa";
 import { axiosInstance } from "../lib/axios";
 
 const Login = ({ setIsLoggedIn }) => {
@@ -13,6 +13,12 @@ const Login = ({ setIsLoggedIn }) => {
 
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev)
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -32,9 +38,6 @@ const Login = ({ setIsLoggedIn }) => {
         {
           email: formData.email,
           password: formData.password,
-        },
-        {
-          withCredentials: true,
         }
       );
 
@@ -67,14 +70,25 @@ const Login = ({ setIsLoggedIn }) => {
             onChange={handleChange}
             className="login-input"
           />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            className="login-input"
-          />
+
+          <div className="input-with-icon">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              className="login-input-password"
+            />
+            <span
+              className="input-icon"
+              onClick={togglePasswordVisibility}
+              title={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
+
 
           <div className="login-options">
             <label className="login-checkbox">
