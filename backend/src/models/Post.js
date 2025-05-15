@@ -87,9 +87,24 @@ class Post {
     // Find posts by user ID
     static async findByUserId(userId) {
         try {
-            const postRef = await postCollection.where('author', '==', userId).orderBy('createdAt', 'desc').get();
-            return postRef.docs.map(doc => new Post(doc.id, doc.data()));
+            const postRef = await postCollection.where('author', '==', userId).get();
+            
+            /*if (postRef.empty) {
+                const objectPostRef = await postCollection
+                    .where('author.id', '==', userId)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+            
+                return objectPostRef.docs.map(doc => new Post(doc.id, doc.data()));
+            }*/
+
+            const posts = postRef.docs.map(doc => new Post(doc.id, doc.data()));
+
+            return posts.sort((a, b) => {
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
         } catch (error) {
+            console.error('Error finding posts by user ID:', error);
             throw error;
         }
     };

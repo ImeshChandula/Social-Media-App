@@ -57,7 +57,7 @@ const getAllPostsByUserId = async (req, res) => {
         const posts = await Post.findByUserId(userId);
         
         if (!posts.length) {
-            return res.status(200).json([]);
+            return res.status(200).json({msg: "No posts found for this user", posts: []});
         }
         
         // Get user details
@@ -76,12 +76,19 @@ const getAllPostsByUserId = async (req, res) => {
         };
         
         // Populate posts with user data
-        const populatedPosts = posts.map(post => ({
-            ...post,
-            author: authorData
-        }));
+        const populatedPosts = posts.map(post => {
+            // Create a new object with post properties
+            const postObj = {
+                ...post,
+                likeCount: post.likeCount,
+                commentCount: post.commentCount,
+                shareCount: post.shareCount,
+                author: authorData
+            };
+            return postObj;
+        });
         
-        res.status(200).json({msg: "User posts:", populatedPosts});
+        res.status(200).json({msg: "User posts retrieved successfully", posts: populatedPosts});
     } catch (error) {
         console.error('Get posts error:', error.message);
         res.status(500).json({ msg: 'Server error' });

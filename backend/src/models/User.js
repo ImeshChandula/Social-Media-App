@@ -198,6 +198,23 @@ class User {
     return this.friendRequests.length;
   };
 
+  // get posts count
+  static async getPostsCount(userId) {
+    try {
+      const db = connectFirebase();
+      const postCollection = db.collection('posts');
+      
+      // Query posts where author.id matches userId
+      const postsSnapshot = await postCollection.where('author.id', '==', userId).get();
+      
+      // Return the count of matching documents
+      return postsSnapshot.size;
+    } catch (error) {
+      console.error('Error getting posts count:', error);
+      // Return 0 instead of throwing, to prevent breaking the user profile response
+      return 0;
+    }
+  };
 
   // Send a Friend Request
   static async sendFriendRequest(senderId, recipientUsername) {

@@ -77,11 +77,22 @@ const getCurrentUser  = async (req, res) => {
             return res.status(404).json({ msg: 'User not found'});
         }
 
+        const postsCount = await User.getPostsCount(req.user.id);
+
         // Remove password before sending user
         user.password = undefined;
         user._isPasswordModified = undefined;
 
-        res.status(200).json({msg: "User found: ", user});
+        // Create response object with user data and calculated fields
+        const userResponse = {
+            ...user,
+            // Access the getter methods to include the counts
+            friendsCount: user.friendsCount,
+            friendRequestCount: user.friendRequestCount,
+            postsCount: postsCount
+        };
+
+        res.status(200).json({msg: "User found: ", user: userResponse});
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -99,11 +110,22 @@ const getUserByUsername = async (req,res) => {
             return res.status(404).json({ msg: 'User not found'});
         }
 
+        const postsCount = await User.getPostsCount(req.user.id);
+
         // remove password
         user.password = undefined;
         user._isPasswordModified = undefined;
 
-        res.status(200).json({msg: "User found: ", user});
+        // Create response object with user data and calculated fields
+        const userResponse = {
+            ...user,
+            // Access the getter methods to include the counts
+            friendsCount: user.friendsCount,
+            friendRequestCount: user.friendRequestCount,
+            postsCount: postsCount
+        };
+
+        res.status(200).json({msg: "User found: ", user: userResponse});
     } catch (error) {
         console.error(error.message);
         res.status(500).send('Server Error');
