@@ -1,18 +1,22 @@
 const Post = require('../models/Post');
 const User = require('../models/User');
 const Comments = require('../models/Comment');
+const cloudinary =  require("../config/cloudinary");
 
 //@desc     create a post 
 const createPost = async (req, res) => {
     try {
-        const { content, media, mediaTypes, tags, privacy, location } = req.body;
+        const { content, media, mediaType, tags, privacy, location } = req.body;
 
+        // upload media to cloudinary
+        const uploadResponse = await cloudinary.uploader.upload(media);
+        
         const postData = {
             author: req.user.id,
             content,
             tags,
-            media,
-            mediaTypes,
+            media: uploadResponse.secure_url,
+            mediaType,
             privacy,
             location
         };
@@ -57,37 +61,53 @@ const getAllPosts = async (req, res) => {
             return res.status(200).json({msg: "No posts found", posts: []});
         }
 
-        // Create a map to store all users we need to fetch
-        const userIds = new Set();
-        posts.forEach(post => userIds.add(post.userId));
-        
-        // Get all needed users in one query
-        const users = await User.findById([...userIds]);
-        
-        // Create a map for quick access to user data
-        const usersMap = {};
-        users.forEach(user => {
-            usersMap[user.id] = {
-                id: user.id,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                username: user.username,
-                profilePicture: user.profilePicture
-            };
+        // Collect all unique author IDs from posts
+        const authorIds = new Set();
+        posts.forEach(post => {
+            if (post.author && typeof post.author === 'string') {
+                authorIds.add(post.author);
+            }
         });
         
-        // Populate posts with user data
+        // Create a map to store author information
+        const authorsMap = {};
+        
+        // Fetch author data for each unique author ID
+        for (const authorId of authorIds) {
+            try {
+                if (!authorId) continue;
+                
+                const user = await User.findById(authorId);
+                
+                if (user) {
+                    authorsMap[authorId] = {
+                        id: user.id,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        username: user.username,
+                        profilePicture: user.profilePicture
+                    };
+                }
+            } catch (userError) {
+                console.error(`Error fetching user ${authorId}:`, userError.message);
+            }
+        }
+        
+        // Populate posts with author data
         const populatedPosts = posts.map(post => {
-            const authorData = usersMap[post.userId];
+            let authorData = null;
+            
+            // Check if author is a string ID and exists in our map
+            if (post.author && typeof post.author === 'string' && authorsMap[post.author]) {
+                authorData = authorsMap[post.author];
+            }
             
             // Create a new object with post properties
             const postObj = {
                 ...post,
-                likeCount: post.likeCount,
-                commentCount: post.commentCount,
-                shareCount: post.shareCount,
                 author: authorData
             };
+            
             return postObj;
         });
         
@@ -199,10 +219,93 @@ const getAllPostsInFeed = async (req, res) => {
 };
 
 
+//@desc     Update post by post id
+const updatePostByPostId = async (req, res) => {
+    try {
+        const postId = req.params.postId;
+        
+        const existingPost = await Post.findById(postId);
+        
+        if (!existingPost) {
+            return res.status(404).json({ msg: 'Post not found' });
+        }
+        
+        // Check if user is the author of the post
+        if (existingPost.author !== req.user.id) {
+            return res.status(403).json({ msg: 'Unauthorized: You can only update your own posts' });
+        }
+        
+        const { content, media, mediaType, tags, privacy, location } = req.body;
+        
+        // Create update object with only the provided fields
+        const updateData = {};
+        
+        if (content !== undefined) updateData.content = content;
+        if (media !== undefined) updateData.media = media;
+        if (mediaType !== undefined) updateData.mediaType = mediaType;
+        if (tags !== undefined) updateData.tags = tags;
+        if (privacy !== undefined) updateData.privacy = privacy;
+        if (location !== undefined) updateData.location = location;
+        
+        // Add edit history if content is changed
+        if (content !== undefined && content !== existingPost.content) {
+            updateData.isEdited = true;
+        
+        // Create edit history entry
+        const editEntry = {
+            previousContent: existingPost.content,
+            editedAt: new Date().toISOString()
+        };
+        
+        // Use the existing edit history or create a new array
+        updateData.editHistory = [...(existingPost.editHistory || []), editEntry];
+        }
+        
+        // Update the post
+        const updatedPost = await Post.updateById(postId, updateData);
+        
+        res.status(200).json({ msg: 'Post updated successfully', post: updatedPost });
+  } catch (error) {
+        console.error('Update post error:', error.message);
+        res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+
+//@desc 
+const deletePostByPostId = async (req, res) => {
+    try {
+    const postId = req.params.postId;
+    
+    // Check if post exists
+    const existingPost = await Post.findById(postId);
+    
+    if (!existingPost) {
+      return res.status(404).json({ msg: 'Post not found' });
+    }
+    
+    // Check if user is the author of the post
+    // Assuming req.user.id contains the authenticated user's ID
+    if (existingPost.author !== req.user.id) {
+      return res.status(403).json({ msg: 'Unauthorized: You can only delete your own posts' });
+    }
+    
+    // Delete the post
+    await Post.delete(postId);
+    
+    res.status(200).json({ msg: 'Post deleted successfully' });
+  } catch (error) {
+    console.error('Delete post error:', error.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+
 
 module.exports = {
     createPost,
     getAllPosts,
     getAllPostsByUserId,
-    getAllPostsInFeed
+    getAllPostsInFeed,
+    updatePostByPostId,
 };

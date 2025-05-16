@@ -17,7 +17,7 @@ router.post('/createPost', authenticateUser, postController.createPost);
 // @access  Private
 router.get('/me', authenticateUser, postController.getAllPostsByUserId);
 
-// @route   POST api/posts/getAllPostsByUserId/:id
+// @route   GET api/posts/getAllPostsByUserId/:id
 // @desc    Get all posts by user ID (latest at top)
 // @access  Private
 router.get('/getAllPostsByUserId/:id', authenticateUser, postController.getAllPostsByUserId);
@@ -26,5 +26,11 @@ router.get('/getAllPostsByUserId/:id', authenticateUser, postController.getAllPo
 // @desc    Get posts for user's feed
 // @access  Private
 router.get('/feed', authenticateUser, postController.getAllPosts);
+
+// @route   PATCH /api/posts/update/:id
+// @desc    Update Post By Post Id
+// @access  Private
+router.patch("/update/:id", authenticateUser, postController.updatePostByPostId);
+
 
 module.exports = router;
