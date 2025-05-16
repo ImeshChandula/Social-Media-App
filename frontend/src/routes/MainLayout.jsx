@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import Sidebar from "../components/Sidebar";
-import RightSidebar from "../components/RightSidebar";
 
 import Home from "../pages/Home";
 import Members from "../pages/Members";
@@ -34,14 +33,6 @@ const MainLayout = () => {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </div>
-
-        {/* Right Sidebar */}
-        <div
-          className="col-12 col-md-3 col-lg-2 p-0 bg-black d-none d-md-block"
-          style={{ overflowY: "auto" }}
-        >
-          <RightSidebar />
         </div>
       </div>
     </div>
