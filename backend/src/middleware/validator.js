@@ -40,10 +40,10 @@ const validateUser = (req, res, next) => {
 // Validate post creation
 const validatePost = (req, res, next) => {
   const schema = Joi.object({
-    author: Joi.string().required(), // typically user ID
+    author: Joi.string().optional(), // typically user ID
     content: Joi.string().optional(),
     media: Joi.array().items(Joi.string().uri()).optional(),
-    mediaType: Joi.string().valid('photo', 'video').optional(),
+    mediaType: Joi.string().valid('image', 'video').optional(),
     tags: Joi.array().items(Joi.string()).optional(),
     privacy: Joi.string().valid('public', 'private', 'friends').default('public'),
     location: Joi.string().allow('', null).optional(),
@@ -73,7 +73,7 @@ const validatePost = (req, res, next) => {
 const validateComment = (req, res, next) => {
   const schema = Joi.object({
     post: Joi.string().required(),              // ID of the post the comment belongs to
-    user: Joi.string().required(),              // ID of the user making the comment
+    user: Joi.string().optional(),              // ID of the user making the comment
     text: Joi.string().required(),              // Text content of the comment
     media: Joi.string().uri().allow(null, ''),  // Optional media (URL)
     likes: Joi.array().items(Joi.string()).optional(),     // Array of user IDs who liked
