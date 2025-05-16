@@ -32,5 +32,10 @@ router.get('/feed', authenticateUser, postController.getAllPosts);
 // @access  Private
 router.patch("/update/:id", authenticateUser, postController.updatePostByPostId);
 
+// @route   DELETE /api/posts/delete/:id
+// @desc    Delete Post By Post Id
+// @access  Private
+router.delete("/delete/:id", authenticateUser, postController.deletePostByPostId);
+
 
 module.exports = router;

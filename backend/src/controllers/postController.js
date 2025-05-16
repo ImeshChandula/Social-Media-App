@@ -223,9 +223,11 @@ const getAllPostsInFeed = async (req, res) => {
 const updatePostByPostId = async (req, res) => {
     try {
         const postId = req.params.postId;
-        
+        if (!postId) {
+            return res.status(400).json({ msg: 'Post ID is required' });
+        }
+
         const existingPost = await Post.findById(postId);
-        
         if (!existingPost) {
             return res.status(404).json({ msg: 'Post not found' });
         }
@@ -251,19 +253,27 @@ const updatePostByPostId = async (req, res) => {
         if (content !== undefined && content !== existingPost.content) {
             updateData.isEdited = true;
         
-        // Create edit history entry
-        const editEntry = {
-            previousContent: existingPost.content,
-            editedAt: new Date().toISOString()
-        };
+            // Create edit history entry
+            const editEntry = {
+                previousContent: existingPost.content,
+                editedAt: new Date().toISOString()
+            };
         
-        // Use the existing edit history or create a new array
-        updateData.editHistory = [...(existingPost.editHistory || []), editEntry];
+            // Use the existing edit history or create a new array
+            updateData.editHistory = [...(existingPost.editHistory || []), editEntry];
+        }
+
+        // Make sure we have something to update
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ msg: 'No valid fields to update' });
         }
         
         // Update the post
         const updatedPost = await Post.updateById(postId, updateData);
-        
+        if (!updatedPost) {
+            return res.status(404).json({ msg: 'Failed to update post' });
+        }
+
         res.status(200).json({ msg: 'Post updated successfully', post: updatedPost });
   } catch (error) {
         console.error('Update post error:', error.message);
@@ -275,29 +285,34 @@ const updatePostByPostId = async (req, res) => {
 //@desc 
 const deletePostByPostId = async (req, res) => {
     try {
-    const postId = req.params.postId;
-    
-    // Check if post exists
-    const existingPost = await Post.findById(postId);
-    
-    if (!existingPost) {
-      return res.status(404).json({ msg: 'Post not found' });
+        const postId = req.params.postId;
+        if (!postId) {
+            return res.status(400).json({ msg: 'Post ID is required' });
+        }
+
+        // Check if post exists
+        const existingPost = await Post.findById(postId);
+        if (!existingPost) {
+            return res.status(404).json({ msg: 'Post not found' });
+        }
+        
+        // Check if user is the author of the post
+        // Assuming req.user.id contains the authenticated user's ID
+        if (currentUserId !== 'super_admin' && existingPost.author !== req.user.id) {
+            return res.status(403).json({ msg: 'Unauthorized: You can only delete your own posts' });
+        }
+        
+        // Delete the post
+        const deleteResult = await Post.delete(postId);
+        if (!deleteResult) {
+            return res.status(500).json({ msg: 'Failed to delete post' });
+        }
+
+        res.status(200).json({ msg: 'Post deleted successfully' });
+    } catch (error) {
+        console.error('Delete post error:', error.message);
+        res.status(500).json({ msg: 'Server error' });
     }
-    
-    // Check if user is the author of the post
-    // Assuming req.user.id contains the authenticated user's ID
-    if (existingPost.author !== req.user.id) {
-      return res.status(403).json({ msg: 'Unauthorized: You can only delete your own posts' });
-    }
-    
-    // Delete the post
-    await Post.delete(postId);
-    
-    res.status(200).json({ msg: 'Post deleted successfully' });
-  } catch (error) {
-    console.error('Delete post error:', error.message);
-    res.status(500).json({ msg: 'Server error' });
-  }
 };
 
 
@@ -308,4 +323,5 @@ module.exports = {
     getAllPostsByUserId,
     getAllPostsInFeed,
     updatePostByPostId,
+    deletePostByPostId
 };
