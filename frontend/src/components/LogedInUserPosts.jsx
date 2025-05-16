@@ -61,7 +61,7 @@ function UserPosts() {
                                         src={url}
                                         alt={""}
                                         className="img-fluid rounded mb-2"
-                                        style={{ maxHeight: "400px", objectFit: "cover" }}
+                                        style={{ maxHeight: "300px", objectFit: "cover" }}
                                     />
                                 ))}
                             </div>

@@ -1,102 +1,124 @@
 import { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
+import { FaThumbsUp, FaCommentAlt, FaShare } from "react-icons/fa";
 
 const Feed = () => {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+    const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchFeed = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    useEffect(() => {
+        const fetchFeed = async () => {
+            try {
+                setLoading(true);
+                setError(null);
 
-        const res = await axiosInstance.get("/posts/feed");
-        const postsData = res.data.posts || res.data || [];
+                const res = await axiosInstance.get("/posts/feed");
+                const postsData = res.data.posts || res.data || [];
 
-        setPosts(postsData);
-      } catch (err) {
-        if (err.response) {
-          setError(err.response.data?.msg || "Failed to fetch posts");
-        } else {
-          setError(err.message);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+                setPosts(postsData);
+            } catch (err) {
+                if (err.response) {
+                    setError(err.response.data?.msg || "Failed to fetch posts");
+                } else {
+                    setError(err.message);
+                }
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    fetchFeed();
-  }, []);
+        fetchFeed();
+    }, []);
 
-  if (loading)
-    return (
-      <div className="text-white text-center my-4">Loading feed...</div>
-    );
+    if (loading)
+        return (
+            <div className="text-white text-center my-5 fs-5">Loading feed...</div>
+        );
 
-  if (error)
-    return (
-      <div className="text-danger text-center my-4">
-        Error loading feed: {error}
-      </div>
-    );
-
-  if (!posts.length)
-    return <div className="text-white text-center my-4">No posts found</div>;
-
-  return (
-    <div>
-      {posts.map((post, index) => (
-        <div
-          key={post._id || post.id || index}
-          className="card bg-secondary bg-opacity-10 border-secondary text-white mb-4 p-3 rounded-4"
-        >
-          <div className="d-flex align-items-center mb-3">
-            <img
-              src={post.author?.profilePicture || "/default-profile.png"}
-              alt="Profile"
-              className="rounded-circle me-2"
-              style={{ width: "45px", height: "45px", objectFit: "cover" }}
-            />
-            <div>
-              <h6 className="mb-0 fw-bold text-white text-start">
-                {post.author
-                  ? `${post.author.firstName || ""} ${post.author.lastName || ""}`
-                  : "Unknown Author"}
-              </h6>
-              <small className="text-white-50 text-start">
-                {post.createdAt
-                  ? new Date(post.createdAt).toLocaleString()
-                  : ""}
-              </small>
+    if (error)
+        return (
+            <div className="text-danger text-center my-5 fs-5">
+                Error loading feed: {error}
             </div>
-          </div>
+        );
 
-          {/* Post Content */}
-          <div className="card-body bg-dark">
-            <p className="text-start text-white">{post.content}</p>
+    if (!posts.length)
+        return (
+            <div className="text-white text-center my-5 fs-5">No posts found</div>
+        );
 
-            {/* Media */}
-            {post.media && post.media.length > 0 && (
-              <div className="mt-3 text-white">
-                {post.media.map((url, idx) => (
-                  <img
-                    key={idx}
-                    src={url}
-                    alt={`media-${idx}`}
-                    className="img-fluid rounded mb-2"
-                    style={{ maxHeight: "400px", objectFit: "cover" }}
-                    loading="lazy"
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+    return (
+        <div className="container my-4">
+            {posts.map((post, index) => (
+                <div
+                    key={post._id || post.id || index}
+                    className="card bg-secondary bg-opacity-10 border-secondary text-white mb-4 shadow-sm rounded-4"
+                >
+                    {/* Header */}
+                    <div className="card-header bg-dark d-flex align-items-center gap-3 p-3 rounded-top-4 border-bottom border-secondary">
+                        <img
+                            src={post.author?.profilePicture}
+                            alt="Profile"
+                            className="rounded-circle border border-secondary"
+                            style={{ width: 50, height: 50, objectFit: "cover" }}
+                        />
+                        <div className="flex-grow-1">
+                            <h6 className="mb-0 fw-bold text-white">
+                                {`${post.author?.firstName || ""} ${post.author?.lastName || ""}`}
+                            </h6>
+                            <small className="text-white-50">
+                                {post.createdAt
+                                    ? new Date(post.createdAt).toLocaleString()
+                                    : ""}
+                            </small>
+                        </div>
+                    </div>
+
+                    {/* Post Content */}
+                    <div className="card-body bg-dark p-4 rounded-bottom-4">
+                        <p className="text-white mb-3">{post.content}</p>
+
+                        {/* Media */}
+                        {post.media && post.media.length > 0 && (
+                            <div className="d-flex flex-wrap gap-3 justify-content-center">
+                                {post.media.map((url, idx) => (
+                                    <img
+                                        key={idx}
+                                        src={url}
+                                        className="img-fluid rounded"
+                                        style={{
+                                            maxHeight: "300px",
+                                            maxWidth: "100%",
+                                            objectFit: "cover",
+                                            border: "1px solid #444",
+                                        }}
+                                        loading="lazy"
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="card-footer bg-dark d-flex justify-content-between text-white-50 small rounded-bottom-4 border-top border-secondary">
+                        <div className="d-flex align-items-center gap-1">
+                            <FaThumbsUp />
+                            <span>{post.likes?.length || 0} Likes</span>
+                        </div>
+                        <div className="d-flex align-items-center gap-1">
+                            <FaCommentAlt />
+                            <span>{post.comments?.length || 0} Comments</span>
+                        </div>
+                        <div className="d-flex align-items-center gap-1">
+                            <FaShare />
+                            <span>{post.shares?.length || 0} Shares</span>
+                        </div>
+                    </div>
+                </div>
+            ))}
         </div>
-      ))}
-    </div>
-  );
+    );
 };
 
 export default Feed;
