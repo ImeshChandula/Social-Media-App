@@ -1,23 +1,22 @@
 import React, { useEffect, useState } from "react";
-//import { motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
-import avatar from "../assets/avatar.jpg";
+import UserPosts from "../components/UserPosts";
 
 function ProfilePage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Fetch user profile on mount
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const res = await axiosInstance.get("/users/myProfile");
-        setUser(res.data.user || res.data); // Depending on backend response structure
-        setLoading(false);
+        setUser(res.data.user || res.data);
       } catch (err) {
         console.error(err);
         setError("Failed to load profile. Please login.");
+      } finally {
         setLoading(false);
       }
     };
@@ -38,10 +37,10 @@ function ProfilePage() {
         <div className="alert alert-danger">{error}</div>
       ) : (
         <>
-          {/* Cover Image */}
+          {/* Cover Photo */}
           <div className="position-relative mb-5">
             <motion.img
-              src={user?.coverPhoto || "https://placehold.co/1000x200"}
+              src={user?.coverPhoto}
               alt="Cover"
               className="img-fluid w-100 rounded"
               style={{ objectFit: "cover", height: "200px" }}
@@ -49,12 +48,10 @@ function ProfilePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.6, type: "spring", stiffness: 50 }}
             />
-
-            {/* Profile Picture */}
             <img
-              src={user?.profilePicture || avatar }
+              src={user?.profilePicture}
               alt="Profile"
-              className="rounded-circle border border-white shadow"
+              className="rounded-circle border border-white shadow profile-pic-animate"
               style={{
                 width: "120px",
                 height: "120px",
@@ -68,7 +65,7 @@ function ProfilePage() {
             />
           </div>
 
-          {/* Name and Buttons */}
+          {/* User Info */}
           <motion.div
             className="mt-5 py-3"
             initial={{ opacity: 0, y: 20 }}
@@ -99,7 +96,7 @@ function ProfilePage() {
             </div>
           </motion.div>
 
-          {/* Stats (can be real data if available) */}
+          {/* Stats */}
           <motion.div
             className="row mt-1"
             initial={{ opacity: 0 }}
@@ -107,7 +104,7 @@ function ProfilePage() {
             transition={{ delay: 0.7, duration: 0.5 }}
           >
             <div className="col-4 col-md-2 offset-md-3">
-              <div><strong>{user?.friends?.length || 0}</strong></div>
+              <div><strong>{user?.friends?.length}</strong></div>
               <div>Friends</div>
             </div>
             <div className="col-4 col-md-2">
@@ -119,6 +116,11 @@ function ProfilePage() {
               <div>Videos</div>
             </div>
           </motion.div>
+
+          {/* User Posts */}
+          <div className="mt-5">
+            <UserPosts />
+          </div>
         </>
       )}
     </motion.div>
