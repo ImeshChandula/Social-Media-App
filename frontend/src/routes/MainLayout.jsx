@@ -17,12 +17,15 @@ const MainLayout = () => {
     <div className="container-fluid vh-100 overflow-hidden bg-dark text-white">
       <div className="row h-100">
         {/* Sidebar */}
-        <div className="col-12 col-md-3 col-lg-2 p-0 bg-black d-none d-md-block" style={{ overflowY: "auto" }}>
+        <div
+          className="col-12 col-md-3 col-lg-2 p-0 bg-black"
+          style={{ overflowY: "auto", zIndex: 999 }}
+        >
           <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
         </div>
 
         {/* Main Content */}
-        <div className="col-12 col-md-6 col-lg-8 py-3 px-4" style={{ overflowY: "auto", height: "100vh" }}>
+        <div className="col py-3 px-4" style={{ overflowY: "auto", height: "100vh" }}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/members" element={<Members />} />
@@ -34,7 +37,10 @@ const MainLayout = () => {
         </div>
 
         {/* Right Sidebar */}
-        <div className="col-12 col-md-3 col-lg-2 p-0 bg-black d-none d-md-block" style={{ overflowY: "auto" }}>
+        <div
+          className="col-12 col-md-3 col-lg-2 p-0 bg-black d-none d-md-block"
+          style={{ overflowY: "auto" }}
+        >
           <RightSidebar />
         </div>
       </div>
