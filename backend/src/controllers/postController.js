@@ -277,11 +277,42 @@ const updatePostByPostId = async (req, res) => {
         const updateData = {};
         
         if (content !== undefined) updateData.content = content;
-        if (media !== undefined) updateData.media = media;
         if (mediaType !== undefined) updateData.mediaType = mediaType;
         if (tags !== undefined) updateData.tags = tags;
         if (privacy !== undefined) updateData.privacy = privacy;
         if (location !== undefined) updateData.location = location;
+        if (media !== undefined) {
+            try {
+                // Make sure cloudinary is properly initialized
+                if (!cloudinary || typeof cloudinary.uploader.upload !== 'function') {
+                    throw new Error('Cloudinary is not properly configured');
+                }
+                
+                // Check the type of media and handle appropriately
+                if (Array.isArray(media)) {
+                    // If it's an array of media files
+                    const uploadPromises = media.map(item => cloudinary.uploader.upload(item.path || item));
+                    const uploadResults = await Promise.all(uploadPromises);
+                    updateData.media = uploadResults.map(result => result.secure_url);
+                } else if (typeof media === 'object' && media !== null && media.path) {
+                    // If it's a file object from multer
+                    const uploadResponse = await cloudinary.uploader.upload(media.path);
+                    updateData.media = uploadResponse.secure_url;
+                } else if (typeof media === 'string') {
+                    // If it's a base64 string or a URL
+                    const uploadResponse = await cloudinary.uploader.upload(media);
+                    updateData.media = uploadResponse.secure_url;
+                } else {
+                    throw new Error('Invalid media format');
+                }
+            } catch (uploadError) {
+                console.error('Media upload error:', uploadError);
+                return res.status(400).json({ 
+                    error: "Failed to upload media. Invalid format or Cloudinary configuration issue.",
+                    details: uploadError.message
+                });
+            }
+        };
         
         // Add edit history if content is changed
         if (content !== undefined && content !== existingPost.content) {

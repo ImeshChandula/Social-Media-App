@@ -191,9 +191,40 @@ const updateUserProfileImage = async (req, res) => {
             return res.status(400).json({msg: "Profile picture is required"})
         }
 
-        const uploadResponse = await cloudinary.uploader.upload(profilePicture);
-        const updatedData = {
-            profilePicture: uploadResponse.secure_url,
+        // data object
+        const updatedData = { };
+
+        if (profilePicture) {
+            try {
+                // Make sure cloudinary is properly initialized
+                if (!cloudinary || typeof cloudinary.uploader.upload !== 'function') {
+                    throw new Error('Cloudinary is not properly configured');
+                }
+                        
+                // Check the type of profile Picture and handle appropriately
+                if (Array.isArray(profilePicture)) {
+                     // If it's an array of profile Picture files
+                    const uploadPromises = profilePicture.map(item => cloudinary.uploader.upload(item.path || item));
+                    const uploadResults = await Promise.all(uploadPromises);
+                    updatedData.profilePicture = uploadResults.map(result => result.secure_url);
+                } else if (typeof profilePicture === 'object' && profilePicture !== null && profilePicture.path) {
+                    // If it's a file object from multer
+                    const uploadResponse = await cloudinary.uploader.upload(profilePicture.path);
+                    updatedData.profilePicture = uploadResponse.secure_url;
+                } else if (typeof profilePicture === 'string') {
+                    // If it's a base64 string or a URL
+                    const uploadResponse = await cloudinary.uploader.upload(profilePicture);
+                    updatedData.profilePicture = uploadResponse.secure_url;
+                } else {
+                    throw new Error('Invalid profile picture format');
+                }
+            } catch (uploadError) {
+                console.error('Profile Picture upload error:', uploadError);
+                return res.status(400).json({ 
+                    error: "Failed to upload profile picture. Invalid format or Cloudinary configuration issue.",
+                    details: uploadError.message
+                });
+            }
         };
 
         const updatedUser = await User.updateById(userIdToUpdate, updatedData);
@@ -225,9 +256,40 @@ const updateUserProfileCoverPhoto = async (req, res) => {
             return res.status(400).json({msg: "Cover Photo is required"})
         }
 
-        const uploadResponse = await cloudinary.uploader.upload(coverPhoto);
-        const updatedData = {
-            coverPhoto: uploadResponse.secure_url,
+        // data object
+        const updatedData = { };
+
+        if (coverPhoto) {
+            try {
+                // Make sure cloudinary is properly initialized
+                if (!cloudinary || typeof cloudinary.uploader.upload !== 'function') {
+                    throw new Error('Cloudinary is not properly configured');
+                }
+                        
+                // Check the type of cover Photo and handle appropriately
+                if (Array.isArray(coverPhoto)) {
+                     // If it's an array of cover Photo files
+                    const uploadPromises = coverPhoto.map(item => cloudinary.uploader.upload(item.path || item));
+                    const uploadResults = await Promise.all(uploadPromises);
+                    updatedData.coverPhoto = uploadResults.map(result => result.secure_url);
+                } else if (typeof coverPhoto === 'object' && coverPhoto !== null && coverPhoto.path) {
+                    // If it's a file object from multer
+                    const uploadResponse = await cloudinary.uploader.upload(coverPhoto.path);
+                    updatedData.coverPhoto = uploadResponse.secure_url;
+                } else if (typeof coverPhoto === 'string') {
+                    // If it's a base64 string or a URL
+                    const uploadResponse = await cloudinary.uploader.upload(coverPhoto);
+                    updatedData.coverPhoto = uploadResponse.secure_url;
+                } else {
+                    throw new Error('Invalid cover photo format');
+                }
+            } catch (uploadError) {
+                console.error('Cover Photo upload error:', uploadError);
+                return res.status(400).json({ 
+                    error: "Failed to upload cover photo. Invalid format or Cloudinary configuration issue.",
+                    details: uploadError.message
+                });
+            }
         };
 
         const updatedUser = await User.updateById(userIdToUpdate, updatedData);
