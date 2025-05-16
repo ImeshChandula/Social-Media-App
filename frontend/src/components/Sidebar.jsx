@@ -79,19 +79,23 @@ function Sidebar({ collapsed, setCollapsed }) {
     <>
       {/* Mobile Top Bar */}
       <div className="d-flex d-md-none align-items-center justify-content-between bg-dark text-white px-3 py-2">
-        <button className="btn btn-outline-light" onClick={toggleSidebar}>
+        <button
+          className="btn btn-outline-light"
+          onClick={toggleSidebar}
+          aria-label="Toggle sidebar"
+        >
           {mobileVisible ? <FaTimes /> : <FaBars />}
         </button>
         <span className="fw-bold">Facebook</span>
       </div>
 
-      {/* Sidebar Background Overlay (Mobile) */}
+      {/* Overlay (for mobile) */}
       {mobileVisible && (
         <div
-          className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 z-2"
-          onClick={closeMobileSidebar}
+          className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
           style={{ zIndex: 998 }}
-        ></div>
+          onClick={closeMobileSidebar}
+        />
       )}
 
       {/* Sidebar */}
@@ -123,7 +127,7 @@ function Sidebar({ collapsed, setCollapsed }) {
           )}
         </div>
 
-        {/* Nav Items */}
+        {/* Nav Links */}
         <ul className="nav flex-column mb-4">
           {navItems.map(({ name, path, icon }) => (
             <li className="nav-item mb-2" key={name}>
@@ -162,7 +166,10 @@ function Sidebar({ collapsed, setCollapsed }) {
         {/* Shortcuts */}
         {!collapsed && (
           <>
-            <h6 className="text-uppercase px-2 text-white mb-3 border-bottom border-secondary" style={{ fontSize: "0.9rem" }}>
+            <h6
+              className="text-uppercase px-2 text-white mb-3 border-bottom border-secondary"
+              style={{ fontSize: "0.9rem" }}
+            >
               Your Shortcuts
             </h6>
             <ul className="nav flex-column">
