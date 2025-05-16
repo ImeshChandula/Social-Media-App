@@ -43,7 +43,7 @@ const validatePost = (req, res, next) => {
     author: Joi.string().required(), // typically user ID
     content: Joi.string().optional(),
     media: Joi.array().items(Joi.string().uri()).optional(),
-    mediaTypes: Joi.string().valid('photo', 'video').optional(),
+    mediaType: Joi.string().valid('photo', 'video').optional(),
     tags: Joi.array().items(Joi.string()).optional(),
     privacy: Joi.string().valid('public', 'private', 'friends').default('public'),
     location: Joi.string().allow('', null).optional(),
