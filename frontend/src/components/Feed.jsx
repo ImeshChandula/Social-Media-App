@@ -13,8 +13,6 @@ const Feed = () => {
         setError(null);
 
         const res = await axiosInstance.get("/posts/feed");
-
-        // Posts may be under res.data.posts or directly in res.data
         const postsData = res.data.posts || res.data || [];
 
         setPosts(postsData);
