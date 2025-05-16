@@ -41,7 +41,7 @@ const validateUser = (req, res, next) => {
 const validatePost = (req, res, next) => {
   const schema = Joi.object({
     author: Joi.string().required(), // typically user ID
-    content: Joi.string().required(),
+    content: Joi.string().optional(),
     media: Joi.array().items(Joi.string().uri()).optional(),
     mediaTypes: Joi.string().valid('photo', 'video').optional(),
     tags: Joi.array().items(Joi.string()).optional(),

@@ -8,6 +8,10 @@ const createPost = async (req, res) => {
     try {
         const { content, media, mediaType, tags, privacy, location } = req.body;
 
+        if (!content && !media) {
+            return res.status(400).json({ error: "Either content or media is required." });
+        }
+
         // upload media to cloudinary
         const uploadResponse = await cloudinary.uploader.upload(media);
         
@@ -126,7 +130,7 @@ const getAllPosts = async (req, res) => {
 //@desc     Get all posts by id
 const getAllPostsByUserId = async (req, res) => {
     try {
-        const userId = req.params.userId || req.user.id;
+        const userId = req.params.id || req.user.id;
         
         // Get posts by user ID
         const posts = await Post.findByUserId(userId);
@@ -222,7 +226,7 @@ const getAllPostsInFeed = async (req, res) => {
 //@desc     Update post by post id
 const updatePostByPostId = async (req, res) => {
     try {
-        const postId = req.params.postId;
+        const postId = req.params.id;
         if (!postId) {
             return res.status(400).json({ msg: 'Post ID is required' });
         }
@@ -285,7 +289,8 @@ const updatePostByPostId = async (req, res) => {
 //@desc 
 const deletePostByPostId = async (req, res) => {
     try {
-        const postId = req.params.postId;
+        const currentUserId = req.user.id;
+        const postId = req.params.id;
         if (!postId) {
             return res.status(400).json({ msg: 'Post ID is required' });
         }
@@ -298,7 +303,7 @@ const deletePostByPostId = async (req, res) => {
         
         // Check if user is the author of the post
         // Assuming req.user.id contains the authenticated user's ID
-        if (currentUserId !== 'super_admin' && existingPost.author !== req.user.id) {
+        if (req.user.role !== 'super_admin' && existingPost.author !== currentUserId) {
             return res.status(403).json({ msg: 'Unauthorized: You can only delete your own posts' });
         }
         

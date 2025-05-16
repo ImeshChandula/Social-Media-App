@@ -1,5 +1,6 @@
 const express = require('express');
-const { authenticateUser, authorizeRoles } = require('../middleware/authMiddleware');
+const { authenticateUser } = require('../middleware/authMiddleware');
+const { validatePost } = require("../middleware/validator");
 const postController  = require('../controllers/postController');
 
 const router = express.Router();
@@ -10,7 +11,7 @@ const router = express.Router();
 // @route   POST api/posts/createPost
 // @desc    Create a post
 // @access  Private
-router.post('/createPost', authenticateUser, postController.createPost);
+router.post('/createPost', validatePost, authenticateUser, postController.createPost);
 
 // @route   GET /api/posts/me
 // @desc    Get all posts by the logged-in user (latest at top)
@@ -30,7 +31,7 @@ router.get('/feed', authenticateUser, postController.getAllPosts);
 // @route   PATCH /api/posts/update/:id
 // @desc    Update Post By Post Id
 // @access  Private
-router.patch("/update/:id", authenticateUser, postController.updatePostByPostId);
+router.patch("/update/:id", validatePost, authenticateUser, postController.updatePostByPostId);
 
 // @route   DELETE /api/posts/delete/:id
 // @desc    Delete Post By Post Id

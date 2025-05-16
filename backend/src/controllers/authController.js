@@ -21,7 +21,7 @@ const registerUser = async (req, res) => {
         const defaultCover = process.env.DEFAULT_COVER_PHOTO || "https://static.cognitoforms.com/website/assets/default-video-cover-photo.Djn4Ebbl.png";
         
         // create new user
-        const newUser = {
+        const userData = {
             username: lowercaseUsername,
             email,
             password,
@@ -32,7 +32,7 @@ const registerUser = async (req, res) => {
             coverPhoto: defaultCover
         };
 
-        await User.create(newUser);
+        const newUser = await User.create(userData);
 
         // create JWT token
         const payload = {
