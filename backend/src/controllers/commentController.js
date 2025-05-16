@@ -1,189 +1,45 @@
 const Comment = require('../models/Comment');
 const Post = require('../models/Post');
 const User = require('../models/User');
+const cloudinary =  require("../config/cloudinary");
 
-// Add comment to post
+//@desc     Add comment to post
 const addComment = async (req, res) => {
   try {
-    const { text, media } = req.body;
-    
-    const post = await Post.findById(req.params.postId);
-    
+    const { postId, text, media } = req.body;
+    if (!postId || !text) {
+      return res.status(400).json({ msg: 'Post ID and comment text are required' });
+    }
+
+    const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).json({ msg: 'Post not found' });
     }
     
-    const newComment = new Comment({
-      post: req.params.postId,
+    const commentData = {
+      post: postId,
       user: req.user.id,
       text,
-      media
-    });
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    if (media) {
+      // upload media to cloudinary
+      const uploadResponse = await cloudinary.uploader.upload(media);
+      commentData.media = uploadResponse.secure_url;
+    }
     
-    await newComment.save();
-    
-    // Add comment reference to post
-    post.comments.push(newComment.id);
-    await post.save();
-    
+    const newComment = await Comment.create(commentData);
+    if (!newComment) {
+      return res.status(500).json({ msg: 'Failed to create comment' });
+    }
+
     // Get user details
     const user = await User.findById(req.user.id);
-    const userData = {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      username: user.username,
-      profilePicture: user.profilePicture
-    };
-    
-    // Populate user data
-    const populatedComment = {
-      id: newComment.id,
+
+    const commentWithUser = {
       ...newComment,
-      user: userData
-    };
-    
-    res.json(populatedComment);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-};
-
-// Get comments for a post
-const getComments = async (req, res) => {
-  try {
-    const commentsQuery = Comment.find({ post: req.params.postId });
-    const commentsSnapshot = await commentsQuery.get();
-    
-    const comments = [];
-    
-    for (const doc of commentsSnapshot.docs) {
-      const commentData = doc.data();
-      const comment = { id: doc.id, ...commentData };
-      
-      // Get user details
-      const commentUser = await User.findById(comment.user);
-      comment.user = {
-        id: commentUser.id,
-        firstName: commentUser.firstName,
-        lastName: commentUser.lastName,
-        username: commentUser.username,
-        profilePicture: commentUser.profilePicture
-      };
-      
-      // Get reply user details
-      for (let i = 0; i < comment.replies.length; i++) {
-        const replyUser = await User.findById(comment.replies[i].user);
-        comment.replies[i].user = {
-          id: replyUser.id,
-          firstName: replyUser.firstName,
-          lastName: replyUser.lastName,
-          username: replyUser.username,
-          profilePicture: replyUser.profilePicture
-        };
-      }
-      
-      comments.push(comment);
-    }
-    
-    // Sort by createdAt descending
-    comments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    
-    res.json(comments);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-};
-
-// Update comment
-const updateComment = async (req, res) => {
-  try {
-    const { text, media } = req.body;
-    
-    let comment = await Comment.findById(req.params.id);
-    
-    if (!comment) {
-      return res.status(404).json({ msg: 'Comment not found' });
-    }
-    
-    // Check comment belongs to user
-    if (comment.user !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' });
-    }
-    
-    if (text) comment.text = text;
-    if (media) comment.media = media;
-    
-    await comment.save();
-    
-    res.json(comment);
-	}catch(err){
-		console.error(err.message);
-		res.status(500).send('Server error');
-	}
-};
-
-// Delete comment
-const deleteComment = async (req, res) => {
-  try {
-    const comment = await Comment.findById(req.params.id);
-    
-    if (!comment) {
-      return res.status(404).json({ msg: 'Comment not found' });
-    }
-    
-    // Check comment belongs to user or user is admin/moderator
-    if (comment.user !== req.user.id && 
-        !['admin', 'moderator'].includes(req.user.role)) {
-      return res.status(401).json({ msg: 'User not authorized' });
-    }
-    
-    // Remove comment reference from post
-    const post = await Post.findById(comment.post);
-    if (post) {
-      post.comments = post.comments.filter(id => id !== comment.id);
-      await post.save();
-    }
-    
-    await comment.remove();
-    
-    res.json({ msg: 'Comment removed' });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-};
-
-// Add reply to comment
-const addReply = async (req, res) => {
-  try {
-    const { text } = req.body;
-    
-    const comment = await Comment.findById(req.params.commentId);
-    
-    if (!comment) {
-      return res.status(404).json({ msg: 'Comment not found' });
-    }
-    
-    const newReply = {
-      user: req.user.id,
-      text,
-      createdAt: new Date()
-    };
-    
-    comment.replies.push(newReply);
-    
-    await comment.save();
-    
-    // Get user data for reply
-    const user = await User.findById(req.user.id);
-    
-    // Populate user data in reply
-    const lastReplyIndex = comment.replies.length - 1;
-    const populatedReply = {
-      ...comment.replies[lastReplyIndex],
       user: {
         id: user.id,
         firstName: user.firstName,
@@ -193,25 +49,317 @@ const addReply = async (req, res) => {
       }
     };
     
-    // Create populated comment to return
-    const populatedComment = {
-      id: comment.id,
-      ...comment,
-      replies: [...comment.replies.slice(0, lastReplyIndex), populatedReply]
+    res.status(201).json({
+      msg: 'Comment added successfully',
+      comment: commentWithUser
+    });
+  } catch (err) {
+    console.error('Add comment error:', error.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+
+//@desc     Add a reply to a comment
+const addReply = async (req, res) => {
+  try {
+    const { commentId, text } = req.body;
+    
+    if (!commentId || !text) {
+      return res.status(400).json({ msg: 'Comment ID and reply text are required' });
+    }
+    
+    // Check if comment exists
+    const comment = await Comment.findById(commentId);
+    
+    if (!comment) {
+      return res.status(404).json({ msg: 'Comment not found' });
+    }
+    
+    // Create reply object
+    const reply = {
+      id: Date.now().toString(), // Generate unique ID for the reply
+      user: req.user.id,
+      text,
+      createdAt: new Date().toISOString(),
+      likes: []
     };
     
-    res.json(populatedComment);
+    // Get current replies array or create a new one
+    const currentReplies = comment.replies || [];
+    
+    // Add new reply to the array
+    const updatedReplies = [...currentReplies, reply];
+    
+    try {
+      // Update the comment with the new reply
+      await commentsCollection.doc(commentId).update({
+        replies: updatedReplies,
+        updatedAt: new Date().toISOString()
+      });
+      
+      // Get user details
+      const user = await User.findById(req.user.id);
+      
+      // Prepare reply with user details for response
+      let replyWithUser = { ...reply };
+      
+      if (user) {
+        replyWithUser.user = {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          username: user.username,
+          profilePicture: user.profilePicture
+        };
+      }
+      
+      res.status(201).json({
+        msg: 'Reply added successfully',
+        reply: replyWithUser
+      });
+    } catch (updateError) {
+      console.error(`Error adding reply to comment ${commentId}:`, updateError.message);
+      res.status(500).json({ msg: 'Error adding reply' });
+    }
+  } catch (error) {
+    console.error('Add reply error:', error.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+
+//@desc     Get all comments for a specific post
+const getCommentsByPostId  = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    if (!postId) {
+      return res.status(400).json({ msg: 'Post ID is required' });
+    }
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ msg: 'Post not found' });
+    }
+
+    // Get comments for this post
+    const comments = await Comment.findByPostId(postId);
+
+    // Collect all unique user IDs from comments and replies
+    const userIds = new Set();
+    comments.forEach(comment => {
+      if (comment.user && typeof comment.user === 'string') {
+        userIds.add(comment.user);
+      }
+      
+      // Also collect user IDs from replies
+      if (comment.replies && Array.isArray(comment.replies)) {
+        comment.replies.forEach(reply => {
+          if (reply.user && typeof reply.user === 'string') {
+            userIds.add(reply.user);
+          }
+        });
+      }
+    });
+
+    // Fetch user data for all commenter's
+    const usersMap = {};
+    
+    for (const userId of userIds) {
+      try {
+        if (!userId) continue;
+        
+        const user = await User.findById(userId);
+        
+        if (user) {
+          usersMap[userId] = {
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            username: user.username,
+            profilePicture: user.profilePicture
+          };
+        }
+      } catch (userError) {
+        console.error(`Error fetching user ${userId}:`, userError.message);
+      }
+    }
+    
+    // Populate comments with user data
+    const populatedComments = comments.map(comment => {
+      const userData = comment.user && typeof comment.user === 'string' 
+        ? usersMap[comment.user] 
+        : null;
+      
+      // Populate replies with user data too
+      let populatedReplies = [];
+      if (comment.replies && Array.isArray(comment.replies)) {
+        populatedReplies = comment.replies.map(reply => {
+          const replyUserData = reply.user && typeof reply.user === 'string'
+            ? usersMap[reply.user]
+            : null;
+          
+          return {
+            ...reply,
+            user: replyUserData,
+            likeCount: reply.likes ? reply.likes.length : 0
+          };
+        });
+      }
+      
+      return {
+        id: comment.id,
+        post: comment.post,
+        text: comment.text,
+        media: comment.media,
+        likes: comment.likes,
+        replies: populatedReplies,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+        user: userData,
+        likeCount: comment.likes ? comment.likes.length : 0
+      };
+    });
+    
+    res.status(200).json({
+      msg: 'Comments retrieved successfully',
+      count: populatedComments.length,
+      comments: populatedComments
+    });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Get comments error:', error.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+
+//@desc     Update a comment
+const updateComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const { text, media } = req.body;
+    
+    if (!commentId) {
+      return res.status(400).json({ msg: 'Comment ID is required' });
+    }
+    
+    if (!text && !media) {
+      return res.status(400).json({ msg: 'Nothing to update' });
+    }
+    
+    // Check if comment exists
+    const comment = await Comment.findById(commentId);
+    
+    if (!comment) {
+      return res.status(404).json({ msg: 'Comment not found' });
+    }
+    
+    // Ensure user owns this comment
+    if (comment.user !== req.user.id) {
+      return res.status(403).json({ msg: 'Unauthorized: You can only update your own comments' });
+    }
+    
+    // Create update object
+    const updateData = {};
+    
+    if (text !== undefined) updateData.text = text;
+    if (media !== undefined) updateData.media = media;
+    
+    try {
+      // Get the updated comment
+      const updatedComment = await Comment.updateById(commentId, updateData);
+      
+      if (!updatedComment) {
+        return res.status(404).json({ msg: 'Failed to retrieve updated comment' });
+      }
+      
+      // Get user details
+      const user = await User.findById(req.user.id);
+      
+      let userDetails = null;
+      if (user) {
+        userDetails = {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          username: user.username,
+          profilePicture: user.profilePicture
+        };
+      }
+      
+      const commentWithUser = {
+        ...updatedComment,
+        user: userDetails
+      };
+      
+      res.status(200).json({
+        msg: 'Comment updated successfully',
+        comment: commentWithUser
+      });
+    } catch (updateError) {
+      console.error(`Error updating comment ${commentId}:`, updateError.message);
+      res.status(500).json({ msg: 'Error updating comment' });
+    }
+  } catch (error) {
+    console.error('Update comment error:', error.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+
+//@desc     Delete a comment
+const deleteComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    
+    if (!commentId) {
+      return res.status(400).json({ msg: 'Comment ID is required' });
+    }
+    
+    // Check if comment exists
+    const comment = await Comment.findById(commentId);
+    
+    if (!comment) {
+      return res.status(404).json({ msg: 'Comment not found' });
+    }
+    
+    // Ensure user owns this comment or is the owner of the post
+    if (comment.user !== req.user.id) {
+      // If not the comment owner, check if user is the post owner
+      const post = await Post.findById(comment.post);
+      
+      if (!post || post.author !== req.user.id) {
+        return res.status(403).json({ 
+          msg: 'Unauthorized: You can only delete your own comments or comments on your posts' 
+        });
+      }
+    }
+    
+    try {
+      // Delete the comment
+      const deleteResult = await Comment.delete(commentId);
+      
+      if (!deleteResult) {
+        return res.status(500).json({ msg: 'Failed to delete comment' });
+      }
+      
+      res.status(200).json({ msg: 'Comment deleted successfully' });
+    } catch (deleteError) {
+      console.error(`Error deleting comment ${commentId}:`, deleteError.message);
+      res.status(500).json({ msg: 'Error deleting comment' });
+    }
+  } catch (error) {
+    console.error('Delete comment error:', error.message);
+    res.status(500).json({ msg: 'Server error' });
   }
 };
 
 
 
+
 module.exports = {
   addComment,
-  getComments,
+  getCommentsByPostId,
   addReply,
   deleteComment,
   updateComment,

@@ -4,87 +4,85 @@ const db = connectFirebase();
 const commentsCollection = db.collection('comments');
 
 class Comment {
-  constructor(commentData) {
+  constructor(id, commentData) {
+    this.id = id;
     this.post = commentData.post;
     this.user = commentData.user;
-
     this.text = commentData.text;
     this.media = commentData.media || null;
 
     this.likes = commentData.likes || [];
     this.replies = commentData.replies || [];
     
-    this.createdAt = commentData.createdAt || new Date();
-    this.updatedAt = commentData.updatedAt || new Date();
+    this.createdAt = postData.createdAt || new Date().toISOString();
+    this.updatedAt = new Date().toISOString();
   }
 
-  // Save comment to database
-  async save() {
-    try {
-      this.updatedAt = new Date(); 
-
-      if (this.id) {
-        // Update existing comment
-        await commentsCollection.doc(this.id).update(this.toFirestore());
-        return this.id;
-      } else {
-        // Create new comment
-        const docRef = await commentsCollection.add(this.toFirestore());
-        this.id = docRef.id;
-        return this.id;
-      }
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // Convert to Firestore compatible object
-  toFirestore() {
-    const comment = { ...this }; // After this we will get a plain JavaScript object with the same properties.
-    delete comment.id;  // Remove id property as it's stored as document ID
-    return comment;
-  }
-
-  // Delete comment
-  async remove() {
-    try {
-      if (!this.id) throw new Error('Comment ID not defined');
-      await commentsCollection.doc(this.id).delete();
-      return true;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // Static methods
+  // find by comment id
   static async findById(id) {
     try {
       const doc = await commentsCollection.doc(id).get();
       if (!doc.exists) return null;
       
-      const commentData = doc.data(); // Extracts the plain JavaScript object stored in the Firestore document
-      const comment = new Comment(commentData); // Creates a new Comment class instance using the data fetched from Firestore.
-      comment.id = doc.id; // Assigns the document ID to the comment instance.
-      return comment;
+      return new Comment(doc.id, doc.data());
     } catch (error) {
       throw error;
     }
-  }
+  };
 
-  static async find(filter) {
+  // find by post id
+  static async findByPostId(postId) {
     try {
-      let query = commentsCollection;
+      const commentsSnapshot = await commentsCollection.where('post', '==', postId).get();
       
-      // Build query from filter
-      Object.keys(filter).forEach(key => {
-        query = query.where(key, '==', filter[key]);
+      if (commentsSnapshot.empty) {
+        return res.status(200).json({msg: 'No comments found for this post', comments: [] });
+      }
+
+      const comments = commentsSnapshot.docs.map(doc => new Comment(doc.id, doc.data()));
+
+      return comments.sort((a, b) => {
+        return new Date(b.createdAt) - new Date(a.createdAt);
       });
-      
-      return query;
+    } catch (error) {
+        console.error('Error finding comments by post ID:', error);
+        throw error;
+    }
+  };
+
+  // Save comment to database
+  static async create(commentData) {
+    try { 
+      const docRef = await commentsCollection.add(commentData);
+      return new Comment(docRef.id, commentData);
     } catch (error) {
       throw error;
     }
-  }
+  };
+
+  // Delete comment
+  static async deleteById(id) {
+    try {
+      await commentsCollection.doc(id).delete();
+       return true;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // Update comment
+  static async updateById(id, updateData) {
+    try {
+      await commentsCollection.doc(id).update(updateData);
+      updateData.updatedAt = new Date().toISOString();
+
+      const updatedComment = await Post.findById(id);
+      return updatedComment;
+    } catch (error) {
+      throw error;
+    }
+  };
+  
 }
 
 module.exports=Comment;
