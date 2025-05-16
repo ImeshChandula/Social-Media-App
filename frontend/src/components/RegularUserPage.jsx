@@ -1,3 +1,5 @@
+import Feed from "./Feed";
+
 const RegularUserPage = () => {
     const stories = [
         {
@@ -19,31 +21,9 @@ const RegularUserPage = () => {
             bg: "https://randomuser.me/api/portraits/men/32.jpg",
         },
     ];
-    return (
-        <div className=" py-5 py-md-0 mt-2 mt-md-0">
-            {/* Post Input */}
-            <div className="card bg-secondary bg-opacity-10 border-secondary text-white mb-4 p-3 rounded-4">
-                <div className="d-flex align-items-center mb-3">
-                    <img
-                        src="https://randomuser.me/api/portraits/men/32.jpg"
-                        alt="profile"
-                        className="rounded-circle me-2"
-                        style={{ width: "45px", height: "45px" }}
-                    />
-                    <input
-                        type="text"
-                        className="form-control rounded-pill bg-secondary text-white border-0"
-                        placeholder="What's on your mind?"
-                    />
-                </div>
-                <hr className="border-secondary" />
-                <div className="d-flex justify-content-around text-muted-dark">
-                    <div><i className="bi bi-image me-1 text-danger"></i> Photo</div>
-                    <div><i className="bi bi-camera-video me-1 text-success"></i> Video</div>
-                    <div><i className="bi bi-emoji-smile me-1 text-warning"></i> Feeling</div>
-                </div>
-            </div>
 
+    return (
+        <div className="py-5 py-md-0 mt-2 mt-md-0">
             {/* Stories */}
             <div className="d-flex gap-3 overflow-auto mb-4">
                 {stories.map((story) => (
@@ -88,30 +68,10 @@ const RegularUserPage = () => {
                 ))}
             </div>
 
-
-            {/* Feed Post */}
-            <div className="card bg-secondary bg-opacity-10 border-secondary text-white mb-4 p-3 rounded-4">
-                <div className="d-flex align-items-center mb-3">
-                    <img
-                        src="https://randomuser.me/api/portraits/men/32.jpg"
-                        alt="user"
-                        className="rounded-circle me-2"
-                        style={{ width: "45px", height: "45px" }}
-                    />
-                    <div>
-                        <strong>John Doe</strong>
-                        <div className="text-muted-dark small">2 hrs ago</div>
-                    </div>
-                </div>
-                <p>This is a sample post from a friend. 👋</p>
-                <img
-                    src="https://randomuser.me/api/portraits/men/32.jpg"
-                    alt="post"
-                    className="img-fluid rounded-3"
-                />
-            </div>
+            {/* Feed Section */}
+            <Feed />
         </div>
-    )
-}
+    );
+};
 
-export default RegularUserPage
+export default RegularUserPage;

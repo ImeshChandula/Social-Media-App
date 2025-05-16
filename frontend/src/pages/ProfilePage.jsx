@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
 import { useNavigate } from "react-router-dom";
-import UserPosts from "../components/UserPosts";
+import UserPosts from "../components/LogedInUserPosts";
 
 function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -112,7 +112,7 @@ function ProfilePage() {
             transition={{ delay: 0.7, duration: 0.5 }}
           >
             <div className="col-4 col-md-2 offset-md-3">
-              <div><strong>{user?.friends?.length || 0}</strong></div>
+              <div><strong>{user?.friends?.length}</strong></div>
               <div>Friends</div>
             </div>
             <div className="col-4 col-md-2">
