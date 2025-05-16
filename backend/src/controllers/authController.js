@@ -15,6 +15,11 @@ const registerUser = async (req, res) => {
 
         const lowercaseUsername = username.toLowerCase();
 
+        // generate a num between 1-100
+        const index = Math.floor(Math.random() * 100) + 1;
+        const randomAvatar = `https://avatar.iran.liara.run/public/${index}.png`;
+        const defaultCover = process.env.DEFAULT_COVER_PHOTO || "https://static.cognitoforms.com/website/assets/default-video-cover-photo.Djn4Ebbl.png";
+        
         // create new user
         const newUser = {
             username: lowercaseUsername,
@@ -23,6 +28,8 @@ const registerUser = async (req, res) => {
             firstName,
             lastName,
             role: role || 'user',
+            profilePicture: randomAvatar,
+            coverPhoto: defaultCover
         };
 
         await User.create(newUser);
