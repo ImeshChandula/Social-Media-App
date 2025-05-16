@@ -21,11 +21,11 @@ body,
 }
 
 /* Left Side Bar */
-.logout-button {
+.nav-link {
     transition: background-color 0.2s ease-in-out !important;
 }
 
-.logout-button:hover {
+.nav-link:hover {
     background-color: #222 !important;
     border-radius: 5px !important;
 }
