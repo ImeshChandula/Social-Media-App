@@ -30,7 +30,7 @@ class User {
     this.friendRequests = userData.friendRequests || [];
 
     this.isActive = userData.isActive !== undefined ? userData.isActive : true;
-    this.lastLogin = userData.lastLogin || null;
+    this.lastLogin = userData.lastLogin || new Date().toISOString();
 
     // Validate role
     this.role = Object.values(ROLES).includes(userData.role) ? userData.role : ROLES.USER;
