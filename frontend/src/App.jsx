@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Login from "./routes/login";
 import Register from "./routes/Register";
 import MainLayout from "./routes/MainLayout";
+import CreatePost from "./components/CreatePost";
+import EditProfile from "./components/EditProfile";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -26,6 +28,8 @@ function App() {
         ) : (
           <>
             <Route path="/*" element={<MainLayout />} />
+            <Route path="/create-post" element={<CreatePost />} />
+            <Route path="/edit-profile" element={<EditProfile />} />
           </>
         )}
       </Routes>

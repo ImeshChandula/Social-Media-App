@@ -29,6 +29,10 @@ function ProfilePage() {
     navigate("/edit-profile");
   };
 
+  const handleCreatePost = () => {
+    navigate("/create-post");
+  };
+
   return (
     <motion.div
       className="container text-center py-5 py-md-0 mt-2 mt-md-0"
@@ -94,6 +98,16 @@ function ProfilePage() {
               >
                 Edit Profile
               </motion.button>
+
+              <motion.button
+                className="btn btn-success"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleCreatePost}
+              >
+                Create Post
+              </motion.button>
+
               <motion.button
                 className="btn btn-secondary"
                 whileHover={{ scale: 1.05 }}
