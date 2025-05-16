@@ -9,6 +9,7 @@ class Post {
         this.author = postData.author;
         this.content = postData.content;
         this.media = postData.media || [];
+        this.mediaTypes = postData.mediaType || null;
         this.tags = postData.tags || [];
         this.privacy = postData.privacy || 'public';
         this.location = postData.location || null;
@@ -78,7 +79,11 @@ class Post {
     static async findAll() {
         try {
             const postRef = await postCollection.get();
-            return postRef.docs.map(doc => new Post(doc.id, doc.data()));
+            
+            const posts = postRef.docs.map(doc => new Post(doc.id, doc.data()));
+            return posts.sort((a, b) => {
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
         } catch (error) {
             throw error;
         }

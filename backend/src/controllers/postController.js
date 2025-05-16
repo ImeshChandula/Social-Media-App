@@ -5,13 +5,14 @@ const Comments = require('../models/Comment');
 //@desc     create a post 
 const createPost = async (req, res) => {
     try {
-        const { content, media, tags, privacy, location } = req.body;
+        const { content, media, mediaTypes, tags, privacy, location } = req.body;
 
         const postData = {
             author: req.user.id,
             content,
             tags,
             media,
+            mediaTypes,
             privacy,
             location
         };
@@ -43,6 +44,60 @@ const createPost = async (req, res) => {
         
     } catch (error) {
         console.error('Post creation error:', error.message);
+        res.status(500).json({ msg: 'Server error' });
+    }
+};
+
+
+//@desc     Get all posts
+const getAllPosts = async (req, res) => {
+    try {
+        const posts = await Post.findAll();
+        if (!posts.length) {
+            return res.status(200).json({msg: "No posts found", posts: []});
+        }
+
+        // Create a map to store all users we need to fetch
+        const userIds = new Set();
+        posts.forEach(post => userIds.add(post.userId));
+        
+        // Get all needed users in one query
+        const users = await User.findById([...userIds]);
+        
+        // Create a map for quick access to user data
+        const usersMap = {};
+        users.forEach(user => {
+            usersMap[user.id] = {
+                id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                username: user.username,
+                profilePicture: user.profilePicture
+            };
+        });
+        
+        // Populate posts with user data
+        const populatedPosts = posts.map(post => {
+            const authorData = usersMap[post.userId];
+            
+            // Create a new object with post properties
+            const postObj = {
+                ...post,
+                likeCount: post.likeCount,
+                commentCount: post.commentCount,
+                shareCount: post.shareCount,
+                author: authorData
+            };
+            return postObj;
+        });
+        
+        res.status(200).json({
+            count: populatedPosts.length, 
+            msg: "All posts retrieved successfully", 
+            posts: populatedPosts
+        });
+    } catch (error) {
+        console.error('Get all posts error:', error.message);
         res.status(500).json({ msg: 'Server error' });
     }
 };
@@ -88,7 +143,7 @@ const getAllPostsByUserId = async (req, res) => {
             return postObj;
         });
         
-        res.status(200).json({msg: "User posts retrieved successfully", posts: populatedPosts});
+        res.status(200).json({count: populatedPosts.length, msg: "User posts retrieved successfully", posts: populatedPosts});
     } catch (error) {
         console.error('Get posts error:', error.message);
         res.status(500).json({ msg: 'Server error' });
@@ -147,6 +202,7 @@ const getAllPostsInFeed = async (req, res) => {
 
 module.exports = {
     createPost,
+    getAllPosts,
     getAllPostsByUserId,
     getAllPostsInFeed
 };

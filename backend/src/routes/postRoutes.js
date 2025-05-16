@@ -25,6 +25,6 @@ router.get('/getAllPostsByUserId/:id', authenticateUser, postController.getAllPo
 // @route   GET /api/posts/feed
 // @desc    Get posts for user's feed
 // @access  Private
-router.get('/feed', authenticateUser, postController.getAllPostsInFeed);
+router.get('/feed', authenticateUser, postController.getAllPosts);
 
 module.exports = router;
