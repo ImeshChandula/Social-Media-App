@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
+import { useNavigate } from "react-router-dom";
 import UserPosts from "../components/UserPosts";
 
 function ProfilePage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -20,9 +22,12 @@ function ProfilePage() {
         setLoading(false);
       }
     };
-
     fetchUser();
   }, []);
+
+  const handleEditProfile = () => {
+    navigate("/edit-profile");
+  };
 
   return (
     <motion.div
@@ -32,7 +37,7 @@ function ProfilePage() {
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       {loading ? (
-        <p>Loading...</p>
+        <p className="text-white-50">Loading...</p>
       ) : error ? (
         <div className="alert alert-danger">{error}</div>
       ) : (
@@ -48,10 +53,12 @@ function ProfilePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.6, type: "spring", stiffness: 50 }}
             />
-            <img
+
+            <motion.img
               src={user?.profilePicture}
               alt="Profile"
               className="rounded-circle border border-white shadow profile-pic-animate"
+              whileHover={{ scale: 1.05 }}
               style={{
                 width: "120px",
                 height: "120px",
@@ -75,14 +82,15 @@ function ProfilePage() {
             <h4 className="fw-bold">
               {user?.firstName && user?.lastName
                 ? `${user.firstName} ${user.lastName}`
-                : "User Name"}
+                : "Unnamed User"}
             </h4>
-            <p className="text-white-50">{user.email}</p>
-            <div className="d-flex justify-content-center flex-wrap gap-2 mt-2">
+            <p className="text-white-50 mb-3">{user?.email}</p>
+            <div className="d-flex justify-content-center flex-wrap gap-2">
               <motion.button
                 className="btn btn-success"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={handleEditProfile}
               >
                 Edit Profile
               </motion.button>
@@ -98,13 +106,13 @@ function ProfilePage() {
 
           {/* Stats */}
           <motion.div
-            className="row mt-1"
+            className="row mt-3 text-white-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.5 }}
           >
             <div className="col-4 col-md-2 offset-md-3">
-              <div><strong>{user?.friends?.length}</strong></div>
+              <div><strong>{user?.friends?.length || 0}</strong></div>
               <div>Friends</div>
             </div>
             <div className="col-4 col-md-2">
