@@ -8,6 +8,10 @@ const createPost = async (req, res) => {
     try {
         const { content, media, mediaType, tags, privacy, location } = req.body;
 
+        if (!content && !media) {
+            return res.status(400).json({ error: "Either content or media is required." });
+        }
+
         // upload media to cloudinary
         const uploadResponse = await cloudinary.uploader.upload(media);
         
