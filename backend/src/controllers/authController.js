@@ -29,7 +29,9 @@ const registerUser = async (req, res) => {
             lastName,
             role: role || 'user',
             profilePicture: randomAvatar,
-            coverPhoto: defaultCover
+            coverPhoto: defaultCover,
+            isActive: true,
+            lastLogin : new Date().toISOString(),
         };
 
         const newUser = await User.create(userData);
