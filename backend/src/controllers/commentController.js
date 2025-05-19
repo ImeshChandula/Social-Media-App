@@ -92,14 +92,14 @@ const addReply = async (req, res) => {
     const { text } = req.body;
     
     if (!text) {
-      return res.status(400).json({ msg: 'Reply text is required' });
+      return res.status(400).json({ message: 'Reply text is required' });
     }
     
     // Check if comment exists
     const comment = await Comment.findById(commentId);
     
     if (!comment) {
-      return res.status(404).json({ msg: 'Comment not found' });
+      return res.status(404).json({ message: 'Comment not found' });
     }
     
     // Create reply object
@@ -141,16 +141,16 @@ const addReply = async (req, res) => {
       }
       
       res.status(201).json({
-        msg: 'Reply added successfully',
+        message: 'Reply added successfully',
         reply: replyWithUser
       });
     } catch (updateError) {
       console.error(`Error adding reply to comment ${commentId}:`, updateError.message);
-      res.status(500).json({ msg: 'Error adding reply' });
+      res.status(500).json({ message: 'Error adding reply', error: updateError.message });
     }
   } catch (error) {
     console.error('Add reply error:', error.message);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
@@ -158,14 +158,14 @@ const addReply = async (req, res) => {
 //@desc     Get all comments for a specific post
 const getCommentsByPostId  = async (req, res) => {
   try {
-    const { postId } = req.params;
+    const postId = req.params.id;
     if (!postId) {
-      return res.status(400).json({ msg: 'Post ID is required' });
+      return res.status(400).json({ message: 'Post ID is required' });
     }
 
     const post = await Post.findById(postId);
     if (!post) {
-      return res.status(404).json({ msg: 'Post not found' });
+      return res.status(404).json({ message: 'Post not found' });
     }
 
     // Get comments for this post
@@ -248,13 +248,13 @@ const getCommentsByPostId  = async (req, res) => {
     });
     
     res.status(200).json({
-      msg: 'Comments retrieved successfully',
+      message: 'Comments retrieved successfully',
       count: populatedComments.length,
       comments: populatedComments
     });
-  } catch (err) {
+  } catch (error) {
     console.error('Get comments error:', error.message);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

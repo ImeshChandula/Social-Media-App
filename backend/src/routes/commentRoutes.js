@@ -17,10 +17,10 @@ router.post('/addComment/:id', validateComment, authenticateUser, commentControl
 // @access  Private
 router.post('/reply/:id', authenticateUser, commentController.addReply);
 
-// @route   GET api/comments/getComments/:postId
-// @desc    Get all comments for a specific post
+// @route   GET api/comments/getComments/:id
+// @desc    Get all comments for a specific post by post id
 // @access  Private
-router.get('/getComments/:postId', authenticateUser, commentController.getCommentsByPostId);
+router.get('/getComments/:id', authenticateUser, commentController.getCommentsByPostId);
 
 // @route   PATCH api/comments/update/:commentId
 // @desc    Update a comment

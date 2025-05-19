@@ -92,7 +92,7 @@ const getAllPosts = async (req, res) => {
     try {
         const posts = await Post.findAll();
         if (!posts.length) {
-            return res.status(200).json({msg: "No posts found", posts: []});
+            return res.status(200).json({message: "No posts found", posts: []});
         }
 
         // Collect all unique author IDs from posts
@@ -147,12 +147,12 @@ const getAllPosts = async (req, res) => {
         
         res.status(200).json({
             count: populatedPosts.length, 
-            msg: "All posts retrieved successfully", 
+            message: "All posts retrieved successfully", 
             posts: populatedPosts
         });
     } catch (error) {
         console.error('Get all posts error:', error.message);
-        res.status(500).json({ msg: 'Server error' });
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
@@ -166,14 +166,14 @@ const getAllPostsByUserId = async (req, res) => {
         const posts = await Post.findByUserId(userId);
         
         if (!posts.length) {
-            return res.status(200).json({msg: "No posts found for this user", posts: []});
+            return res.status(200).json({message: "No posts found for this user", posts: []});
         }
         
         // Get user details
         const user = await User.findById(userId);
         
         if (!user) {
-            return res.status(404).json({ msg: 'User not found' });
+            return res.status(404).json({ message: 'User not found' });
         }
         
         const authorData = {
@@ -197,7 +197,7 @@ const getAllPostsByUserId = async (req, res) => {
             return postObj;
         });
         
-        res.status(200).json({count: populatedPosts.length, msg: "User posts retrieved successfully", posts: populatedPosts});
+        res.status(200).json({count: populatedPosts.length, message: "User posts retrieved successfully", posts: populatedPosts});
     } catch (error) {
         console.error('Get posts error:', error.message);
         res.status(500).json({ msg: 'Server error' });
@@ -245,10 +245,10 @@ const getAllPostsInFeed = async (req, res) => {
             author: authorMap[post.author] || post.author // Fallback to ID if author not found
         }));
         
-        res.status(200).json({msg: "Posts:", populatedPosts});
+        res.status(200).json({message: "Posts:", populatedPosts});
     } catch (err) {
         console.error('Get feed error:', err.message);
-        res.status(500).json({ msg: 'Server error' });
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
@@ -258,17 +258,17 @@ const updatePostByPostId = async (req, res) => {
     try {
         const postId = req.params.id;
         if (!postId) {
-            return res.status(400).json({ msg: 'Post ID is required' });
+            return res.status(400).json({ message: 'Post ID is required' });
         }
 
         const existingPost = await Post.findById(postId);
         if (!existingPost) {
-            return res.status(404).json({ msg: 'Post not found' });
+            return res.status(404).json({ message: 'Post not found' });
         }
         
         // Check if user is the author of the post
         if (existingPost.author !== req.user.id) {
-            return res.status(403).json({ msg: 'Unauthorized: You can only update your own posts' });
+            return res.status(403).json({ message: 'Unauthorized: You can only update your own posts' });
         }
         
         const { content, media, mediaType, tags, privacy, location } = req.body;
@@ -330,19 +330,19 @@ const updatePostByPostId = async (req, res) => {
 
         // Make sure we have something to update
         if (Object.keys(updateData).length === 0) {
-            return res.status(400).json({ msg: 'No valid fields to update' });
+            return res.status(400).json({ message: 'No valid fields to update' });
         }
         
         // Update the post
         const updatedPost = await Post.updateById(postId, updateData);
         if (!updatedPost) {
-            return res.status(404).json({ msg: 'Failed to update post' });
+            return res.status(404).json({ message: 'Failed to update post' });
         }
 
-        res.status(200).json({ msg: 'Post updated successfully', post: updatedPost });
+        res.status(200).json({ message: 'Post updated successfully', post: updatedPost });
   } catch (error) {
         console.error('Update post error:', error.message);
-        res.status(500).json({ msg: 'Server error' });
+        res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -353,31 +353,31 @@ const deletePostByPostId = async (req, res) => {
         const currentUserId = req.user.id;
         const postId = req.params.id;
         if (!postId) {
-            return res.status(400).json({ msg: 'Post ID is required' });
+            return res.status(400).json({ message: 'Post ID is required' });
         }
 
         // Check if post exists
         const existingPost = await Post.findById(postId);
         if (!existingPost) {
-            return res.status(404).json({ msg: 'Post not found' });
+            return res.status(404).json({ message: 'Post not found' });
         }
         
         // Check if user is the author of the post
         // Assuming req.user.id contains the authenticated user's ID
         if (req.user.role !== 'super_admin' && existingPost.author !== currentUserId) {
-            return res.status(403).json({ msg: 'Unauthorized: You can only delete your own posts' });
+            return res.status(403).json({ message: 'Unauthorized: You can only delete your own posts' });
         }
         
         // Delete the post
         const deleteResult = await Post.delete(postId);
         if (!deleteResult) {
-            return res.status(500).json({ msg: 'Failed to delete post' });
+            return res.status(500).json({ message: 'Failed to delete post' });
         }
 
-        res.status(200).json({ msg: 'Post deleted successfully' });
+        res.status(200).json({ message: 'Post deleted successfully' });
     } catch (error) {
         console.error('Delete post error:', error.message);
-        res.status(500).json({ msg: 'Server error' });
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
