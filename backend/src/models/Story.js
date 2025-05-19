@@ -4,8 +4,8 @@ const db = connectFirebase();
 const storiesCollection = db.collection('stories');
 
 class Story {
-  constructor(storyData) {
-    // Required fields
+  constructor(id, storyData) {
+    this.id = id;
     this.userId = storyData.userId;
     this.content = storyData.content || null;
     this.mediaUrl = storyData.mediaUrl || null;
@@ -68,12 +68,7 @@ class Story {
     }
   }
   
-  // Convert to Firestore compatible object
-  toFirestore() {
-    const story = { ...this };
-    delete story.id; // Remove id property as it's stored as document ID
-    return story;
-  }
+  
   
   // Add a viewer to the story
   async addViewer(userId) {
