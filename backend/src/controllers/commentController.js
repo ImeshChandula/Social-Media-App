@@ -60,6 +60,24 @@ const addComment = async (req, res) => {
       return res.status(500).json({ message: 'Failed to create comment' });
     }
 
+    // Update the post's comments array with the new comment ID
+    try {
+      // Get current comments array or create a new one
+      const currentComments = post.comments || [];
+      
+      // Add new comment ID to the array
+      const updatedComments = [...currentComments, newComment.id];
+      
+      // Update the post with the new comment ID
+      await Post.updateById(postId, { 
+        comments: updatedComments,
+        commentCount: updatedComments.length // Update comment count as well
+      });
+    } catch (updateError) {
+      console.error(`Error updating post ${postId} with new comment:`, updateError.message);
+      // We've already created the comment, so we'll continue instead of returning an error
+    }
+
     // Get user details
     const user = await User.findById(req.user.id);
 
@@ -333,47 +351,57 @@ const updateComment = async (req, res) => {
 //@desc     Delete a comment
 const deleteComment = async (req, res) => {
   try {
-    const { commentId } = req.params;
+    const commentId = req.params.id;
     
-    if (!commentId) {
-      return res.status(400).json({ msg: 'Comment ID is required' });
-    }
-    
-    // Check if comment exists
     const comment = await Comment.findById(commentId);
-    
     if (!comment) {
       return res.status(404).json({ msg: 'Comment not found' });
     }
+
+    const commentOwnerId = comment.user;
+    const postId = comment.post;
     
     // Ensure user owns this comment or is the owner of the post
-    if (comment.user !== req.user.id) {
+    if (commentOwnerId !== req.user.id) {
       // If not the comment owner, check if user is the post owner
-      const post = await Post.findById(comment.post);
+      const post = await Post.findById(postId);
       
       if (!post || post.author !== req.user.id) {
         return res.status(403).json({ 
-          msg: 'Unauthorized: You can only delete your own comments or comments on your posts' 
+          message: 'Unauthorized: You can only delete your own comments or comments on your posts' 
         });
       }
     }
     
     try {
-      // Delete the comment
-      const deleteResult = await Comment.delete(commentId);
-      
+      const postId = comment.post;
+      const post = await Post.findById(postId);
+      if (post) {
+        // Remove the comment ID from the post's comments array
+        const updatedComments = post.comments.filter(id => id !== commentId);
+        
+        // Update the post with the new comments array
+        await Post.updateById(postId, { 
+          comments: updatedComments,
+          commentCount: updatedComments.length // Update comment count as well
+        });
+      }
+
+      // delete comment
+      const deleteResult = await Comment.deleteById(commentId);
+
       if (!deleteResult) {
-        return res.status(500).json({ msg: 'Failed to delete comment' });
+        return res.status(500).json({ message: 'Failed to delete comment' });
       }
       
-      res.status(200).json({ msg: 'Comment deleted successfully' });
+      res.status(200).json({ message: 'Comment deleted successfully' });
     } catch (deleteError) {
       console.error(`Error deleting comment ${commentId}:`, deleteError.message);
-      res.status(500).json({ msg: 'Error deleting comment' });
+      res.status(500).json({ message: 'Error deleting comment' });
     }
   } catch (error) {
     console.error('Delete comment error:', error.message);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

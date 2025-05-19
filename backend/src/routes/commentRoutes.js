@@ -24,15 +24,15 @@ router.post('/reply/:id', authenticateUser, commentController.addReply);
 // @access  Private
 router.get('/getComments/:id', authenticateUser, commentController.getCommentsByPostId);
 
-// @route   PATCH api/comments/update/:commentId
-// @desc    Update a comment
+// @route   PATCH api/comments/update/:id
+// @desc    Update a comment by comment id
 // @access  Private
-router.patch('/update/:commentId', validateComment, authenticateUser, commentController.updateComment);
+router.patch('/update/:id', validateComment, authenticateUser, commentController.updateComment);
 
-// @route   DELETE api/comments/delete/:commentId
-// @desc    Delete a comment
+// @route   DELETE api/comments/delete/:id
+// @desc    Delete a comment by comment id
 // @access  Private
-router.delete('/delete/:commentId', authenticateUser, commentController.deleteComment);
+router.delete('/delete/:id', authenticateUser, commentController.deleteComment);
 
 
 module.exports=router;
