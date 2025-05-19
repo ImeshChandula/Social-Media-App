@@ -66,7 +66,7 @@ class Post {
     };
 
     // delete post
-    static async delete(id) {
+    static async deleteById(id) {
         try {
             await postCollection.doc(id).delete();
             return true;

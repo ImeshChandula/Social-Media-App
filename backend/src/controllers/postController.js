@@ -367,14 +367,44 @@ const deletePostByPostId = async (req, res) => {
         if (req.user.role !== 'super_admin' && existingPost.author !== currentUserId) {
             return res.status(403).json({ message: 'Unauthorized: You can only delete your own posts' });
         }
+
+        // Delete all comments associated with the post
+        try {
+            if (existingPost.comments && existingPost.comments.length > 0) {
+                console.log(`Deleting ${existingPost.comments.length} comments for post ${postId}`);
+                
+                // Create an array of promises for deleting each comment
+                const deleteCommentPromises = existingPost.comments.map(async (commentId) => {
+                    try {
+                        await Comment.deleteById(commentId);
+                        return { commentId, success: true };
+                    } catch (commentError) {
+                        console.error(`Error deleting comment ${commentId}:`, commentError.message);
+                        return { commentId, success: false, error: commentError.message };
+                    }
+                });
+                
+                // Wait for all comment deletions to complete
+                const commentDeletionResults = await Promise.all(deleteCommentPromises);
+                
+                // Log any failed comment deletions
+                const failedDeletions = commentDeletionResults.filter(result => !result.success);
+                if (failedDeletions.length > 0) {
+                    console.error(`Failed to delete ${failedDeletions.length} comments:`, failedDeletions);
+                }
+            }
+        } catch (commentsError) {
+            console.error(`Error handling comments for post ${postId}:`, commentsError.message);
+            // We continue with post deletion even if some comments fail to delete
+        }
         
         // Delete the post
-        const deleteResult = await Post.delete(postId);
+        const deleteResult = await Post.deleteById(postId);
         if (!deleteResult) {
             return res.status(500).json({ message: 'Failed to delete post' });
         }
 
-        res.status(200).json({ message: 'Post deleted successfully' });
+        res.status(200).json({ message: 'Post and all associated comments deleted successfully' });
     } catch (error) {
         console.error('Delete post error:', error.message);
         res.status(500).json({ message: 'Server error' });
