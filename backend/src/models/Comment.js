@@ -16,7 +16,7 @@ class Comment {
     
     this.createdAt = commentData.createdAt || new Date().toISOString();
     this.updatedAt = new Date().toISOString();
-  }
+  };
 
   // find by comment id
   static async findById(id) {
@@ -47,6 +47,22 @@ class Comment {
     } catch (error) {
         console.error('Error finding comments by post ID:', error);
         throw error;
+    }
+  };
+
+  // find by user id
+  static async findByUserId(userId) {
+    try {
+      const commentRef = await commentsCollection.where('user', '==', userId).get();
+      
+      const comments = commentRef.docs.map(doc => new Comment(doc.id, doc.data()));
+
+      return comments.sort((a, b) => {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+    } catch (error) {
+      console.error('Error finding comments by user ID:', error);
+      throw error;
     }
   };
 

@@ -29,11 +29,11 @@ class Story {
     this.isActive = storyData.isActive !== undefined ? storyData.isActive : true;
     
     // Auto-expire after 24 hours (timestamp when story will expire)
-    this.expiresAt = storyData.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000);
+    this.expiresAt = storyData.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     
     // Timestamps
-    this.createdAt = storyData.createdAt || new Date();
-    this.updatedAt = storyData.updatedAt || new Date();
+    this.createdAt = storyData.createdAt || new Date().toISOString();
+    this.updatedAt = new Date().toISOString();
   }
   
   // Validate story type
@@ -169,6 +169,22 @@ class Story {
       throw error;
     }
   }
+
+  // Find all stories by user ID
+  static async findAllByUserId(id) {
+    try {
+      const storyRef = await storiesCollection.where('userId', '==', id).get();
+      
+      const posts = storyRef.docs.map(doc => new Story(doc.id, doc.data()));
+
+      return posts.sort((a, b) => {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+    } catch (error) {
+      console.error('Error finding stories by user ID:', error);
+      throw error;
+    }
+  };
   
   // Get stories from friends
   static async getFriendsStories(userIds) {
