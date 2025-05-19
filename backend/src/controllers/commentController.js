@@ -277,27 +277,27 @@ const getCommentsByPostId  = async (req, res) => {
 //@desc     Update a comment
 const updateComment = async (req, res) => {
   try {
-    const { commentId } = req.params;
+    const commentId = req.params.id;
     const { text, media } = req.body;
     
     if (!commentId) {
-      return res.status(400).json({ msg: 'Comment ID is required' });
+      return res.status(400).json({ message: 'Comment ID is required' });
     }
     
     if (!text && !media) {
-      return res.status(400).json({ msg: 'Nothing to update' });
+      return res.status(400).json({ message: 'Nothing to update' });
     }
     
     // Check if comment exists
     const comment = await Comment.findById(commentId);
     
     if (!comment) {
-      return res.status(404).json({ msg: 'Comment not found' });
+      return res.status(404).json({ message: 'Comment not found' });
     }
     
     // Ensure user owns this comment
     if (comment.user !== req.user.id) {
-      return res.status(403).json({ msg: 'Unauthorized: You can only update your own comments' });
+      return res.status(403).json({ message: 'Unauthorized: You can only update your own comments' });
     }
     
     // Create update object
@@ -311,7 +311,7 @@ const updateComment = async (req, res) => {
       const updatedComment = await Comment.updateById(commentId, updateData);
       
       if (!updatedComment) {
-        return res.status(404).json({ msg: 'Failed to retrieve updated comment' });
+        return res.status(404).json({ message: 'Failed to retrieve updated comment' });
       }
       
       // Get user details
@@ -333,17 +333,14 @@ const updateComment = async (req, res) => {
         user: userDetails
       };
       
-      res.status(200).json({
-        msg: 'Comment updated successfully',
-        comment: commentWithUser
-      });
+      res.status(200).json({message: 'Comment updated successfully', comment: commentWithUser});
     } catch (updateError) {
       console.error(`Error updating comment ${commentId}:`, updateError.message);
-      res.status(500).json({ msg: 'Error updating comment' });
+      return res.status(500).json({ message: 'Error updating comment' });
     }
   } catch (error) {
     console.error('Update comment error:', error.message);
-    res.status(500).json({ msg: 'Server error' });
+    return res.status(500).json({ message: 'Server error' });
   }
 };
 
