@@ -6,17 +6,16 @@ const commentController = require('../controllers/commentController');
 
 const router = express.Router();
 
-// @route   POST api/comments/addComment
-// @desc    Comment on a post: media(if have)
-//          { postId, text, media } = req.body;
+// @route   POST api/comments/addComment/:id
+// @desc    Comment on a post by post id
+// @desc    Either text or media as req.body;
 // @access  Private
-router.post('/addComment', validateComment, authenticateUser, commentController.addComment);
+router.post('/addComment/:id', validateComment, authenticateUser, commentController.addComment);
 
-// @route   POST api/comments/reply
-// @desc    Reply to a comment: 
-//          { commentId, text } = req.body;
+// @route   POST api/comments/reply/:id
+// @desc    Reply to a comment by comment id
 // @access  Private
-router.post('/reply', authenticateUser, commentController.addReply);
+router.post('/reply/:id', authenticateUser, commentController.addReply);
 
 // @route   GET api/comments/getComments/:postId
 // @desc    Get all comments for a specific post

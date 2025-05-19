@@ -6,33 +6,58 @@ const cloudinary =  require("../config/cloudinary");
 //@desc     Add comment to post
 const addComment = async (req, res) => {
   try {
-    const { postId, text, media } = req.body;
-    if (!postId || !text) {
-      return res.status(400).json({ msg: 'Post ID and comment text are required' });
+    const postId = req.params.id;
+    const { text, media } = req.body;
+
+    if (!text && !media) {
+      return res.status(400).json({ message: 'Either text or media is required' });
     }
 
     const post = await Post.findById(postId);
     if (!post) {
-      return res.status(404).json({ msg: 'Post not found' });
+      return res.status(404).json({ message: 'Post not found' });
     }
     
     const commentData = {
       post: postId,
       user: req.user.id,
-      text,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      text: text,
     };
 
     if (media) {
-      // upload media to cloudinary
-      const uploadResponse = await cloudinary.uploader.upload(media);
-      commentData.media = uploadResponse.secure_url;
-    }
+      try {
+        if (!cloudinary || typeof cloudinary.uploader.upload !== 'function') {
+            throw new Error('Cloudinary is not properly configured');
+        }
+
+        if (Array.isArray(media)) {
+          // If it's an array of media files
+          const uploadPromises = media.map(item => cloudinary.uploader.upload(item.path || item));
+          const uploadResults = await Promise.all(uploadPromises);
+          commentData.media = uploadResults.map(result => result.secure_url);
+        } else if (typeof media === 'object' && media !== null && media.path) {
+          // If it's a file object from multer
+          const uploadResponse = await cloudinary.uploader.upload(media.path);
+          commentData.media = uploadResponse.secure_url;
+        } else if (typeof media === 'string') {
+          // If it's a base64 string or a URL
+          const uploadResponse = await cloudinary.uploader.upload(media);
+          commentData.media = uploadResponse.secure_url;
+        } else {
+          throw new Error('Invalid media format');
+        }
+      } catch (uploadError) {
+          console.error('Media upload error:', uploadError);
+          return res.status(400).json({ 
+              error: "Failed to upload media. Invalid format or Cloudinary configuration issue.",
+              details: uploadError.message
+          });
+      }
+    };
     
     const newComment = await Comment.create(commentData);
     if (!newComment) {
-      return res.status(500).json({ msg: 'Failed to create comment' });
+      return res.status(500).json({ message: 'Failed to create comment' });
     }
 
     // Get user details
@@ -50,12 +75,12 @@ const addComment = async (req, res) => {
     };
     
     res.status(201).json({
-      msg: 'Comment added successfully',
+      message: 'Comment added successfully',
       comment: commentWithUser
     });
-  } catch (err) {
+  } catch (error) {
     console.error('Add comment error:', error.message);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -63,10 +88,11 @@ const addComment = async (req, res) => {
 //@desc     Add a reply to a comment
 const addReply = async (req, res) => {
   try {
-    const { commentId, text } = req.body;
+    const commentId = req.params.id
+    const { text } = req.body;
     
-    if (!commentId || !text) {
-      return res.status(400).json({ msg: 'Comment ID and reply text are required' });
+    if (!text) {
+      return res.status(400).json({ msg: 'Reply text is required' });
     }
     
     // Check if comment exists

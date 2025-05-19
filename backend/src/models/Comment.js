@@ -14,7 +14,7 @@ class Comment {
     this.likes = commentData.likes || [];
     this.replies = commentData.replies || [];
     
-    this.createdAt = postData.createdAt || new Date().toISOString();
+    this.createdAt = commentData.createdAt || new Date().toISOString();
     this.updatedAt = new Date().toISOString();
   }
 
