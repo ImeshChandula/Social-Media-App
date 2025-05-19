@@ -76,7 +76,7 @@ class Comment {
       await commentsCollection.doc(id).update(updateData);
       updateData.updatedAt = new Date().toISOString();
 
-      const updatedComment = await Post.findById(id);
+      const updatedComment = await Comment.findById(id);
       return updatedComment;
     } catch (error) {
       throw error;

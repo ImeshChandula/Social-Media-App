@@ -6,6 +6,8 @@ const commentController = require('../controllers/commentController');
 
 const router = express.Router();
 
+// http://localhost:5000/api/comments
+
 // @route   POST api/comments/addComment/:id
 // @desc    Comment on a post by post id
 // @desc    Either text or media as req.body;

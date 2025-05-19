@@ -88,7 +88,7 @@ const addComment = async (req, res) => {
 //@desc     Add a reply to a comment
 const addReply = async (req, res) => {
   try {
-    const commentId = req.params.id
+    const commentId = req.params.id;
     const { text } = req.body;
     
     if (!text) {
@@ -119,10 +119,10 @@ const addReply = async (req, res) => {
     
     try {
       // Update the comment with the new reply
-      await commentsCollection.doc(commentId).update({
+      const commentDataToBeUpdated = {
         replies: updatedReplies,
-        updatedAt: new Date().toISOString()
-      });
+      };
+      await Comment.updateById(commentId, commentDataToBeUpdated);
       
       // Get user details
       const user = await User.findById(req.user.id);
@@ -140,10 +140,7 @@ const addReply = async (req, res) => {
         };
       }
       
-      res.status(201).json({
-        message: 'Reply added successfully',
-        reply: replyWithUser
-      });
+      res.status(201).json({message: 'Reply added successfully', reply: replyWithUser});
     } catch (updateError) {
       console.error(`Error adding reply to comment ${commentId}:`, updateError.message);
       res.status(500).json({ message: 'Error adding reply', error: updateError.message });
