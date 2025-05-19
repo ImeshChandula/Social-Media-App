@@ -131,12 +131,12 @@ const deleteUser = async (req, res) => {
         // Step 3: Delete all stories by this user
         try {
             // Get all stories by this user
-            const userStories = await Story.findByUserId(userIdToDelete);
+            const userStories = await Story.findAllByUserId(userIdToDelete);
             console.log(`Found ${userStories.length} stories to delete for user ${userIdToDelete}`);
             
             // Delete each story
             for (const story of userStories) {
-                await Story.deleteById(story.id);
+                await Story.findByIdAndDelete(story.id);
                 console.log(`Deleted story ${story.id}`);
             }
         } catch (storiesError) {
