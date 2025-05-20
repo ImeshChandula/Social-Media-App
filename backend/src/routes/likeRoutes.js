@@ -10,9 +10,14 @@ const router = express.Router();
 //@desc     like post (like/unlike)
 router.post('/toPost/:id', authenticateUser, likeController.likeToAPostByPostId);
 
+//@path     POST    /api/likes/toComment/:id
+//@desc     like comment (like/unlike)
+router.post('/toComment/:id', authenticateUser, likeController.likeToACommentByCommentId);
+
 //@path     GET    /api/likes/getAllLikedUsers/:id
 //@desc     Get all users who liked a post by post id
 router.get('/getAllLikedUsers/:id', authenticateUser, likeController.getAllLikedUsers);
+
 
 
 module.exports = router;

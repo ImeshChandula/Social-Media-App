@@ -99,6 +99,10 @@ class Comment {
     }
   };
   
+  // get like count
+  get likeCount() {
+    return this.likes.length;
+  };
 }
 
 module.exports=Comment;

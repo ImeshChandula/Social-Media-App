@@ -17,7 +17,7 @@ router.post('/addComment/:id', validateComment, authenticateUser, commentControl
 // @route   POST api/comments/reply/:id
 // @desc    Reply to a comment by comment id
 // @access  Private
-router.post('/reply/:id', authenticateUser, commentController.addReply);
+router.post('/reply/:id', validateComment, authenticateUser, commentController.addReply);
 
 // @route   GET api/comments/getComments/:id
 // @desc    Get all comments for a specific post by post id
