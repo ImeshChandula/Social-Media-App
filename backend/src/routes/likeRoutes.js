@@ -14,10 +14,13 @@ router.post('/toPost/:id', authenticateUser, likeController.likeToAPostByPostId)
 //@desc     like comment (like/unlike)
 router.post('/toComment/:id', authenticateUser, likeController.likeToACommentByCommentId);
 
-//@path     GET    /api/likes/getAllLikedUsers/:id
+//@path     GET    /api/likes/getAllLikedUsers/post/:id
 //@desc     Get all users who liked a post by post id
-router.get('/getAllLikedUsers/:id', authenticateUser, likeController.getAllLikedUsers);
+router.get('/getAllLikedUsers/post/:id', authenticateUser, likeController.getAllLikedUsersInPost);
 
+//@path     GET    /api/likes/getAllLikedUsers/comment/:id
+//@desc     Get all users who liked a comment by comment id
+router.get('/getAllLikedUsers/comment/:id', authenticateUser, likeController.getAllLikedUsersInComment);
 
 
 module.exports = router;

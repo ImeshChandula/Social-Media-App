@@ -108,7 +108,7 @@ const likeToACommentByCommentId = async (req, res) => {
 
 
 //@desc     Get all users who liked a post by post id
-const getAllLikedUsers = async (req, res) => {
+const getAllLikedUsersInPost = async (req, res) => {
     try {
         const postId = req.params.id;
 
@@ -147,8 +147,53 @@ const getAllLikedUsers = async (req, res) => {
     }
 };
 
+
+//@desc     Get all users who liked a comment by comment id
+const getAllLikedUsersInComment = async (req, res) => {
+    try {
+        const commentId = req.params.id;
+
+        const comment = await Comment.findById(commentId);
+        if (!comment) {
+            return res.status(404).json({success: false, message: "Comment not found"});
+        }
+
+        // Fetch user details for all users who liked the comment
+        const userPromises = comment.likes.map(userId => User.findById(userId));
+        const users = await Promise.all(userPromises);
+      
+        // Filter out any null values in case some users don't exist anymore
+        const validUsers = users.filter(user => user !== null);
+
+        const likedUserDetails = validUsers.map(user => ({
+            id: user.id,
+            username: user.firstName + " " + user.lastName,
+            profilePicture: user.profilePicture,
+        }));
+
+        return res.status(200).json({ 
+            success: true,
+            data: {
+                users: likedUserDetails,
+                count: likedUserDetails.length
+            }
+        });
+    } catch (error) {
+        console.error('Error in getLikes controller:', error);
+        return res.status(500).json({ 
+            success: false, 
+            message: 'Server error while fetching likes',
+            error: error.message
+        });
+    }
+};
+
+
+
+
 module.exports = { 
     likeToAPostByPostId, 
-    getAllLikedUsers,
+    getAllLikedUsersInPost,
     likeToACommentByCommentId,
+    getAllLikedUsersInComment
 };
