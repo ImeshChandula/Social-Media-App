@@ -10,64 +10,34 @@ class Story {
     this.content = storyData.content || null;
     this.mediaUrl = storyData.mediaUrl || null;
     
-    // Optional fields with defaults
-    this.type = this.validateType(storyData.type) || 'image';
+    this.mediaType = storyData.mediaType || null;
     this.caption = storyData.caption || '';
     this.filter = storyData.filter || 'none';
     this.backgroundColor = storyData.backgroundColor || null;
     this.textColor = storyData.textColor || null;
     this.font = storyData.font || 'default';
     
-    // View tracking
     this.viewers = storyData.viewers || [];
     this.viewCount = storyData.viewCount || 0;
     
-    // Privacy settings
-    this.privacy = this.validatePrivacy(storyData.privacy) || 'friends';
-    
-    // Status
-    this.isActive = storyData.isActive !== undefined ? storyData.isActive : true;
-    
-    // Auto-expire after 24 hours (timestamp when story will expire)
+    this.privacy = storyData.privacy || 'friends';
+    this.isActive = storyData.isActive || true;
     this.expiresAt = storyData.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     
-    // Timestamps
     this.createdAt = storyData.createdAt || new Date().toISOString();
     this.updatedAt = new Date().toISOString();
-  }
+  };
   
-  // Validate story type
-  validateType(type) {
-    const validTypes = ['image', 'video', 'text'];
-    return validTypes.includes(type) ? type : 'image';
-  }
-  
-  // Validate privacy setting
-  validatePrivacy(privacy) {
-    const validPrivacy = ['public', 'friends', 'close-friends', 'custom'];
-    return validPrivacy.includes(privacy) ? privacy : 'friends';
-  }
 
-  // Save story to database
-  async save() {
+  // save story to database
+  static async create(storyData) {
     try {
-      this.updatedAt = new Date();
-      
-      if (this.id) {
-        // Update existing story
-        await storiesCollection.doc(this.id).update(this.toFirestore());
-        return this.id;
-      } else {
-        // Create new story
-        const docRef = await storiesCollection.add(this.toFirestore());
-        this.id = docRef.id;
-        return this.id;
-      }
+      const docRef = await storiesCollection.add(storyData);
+      return new Post(docRef.id, storyData);
     } catch (error) {
       throw error;
     }
-  }
-  
+  };
   
   
   // Add a viewer to the story
@@ -84,18 +54,11 @@ class Story {
     }
   }
   
-  // Check if story is expired
-  isExpired() {
-    return new Date() > this.expiresAt;
-  }
-  
-  // Static methods
-  
   // Get all active stories
-  static async find() {
+  static async findAll() {
     try {
       // Get stories that haven't expired yet
-      const now = new Date();
+      const now = new Date().toISOString();
       const snapshot = await storiesCollection
         .where('expiresAt', '>', now)
         .where('isActive', '==', true)
@@ -130,11 +93,7 @@ class Story {
         return null;
       }
       
-      const storyData = doc.data();
-      const story = new Story(storyData);
-      story.id = doc.id;
-      
-      return story;
+      return new Post(doc.id, doc.data());
     } catch (error) {
       throw error;
     }
