@@ -16,7 +16,7 @@ initializeDefaultSuperAdmin().then(() => {
 // starts the server
 const app = express();
 app.use(express.json()); 
-app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:3000", credentials: true }));
+app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:4000", credentials: true }));
 app.use(cookieParser());
 
 
@@ -29,6 +29,7 @@ app.use("/api/users", require("./src/routes/userRoutes"));
 app.use("/api/posts", require("./src/routes/postRoutes"));
 app.use("/api/comments", require("./src/routes/commentRoutes"));
 app.use("/api/friends", require("./src/routes/friendRoutes"));
+app.use("/api/likes", require("./src/routes/likeRoutes"));
 //app.use("/api/stories", require("./src/routes/storyRoutes")); 
 
 
