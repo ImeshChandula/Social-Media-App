@@ -113,7 +113,7 @@ const UserService = {
         
             await userCollection.doc(id).update(updateData);
         
-            const updatedUser = await User.findById(id);
+            const updatedUser = await UserService.findById(id);
             return updatedUser;
         } catch (error) {
             throw error;

@@ -1,11 +1,11 @@
-const User = require("../models/User");
+const UserService = require('../services/userService');
 require('dotenv').config();
 
 const createDefaultSuperAdmin = async (req, res) => {
     try {
         // check if super admin already exists
         const email = process.env.SUPER_ADMIN_EMAIL;
-        const existingSuperAdmin = await User.findByEmail(email);
+        const existingSuperAdmin = await UserService.findByEmail(email);
         
         
         if (!existingSuperAdmin) {
@@ -25,7 +25,7 @@ const createDefaultSuperAdmin = async (req, res) => {
                 coverPhoto: defaultCover
             };
     
-            await User.create(superAdminData);
+            await UserService.create(superAdminData);
             console.log(`Default Super Admin created: \nEmail: ${process.env.SUPER_ADMIN_EMAIL} \nPassword: ${process.env.SUPER_ADMIN_PASSWORD}`);
         } else {
             superAdmin = existingSuperAdmin;
