@@ -139,6 +139,9 @@ const getAllPosts = async (req, res) => {
             // Create a new object with post properties
             const postObj = {
                 ...post,
+                likeCount: post.likeCount,
+                commentCount: post.commentCount,
+                shareCount: post.shareCount,
                 author: authorData
             };
             
@@ -155,6 +158,85 @@ const getAllPosts = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+
+//@desc     Get all video posts
+const getAllVideoPosts = async (req, res) => {
+    try {
+        const mediaType = video;
+
+        const posts = await Post.findByMediaType(mediaType);
+        if (!posts.length) {
+            return res.status(200).json({message: "No video posts found", posts: []});
+        }
+
+        // Collect all unique author IDs from posts
+        const authorIds = new Set();
+        posts.forEach(post => {
+            if (post.author && typeof post.author === 'string') {
+                authorIds.add(post.author);
+            }
+        });
+        
+        // Create a map to store author information
+        const authorsMap = {};
+        
+        // Fetch author data for each unique author ID
+        for (const authorId of authorIds) {
+            try {
+                if (!authorId) continue;
+                
+                const user = await User.findById(authorId);
+                
+                if (user) {
+                    authorsMap[authorId] = {
+                        id: user.id,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        username: user.username,
+                        profilePicture: user.profilePicture
+                    };
+                }
+            } catch (userError) {
+                console.error(`Error fetching user ${authorId}:`, userError.message);
+            }
+        }
+        
+        // Populate posts with author data
+        const populatedPosts = posts.map(post => {
+            let authorData = null;
+            
+            // Check if author is a string ID and exists in our map
+            if (post.author && typeof post.author === 'string' && authorsMap[post.author]) {
+                authorData = authorsMap[post.author];
+            }
+            
+            // Create a new object with post properties
+            const postObj = {
+                ...post,
+                likeCount: post.likeCount,
+                commentCount: post.commentCount,
+                shareCount: post.shareCount,
+                author: authorData
+            };
+            
+            return postObj;
+        });
+        
+        res.status(200).json({
+            count: populatedPosts.length, 
+            message: "All Videos retrieved successfully", 
+            posts: populatedPosts
+        });
+    } catch (error) {
+        console.error('Get all posts error:', error.message);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
+//@desc     Get all video posts
+const getAllPhotoPosts = async (req, res) => {};
 
 
 //@desc     Get all posts by id
@@ -416,6 +498,7 @@ const deletePostByPostId = async (req, res) => {
 module.exports = {
     createPost,
     getAllPosts,
+    getAllVideoPosts,
     getAllPostsByUserId,
     getAllPostsInFeed,
     updatePostByPostId,

@@ -88,6 +88,21 @@ class Post {
             throw error;
         }
     };
+
+    // get all videos
+    static async findByMediaType(type) {
+        try {
+            const postRef = await postCollection.where('mediaType', '==', type).get();
+            const posts = postRef.docs.map(doc => new Post(doc.id, doc.data()));
+
+            return posts.sort((a, b) => {
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+        } catch (error) {
+            console.error('Error finding posts by media type', error);
+            throw error;
+        }
+    };
     
     // Find posts by user ID
     static async findByUserId(userId) {
