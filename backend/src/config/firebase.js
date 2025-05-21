@@ -11,12 +11,17 @@ const connectFirebase = () => {
           projectId: process.env.FIREBASE_PROJECT_ID,
           clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
           privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
-        })
+        }),
+        // Add database URL for full Realtime Database access (optional)
+        databaseURL: process.env.FIREBASE_DATABASE_URL
       });
       
       console.log('Firebase Connected!');
     }
-    return admin.firestore();
+    return {
+      db: admin.firestore(),
+      messaging: admin.messaging()
+    };
   } catch (error) {
     console.error(`Error: ${error.message}`);
     process.exit(1);
