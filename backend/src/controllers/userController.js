@@ -1,7 +1,7 @@
-const User = require('../models/User');
-const Post = require('../models/Post');
-const Comment = require('../models/Comment');
-const Story = require('../models/Story');
+const UserService = require('../services/userService');
+const PostService = require('../services/postService');
+const CommentService = require('../services/commentService');
+const StoryService = require('../services/storyService');
 const ROLES = require("../enums/roles");
 const bcrypt = require('bcrypt');
 const cloudinary =  require("../config/cloudinary");
@@ -11,7 +11,7 @@ require('dotenv').config();
 //@desc     Get All Users
 const getAllUsers = async (req, res) => {
     try {
-        const users = await User.findAll();
+        const users = await UserService.findAll();
 
         const rolePriority = {
             [ROLES.SUPER_ADMIN]: 3,
@@ -58,7 +58,7 @@ const deleteUser = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to delete this user' });
         }
 
-        const userToDelete = await User.findById(userIdToDelete);
+        const userToDelete = await UserService.findById(userIdToDelete);
         if (!userToDelete) {
             return res.status(404).json({success: false, message: 'User not found'});
         }
@@ -66,7 +66,7 @@ const deleteUser = async (req, res) => {
         // Step 1: Delete all posts by this user and their associated comments
         try {
             // Get all posts by this user
-            const userPosts = await Post.findByUserId(userIdToDelete);
+            const userPosts = await PostService.findByUserId(userIdToDelete);
             console.log(`Found ${userPosts.length} posts to delete for user ${userIdToDelete}`);
             
             // Delete each post and its comments
@@ -76,7 +76,7 @@ const deleteUser = async (req, res) => {
                     console.log(`Deleting ${post.comments.length} comments for post ${post.id}`);
                     
                     const deleteCommentPromises = post.comments.map(commentId => 
-                        Comment.deleteById(commentId).catch(err => 
+                        CommentService.deleteById(commentId).catch(err => 
                             console.error(`Error deleting comment ${commentId}:`, err.message)
                         )
                     );
@@ -85,7 +85,7 @@ const deleteUser = async (req, res) => {
                 }
                 
                 // Delete the post
-                await Post.deleteById(post.id);
+                await PostService.deleteById(post.id);
                 console.log(`Deleted post ${post.id}`);
             }
         } catch (postsError) {
@@ -96,20 +96,20 @@ const deleteUser = async (req, res) => {
         // Step 2: Delete all comments by this user on any post
         try {
             // Get all comments by this user
-            const userComments = await Comment.findByUserId(userIdToDelete);
+            const userComments = await CommentService.findByUserId(userIdToDelete);
             console.log(`Found ${userComments.length} comments to delete for user ${userIdToDelete}`);
             
             // For each comment:
             for (const comment of userComments) {
                 // 1. Update the post to remove this comment ID
                 try {
-                    const post = await Post.findById(comment.post);
+                    const post = await PostService.findById(comment.post);
                     if (post) {
                         // Remove the comment ID from the post's comments array
                         const updatedComments = post.comments.filter(id => id !== comment.id);
                         
                         // Update the post
-                        await Post.updateById(comment.post, {
+                        await PostService.updateById(comment.post, {
                             comments: updatedComments,
                             commentCount: updatedComments.length
                         });
@@ -120,7 +120,7 @@ const deleteUser = async (req, res) => {
                 }
                 
                 // 2. Delete the comment
-                await Comment.deleteById(comment.id);
+                await CommentService.deleteById(comment.id);
                 console.log(`Deleted comment ${comment.id}`);
             }
         } catch (commentsError) {
@@ -131,12 +131,12 @@ const deleteUser = async (req, res) => {
         // Step 3: Delete all stories by this user
         try {
             // Get all stories by this user
-            const userStories = await Story.findAllByUserId(userIdToDelete);
+            const userStories = await StoryService.findAllByUserId(userIdToDelete);
             console.log(`Found ${userStories.length} stories to delete for user ${userIdToDelete}`);
             
             // Delete each story
             for (const story of userStories) {
-                await Story.findByIdAndDelete(story.id);
+                await StoryService.findByIdAndDelete(story.id);
                 console.log(`Deleted story ${story.id}`);
             }
         } catch (storiesError) {
@@ -144,7 +144,7 @@ const deleteUser = async (req, res) => {
             // Continue with user deletion even if stories fail
         }
 
-        await User.deleteById(req.params.id);   
+        await UserService.deleteById(req.params.id);   
         res.status(200).json({ message: 'User deleted successfully' });
     } catch (err) {
         console.error("Error deleting user:", err);
@@ -156,13 +156,14 @@ const deleteUser = async (req, res) => {
 //@desc     Get current user profile
 const getCurrentUser  = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id);
+        const user = await UserService.findById(req.user.id);
 
         if (!user) {
             return res.status(404).json({ msg: 'User not found'});
         }
 
-        const postsCount = await User.getPostsCount(req.user.id);
+        const posts = await PostService.findByUserId(req.user.id);
+        const postsCount = posts.length;
 
         // Remove password before sending user
         user.password = undefined;
@@ -190,12 +191,12 @@ const getUserByUsername = async (req,res) => {
     try {
         const username = req.params.username;
 
-        const user = await User.findByUsername(username);
+        const user = await UserService.findByUsername(username);
         if (!user) {
             return res.status(404).json({ msg: 'User not found'});
         }
 
-        const postsCount = await User.getPostsCount(req.user.id);
+        const postsCount = await UserService.getPostsCount(req.user.id);
 
         // remove password
         user.password = undefined;
@@ -241,7 +242,7 @@ const updateUserProfile = async (req, res) => {
         }
 
         // update user
-        const updatedUser = await User.updateById(userIdToUpdate, req.body);
+        const updatedUser = await UserService.updateById(userIdToUpdate, req.body);
 
         if (!updatedUser) {
             return res.status(404).json({ message: 'User not found' });
@@ -312,7 +313,7 @@ const updateUserProfileImage = async (req, res) => {
             }
         };
 
-        const updatedUser = await User.updateById(userIdToUpdate, updatedData);
+        const updatedUser = await UserService.updateById(userIdToUpdate, updatedData);
 
         // remove password
         updatedUser.password = undefined;
@@ -377,7 +378,7 @@ const updateUserProfileCoverPhoto = async (req, res) => {
             }
         };
 
-        const updatedUser = await User.updateById(userIdToUpdate, updatedData);
+        const updatedUser = await UserService.updateById(userIdToUpdate, updatedData);
 
         // remove password
         updatedUser.password = undefined;

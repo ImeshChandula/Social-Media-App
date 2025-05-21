@@ -1,6 +1,6 @@
-const Post = require('../models/Post');
-const User = require('../models/User');
-const Comments = require('../models/Comment');
+const UserService = require('../services/userService');
+const PostService = require('../services/postService');
+const CommentService = require('../services/commentService');
 const cloudinary =  require("../config/cloudinary");
 
 //@desc     create a post 
@@ -55,10 +55,10 @@ const createPost = async (req, res) => {
             }
         };
 
-        const newPost = await Post.create(postData);
+        const newPost = await PostService.create(postData);
 
         // get author details
-        const author = await User.findById(req.user.id);
+        const author = await UserService.findById(req.user.id);
         
         if (!author) {
             return res.status(404).json({ msg: 'Author not found' });
@@ -90,7 +90,7 @@ const createPost = async (req, res) => {
 //@desc     Get all posts
 const getAllPosts = async (req, res) => {
     try {
-        const posts = await Post.findAll();
+        const posts = await PostService.findAll();
         if (!posts.length) {
             return res.status(200).json({message: "No posts found", posts: []});
         }
@@ -111,7 +111,7 @@ const getAllPosts = async (req, res) => {
             try {
                 if (!authorId) continue;
                 
-                const user = await User.findById(authorId);
+                const user = await UserService.findById(authorId);
                 
                 if (user) {
                     authorsMap[authorId] = {
@@ -165,7 +165,7 @@ const getAllVideoPosts = async (req, res) => {
     try {
         const mediaType = video;
 
-        const posts = await Post.findByMediaType(mediaType);
+        const posts = await PostService.findByMediaType(mediaType);
         if (!posts.length) {
             return res.status(200).json({message: "No video posts found", posts: []});
         }
@@ -186,7 +186,7 @@ const getAllVideoPosts = async (req, res) => {
             try {
                 if (!authorId) continue;
                 
-                const user = await User.findById(authorId);
+                const user = await UserService.findById(authorId);
                 
                 if (user) {
                     authorsMap[authorId] = {
@@ -245,14 +245,14 @@ const getAllPostsByUserId = async (req, res) => {
         const userId = req.params.id || req.user.id;
         
         // Get posts by user ID
-        const posts = await Post.findByUserId(userId);
+        const posts = await PostService.findByUserId(userId);
         
         if (!posts.length) {
             return res.status(200).json({message: "No posts found for this user", posts: []});
         }
         
         // Get user details
-        const user = await User.findById(userId);
+        const user = await UserService.findById(userId);
         
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -293,7 +293,7 @@ const getAllPostsInFeed = async (req, res) => {
         const userId = req.user.id;
         
         // Get feed posts (in a real app, this would likely be posts from followed users)
-        const posts = await Post.findForFeed(userId);
+        const posts = await PostService.findForFeed(userId);
         
         if (!posts.length) {
             return res.status(200).json([]);
@@ -304,7 +304,7 @@ const getAllPostsInFeed = async (req, res) => {
         
         // Get author details for all posts
         // In a production app, you'd want to batch this or use a more efficient approach
-        const authorsPromises = authorIds.map(authorId => User.findById(authorId));
+        const authorsPromises = authorIds.map(authorId => UserService.findById(authorId));
         const authors = await Promise.all(authorsPromises);
         
         // Create a map of author IDs to author data for quick lookup
@@ -343,7 +343,7 @@ const updatePostByPostId = async (req, res) => {
             return res.status(400).json({ message: 'Post ID is required' });
         }
 
-        const existingPost = await Post.findById(postId);
+        const existingPost = await PostService.findById(postId);
         if (!existingPost) {
             return res.status(404).json({ message: 'Post not found' });
         }
@@ -416,7 +416,7 @@ const updatePostByPostId = async (req, res) => {
         }
         
         // Update the post
-        const updatedPost = await Post.updateById(postId, updateData);
+        const updatedPost = await PostService.updateById(postId, updateData);
         if (!updatedPost) {
             return res.status(404).json({ message: 'Failed to update post' });
         }
@@ -439,7 +439,7 @@ const deletePostByPostId = async (req, res) => {
         }
 
         // Check if post exists
-        const existingPost = await Post.findById(postId);
+        const existingPost = await PostService.findById(postId);
         if (!existingPost) {
             return res.status(404).json({ message: 'Post not found' });
         }
@@ -458,7 +458,7 @@ const deletePostByPostId = async (req, res) => {
                 // Create an array of promises for deleting each comment
                 const deleteCommentPromises = existingPost.comments.map(async (commentId) => {
                     try {
-                        await Comment.deleteById(commentId);
+                        await CommentService.deleteById(commentId);
                         return { commentId, success: true };
                     } catch (commentError) {
                         console.error(`Error deleting comment ${commentId}:`, commentError.message);
@@ -481,7 +481,7 @@ const deletePostByPostId = async (req, res) => {
         }
         
         // Delete the post
-        const deleteResult = await Post.deleteById(postId);
+        const deleteResult = await PostService.deleteById(postId);
         if (!deleteResult) {
             return res.status(500).json({ message: 'Failed to delete post' });
         }

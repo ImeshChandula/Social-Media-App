@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const UserService = require('../services/userService');
 const { generateToken } = require("../utils/jwtToken");
 require('dotenv').config();
 
@@ -8,7 +8,7 @@ const registerUser = async (req, res) => {
         const { username, email, password, firstName, lastName, role } = req.body;
 
         // check if user already exists
-        let user = await User.findByEmail(email);
+        let user = await UserService.findByEmail(email);
         if (user) {
             return res.status(400).json({ msg: "User already exists" });
         }
@@ -34,7 +34,7 @@ const registerUser = async (req, res) => {
             lastLogin : new Date().toISOString(),
         };
 
-        const newUser = await User.create(userData);
+        const newUser = await UserService.create(userData);
 
         // create JWT token
         const payload = {
@@ -62,13 +62,13 @@ const loginUser = async (req, res) => {
         const { email, password } = req.body;
 
         // check if user exists
-        const user = await User.findByEmail(email);
+        const user = await UserService.findByEmail(email);
         if (!user){
             return res.status(400).json({ msg: 'Invalid credentials' });
         }
 
         // validate password
-        const isMatch = await User.comparePassword(password, user.password);
+        const isMatch = await UserService.comparePassword(password, user.password);
         if (!isMatch){
             return res.status(400).json({ msg: 'Invalid credentials' });
         }
@@ -79,7 +79,7 @@ const loginUser = async (req, res) => {
             lastLogin : new Date().toISOString(),
         };
         
-        await User.updateById(user.id, updateData);
+        await UserService.updateById(user.id, updateData);
 
         // create JWT token
         const payload = {
@@ -122,7 +122,7 @@ const logout = async (req, res) => {
             isActive: false,
         };
 
-        await User.updateById(req.user.id, updateData);
+        await UserService.updateById(req.user.id, updateData);
 
         res.cookie("jwt", "", {maxAge: 0});
         res.status(200).json({

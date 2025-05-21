@@ -1,6 +1,6 @@
-const Post = require('../models/Post');
-const User = require('../models/User');
-const Comment = require('../models/Comment');
+const UserService = require('../services/userService');
+const PostService = require('../services/postService');
+const CommentService = require('../services/commentService');
 
 
 //@desc     like/unlike to a post by post Id
@@ -9,7 +9,7 @@ const likeToAPostByPostId = async (req, res) => {
         const postId = req.params.id;
         const userId = req.user.id;
 
-        const post = await Post.findById(postId);
+        const post = await PostService.findById(postId);
         if (!post) {
             return res.status(404).json({success: false, message: "Post not found"});
         }
@@ -30,7 +30,7 @@ const likeToAPostByPostId = async (req, res) => {
         }
 
         // Update the post in the database
-        const updatedPost = await Post.updateById(postId, {likes: post.likes});
+        const updatedPost = await PostService.updateById(postId, {likes: post.likes});
         if (!updatedPost) {
             return res.status(400).json({ success: false, message: "Failed to like this post"});
         }
@@ -61,7 +61,7 @@ const likeToACommentByCommentId = async (req, res) => {
         const commentId = req.params.id;
         const userId = req.user.id;
 
-        const comment = await Comment.findById(commentId);
+        const comment = await CommentService.findById(commentId);
         if (!comment) {
             return res.status(404).json({success: false, message: "Comment not found"});
         }
@@ -82,7 +82,7 @@ const likeToACommentByCommentId = async (req, res) => {
         }
 
         // Update the comment in the database
-        const updatedComment = await Comment.updateById(commentId, {likes: comment.likes});
+        const updatedComment = await CommentService.updateById(commentId, {likes: comment.likes});
         if (!updatedComment) {
             return res.status(400).json({ success: false, message: "Failed to like this comment"});
         }
@@ -112,13 +112,13 @@ const getAllLikedUsersInPost = async (req, res) => {
     try {
         const postId = req.params.id;
 
-        const post = await Post.findById(postId);
+        const post = await PostService.findById(postId);
         if (!post) {
             return res.status(404).json({success: false, message: "Post not found"});
         }
 
         // Fetch user details for all users who liked the post
-        const userPromises = post.likes.map(userId => User.findById(userId));
+        const userPromises = post.likes.map(userId => UserService.findById(userId));
         const users = await Promise.all(userPromises);
       
         // Filter out any null values in case some users don't exist anymore
@@ -153,13 +153,13 @@ const getAllLikedUsersInComment = async (req, res) => {
     try {
         const commentId = req.params.id;
 
-        const comment = await Comment.findById(commentId);
+        const comment = await CommentService.findById(commentId);
         if (!comment) {
             return res.status(404).json({success: false, message: "Comment not found"});
         }
 
         // Fetch user details for all users who liked the comment
-        const userPromises = comment.likes.map(userId => User.findById(userId));
+        const userPromises = comment.likes.map(userId => UserService.findById(userId));
         const users = await Promise.all(userPromises);
       
         // Filter out any null values in case some users don't exist anymore

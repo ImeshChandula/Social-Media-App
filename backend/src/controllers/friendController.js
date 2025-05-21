@@ -1,4 +1,4 @@
-const User = require("../models/User");
+const UserService = require('../services/userService');
 
 // @desc    Send a friend request to another user
 // @route   POST /api/friends/friend-request/send/:username
@@ -7,7 +7,7 @@ const sendFriendRequest = async (req, res) => {
     const username = req.params.username;
     const senderId = req.user.id; // From auth middleware
     
-    const result = await User.sendFriendRequest(senderId, username);
+    const result = await UserService.sendFriendRequest(senderId, username);
     
     if (!result.success) {
       return res.status(400).json({ message: result.message });
@@ -27,7 +27,7 @@ const acceptFriendRequest = async (req, res) => {
     const requesterId = req.params.id;
     const userId = req.user.id; // From auth middleware
     
-    const result = await User.acceptFriendRequest(userId, requesterId);
+    const result = await UserService.acceptFriendRequest(userId, requesterId);
     
     if (!result.success) {
       return res.status(400).json({ message: result.message });
@@ -47,7 +47,7 @@ const rejectFriendRequest = async (req, res) => {
     const requesterId = req.params.id;
     const userId = req.user.id; // From auth middleware
     
-    const result = await User.rejectFriendRequest(userId, requesterId);
+    const result = await UserService.rejectFriendRequest(userId, requesterId);
     
     if (!result.success) {
       return res.status(400).json({ message: result.message });
@@ -66,7 +66,7 @@ const getPendingFriendRequests = async (req, res) => {
   try {
     const userId = req.user.id; // From auth middleware
     
-    const result = await User.getPendingFriendRequests(userId);
+    const result = await UserService.getPendingFriendRequests(userId);
     
     if (!result.success) {
       return res.status(400).json({ message: result.message });
@@ -86,7 +86,7 @@ const removeFriend = async (req, res) => {
     const friendId = req.params.id;
     const userId = req.user.id; // From auth middleware
     
-    const result = await User.removeFriend(userId, friendId);
+    const result = await UserService.removeFriend(userId, friendId);
     
     if (!result.success) {
       return res.status(400).json({ message: result.message });
@@ -105,7 +105,7 @@ const getFriendsList = async (req, res) => {
   try {
     const userId = req.user.id; // From auth middleware
     
-    const result = await User.getFriendsList(userId);
+    const result = await UserService.getFriendsList(userId);
     
     if (!result.success) {
       return res.status(400).json({ message: result.message });

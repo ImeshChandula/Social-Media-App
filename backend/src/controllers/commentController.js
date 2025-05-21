@@ -1,6 +1,6 @@
-const Comment = require('../models/Comment');
-const Post = require('../models/Post');
-const User = require('../models/User');
+const UserService = require('../services/userService');
+const PostService = require('../services/postService');
+const CommentService = require('../services/commentService');
 const cloudinary =  require("../config/cloudinary");
 
 //@desc     Add comment to post
@@ -13,7 +13,7 @@ const addComment = async (req, res) => {
       return res.status(400).json({ message: 'Either text or media is required' });
     }
 
-    const post = await Post.findById(postId);
+    const post = await PostService.findById(postId);
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
@@ -55,7 +55,7 @@ const addComment = async (req, res) => {
       }
     };
     
-    const newComment = await Comment.create(commentData);
+    const newComment = await CommentService.create(commentData);
     if (!newComment) {
       return res.status(500).json({ message: 'Failed to create comment' });
     }
@@ -69,7 +69,7 @@ const addComment = async (req, res) => {
       const updatedComments = [...currentComments, newComment.id];
       
       // Update the post with the new comment ID
-      await Post.updateById(postId, { 
+      await PostService.updateById(postId, { 
         comments: updatedComments,
         commentCount: updatedComments.length // Update comment count as well
       });
@@ -79,7 +79,7 @@ const addComment = async (req, res) => {
     }
 
     // Get user details
-    const user = await User.findById(req.user.id);
+    const user = await UserService.findById(req.user.id);
 
     const commentWithUser = {
       ...newComment,
@@ -114,7 +114,7 @@ const addReply = async (req, res) => {
     }
     
     // Check if comment exists
-    const comment = await Comment.findById(commentId);
+    const comment = await CommentService.findById(commentId);
     
     if (!comment) {
       return res.status(404).json({ message: 'Comment not found' });
@@ -140,10 +140,10 @@ const addReply = async (req, res) => {
       const commentDataToBeUpdated = {
         replies: updatedReplies,
       };
-      await Comment.updateById(commentId, commentDataToBeUpdated);
+      await CommentService.updateById(commentId, commentDataToBeUpdated);
       
       // Get user details
-      const user = await User.findById(req.user.id);
+      const user = await UserService.findById(req.user.id);
       
       // Prepare reply with user details for response
       let replyWithUser = { ...reply };
@@ -178,13 +178,13 @@ const getCommentsByPostId  = async (req, res) => {
       return res.status(400).json({ message: 'Post ID is required' });
     }
 
-    const post = await Post.findById(postId);
+    const post = await PostService.findById(postId);
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
 
     // Get comments for this post
-    const comments = await Comment.findByPostId(postId);
+    const comments = await CommentService.findByPostId(postId);
 
     // Collect all unique user IDs from comments and replies
     const userIds = new Set();
@@ -210,7 +210,7 @@ const getCommentsByPostId  = async (req, res) => {
       try {
         if (!userId) continue;
         
-        const user = await User.findById(userId);
+        const user = await UserService.findById(userId);
         
         if (user) {
           usersMap[userId] = {
@@ -289,7 +289,7 @@ const updateComment = async (req, res) => {
     }
     
     // Check if comment exists
-    const comment = await Comment.findById(commentId);
+    const comment = await CommentService.findById(commentId);
     
     if (!comment) {
       return res.status(404).json({ message: 'Comment not found' });
@@ -308,14 +308,14 @@ const updateComment = async (req, res) => {
     
     try {
       // Get the updated comment
-      const updatedComment = await Comment.updateById(commentId, updateData);
+      const updatedComment = await CommentService.updateById(commentId, updateData);
       
       if (!updatedComment) {
         return res.status(404).json({ message: 'Failed to retrieve updated comment' });
       }
       
       // Get user details
-      const user = await User.findById(req.user.id);
+      const user = await UserService.findById(req.user.id);
       
       let userDetails = null;
       if (user) {
@@ -350,7 +350,7 @@ const deleteComment = async (req, res) => {
   try {
     const commentId = req.params.id;
     
-    const comment = await Comment.findById(commentId);
+    const comment = await CommentService.findById(commentId);
     if (!comment) {
       return res.status(404).json({ msg: 'Comment not found' });
     }
@@ -361,7 +361,7 @@ const deleteComment = async (req, res) => {
     // Ensure user owns this comment or is the owner of the post
     if (commentOwnerId !== req.user.id) {
       // If not the comment owner, check if user is the post owner
-      const post = await Post.findById(postId);
+      const post = await PostService.findById(postId);
       
       if (!post || post.author !== req.user.id) {
         return res.status(403).json({ 
@@ -372,20 +372,20 @@ const deleteComment = async (req, res) => {
     
     try {
       const postId = comment.post;
-      const post = await Post.findById(postId);
+      const post = await PostService.findById(postId);
       if (post) {
         // Remove the comment ID from the post's comments array
         const updatedComments = post.comments.filter(id => id !== commentId);
         
         // Update the post with the new comments array
-        await Post.updateById(postId, { 
+        await PostService.updateById(postId, { 
           comments: updatedComments,
           commentCount: updatedComments.length // Update comment count as well
         });
       }
 
       // delete comment
-      const deleteResult = await Comment.deleteById(commentId);
+      const deleteResult = await CommentService.deleteById(commentId);
 
       if (!deleteResult) {
         return res.status(500).json({ message: 'Failed to delete comment' });
