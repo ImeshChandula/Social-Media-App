@@ -1,5 +1,4 @@
 const { db, messaging } = require('../config/firebase');
-const { NotificationTypes, NotificationEntityTypes } = require('../models/Notification');
 
 class NotificationService {
     // Create notification
