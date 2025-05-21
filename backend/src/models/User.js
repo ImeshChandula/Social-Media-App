@@ -2,7 +2,7 @@ const { connectFirebase } = require('../config/firebase');
 const bcrypt = require('bcrypt');
 const ROLES = require("../enums/roles");
 
-const db = connectFirebase();
+const {db} = connectFirebase();
 const userCollection = db.collection('users');
 
 

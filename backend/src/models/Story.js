@@ -1,6 +1,6 @@
 const { connectFirebase } = require('../config/firebase');
 
-const db = connectFirebase();
+const {db} = connectFirebase();
 const storiesCollection = db.collection('stories');
 
 class Story {
