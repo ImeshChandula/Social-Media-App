@@ -1,7 +1,6 @@
 const UserService = require('../services/userService');
 const PostService = require('../services/postService');
-const CommentService = require('../services/commentService');
-const StoryService = require('../services/storyService');
+const { performUserDeletion } = require('../services/userDeletionService');
 const ROLES = require("../enums/roles");
 const bcrypt = require('bcrypt');
 const cloudinary =  require("../config/cloudinary");
@@ -63,88 +62,9 @@ const deleteUser = async (req, res) => {
             return res.status(404).json({success: false, message: 'User not found'});
         }
 
-        // Step 1: Delete all posts by this user and their associated comments
-        try {
-            // Get all posts by this user
-            const userPosts = await PostService.findByUserId(userIdToDelete);
-            console.log(`Found ${userPosts.length} posts to delete for user ${userIdToDelete}`);
-            
-            // Delete each post and its comments
-            for (const post of userPosts) {
-                // Delete all comments for this post
-                if (post.comments && post.comments.length > 0) {
-                    console.log(`Deleting ${post.comments.length} comments for post ${post.id}`);
-                    
-                    const deleteCommentPromises = post.comments.map(commentId => 
-                        CommentService.deleteById(commentId).catch(err => 
-                            console.error(`Error deleting comment ${commentId}:`, err.message)
-                        )
-                    );
-                    
-                    await Promise.all(deleteCommentPromises);
-                }
-                
-                // Delete the post
-                await PostService.deleteById(post.id);
-                console.log(`Deleted post ${post.id}`);
-            }
-        } catch (postsError) {
-            console.error(`Error deleting posts for user ${userIdToDelete}:`, postsError.message);
-            // Continue with other deletions even if posts fail
-        }
-
-        // Step 2: Delete all comments by this user on any post
-        try {
-            // Get all comments by this user
-            const userComments = await CommentService.findByUserId(userIdToDelete);
-            console.log(`Found ${userComments.length} comments to delete for user ${userIdToDelete}`);
-            
-            // For each comment:
-            for (const comment of userComments) {
-                // 1. Update the post to remove this comment ID
-                try {
-                    const post = await PostService.findById(comment.post);
-                    if (post) {
-                        // Remove the comment ID from the post's comments array
-                        const updatedComments = post.comments.filter(id => id !== comment.id);
-                        
-                        // Update the post
-                        await PostService.updateById(comment.post, {
-                            comments: updatedComments,
-                            commentCount: updatedComments.length
-                        });
-                    }
-                } catch (postUpdateError) {
-                    console.error(`Error updating post ${comment.post}:`, postUpdateError.message);
-                    // Continue with deleting the comment even if post update fails
-                }
-                
-                // 2. Delete the comment
-                await CommentService.deleteById(comment.id);
-                console.log(`Deleted comment ${comment.id}`);
-            }
-        } catch (commentsError) {
-            console.error(`Error deleting comments for user ${userIdToDelete}:`, commentsError.message);
-            // Continue with other deletions even if comments fail
-        }
-
-        // Step 3: Delete all stories by this user
-        try {
-            // Get all stories by this user
-            const userStories = await StoryService.findAllByUserId(userIdToDelete);
-            console.log(`Found ${userStories.length} stories to delete for user ${userIdToDelete}`);
-            
-            // Delete each story
-            for (const story of userStories) {
-                await StoryService.findByIdAndDelete(story.id);
-                console.log(`Deleted story ${story.id}`);
-            }
-        } catch (storiesError) {
-            console.error(`Error deleting stories for user ${userIdToDelete}:`, storiesError.message);
-            // Continue with user deletion even if stories fail
-        }
-
-        await UserService.deleteById(req.params.id);   
+        // Call the external service to handle the entire deletion process
+        await performUserDeletion(userToDelete);
+        
         res.status(200).json({ message: 'User deleted successfully' });
     } catch (err) {
         console.error("Error deleting user:", err);
