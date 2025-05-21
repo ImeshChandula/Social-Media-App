@@ -31,10 +31,10 @@ const createDefaultSuperAdmin = async (req, res) => {
             superAdmin = existingSuperAdmin;
             console.log(`Default Super Admin already exists. \nEmail: ${process.env.SUPER_ADMIN_EMAIL} \nPassword: ${process.env.SUPER_ADMIN_PASSWORD}`);
         }
-    } catch (err) {
-        console.error(err.message);
+    } catch (error) {
+        console.error(error.message);
         if (req && res) {
-            res.status(500).send('Server error');
+            res.status(500).send('Server error while default account creating');
         }
     }
 };
@@ -45,8 +45,8 @@ const initializeDefaultSuperAdmin = async () => {
     try {
         await createDefaultSuperAdmin();
         console.log("Super admin initialization completed");
-    } catch (err) {
-        console.error("Failed to initialize super admin:", err.message);
+    } catch (error) {
+        console.error("Failed to initialize super admin:", error.message);
     }
 };
 
