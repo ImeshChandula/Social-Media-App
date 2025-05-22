@@ -65,7 +65,7 @@ const CreatePost = () => {
 
         setLoading(true);
         setMessage(null);
-
+        try {
             const payload = {
                 content: formData.content,
                 media: formData.media,
