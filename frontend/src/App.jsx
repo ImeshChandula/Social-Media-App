@@ -1,40 +1,48 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-
 import Login from "./routes/login";
-import Register from "./routes/Register";
+import Register from "./routes/Register"
 import MainLayout from "./routes/MainLayout";
-import CreatePost from "./components/CreatePost";
-import EditProfile from "./components/EditProfile";
+import { axiosInstance } from "./lib/axios";
 
-function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem("isLoggedIn") === "true";
-  });
+const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    localStorage.setItem("isLoggedIn", isLoggedIn ? "true" : "false");
-  }, [isLoggedIn]);
+    const checkAuth = async () => {
+      try {
+        const res = await axiosInstance.get("/auth/checkCurrent");
+        if (res.data) setIsLoggedIn(true);
+      } catch (err) {
+        setIsLoggedIn(false);
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  if (checkingAuth) return <div>Loading...</div>;
 
   return (
     <Router>
       <Routes>
-        {!isLoggedIn ? (
-          <>
-            <Route path="/" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </>
-        ) : (
-          <>
-            <Route path="/*" element={<MainLayout />} />
-            <Route path="/create-post" element={<CreatePost />} />
-            <Route path="/edit-profile" element={<EditProfile />} />
-          </>
-        )}
+        <Route
+          path="/login"
+          element={!isLoggedIn ? <Login setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/register"
+          element={!isLoggedIn ? <Register setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/*"
+          element={isLoggedIn ? <MainLayout /> : <Navigate to="/login" />}
+        />
       </Routes>
     </Router>
   );
-}
+};
 
 export default App;

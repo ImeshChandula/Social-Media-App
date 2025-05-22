@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import Sidebar from "../components/Sidebar";
 
@@ -31,7 +31,6 @@ const MainLayout = () => {
             <Route path="/videos" element={<Videos />} />
             <Route path="/notifications" element={<NotificationPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </div>

@@ -5,27 +5,16 @@ import { FaApple, FaEye, FaEyeSlash } from "react-icons/fa";
 import { axiosInstance } from "../lib/axios";
 
 const Login = ({ setIsLoggedIn }) => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    rememberMe: false,
-  });
-
+  const [formData, setFormData] = useState({ email: "", password: "", rememberMe: false });
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
   const [showPassword, setShowPassword] = useState(false);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword((prev) => !prev)
-  };
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
+    setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
   };
 
   const handleSubmit = async (e) => {
@@ -33,20 +22,16 @@ const Login = ({ setIsLoggedIn }) => {
     setError("");
 
     try {
-      const response = await axiosInstance.post(
-        "/auth/login",
-        {
-          email: formData.email,
-          password: formData.password,
-        }
-      );
+      const res = await axiosInstance.post("/auth/login", {
+        email: formData.email,
+        password: formData.password,
+      });
 
-      if (response.data?.user) {
+      if (res.data?.user) {
         setIsLoggedIn(true);
         navigate("/");
       }
     } catch (err) {
-      console.error("Login error:", err.response?.data?.msg || err.message);
       setError(err.response?.data?.msg || "Login failed. Please try again.");
     }
   };
@@ -55,9 +40,7 @@ const Login = ({ setIsLoggedIn }) => {
     <div className="login-page">
       <div className="login-header">
         <h1 className="login-title">facebook</h1>
-        <p className="login-subtitle">
-          Connect with friends and the world around you.
-        </p>
+        <p className="login-subtitle">Connect with friends and the world around you.</p>
       </div>
 
       <div className="login-container">
@@ -69,6 +52,7 @@ const Login = ({ setIsLoggedIn }) => {
             value={formData.email}
             onChange={handleChange}
             className="login-input"
+            required
           />
 
           <div className="input-with-icon">
@@ -79,16 +63,12 @@ const Login = ({ setIsLoggedIn }) => {
               value={formData.password}
               onChange={handleChange}
               className="login-input-password"
+              required
             />
-            <span
-              className="input-icon"
-              onClick={togglePasswordVisibility}
-              title={showPassword ? "Hide password" : "Show password"}
-            >
+            <span className="input-icon" onClick={togglePasswordVisibility}>
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
-
 
           <div className="login-options">
             <label className="login-checkbox">
@@ -100,16 +80,14 @@ const Login = ({ setIsLoggedIn }) => {
               />
               <span>Remember me</span>
             </label>
-            <a href="/forgot-password" className="login-forgot">
-              Forgot Password?
-            </a>
+            <a href="/forgot-password" className="login-forgot">Forgot Password?</a>
           </div>
 
           {error && <div className="login-error">{error}</div>}
 
-          <button type="submit" className="login-button">
-            Log In
-          </button>
+          <button type="submit" className="login-button">Log In</button>
+
+          {/*
 
           <div className="login-divider">Or continue with</div>
           <div className="login-social-buttons">
@@ -124,13 +102,13 @@ const Login = ({ setIsLoggedIn }) => {
               </span>
             </button>
           </div>
+
+          */}
+
         </form>
 
         <p className="login-signup">
-          Don't have an account?{' '}
-          <a href="/register" className="login-signup-link">
-            Sign up
-          </a>
+          Don't have an account? <a href="/register" className="login-signup-link">Sign up</a>
         </p>
       </div>
     </div>
