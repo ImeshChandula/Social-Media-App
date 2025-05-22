@@ -8,6 +8,8 @@ import Members from "../pages/Members";
 import Videos from "../pages/Videos";
 import NotificationPage from "../pages/Notifications";
 import ProfilePage from "../pages/ProfilePage";
+import CreatePost from "../components/CreatePost";
+import EditProfile from "../components/EditProfile"
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -31,6 +33,8 @@ const MainLayout = () => {
             <Route path="/videos" element={<Videos />} />
             <Route path="/notifications" element={<NotificationPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/create-post" element={<CreatePost />} />
+            <Route path="/edit-profile" element={<EditProfile />} />
           </Routes>
         </div>
       </div>
