@@ -40,7 +40,6 @@ const CreatePost = () => {
             const base64 = await handleMediaUpload(file);
             const type = file.type.startsWith('video') ? 'video' : 'image';
 
-            // Clean up old preview
             if (formData.mediaType === 'video' && formData.mediaPreview) {
                 URL.revokeObjectURL(formData.mediaPreview);
             }
@@ -56,6 +55,19 @@ const CreatePost = () => {
         }
     };
 
+    const handleRemoveMedia = () => {
+        if (formData.mediaType === 'video' && formData.mediaPreview) {
+            URL.revokeObjectURL(formData.mediaPreview);
+        }
+
+        setFormData((prev) => ({
+            ...prev,
+            media: null,
+            mediaPreview: '',
+            mediaType: '',
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -65,36 +77,28 @@ const CreatePost = () => {
 
         setLoading(true);
         setMessage(null);
+
         try {
             const payload = {
                 content: formData.content,
                 media: formData.media,
-                mediaType: formData.mediaType,
+                mediaType: formData.media ? formData.mediaType : 'text',
                 tags: formData.tags
                     .split(',')
-                    .map(tag => tag.trim())
-                    .filter(tag => tag.length > 0), // convert tags string to array
+                    .map((tag) => tag.trim())
+                    .filter((tag) => tag.length > 0),
                 privacy: formData.privacy,
-                location: formData.location
+                location: formData.location,
             };
 
-            console.log("Payload being sent:", payload);
             const res = await axiosInstance.post('/posts/createPost', payload);
 
             setMessage({ type: 'success', text: res.data.message || 'Post created successfully!' });
-            setFormData({
-                content: '',
-                media: null,
-                mediaPreview: '',
-                mediaType: '',
-                privacy: 'public',
-                tags: '',
-                location: ''
-            });
+            setFormData(initialState);
         } catch (error) {
             setMessage({
                 type: 'danger',
-                text: error.response?.data?.error || 'Failed to create post.'
+                text: error.response?.data?.message || 'Failed to create post.',
             });
         } finally {
             setLoading(false);
@@ -108,7 +112,7 @@ const CreatePost = () => {
                     <h3 className="text-center mb-4">📝 Create a Post</h3>
 
                     {message && (
-                        <div className={`alert alert-${message.type} mt-2`} role="alert">
+                        <div className={`alert alert-${message.type}`} role="alert">
                             {message.text}
                         </div>
                     )}
@@ -127,7 +131,18 @@ const CreatePost = () => {
                         </div>
 
                         <div className="mb-3">
-                            <label className="form-label">Upload Media</label>
+                            <div className="d-flex justify-content-between align-items-center">
+                                <label className="form-label mb-0">Upload Media</label>
+                                {formData.media && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-danger my-2"
+                                        onClick={handleRemoveMedia}
+                                    >
+                                        Remove
+                                    </button>
+                                )}
+                            </div>
                             <input
                                 type="file"
                                 className="form-control bg-dark text-white"
@@ -135,24 +150,26 @@ const CreatePost = () => {
                                 accept="image/*,video/*"
                                 onChange={handleChange}
                             />
-                            {formData.mediaPreview && (
+                            {formData.mediaPreview && formData.mediaType === 'video' && (
                                 <div className="mt-3">
-                                    <p className="text-muted">Preview:</p>
-                                    {formData.mediaType === 'image' ? (
-                                        <img
-                                            src={formData.mediaPreview}
-                                            alt="Preview"
-                                            className="img-fluid rounded shadow"
-                                            style={{ maxHeight: '300px' }}
-                                        />
-                                    ) : (
-                                        <video
-                                            src={formData.mediaPreview}
-                                            controls
-                                            className="w-100 rounded shadow"
-                                            style={{ maxHeight: '300px' }}
-                                        />
-                                    )}
+                                    <p className="text-white-50">Video Preview:</p>
+                                    <video
+                                        src={formData.mediaPreview}
+                                        controls
+                                        className="w-100 rounded shadow"
+                                        style={{ maxHeight: '300px' }}
+                                    />
+                                </div>
+                            )}
+                            {formData.mediaPreview && formData.mediaType === 'image' && (
+                                <div className="mt-3">
+                                    <p className="text-white-50">Image Preview:</p>
+                                    <img
+                                        src={formData.mediaPreview}
+                                        alt="preview"
+                                        className="w-100 rounded shadow"
+                                        style={{ maxHeight: '300px', objectFit: 'contain' }}
+                                    />
                                 </div>
                             )}
                         </div>
