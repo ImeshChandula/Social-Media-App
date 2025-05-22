@@ -46,8 +46,16 @@ const validatePost = (req, res, next) => {
     media: Joi.alternatives().try(
       Joi.string().uri(),                         // media link
       Joi.string().pattern(/^data:.*;base64,.*/), // base64 image/video
-      Joi.valid(null)
+      Joi.object({ path: Joi.string().required() }), // multer-style file
+      Joi.valid(null),
+      Joi.array().items(
+        Joi.alternatives().try(
+          Joi.string(),
+          Joi.object({ path: Joi.string().required() })
+        )
+      )
     ).optional(),
+
     mediaType: Joi.when('media', {
       is: Joi.exist().not(null),
       then: Joi.string().valid('image', 'video').required(),
@@ -84,7 +92,18 @@ const validateComment = (req, res, next) => {
     post: Joi.string().optional(),              // ID of the post the comment belongs to
     user: Joi.string().optional(),              // ID of the user making the comment
     text: Joi.string().optional(),              // Text content of the comment
-    media: Joi.string().uri().allow(null, ''),  // Optional media (URL)
+    media: Joi.alternatives().try(
+      Joi.string().uri(),                         // media link
+      Joi.string().pattern(/^data:.*;base64,.*/), // base64 image/video
+      Joi.object({ path: Joi.string().required() }), // multer-style file
+      Joi.valid(null),
+      Joi.array().items(
+        Joi.alternatives().try(
+          Joi.string(),
+          Joi.object({ path: Joi.string().required() })
+        )
+      )
+    ).optional(),
     likes: Joi.array().items(Joi.string()).optional(),     // Array of user IDs who liked
     replies: Joi.array().items(Joi.object()).optional(),   // Array of replies (optional objects)
     createdAt: Joi.date().optional(),
