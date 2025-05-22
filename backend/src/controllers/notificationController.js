@@ -1,4 +1,7 @@
 const notificationService = require('../services/notificationService');
+const { db } = require('../config/firebase');
+const admin = require('firebase-admin');
+
 
 const getNotifications = async (req, res) => {
   try {
@@ -24,7 +27,7 @@ const getNotifications = async (req, res) => {
 
 const markAsRead = async (req, res) => {
   try {
-    const { notificationId } = req.params.id;
+    const { id: notificationId } = req.params;
     const userId = req.user.id;
     
     // Verify the notification belongs to the user
@@ -114,4 +117,25 @@ const registerDevice = async (req, res) => {
   }
 };
 
-module.exports = {getNotifications, markAsRead, markAllAsRead, registerDevice}
+const getNotificationCount = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        const userDoc = await db.collection('users').doc(userId).get();
+        const notificationCount = userDoc.exists ? userDoc.data().notificationCount || 0 : 0;
+        
+        res.status(200).json({
+            success: true,
+            data: { count: notificationCount }
+        });
+    } catch (error) {
+        console.error('Error fetching notification count:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch notification count',
+            error: error.message
+        });
+    }
+};
+
+module.exports = {getNotifications, markAsRead, markAllAsRead, registerDevice, getNotificationCount}

@@ -1,7 +1,9 @@
 const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const CommentService = require('../services/commentService');
+const notificationUtils = require('../utils/notificationUtils');
 const {uploadMedia} = require('../utils/uploadMedia');
+
 
 //@desc     Add comment to post
 const addComment = async (req, res) => {
@@ -70,6 +72,21 @@ const addComment = async (req, res) => {
         profilePicture: user.profilePicture
       }
     };
+
+    // Send notification to post owner
+    const userId = req.user.id;
+    const username = user.firstName + ' ' + user.lastName;
+    if (post.author !== userId) {
+        const commentPreview = content.length > 50 ? content.substring(0, 50) + '...' : content;
+        await notificationUtils.sendCommentNotification(
+            post.author,
+            userId,
+            postId,
+            newComment.id,
+            username,
+            commentPreview
+        );
+    }
     
     res.status(201).json({
       message: 'Comment added successfully',

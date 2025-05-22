@@ -16,5 +16,7 @@ router.put('/read-all', authenticateUser, notificationController.markAllAsRead);
 // Register device for push notifications
 router.post('/register-device', authenticateUser, notificationController.registerDevice);
 
+// Get notification count
+router.get('/count', authenticateUser, notificationController.getNotificationCount);
 
 module.exports = router;

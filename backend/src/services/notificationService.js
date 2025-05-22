@@ -1,4 +1,5 @@
 const { db, messaging } = require('../config/firebase');
+const admin = require('firebase-admin');
 
 class NotificationService {
     // Create notification
@@ -19,11 +20,39 @@ class NotificationService {
             data: additionalData
         });
         
+        await notificationRef.set(notificationData);
+
         // Increment user's notification counter
         const userRef = db.collection('users').doc(recipientId);
         await userRef.update({
             notificationCount: admin.firestore.FieldValue.increment(1)
         });
+
+        // Emit real-time notification (check if io is available)
+            if (global.io) {
+                // Create the notification object to emit
+                const realtimeNotification = {
+                    id: notificationRef.id,
+                    recipientId,
+                    senderId,
+                    type,
+                    entityId,
+                    entityType,
+                    message,
+                    timestamp: new Date(),
+                    isRead: false,
+                    data: additionalData
+                };
+                
+                // Emit to the specific user's room
+                global.io.to(`user_${recipientId}`).emit('new_notification', realtimeNotification);
+                
+                // Also emit notification count update
+                global.io.to(`user_${recipientId}`).emit('notification_count_update', {
+                    userId: recipientId,
+                    increment: 1
+                });
+            }
         
         return notificationRef.id;
         } catch (error) {
@@ -116,6 +145,18 @@ class NotificationService {
             await notificationRef.update({
                 isRead: true
             });
+
+            // Emit real-time update for marking as read
+            if (global.io) {
+                const notificationDoc = await notificationRef.get();
+                if (notificationDoc.exists) {
+                    const notificationData = notificationDoc.data();
+                    global.io.to(`user_${notificationData.recipientId}`).emit('notification_read', {
+                        notificationId,
+                        recipientId: notificationData.recipientId
+                    });
+                }
+            }
             
             return { success: true };
         } catch (error) {
@@ -145,6 +186,19 @@ class NotificationService {
                 notificationCount: 0,
                 lastNotificationRead: admin.firestore.FieldValue.serverTimestamp()
             });
+
+            // Emit real-time update for marking all as read
+            if (global.io) {
+                global.io.to(`user_${userId}`).emit('all_notifications_read', {
+                    userId,
+                    count: unreadQuery.size
+                });
+                
+                global.io.to(`user_${userId}`).emit('notification_count_update', {
+                    userId,
+                    newCount: 0
+                });
+            }
             
             return { success: true, count: unreadQuery.size };
         } catch (error) {

@@ -1,17 +1,28 @@
 const UserService = require('../services/userService');
+const notificationUtils = require('../utils/notificationUtils');
+
 
 // @desc    Send a friend request to another user
-// @route   POST /api/friends/friend-request/send/:username
+// @route   POST /api/friends/friend-request/send/:id
 const sendFriendRequest = async (req, res) => {
   try {
-    const username = req.params.username;
+    const recipientId  = req.params.id;
     const senderId = req.user.id; // From auth middleware
     
-    const result = await UserService.sendFriendRequest(senderId, username);
+    const result = await UserService.sendFriendRequest(senderId, recipientId);
     
     if (!result.success) {
       return res.status(400).json({ message: result.message });
     }
+
+    // Send notification
+    const sender = await UserService.findById(senderId);
+    const senderName = sender.firstName + ' ' + sender.lastName;
+    await notificationUtils.sendFriendRequestNotification(
+        recipientId,
+        senderId,
+        senderName
+    );
     
     res.status(200).json({ message: result.message });
   } catch (error) {
@@ -32,6 +43,15 @@ const acceptFriendRequest = async (req, res) => {
     if (!result.success) {
       return res.status(400).json({ message: result.message });
     }
+
+    // Send notification to original sender
+    const userData = await UserService.findById(userId);
+    const username = await userData.firstName + ' ' + userData.lastName;
+    await notificationUtils.sendAcceptRequestNotification(
+        requesterId, // Get this from your friend request document
+        userId,
+        username
+    );
     
     res.status(200).json({ message: result.message });
   } catch (error) {

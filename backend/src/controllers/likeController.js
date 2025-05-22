@@ -1,6 +1,7 @@
 const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const CommentService = require('../services/commentService');
+const notificationUtils = require('../utils/notificationUtils');
 
 
 //@desc     like/unlike to a post by post Id
@@ -33,6 +34,18 @@ const likeToAPostByPostId = async (req, res) => {
         const updatedPost = await PostService.updateById(postId, {likes: post.likes});
         if (!updatedPost) {
             return res.status(400).json({ success: false, message: "Failed to like this post"});
+        }
+
+        // Send notification to post owner
+        const userData = await UserService.findById(userId);
+        const name = userData.firstName + ' ' + userData.lastName;
+        if (updatedPost.author !== userId) {
+            await notificationUtils.sendLikePostNotification(
+                updatedPost.author, // recipient
+                userId,         // sender
+                postId,
+                name
+            );
         }
 
         return res.status(200).json({ 

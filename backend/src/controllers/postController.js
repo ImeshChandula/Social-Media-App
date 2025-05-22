@@ -2,6 +2,7 @@ const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const {uploadMedia} = require('../utils/uploadMedia');
 const {deleteAllComments} = require('../services/userDeletionService');
+const notificationUtils = require('../utils/notificationUtils');
 
 
 //@desc     create a post 

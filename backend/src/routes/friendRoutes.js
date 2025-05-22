@@ -8,9 +8,9 @@ const router = express.Router();
 // http://localhost:5000/api/friends
 
 // @desc    Send a friend request to another user
-// @route   POST /api/friends/friend-request/send/:username
+// @route   POST /api/friends/friend-request/send/:id
 // @access  Private
-router.post("/friend-request/send/:username", authenticateUser, friendController.sendFriendRequest);
+router.post("/friend-request/send/:id", authenticateUser, friendController.sendFriendRequest);
 
 // @desc    Accept a friend request
 // @route   POST /api/friends/friend-request/accept/:id
