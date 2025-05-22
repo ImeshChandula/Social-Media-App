@@ -25,11 +25,13 @@ const addComment = async (req, res) => {
     };
 
     // upload media
-    try {
-      const imageUrl = await uploadMedia(media);
-      commentData.media = imageUrl;
-    } catch (error) {
-      return res.status(400).json({error: "Failed to upload media", message: error.message});
+    if (media) {
+      try {
+        const imageUrl = await uploadMedia(media);
+        commentData.media = imageUrl;
+      } catch (error) {
+        return res.status(400).json({error: "Failed to upload media", message: error.message});
+      }
     }
     
     const newComment = await CommentService.create(commentData);
