@@ -2,18 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { axiosInstance } from '../lib/axios';
 
 const CreatePost = () => {
-    const [formData, setFormData] = useState({
+    const initialState = {
         content: '',
-        media: null,          // base64 string for upload
-        mediaPreview: '',     // URL or base64 string for preview
-        mediaType: '',        // 'image' or 'video'
+        media: null,
+        mediaPreview: '',
+        mediaType: '',
         privacy: 'public',
         tags: '',
-        location: ''
-    });
+        location: '',
+    };
 
+    const [formData, setFormData] = useState(initialState);
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState({ type: '', text: '' });
+    const [message, setMessage] = useState(null);
 
     useEffect(() => {
         return () => {
@@ -23,66 +24,47 @@ const CreatePost = () => {
         };
     }, [formData.mediaPreview, formData.mediaType]);
 
-    // Convert file to base64 string for upload
-    const handleMediaUpload = (file) => {
-        return new Promise((resolve, reject) => {
+    const handleMediaUpload = (file) =>
+        new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onloadend = () => resolve(reader.result);
             reader.onerror = reject;
             reader.readAsDataURL(file);
         });
-    };
 
     const handleChange = async (e) => {
         const { name, value, files } = e.target;
 
-        if (name === 'media' && files && files[0]) {
+        if (name === 'media' && files?.[0]) {
             const file = files[0];
             const base64 = await handleMediaUpload(file);
+            const type = file.type.startsWith('video') ? 'video' : 'image';
 
-            if (file.type.startsWith('video')) {
-                // If previous preview was a video URL, revoke it to prevent memory leaks
-                if (formData.mediaType === 'video' && formData.mediaPreview) {
-                    URL.revokeObjectURL(formData.mediaPreview);
-                }
-
-                setFormData({
-                    ...formData,
-                    media: base64,
-                    mediaPreview: URL.createObjectURL(file), // video preview with URL object
-                    mediaType: 'video'
-                });
-            } else {
-                // For images use base64 for preview
-                // Also revoke previous video preview URL if exists
-                if (formData.mediaType === 'video' && formData.mediaPreview) {
-                    URL.revokeObjectURL(formData.mediaPreview);
-                }
-
-                setFormData({
-                    ...formData,
-                    media: base64,
-                    mediaPreview: base64,
-                    mediaType: 'image'
-                });
+            // Clean up old preview
+            if (formData.mediaType === 'video' && formData.mediaPreview) {
+                URL.revokeObjectURL(formData.mediaPreview);
             }
+
+            setFormData((prev) => ({
+                ...prev,
+                media: base64,
+                mediaPreview: type === 'video' ? URL.createObjectURL(file) : base64,
+                mediaType: type,
+            }));
         } else {
-            setFormData({ ...formData, [name]: value });
+            setFormData((prev) => ({ ...prev, [name]: value }));
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validation: content or media must exist
         if (!formData.content.trim() && !formData.media) {
-            setMessage({ type: 'danger', text: 'Please add content or upload media.' });
-            return;
+            return setMessage({ type: 'danger', text: 'Content or media is required.' });
         }
 
-        try {
-            setLoading(true);
-            setMessage({ type: '', text: '' });
+        setLoading(true);
+        setMessage(null);
 
             const payload = {
                 content: formData.content,
@@ -121,21 +103,21 @@ const CreatePost = () => {
 
     return (
         <div className="container mt-5" style={{ maxWidth: '720px' }}>
-            <div className="card shadow rounded-4 border-secondary bg-dark">
+            <div className="card shadow-lg border-0 rounded-4 bg-dark text-white">
                 <div className="card-body p-4">
-                    <h3 className="card-title mb-4 text-center text-white">📝 Create a Post</h3>
+                    <h3 className="text-center mb-4">📝 Create a Post</h3>
 
-                    {message.text && (
-                        <div className={`alert alert-${message.type}`} role="alert">
+                    {message && (
+                        <div className={`alert alert-${message.type} mt-2`} role="alert">
                             {message.text}
                         </div>
                     )}
 
                     <form onSubmit={handleSubmit}>
                         <div className="mb-3">
-                            <label className="form-label text-white">Content</label>
+                            <label className="form-label">Content</label>
                             <textarea
-                                className="form-control bg-dark text-white custom-placeholder"
+                                className="form-control bg-dark text-white"
                                 name="content"
                                 rows="4"
                                 value={formData.content}
@@ -145,7 +127,7 @@ const CreatePost = () => {
                         </div>
 
                         <div className="mb-3">
-                            <label className="form-label text-white">Upload Media</label>
+                            <label className="form-label">Upload Media</label>
                             <input
                                 type="file"
                                 className="form-control bg-dark text-white"
@@ -155,19 +137,19 @@ const CreatePost = () => {
                             />
                             {formData.mediaPreview && (
                                 <div className="mt-3">
-                                    <p className="text-white-50">Preview:</p>
+                                    <p className="text-muted">Preview:</p>
                                     {formData.mediaType === 'image' ? (
                                         <img
                                             src={formData.mediaPreview}
-                                            alt="preview"
-                                            className="img-fluid rounded shadow-sm"
+                                            alt="Preview"
+                                            className="img-fluid rounded shadow"
                                             style={{ maxHeight: '300px' }}
                                         />
                                     ) : (
                                         <video
                                             src={formData.mediaPreview}
                                             controls
-                                            className="w-100 rounded shadow-sm"
+                                            className="w-100 rounded shadow"
                                             style={{ maxHeight: '300px' }}
                                         />
                                     )}
@@ -176,19 +158,19 @@ const CreatePost = () => {
                         </div>
 
                         <div className="mb-3">
-                            <label className="form-label text-white">Tags (comma separated)</label>
+                            <label className="form-label">Tags (comma separated)</label>
                             <input
                                 type="text"
-                                className="form-control bg-dark text-white custom-placeholder"
+                                className="form-control bg-dark text-white"
                                 name="tags"
                                 value={formData.tags}
                                 onChange={handleChange}
-                                placeholder="e.g. travel,food,nature"
+                                placeholder="e.g. travel, food, nature"
                             />
                         </div>
 
                         <div className="mb-3">
-                            <label className="form-label text-white">Privacy</label>
+                            <label className="form-label">Privacy</label>
                             <select
                                 className="form-select bg-dark text-white"
                                 name="privacy"
@@ -202,10 +184,10 @@ const CreatePost = () => {
                         </div>
 
                         <div className="mb-4">
-                            <label className="form-label text-white">Location</label>
+                            <label className="form-label">Location</label>
                             <input
                                 type="text"
-                                className="form-control bg-dark text-white custom-placeholder"
+                                className="form-control bg-dark text-white"
                                 name="location"
                                 value={formData.location}
                                 onChange={handleChange}
