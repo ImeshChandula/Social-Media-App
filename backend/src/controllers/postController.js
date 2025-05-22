@@ -12,6 +12,10 @@ const createPost = async (req, res) => {
         if (!content && !media) {
             return res.status(400).json({ error: "Either content or media is required." });
         }
+
+        if(!mediaType) {
+            return res.status(400).json({ error: "Media type is required." });
+        }
         
         const postData = {
             author: req.user.id,
