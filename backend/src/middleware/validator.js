@@ -42,8 +42,17 @@ const validatePost = (req, res, next) => {
   const schema = Joi.object({
     author: Joi.string().optional(), // typically user ID
     content: Joi.string().optional(),
-    media: Joi.array().items(Joi.string().uri()).optional(),
-    mediaType: Joi.string().valid('image', 'video').optional(),
+    // Accept base64 string OR URL OR null
+    media: Joi.alternatives().try(
+      Joi.string().uri(),                         // media link
+      Joi.string().pattern(/^data:.*;base64,.*/), // base64 image/video
+      Joi.valid(null)
+    ).optional(),
+    mediaType: Joi.when('media', {
+      is: Joi.exist().not(null),
+      then: Joi.string().valid('image', 'video').required(),
+      otherwise: Joi.string().valid('image', 'video').optional()
+    }),
     tags: Joi.array().items(Joi.string()).optional(),
     privacy: Joi.string().valid('public', 'private', 'friends').default('public'),
     location: Joi.string().allow('', null).optional(),

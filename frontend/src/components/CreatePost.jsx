@@ -96,9 +96,10 @@ const CreatePost = () => {
                 location: formData.location
             };
 
+            console.log("Payload being sent:", payload);
             const res = await axiosInstance.post('/posts/createPost', payload);
 
-            setMessage({ type: 'success', text: res.data.msg || 'Post created successfully!' });
+            setMessage({ type: 'success', text: res.data.message || 'Post created successfully!' });
             setFormData({
                 content: '',
                 media: null,
@@ -108,10 +109,10 @@ const CreatePost = () => {
                 tags: '',
                 location: ''
             });
-        } catch (err) {
+        } catch (error) {
             setMessage({
                 type: 'danger',
-                text: err.response?.data?.error || 'Failed to create post.'
+                text: error.response?.data?.error || 'Failed to create post.'
             });
         } finally {
             setLoading(false);
