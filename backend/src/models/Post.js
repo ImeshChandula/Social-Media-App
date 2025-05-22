@@ -5,7 +5,7 @@ class Post {
         this.author = postData.author;
         this.content = postData.content;
         this.media = postData.media || [];
-        this.mediaType = postData.mediaType || null;
+        this.mediaType = postData.mediaType || '';
         this.tags = postData.tags || [];
         this.privacy = postData.privacy || 'public';
         this.location = postData.location || null;
