@@ -1,7 +1,7 @@
-const UserService = require('../services/userService');
-const PostService = require('../services/postService');
-const CommentService = require('../services/commentService');
-const StoryService = require('../services/storyService');
+const UserService = require('./userService');
+const PostService = require('./postService');
+const CommentService = require('./commentService');
+const StoryService = require('./storyService');
 
 
 //  Delete all posts by a user and their associated comments
