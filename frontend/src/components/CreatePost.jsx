@@ -40,7 +40,6 @@ const CreatePost = () => {
             const base64 = await handleMediaUpload(file);
             const type = file.type.startsWith('video') ? 'video' : 'image';
 
-            // Revoke old video preview if exists
             if (formData.mediaType === 'video' && formData.mediaPreview) {
                 URL.revokeObjectURL(formData.mediaPreview);
             }
@@ -54,6 +53,19 @@ const CreatePost = () => {
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }));
         }
+    };
+
+    const handleRemoveMedia = () => {
+        if (formData.mediaType === 'video' && formData.mediaPreview) {
+            URL.revokeObjectURL(formData.mediaPreview);
+        }
+
+        setFormData((prev) => ({
+            ...prev,
+            media: null,
+            mediaPreview: '',
+            mediaType: '',
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -119,7 +131,18 @@ const CreatePost = () => {
                         </div>
 
                         <div className="mb-3">
-                            <label className="form-label">Upload Media</label>
+                            <div className="d-flex justify-content-between align-items-center">
+                                <label className="form-label mb-0">Upload Media</label>
+                                {formData.media && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-danger my-2"
+                                        onClick={handleRemoveMedia}
+                                    >
+                                        Remove
+                                    </button>
+                                )}
+                            </div>
                             <input
                                 type="file"
                                 className="form-control bg-dark text-white"
@@ -129,7 +152,7 @@ const CreatePost = () => {
                             />
                             {formData.mediaPreview && formData.mediaType === 'video' && (
                                 <div className="mt-3">
-                                    <p className="text-muted">Video Preview:</p>
+                                    <p className="text-white-50">Video Preview:</p>
                                     <video
                                         src={formData.mediaPreview}
                                         controls
@@ -140,7 +163,7 @@ const CreatePost = () => {
                             )}
                             {formData.mediaPreview && formData.mediaType === 'image' && (
                                 <div className="mt-3">
-                                    <p className="text-muted">Image Preview:</p>
+                                    <p className="text-white-50">Image Preview:</p>
                                     <img
                                         src={formData.mediaPreview}
                                         alt="preview"
