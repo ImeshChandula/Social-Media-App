@@ -29,24 +29,27 @@ const PostCard = ({ post }) => {
                 <p className="text-white mb-3 text-start">{post.content}</p>
 
                 {/* Media Preview */}
-                {post.media && post.media.length > 0 && (
+                {Array.isArray(post.media) && post.media.length > 0 && (
                     <div className="d-flex flex-wrap gap-3 justify-content-center">
-                        {post.media.map((url, idx) => (
-                            <img
-                                key={idx}
-                                src={url}
-                                className="img-fluid rounded"
-                                style={{
-                                    maxHeight: "300px",
-                                    maxWidth: "100%",
-                                    objectFit: "cover",
-                                    border: "1px solid #444",
-                                }}
-                                loading="lazy"
-                            />
-                        ))}
+                        {post.media.map((url, idx) =>
+                            url ? (
+                                <img
+                                    key={idx}
+                                    src={url}
+                                    className="img-fluid rounded"
+                                    style={{
+                                        maxHeight: "300px",
+                                        maxWidth: "100%",
+                                        objectFit: "cover",
+                                        border: "1px solid #444",
+                                    }}
+                                    loading="lazy"
+                                />
+                            ) : null
+                        )}
                     </div>
                 )}
+
             </div>
 
             {/* Footer */}

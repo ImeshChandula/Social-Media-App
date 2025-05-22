@@ -103,7 +103,7 @@ const CreatePost = () => {
 
     return (
         <div className="container mt-5" style={{ maxWidth: '720px' }}>
-            <div className="card shadow-lg border-0 rounded-4 bg-dark text-white">
+            <div className="card shadow-lg border-secondary rounded-4 bg-dark text-white">
                 <div className="card-body p-4">
                     <h3 className="text-center mb-4">📝 Create a Post</h3>
 
@@ -117,7 +117,7 @@ const CreatePost = () => {
                         <div className="mb-3">
                             <label className="form-label">Content</label>
                             <textarea
-                                className="form-control bg-dark text-white"
+                                className="form-control bg-dark text-white custom-placeholder"
                                 name="content"
                                 rows="4"
                                 value={formData.content}
@@ -161,7 +161,7 @@ const CreatePost = () => {
                             <label className="form-label">Tags (comma separated)</label>
                             <input
                                 type="text"
-                                className="form-control bg-dark text-white"
+                                className="form-control bg-dark text-white custom-placeholder"
                                 name="tags"
                                 value={formData.tags}
                                 onChange={handleChange}
@@ -187,7 +187,7 @@ const CreatePost = () => {
                             <label className="form-label">Location</label>
                             <input
                                 type="text"
-                                className="form-control bg-dark text-white"
+                                className="form-control bg-dark text-white custom-placeholder"
                                 name="location"
                                 value={formData.location}
                                 onChange={handleChange}
