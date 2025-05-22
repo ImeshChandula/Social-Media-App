@@ -103,7 +103,7 @@ const CreatePost = () => {
 
     return (
         <div className="container mt-5" style={{ maxWidth: '720px' }}>
-            <div className="card shadow-lg border-0 rounded-4 bg-dark text-white">
+            <div className="card shadow-lg border-secondary rounded-4 bg-dark text-white">
                 <div className="card-body p-4">
                     <h3 className="text-center mb-4">📝 Create a Post</h3>
 
