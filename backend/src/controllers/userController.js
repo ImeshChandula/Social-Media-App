@@ -1,10 +1,9 @@
 const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const { performUserDeletion } = require('../services/userDeletionService');
-const uploadImage = require('../utils/uploadMedia');
+const {uploadImage} = require('../utils/uploadMedia');
 const ROLES = require("../enums/roles");
 const bcrypt = require('bcrypt');
-const cloudinary =  require("../config/cloudinary");
 require('dotenv').config();
 
 
@@ -240,38 +239,12 @@ const updateUserProfileCoverPhoto = async (req, res) => {
         // data object
         const updatedData = { };
 
-        if (coverPhoto) {
-            try {
-                // Make sure cloudinary is properly initialized
-                if (!cloudinary || typeof cloudinary.uploader.upload !== 'function') {
-                    throw new Error('Cloudinary is not properly configured');
-                }
-                        
-                // Check the type of cover Photo and handle appropriately
-                if (Array.isArray(coverPhoto)) {
-                     // If it's an array of cover Photo files
-                    const uploadPromises = coverPhoto.map(item => cloudinary.uploader.upload(item.path || item));
-                    const uploadResults = await Promise.all(uploadPromises);
-                    updatedData.coverPhoto = uploadResults.map(result => result.secure_url);
-                } else if (typeof coverPhoto === 'object' && coverPhoto !== null && coverPhoto.path) {
-                    // If it's a file object from multer
-                    const uploadResponse = await cloudinary.uploader.upload(coverPhoto.path);
-                    updatedData.coverPhoto = uploadResponse.secure_url;
-                } else if (typeof coverPhoto === 'string') {
-                    // If it's a base64 string or a URL
-                    const uploadResponse = await cloudinary.uploader.upload(coverPhoto);
-                    updatedData.coverPhoto = uploadResponse.secure_url;
-                } else {
-                    throw new Error('Invalid cover photo format');
-                }
-            } catch (uploadError) {
-                console.error('Cover Photo upload error:', uploadError);
-                return res.status(400).json({ 
-                    error: "Failed to upload cover photo. Invalid format or Cloudinary configuration issue.",
-                    details: uploadError.message
-                });
-            }
-        };
+        try {
+            const imageUrl = await uploadImage(coverPhoto);
+            updatedData.coverPhoto = imageUrl;
+        } catch (error) {
+            return res.status(400).json({error: "Failed to upload coverPhoto", message: error.message});
+        }
 
         const updatedUser = await UserService.updateById(userIdToUpdate, updatedData);
 

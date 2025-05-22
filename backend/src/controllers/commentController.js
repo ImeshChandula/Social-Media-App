@@ -1,7 +1,7 @@
 const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const CommentService = require('../services/commentService');
-const cloudinary =  require("../config/cloudinary");
+const {uploadMedia} = require('../utils/uploadMedia');
 
 //@desc     Add comment to post
 const addComment = async (req, res) => {
@@ -24,36 +24,13 @@ const addComment = async (req, res) => {
       text: text,
     };
 
-    if (media) {
-      try {
-        if (!cloudinary || typeof cloudinary.uploader.upload !== 'function') {
-            throw new Error('Cloudinary is not properly configured');
-        }
-
-        if (Array.isArray(media)) {
-          // If it's an array of media files
-          const uploadPromises = media.map(item => cloudinary.uploader.upload(item.path || item));
-          const uploadResults = await Promise.all(uploadPromises);
-          commentData.media = uploadResults.map(result => result.secure_url);
-        } else if (typeof media === 'object' && media !== null && media.path) {
-          // If it's a file object from multer
-          const uploadResponse = await cloudinary.uploader.upload(media.path);
-          commentData.media = uploadResponse.secure_url;
-        } else if (typeof media === 'string') {
-          // If it's a base64 string or a URL
-          const uploadResponse = await cloudinary.uploader.upload(media);
-          commentData.media = uploadResponse.secure_url;
-        } else {
-          throw new Error('Invalid media format');
-        }
-      } catch (uploadError) {
-          console.error('Media upload error:', uploadError);
-          return res.status(400).json({ 
-              error: "Failed to upload media. Invalid format or Cloudinary configuration issue.",
-              details: uploadError.message
-          });
-      }
-    };
+    // upload media
+    try {
+      const imageUrl = await uploadMedia(media);
+      commentData.media = imageUrl;
+    } catch (error) {
+      return res.status(400).json({error: "Failed to upload media", message: error.message});
+    }
     
     const newComment = await CommentService.create(commentData);
     if (!newComment) {
@@ -304,7 +281,14 @@ const updateComment = async (req, res) => {
     const updateData = {};
     
     if (text !== undefined) updateData.text = text;
-    if (media !== undefined) updateData.media = media;
+    if (media !== undefined) {
+      try {
+        const imageUrl = await uploadMedia(media);
+        updateData.media = imageUrl;
+      } catch (error) {
+        return res.status(400).json({error: "Failed to upload media", message: error.message});
+      }
+    };
     
     try {
       // Get the updated comment

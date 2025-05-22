@@ -90,6 +90,39 @@ const deleteUserStories = async (userId) => {
     }
 };
 
+// Delete all comments in post
+const deleteAllComments = async (postId) => {
+    try {
+        const existingPost = await PostService.findById(postId);
+        if (existingPost.comments && existingPost.comments.length > 0) {
+            console.log(`Deleting ${existingPost.comments.length} comments for post ${postId}`);
+                
+            // Create an array of promises for deleting each comment
+            const deleteCommentPromises = existingPost.comments.map(async (commentId) => {
+                try {
+                    await CommentService.deleteById(commentId);
+                    return { commentId, success: true };
+                } catch (commentError) {
+                    console.error(`Error deleting comment ${commentId}:`, commentError.message);
+                    return { commentId, success: false, error: commentError.message };
+                }
+            });
+                
+            // Wait for all comment deletions to complete
+            const commentDeletionResults = await Promise.all(deleteCommentPromises);
+                
+            // Log any failed comment deletions
+            const failedDeletions = commentDeletionResults.filter(result => !result.success);
+            if (failedDeletions.length > 0) {
+                console.error(`Failed to delete ${failedDeletions.length} comments:`, failedDeletions);
+            }
+        }
+    } catch (commentsError) {
+        console.error(`Error handling comments for post ${postId}:`, commentsError.message);
+        // We continue with post deletion even if some comments fail to delete
+    }
+};
+
 //  Performs the complete user deletion process by cleaning up all associated data
 const performUserDeletion = async (userId) => {
     // Step 1: Delete all posts by this user and their associated comments
@@ -111,5 +144,6 @@ module.exports = {
     performUserDeletion,
     deleteUserPosts,
     deleteUserComments, 
-    deleteUserStories
+    deleteUserStories,
+    deleteAllComments
 };
