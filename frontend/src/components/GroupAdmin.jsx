@@ -39,7 +39,7 @@ const GroupAdmin = () => {
   };
 
   const buttonApprove = {
-    backgroundColor: '#048904',
+    backgroundColor: '#3ddc84',
     border: 'none',
     color: '#1e1e1e',
     padding: '8px 12px',
@@ -67,7 +67,7 @@ const GroupAdmin = () => {
     <div style={containerStyle}>
       {/* Header */}
       <div style={headerStyle}>
-        <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#048904' }}>Group Name</h1>
+        <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#3ddc84' }}>Group Name</h1>
         <p style={{ fontSize: '14px', color: '#a0a0a0' }}>
           Private Group • 5,732 members • Created Jan 15, 2021 • You're an admin
         </p>
@@ -81,7 +81,7 @@ const GroupAdmin = () => {
           { label: 'Reports', value: '5', note: 'Needs review' },
         ].map(({ label, value, note }) => (
           <div key={label} style={statCardStyle}>
-            <h2 style={{ fontSize: '16px', fontWeight: '500', color: '#048904' }}>{label}</h2>
+            <h2 style={{ fontSize: '16px', fontWeight: '500', color: '#3ddc84' }}>{label}</h2>
             <p style={{ fontSize: '20px', fontWeight: '600', margin: '8px 0' }}>{value}</p>
             {note && (
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -96,7 +96,7 @@ const GroupAdmin = () => {
       <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
         {/* Pending Approvals */}
         <div style={boxStyle}>
-          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: '#048904' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: '#3ddc84' }}>
             Pending Approvals
           </h2>
           {[
@@ -130,7 +130,7 @@ const GroupAdmin = () => {
 
         {/* Group Rules */}
         <div style={boxStyle}>
-          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: '#048904' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: '#3ddc84' }}>
             Group Rules & Settings
           </h2>
           <ul style={{ listStyle: 'none', padding: '0', margin: '0' }}>
@@ -140,7 +140,7 @@ const GroupAdmin = () => {
             <li style={{ marginBottom: '8px', color: '#a0a0a0' }}>✔ No hate speech or discriminatory content</li>
           </ul>
           <button style={{
-            backgroundColor: '#048904',
+            backgroundColor: '#3ddc84',
             border: 'none',
             color: '#1e1e1e',
             padding: '8px 12px',
@@ -153,7 +153,7 @@ const GroupAdmin = () => {
 
       {/* Moderator Team */}
       <div style={{ marginTop: '32px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px', color: '#048904' }}>Moderator Team</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px', color: '#3ddc84' }}>Moderator Team</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
           {['Alex Johnson (Admin)', 'Sarah Williams (Moderator)', 'David Chen (Moderator)', 'Lisa Park (Moderator)'].map((mod, i) => (
             <div key={i} style={moderatorBoxStyle}>
