@@ -36,7 +36,7 @@ const createPost = async (req, res) => {
         const author = await UserService.findById(req.user.id);
         
         if (!author) {
-            return res.status(404).json({ msg: 'Author not found' });
+            return res.status(404).json({ message: 'Author not found' });
         }
         
         const authorData = {
@@ -53,11 +53,11 @@ const createPost = async (req, res) => {
             author: authorData
         };
 
-        res.status(201).json({ msg: "Post created successfully", populatedPost });
+        res.status(201).json({ message: "Post created successfully", populatedPost });
         
     } catch (error) {
         console.error('Post creation error:', error.message);
-        res.status(500).json({ msg: 'Server error' });
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
