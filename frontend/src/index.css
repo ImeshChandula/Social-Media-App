@@ -375,3 +375,9 @@ body,
         transform: rotate(360deg);
     }
 }
+
+/* Create Post Page */
+.custom-placeholder::placeholder {
+  color: #ccc !important; /* Light gray or change as needed */
+  opacity: 1; /* Required for Firefox */
+}
