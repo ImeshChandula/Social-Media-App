@@ -22,6 +22,8 @@ const PostService = {
     // save post to database
     async create(postData) {
         try {
+            postData.createdAt = new Date().toISOString();
+
             const docRef = await postCollection.add(postData);
             return new Post(docRef.id, postData);
         } catch (error) {
@@ -36,7 +38,7 @@ const PostService = {
         
             await postCollection.doc(id).update(updateData);
         
-            const updatedPost = await Post.findById(id);
+            const updatedPost = await PostService.findById(id);
             return updatedPost;
         } catch (error) {
             throw error;

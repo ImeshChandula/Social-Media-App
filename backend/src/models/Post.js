@@ -18,7 +18,7 @@ class Post {
         this.editHistory = postData.editHistory || [];
 
         this.createdAt = postData.createdAt || new Date().toISOString();
-        this.updatedAt = new Date().toISOString();
+        this.updatedAt = postData.updatedAt || new Date().toISOString();
     };
 
 

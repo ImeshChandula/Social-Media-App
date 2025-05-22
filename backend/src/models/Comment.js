@@ -11,7 +11,7 @@ class Comment {
     this.replies = commentData.replies || [];
     
     this.createdAt = commentData.createdAt || new Date().toISOString();
-    this.updatedAt = new Date().toISOString();
+    this.updatedAt = commentData.updatedAt || new Date().toISOString();
   };
 
   

@@ -56,8 +56,9 @@ const CommentService = {
     // Save comment to database
     async create(commentData) {
         try { 
-        const docRef = await commentsCollection.add(commentData);
-        return new Comment(docRef.id, commentData);
+            commentData.updatedAt = new Date().toISOString();
+            const docRef = await commentsCollection.add(commentData);
+            return new Comment(docRef.id, commentData);
         } catch (error) {
         throw error;
         }
@@ -76,13 +77,13 @@ const CommentService = {
     // Update comment
     async updateById(id, updateData) {
         try {
-        await commentsCollection.doc(id).update(updateData);
-        updateData.updatedAt = new Date().toISOString();
+            await commentsCollection.doc(id).update(updateData);
+            updateData.updatedAt = new Date().toISOString();
 
-        const updatedComment = await Comment.findById(id);
-        return updatedComment;
+            const updatedComment = await CommentService.findById(id);
+            return updatedComment;
         } catch (error) {
-        throw error;
+            throw error;
         }
     },
 
