@@ -75,9 +75,9 @@ const addComment = async (req, res) => {
 
     // Send notification to post owner
     const userId = req.user.id;
-    const username = user.firstName + ' ' + user.lastName;
+    const username = `${user.firstName} ${user.lastName}`;
     if (post.author !== userId) {
-        const commentPreview = content.length > 50 ? content.substring(0, 50) + '...' : content;
+        const commentPreview = text.length > 50 ? text.substring(0, 50) + '...' : text;
         await notificationUtils.sendCommentNotification(
             post.author,
             userId,
@@ -155,6 +155,25 @@ const addReply = async (req, res) => {
       }
       
       res.status(201).json({message: 'Reply added successfully', reply: replyWithUser});
+    
+      // Send notification to comment owner
+      const userId = req.user.id;
+      const postId = comment.post;
+      const senderName = `${user.firstName} ${user.lastName}`;
+      const post = await PostService.findById(postId);
+      if (replyWithUser.id !== userId) {
+        const replyPreview = text.length > 50 ? text.substring(0, 50) + '...' : text;
+        await notificationUtils.sendReplyNotification(
+          comment.user,
+          userId,
+          post.id,
+          comment.id,
+          reply.id,
+          senderName,
+          replyPreview
+        );
+      }
+    
     } catch (updateError) {
       console.error(`Error adding reply to comment ${commentId}:`, updateError.message);
       res.status(500).json({ message: 'Error adding reply', error: updateError.message });
@@ -179,8 +198,10 @@ const getCommentsByPostId  = async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    // Get comments for this post
     const comments = await CommentService.findByPostId(postId);
+    if (comments.length === 0) {
+      return res.status(200).json({msg: 'No comments found for this post', comments: [] });
+    }
 
     // Collect all unique user IDs from comments and replies
     const userIds = new Set();

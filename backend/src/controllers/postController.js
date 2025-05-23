@@ -3,6 +3,7 @@ const PostService = require('../services/postService');
 const {uploadMedia} = require('../utils/uploadMedia');
 const {deleteAllComments} = require('../services/userDeletionService');
 const notificationUtils = require('../utils/notificationUtils');
+const { error } = require('console');
 
 
 //@desc     create a post 
@@ -60,6 +61,27 @@ const createPost = async (req, res) => {
             ...newPost,
             author: authorData
         };
+
+        // Send notifications to friends (only if post is public or friends can see it)
+        const friendIds = author.friends || [];
+        if (friendIds.length > 0 && (privacy === 'public' || privacy === 'friends')){
+            try {
+                const postPreview = content ? content.substring(0, 100) + (content.length > 100 ? '...' : '') : 'shared a media post';
+                const senderName = `${author.firstName} ${author.lastName}`;
+
+                await notificationUtils.sendNewPostNotification(
+                    friendIds,
+                    req.user.id,
+                    newPost.id,
+                    senderName,
+                    postPreview
+                ).catch(error => {
+                    console.error('Error sending post notifications:', error);
+                });
+            } catch (error) {
+                console.error('Error preparing post notifications:', error);
+            }
+        }
 
         res.status(201).json({ message: "Post created successfully", populatedPost });
         

@@ -1,5 +1,7 @@
-const { db, messaging } = require('../config/firebase');
+const { connectFirebase } = require('../config/firebase');
 const admin = require('firebase-admin');
+
+const { db, messaging } = connectFirebase();
 
 class NotificationService {
     // Create notification
@@ -19,8 +21,6 @@ class NotificationService {
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
             data: additionalData
         });
-        
-        await notificationRef.set(notificationData);
 
         // Increment user's notification counter
         const userRef = db.collection('users').doc(recipientId);

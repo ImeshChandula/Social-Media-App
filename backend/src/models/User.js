@@ -26,8 +26,9 @@ class User {
 
     this.role = userData.role || ROLES.USER;
     this.accountStatus = userData.accountStatus || "active";
-
-     // Timestamps
+    this.notificationCount = userData.notificationCount || '';
+    
+    // Timestamps
     this.createdAt = userData.createdAt || new Date().toISOString();
     this.updatedAt = new Date().toISOString();
   }

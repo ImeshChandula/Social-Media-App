@@ -8,13 +8,17 @@ const StoryService = {
     // Find all stories by user ID
     async findAllByUserId(id) {
         try {
-            const storyRef = await storiesCollection.where('userId', '==', id).get();
+            const storyRef = await storiesCollection
+                    .where('userId', '==', id)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+            if (storyRef.empty) {
+                return [];
+            }
             
-            const posts = storyRef.docs.map(doc => new Story(doc.id, doc.data()));
+            const stories = storyRef.docs.map(doc => new Story(doc.id, doc.data()));
 
-            return posts.sort((a, b) => {
-                return new Date(b.createdAt) - new Date(a.createdAt);
-            });
+            return stories;
         } catch (error) {
             console.error('Error finding stories by user ID:', error);
             throw error;

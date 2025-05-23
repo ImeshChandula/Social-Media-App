@@ -58,12 +58,13 @@ const PostService = {
     // get all posts
     async findAll() {
         try {
-            const postRef = await postCollection.get();
+            const postRef = await postCollection.orderBy('createdAt', 'desc').get();
 
+            if (postRef.empty) {
+                return [];
+            }
             const posts = postRef.docs.map(doc => new Post(doc.id, doc.data()));
-            return posts.sort((a, b) => {
-                return new Date(b.createdAt) - new Date(a.createdAt);
-            });
+            return posts;
         } catch (error) {
             throw error;
         }
@@ -72,12 +73,16 @@ const PostService = {
     // get all videos
     async findByMediaType(type) {
         try {
-            const postRef = await postCollection.where('mediaType', '==', type).get();
-            const posts = postRef.docs.map(doc => new Post(doc.id, doc.data()));
+            const postRef = await postCollection
+                    .where('mediaType', '==', type)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+            if (postRef.empty) {
+                return [];
+            }
 
-            return posts.sort((a, b) => {
-                return new Date(b.createdAt) - new Date(a.createdAt);
-            });
+            const posts = postRef.docs.map(doc => new Post(doc.id, doc.data()));
+            return posts
         } catch (error) {
             console.error('Error finding posts by media type', error);
             throw error;
@@ -87,22 +92,17 @@ const PostService = {
     // Find posts by user ID
     async findByUserId(userId) {
         try {
-            const postRef = await postCollection.where('author', '==', userId).get();
-            
-            /*if (postRef.empty) {
-                const objectPostRef = await postCollection
-                    .where('author.id', '==', userId)
+            const postRef = await postCollection
+                    .where('author', '==', userId)
                     .orderBy('createdAt', 'desc')
                     .get();
             
-                return objectPostRef.docs.map(doc => new Post(doc.id, doc.data()));
-            }*/
-
+            if (postRef.empty) {
+                return [];
+            }
+            
             const posts = postRef.docs.map(doc => new Post(doc.id, doc.data()));
-
-            return posts.sort((a, b) => {
-                return new Date(b.createdAt) - new Date(a.createdAt);
-            });
+            return posts;
         } catch (error) {
             console.error('Error finding posts by user ID:', error);
             throw error;

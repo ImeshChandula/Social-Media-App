@@ -38,7 +38,7 @@ const likeToAPostByPostId = async (req, res) => {
 
         // Send notification to post owner
         const userData = await UserService.findById(userId);
-        const name = userData.firstName + ' ' + userData.lastName;
+        const name = `${userData.firstName} ${userData.lastName}`;
         if (updatedPost.author !== userId) {
             await notificationUtils.sendLikePostNotification(
                 updatedPost.author, // recipient

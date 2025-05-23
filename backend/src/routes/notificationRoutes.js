@@ -3,9 +3,10 @@ const notificationController = require('../controllers/notificationController');
 const { authenticateUser } = require('../middleware/authMiddleware');
 
 const router = express.Router();
+// http://localhost:5000/api/notifications
 
 // Get notifications for the authenticated user
-router.get('/', authenticateUser, notificationController.getNotifications);
+router.get('/me', authenticateUser, notificationController.getNotifications);
 
 // Mark a notification as read (notification id)
 router.put('/read/:id', authenticateUser, notificationController.markAsRead);

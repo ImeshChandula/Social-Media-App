@@ -20,17 +20,17 @@ const CommentService = {
     // find by post id
     async findByPostId(postId) {
         try {
-        const commentsSnapshot = await commentsCollection.where('post', '==', postId).get();
+        const commentsSnapshot = await commentsCollection
+                .where('post', '==', postId)
+                .orderBy('createdAt', 'desc')
+                .get();
         
         if (commentsSnapshot.empty) {
-            return res.status(200).json({msg: 'No comments found for this post', comments: [] });
+            return [];
         }
 
         const comments = commentsSnapshot.docs.map(doc => new Comment(doc.id, doc.data()));
-
-        return comments.sort((a, b) => {
-            return new Date(b.createdAt) - new Date(a.createdAt);
-        });
+        return comments
         } catch (error) {
             console.error('Error finding comments by post ID:', error);
             throw error;
@@ -40,13 +40,17 @@ const CommentService = {
     // find by user id
     async findByUserId(userId) {
         try {
-        const commentRef = await commentsCollection.where('user', '==', userId).get();
+        const commentRef = await commentsCollection
+                .where('user', '==', userId)
+                .orderBy('createdAt', 'desc')
+                .get();
+        if (commentRef.empty) {
+            return [];
+        }
         
         const comments = commentRef.docs.map(doc => new Comment(doc.id, doc.data()));
 
-        return comments.sort((a, b) => {
-            return new Date(b.createdAt) - new Date(a.createdAt);
-        });
+        return comments;
         } catch (error) {
         console.error('Error finding comments by user ID:', error);
         throw error;
