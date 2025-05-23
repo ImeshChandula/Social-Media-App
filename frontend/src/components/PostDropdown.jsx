@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
+import { BsThreeDotsVertical } from "react-icons/bs";
 
 const PostDropdown = ({ onUpdate, onDelete }) => {
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef(null);
 
-    // Close dropdown on outside click
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -18,10 +18,10 @@ const PostDropdown = ({ onUpdate, onDelete }) => {
     return (
         <div className="position-relative" ref={dropdownRef}>
             <button
-                className="btn btn-sm btn-outline-light"
+                className="btn btn-dark"
                 onClick={() => setShowDropdown((prev) => !prev)}
             >
-                •••
+                <BsThreeDotsVertical size={24}/>
             </button>
 
             {showDropdown && (
