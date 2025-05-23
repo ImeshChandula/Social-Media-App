@@ -33,7 +33,7 @@ const UserPosts = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                 >
-                    <PostCard post={post} />
+                    <PostCard post={post} isUserPost={true} />
                 </motion.div>
             ))}
         </div>

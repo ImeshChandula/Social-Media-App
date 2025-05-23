@@ -1,27 +1,44 @@
 import React from "react";
 import { FaThumbsUp, FaCommentAlt, FaShare } from "react-icons/fa";
+import PostDropdown from "./PostDropdown";
 
-const PostCard = ({ post }) => {
+const PostCard = ({ post, isUserPost = false }) => {
+    const mediaArray = Array.isArray(post.media)
+        ? post.media
+        : post.media
+            ? [post.media]
+            : [];
+
     return (
         <div className="card bg-secondary bg-opacity-10 border-secondary text-white mb-4 shadow-sm rounded-4">
             {/* Header */}
-            <div className="card-header bg-dark d-flex align-items-center gap-3 p-3 rounded-top-4 border-bottom border-secondary">
-                <img
-                    src={post.author?.profilePicture}
-                    alt="Profile"
-                    className="rounded-circle border border-secondary"
-                    style={{ width: 50, height: 50, objectFit: "cover" }}
-                />
-                <div className="flex-grow-1 text-start">
-                    <h6 className="mb-0 fw-bold text-white">
-                        {`${post.author?.firstName || ""} ${post.author?.lastName || ""}`}
-                    </h6>
-                    <small className="text-white-50">
-                        {post.createdAt
-                            ? new Date(post.createdAt).toLocaleString()
-                            : ""}
-                    </small>
+            <div className="card-header bg-dark d-flex align-items-center justify-content-between p-3 rounded-top-4 border-bottom border-secondary">
+                <div className="d-flex align-items-center gap-3">
+                    <img
+                        src={post.author?.profilePicture}
+                        alt="Profile"
+                        className="rounded-circle border border-secondary"
+                        style={{ width: 50, height: 50, objectFit: "cover" }}
+                    />
+                    <div className="flex-grow-1 text-start">
+                        <h6 className="mb-0 fw-bold text-white">
+                            {`${post.author?.firstName || ""} ${post.author?.lastName || ""}`}
+                        </h6>
+                        <small className="text-white-50">
+                            {post.createdAt
+                                ? new Date(post.createdAt).toLocaleString()
+                                : ""}
+                        </small>
+                    </div>
                 </div>
+
+                {/* User Post Dropdown */}
+                {isUserPost && (
+                    <PostDropdown
+                        onUpdate={() => alert(`Update post ${post._id}`)}
+                        onDelete={() => alert(`Delete post ${post._id}`)}
+                    />
+                )}
             </div>
 
             {/* Content */}
@@ -29,9 +46,9 @@ const PostCard = ({ post }) => {
                 <p className="text-white mb-3 text-start">{post.content}</p>
 
                 {/* Media Preview */}
-                {Array.isArray(post.media) && post.media.length > 0 && (
+                {mediaArray.length > 0 && (
                     <div className="d-flex flex-wrap gap-3 justify-content-center">
-                        {post.media.map((url, idx) =>
+                        {mediaArray.map((url, idx) =>
                             url ? (
                                 <img
                                     key={idx}
@@ -44,12 +61,12 @@ const PostCard = ({ post }) => {
                                         border: "1px solid #444",
                                     }}
                                     loading="lazy"
+                                    alt={`Post media ${idx + 1}`}
                                 />
                             ) : null
                         )}
                     </div>
                 )}
-
             </div>
 
             {/* Footer */}
