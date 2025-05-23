@@ -1,8 +1,14 @@
-import React, { useState, useRef, useEffect } from "react";
+import React from "react";
 import { FaThumbsUp, FaCommentAlt, FaShare } from "react-icons/fa";
-import PostDropdown from "./PostDropdown"; // 👈 Import the new component
+import PostDropdown from "./PostDropdown";
 
 const PostCard = ({ post, isUserPost = false }) => {
+    const mediaArray = Array.isArray(post.media)
+        ? post.media
+        : post.media
+            ? [post.media]
+            : [];
+
     return (
         <div className="card bg-secondary bg-opacity-10 border-secondary text-white mb-4 shadow-sm rounded-4">
             {/* Header */}
@@ -40,9 +46,9 @@ const PostCard = ({ post, isUserPost = false }) => {
                 <p className="text-white mb-3 text-start">{post.content}</p>
 
                 {/* Media Preview */}
-                {Array.isArray(post.media) && post.media.length > 0 && (
+                {mediaArray.length > 0 && (
                     <div className="d-flex flex-wrap gap-3 justify-content-center">
-                        {post.media.map((url, idx) =>
+                        {mediaArray.map((url, idx) =>
                             url ? (
                                 <img
                                     key={idx}
@@ -55,6 +61,7 @@ const PostCard = ({ post, isUserPost = false }) => {
                                         border: "1px solid #444",
                                     }}
                                     loading="lazy"
+                                    alt={`Post media ${idx + 1}`}
                                 />
                             ) : null
                         )}
