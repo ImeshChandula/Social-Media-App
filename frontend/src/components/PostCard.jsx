@@ -1,23 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaThumbsUp, FaCommentAlt, FaShare } from "react-icons/fa";
+import PostDropdown from "./PostDropdown"; // 👈 Import the new component
 
 const PostCard = ({ post, isUserPost = false }) => {
-    const [showDropdown, setShowDropdown] = useState(false);
-    const dropdownRef = useRef(null);
-
-    // Close dropdown if clicked outside
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setShowDropdown(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
-
     return (
         <div className="card bg-secondary bg-opacity-10 border-secondary text-white mb-4 shadow-sm rounded-4">
             {/* Header */}
@@ -41,48 +26,13 @@ const PostCard = ({ post, isUserPost = false }) => {
                     </div>
                 </div>
 
-                {/* Dropdown Menu for User's Posts */}
+                {/* User Post Dropdown */}
                 {isUserPost && (
-                    <div className="position-relative" ref={dropdownRef}>
-                        <button
-                            className="btn btn-sm btn-outline-light"
-                            onClick={() => setShowDropdown((prev) => !prev)}
-                        >
-                            •••
-                        </button>
-
-                        {showDropdown && (
-                            <ul
-                                className="dropdown-menu show bg-dark border border-secondary shadow rounded-3 p-0"
-                                style={{
-                                    position: "absolute",
-                                    top: "100%",
-                                    right: 0,
-                                    zIndex: 1000,
-                                    minWidth: "120px",
-                                }}
-                            >
-                                <li>
-                                    <button
-                                        className="dropdown-item text-warning"
-                                        onClick={() => alert("Update clicked")}
-                                    >
-                                        Update
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        className="dropdown-item text-danger"
-                                        onClick={() => alert("Delete clicked")}
-                                    >
-                                        Delete
-                                    </button>
-                                </li>
-                            </ul>
-                        )}
-                    </div>
+                    <PostDropdown
+                        onUpdate={() => alert(`Update post ${post._id}`)}
+                        onDelete={() => alert(`Delete post ${post._id}`)}
+                    />
                 )}
-
             </div>
 
             {/* Content */}
