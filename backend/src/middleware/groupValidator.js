@@ -1,7 +1,7 @@
 // validators/groupValidator.js
 const groupValidators = {
   createGroup: Joi.object({
-    name: Joi.string().min(3).max(100).required().messages({
+    groupName: Joi.string().min(3).max(100).required().messages({
       'string.min': 'Group name must be at least 3 characters',
       'string.max': 'Group name cannot exceed 100 characters',
       'any.required': 'Group name is required'

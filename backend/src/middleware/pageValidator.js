@@ -2,7 +2,7 @@ const Joi = require('joi');
 
 const pageValidators = {
   createPage: Joi.object({
-    name: Joi.string().min(3).max(100).required().messages({
+    pageName: Joi.string().min(3).max(100).required().messages({
       'string.min': 'Page name must be at least 3 characters',
       'string.max': 'Page name cannot exceed 100 characters',
       'any.required': 'Page name is required'
