@@ -2,6 +2,7 @@ const express = require('express');
 const { authenticateUser } = require('../middleware/authMiddleware');
 const { validateUser } = require("../middleware/validator");
 const authController  = require('../controllers/authController');
+const passwordController  = require('../controllers/passwordController');
 
 
 const router = express.Router();
@@ -29,7 +30,15 @@ router.post("/logout", authenticateUser, authController.logout);
 //@access  Private
 router.get("/checkCurrent", authenticateUser,  authController.checkCurrent);
 
+//@route   POST api/auth/sendResetOtp
+//@desc    Get otp to reset password
+//@access  Public
+router.post("/sendResetOtp", passwordController.requestOtp);
 
+//@route   POST api/auth/resetPassword
+//@desc    Reset password
+//@access  Public
+router.post("/resetPassword", passwordController.resetPassword);
 
 
 

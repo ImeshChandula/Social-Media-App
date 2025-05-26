@@ -21,6 +21,9 @@ class User {
     this.friends = userData.friends || [];
     this.friendRequests = userData.friendRequests || [];
 
+    this.resetOtp = userData.resetOtp || '';
+    this.resetOtpExpiredAt = userData.resetOtpExpiredAt || new Date().toISOString();
+
     this.isActive = userData.isActive || true;
     this.lastLogin = userData.lastLogin || new Date().toISOString();
 
