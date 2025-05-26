@@ -1,26 +1,22 @@
+import React, { useEffect, useState } from "react";
+import { getFeedStories } from "../api/storyAPI";
 import Feed from "./Feed";
 
 const RegularUserPage = () => {
-    const stories = [
-        {
-            id: 1,
-            name: "You",
-            img: "https://randomuser.me/api/portraits/women/11.jpg",
-            bg: "https://randomuser.me/api/portraits/men/32.jpg",
-        },
-        {
-            id: 2,
-            name: "Aman",
-            img: "https://randomuser.me/api/portraits/men/22.jpg",
-            bg: "https://randomuser.me/api/portraits/men/32.jpg",
-        },
-        {
-            id: 3,
-            name: "Priya",
-            img: "https://randomuser.me/api/portraits/women/33.jpg",
-            bg: "https://randomuser.me/api/portraits/men/32.jpg",
-        },
-    ];
+    const [stories, setStories] = useState([]);
+
+    useEffect(() => {
+        const fetchStories = async () => {
+            try {
+                const response = await getFeedStories();
+                setStories(response.data); // Adjust if backend wraps data
+            } catch (error) {
+                console.error("Error loading stories:", error);
+            }
+        };
+
+        fetchStories();
+    }, []);
 
     return (
         <div className="py-5 py-md-0 mt-2 mt-md-0">
@@ -28,12 +24,12 @@ const RegularUserPage = () => {
             <div className="d-flex gap-3 overflow-auto mb-4">
                 {stories.map((story) => (
                     <div
-                        key={story.id}
+                        key={story._id}
                         className="position-relative rounded-4"
                         style={{
                             width: "110px",
                             height: "180px",
-                            backgroundImage: `url(${story.bg})`,
+                            backgroundImage: `url(${story.bg || story.image})`,
                             backgroundSize: "cover",
                             backgroundPosition: "center",
                             flex: "0 0 auto",
@@ -42,8 +38,8 @@ const RegularUserPage = () => {
                         }}
                     >
                         <img
-                            src={story.img}
-                            alt={story.name}
+                            src={story.profileImage || "https://via.placeholder.com/40"}
+                            alt={story.author || "User"}
                             className="rounded-circle border border-2 border-primary"
                             style={{
                                 width: "40px",
@@ -62,13 +58,12 @@ const RegularUserPage = () => {
                                 padding: "5px",
                             }}
                         >
-                            {story.name}
+                            {story.author || story.name}
                         </div>
                     </div>
                 ))}
             </div>
 
-            {/* Feed Section */}
             <Feed />
         </div>
     );
