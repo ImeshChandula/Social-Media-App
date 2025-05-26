@@ -18,7 +18,7 @@ const requestOtp = async (req, res) => {
         const otp = String(Math.floor(100000 + Math.random() * 900000));
         const userData = {};
 
-        userData.resetOto = otp;
+        userData.resetOtp = otp;
         userData.resetOtpExpiredAt = new Date(Date.now() + 2.5 * 60 * 1000).toISOString(); // expires at 2 minutes 30 seconds from now
 
         const updateUser = await UserService.updateById(user.id, userData);

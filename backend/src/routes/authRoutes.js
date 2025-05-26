@@ -32,11 +32,13 @@ router.get("/checkCurrent", authenticateUser,  authController.checkCurrent);
 
 //@route   POST api/auth/sendResetOtp
 //@desc    Get otp to reset password
+//         pass {email} = req.body
 //@access  Public
 router.post("/sendResetOtp", passwordController.requestOtp);
 
 //@route   POST api/auth/resetPassword
 //@desc    Reset password
+//         pass {email, otp, newPassword} = req.body
 //@access  Public
 router.post("/resetPassword", passwordController.resetPassword);
 
