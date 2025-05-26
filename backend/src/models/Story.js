@@ -7,15 +7,12 @@ class Story {
   constructor(id, storyData) {
     this.id = id;
     this.userId = storyData.userId;
-    this.content = storyData.content || null;
-    this.mediaUrl = storyData.mediaUrl || null;
+    this.content = storyData.content ;
+    this.media = storyData.media ;
     
-    this.mediaType = storyData.mediaType || null;
-    this.caption = storyData.caption || '';
-    this.filter = storyData.filter || 'none';
-    this.backgroundColor = storyData.backgroundColor || null;
-    this.textColor = storyData.textColor || null;
-    this.font = storyData.font || 'default';
+    this.mediaType = storyData.mediaType;
+    this.caption = storyData.caption;
+    
     
     this.viewers = storyData.viewers || [];
     this.viewCount = storyData.viewCount || 0;
@@ -27,18 +24,58 @@ class Story {
     this.createdAt = storyData.createdAt || new Date().toISOString();
     this.updatedAt = new Date().toISOString();
   };
+
+      // static methods
+    static async findById(id) {
+        try {
+            const doc = await storiesCollection.doc(id).get();
+            if (!doc.exists) {
+                return null;
+            }
+
+            return new Story(doc.id, doc.data());
+        } catch (error) {
+            throw error;
+        }
+    };
   
 
   // save story to database
   static async create(storyData) {
     try {
+      storyData.createdAt = new Date().toISOString();
       const docRef = await storiesCollection.add(storyData);
-      return new Post(docRef.id, storyData);
+      return new Story(docRef.id, storyData);
     } catch (error) {
       throw error;
     }
   };
+
+  // Update Story
+    static async updateById(id, updateData) {
+        try {
+            updateData.updatedAt = new Date().toISOString();
+        
+            await storiesCollection.doc(id).update(updateData);
+        
+            const updatedStory = await Story.findById(id);
+            return updatedStory;
+        } catch (error) {
+            throw error;
+        }
+    };
+
+  // delete story
+    static async deleteById(id) {
+        try {
+            await storiesCollection.doc(id).delete();
+            return true;
+        } catch (error) {
+            throw error;
+        }
+    };
   
+
   
   // Add a viewer to the story
   async addViewer(userId) {
@@ -83,7 +120,8 @@ class Story {
       throw error;
     }
   }
-  
+
+  /*
   // Find story by ID
   static async findById(id) {
     try {
@@ -98,6 +136,9 @@ class Story {
       throw error;
     }
   }
+    */
+  
+  
   
   // Find stories by user ID
   static async findByUserId(userId) {
@@ -129,7 +170,21 @@ class Story {
     }
   }
 
-  
+  // Find all stories by user ID
+  static async findAllByUserId(id) {
+    try {
+      const storyRef = await storiesCollection.where('userId', '==', id).get();
+      
+      const posts = storyRef.docs.map(doc => new Story(doc.id, doc.data()));
+
+      return posts.sort((a, b) => {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+    } catch (error) {
+      console.error('Error finding stories by user ID:', error);
+      throw error;
+    }
+  };
   
   // Get stories from friends
   static async getFriendsStories(userIds) {

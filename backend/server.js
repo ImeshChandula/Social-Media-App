@@ -52,7 +52,7 @@ app.use("/api/comments", require("./src/routes/commentRoutes"));
 app.use("/api/friends", require("./src/routes/friendRoutes"));
 app.use("/api/likes", require("./src/routes/likeRoutes"));
 app.use("/api/notifications", require("./src/routes/notificationRoutes"));
-//app.use("/api/stories", require("./src/routes/storyRoutes")); 
+app.use("/api/stories", require("./src/routes/storyRoutes"));
 
 
 

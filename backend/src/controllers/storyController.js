@@ -1,116 +1,211 @@
 const Story = require('../models/Story');
 const User = require('../models/User');
-const { uploadFileToStorage } = require('../utils/fileUpload'); 
+const cloudinary = require('../config/cloudinary');
+const { count } = require('console');
+const UserService = require('../services/userService');
+const { uploadMedia } = require('../utils/uploadMedia'); // Assuming you have a media upload utility
+ 
 
-// Create a new story
+// Create a new story (updated)
 const createStory = async (req, res) => {
   try {
-    const userId = req.user.id;
-    let mediaUrl = null;
+    const { content, media, type, caption, privacy } = req.body;
     
-    // Handle file upload if present
-    if (req.file) {
-      mediaUrl = await uploadFileToStorage(req.file, 'stories');
+    if(!content && !media) {
+      return res.status(400).json({ message: 'Content or media  is required' });
     }
-    
-    // Create story object
+
+    // Create story object with timestamp
     const storyData = {
-      userId,
-      content: req.body.content,
-      mediaUrl,
-      type: req.body.type,
-      caption: req.body.caption,
-      filter: req.body.filter,
-      backgroundColor: req.body.backgroundColor,
-      textColor: req.body.textColor,
-      font: req.body.font,
-      privacy: req.body.privacy
+      userId: req.user.id,
+      content,
+      type,
+      caption,
+      privacy,
     };
-    
-    const story = new Story(storyData);//Creates a new Story instance using the data
-    await story.save(); //Saves the story to the database
-    
-    res.status(201).json({ // Returns a success response with status 201 (Created) and the story data
-      message: 'Story created successfully', 
-      story: { ...story, id: story.id } 
+
+    // Check if media is provided
+    // Only upload media if provided
+        if (media) {
+            try {
+                const imageUrl = await uploadMedia(media);
+                storyData.media = imageUrl;
+            } catch (error) {
+                return res.status(400).json({error: "Failed to upload media", message: error.message});
+            }
+        }
+
+  const newStory = await Story.create(storyData);
+  if (!newStory) {
+    return res.status(500).json({ message: 'Failed to create story' });
+  }
+
+  
+
+  // get user details
+  const user = await UserService.findById(req.user.id);
+  
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  const userData = {
+    id: user.id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    username: user.username,
+    profilePicture: user.profilePicture
+  }
+
+  // Add user data to story
+  const populatedStory = {
+    ...newStory,
+    user: userData,
+  }
+  
+
+    res.status(201).json({
+      message: 'Story created successfully',
+      populatedStory     
     });
-  } catch (error) { // Handles any errors that occur during the process
+    
+    
+  } catch (error) {
     console.error('Error creating story:', error);
     res.status(500).json({ message: 'Server error' });
   }
+
+  
 };
 
-// Get current user's stories
+/*
+// Get current user's stories (updated)
 const getCurrentUserStories = async (req, res) => {
   try {
-    const userId = req.user.id;//Gets the current user's ID from the authentication middleware
-    const stories = await Story.findByUserId(userId); //Uses the Story model to find all stories created by this user
-
+    const userId = req.user.id;
     
-    res.json(stories); // Returns those stories as a JSON response
+    const stories = await Story.findByUserId(userId);
+    if (!stories) {
+      return res.status(404).json({ message: 'No stories found for this user' });
+    }
+
+    // get user details
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const userData = {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      profilePicture: user.profilePicture
+    }
+
+    //populate the stories with user data
+    const populatedStories = stories.map(story => ({
+      ...story,
+      viewCount: story.viewCount,
+      user: userData
+    }));
+
+    res.status(200).json({
+      count: populatedStories.length,
+      message: "User stories retrieved successfully",
+      stories: populatedStories
+    });
+
   } catch (error) {
-    console.error('Error fetching user stories:', error);
+    console.error('Get stories error:', error.message);
     res.status(500).json({ message: 'Server error' });
   }
-};
+
+};*/
+
 
 // Get stories feed (current user + friends)
 const getStoriesFeed = async (req, res) => {
   try {
     const userId = req.user.id;
-    
-    // Get current user
-    const currentUser = await User.findById(userId);
-    if (!currentUser) {
+
+    // Get user details
+    const user = await UserService.findById(userId);
+    if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    
+
     // Get user's friends
-    const friendIds = currentUser.friends;
-    
-    // Add current user's ID to get their stories too
-    const userIds = [userId, ...friendIds]; // Creates an array containing both the user's ID and their friends' IDs. this will list all the users whose stories we want to fetch 
-    
-    // Get stories from these users
-    //Fetches all stories from these users using a special method in the Story model
-    const stories = await Story.getFriendsStories(userIds);
-    
+    const friendIds = user.friends || [];
+
+    // If user has no friends, return empty story feed
+    if (friendIds.length === 0) {
+      return res.status(200).json({ message: 'You have no friends to fetch stories from.', stories: [] });
+    }
+
+    // Get stories from friends only
+    const stories = await Story.getFriendsStories(friendIds);
+
+    if (!stories.length) {
+      return res.status(200).json({ message: 'No stories found in your feed', stories: [] });
+    }
+
+    // Get unique user IDs from the stories
+    const uniqueUserIds = [...new Set(stories.map(story => story.userId))];
+
+    // Create a map to store user details
+    const userMap = {};
+
+    // Fetch user details for each unique user ID
+    for (const id of uniqueUserIds) {
+      try {
+        if (!id) continue;
+
+        const friend = await User.findById(id);
+        if (friend) {
+          userMap[id] = {
+            id: friend.id,
+            firstName: friend.firstName,
+            lastName: friend.lastName,
+            username: friend.username,
+            profilePicture: friend.profilePicture
+          };
+        }
+      } catch (userError) {
+        console.error(`Error fetching user ${id}:`, userError.message);
+      }
+    }
+
     // Group stories by user
-    const storiesByUser = {};
-
-    /*
-    Loops through each story:
-
-    If this is the first story from this user, adds user details and creates an empty stories array
-    Adds the story to the appropriate user's stories array
-
-
-    This creates a structure like: { userId: { user: {...}, stories: [...] } }
-  */
-    
-    for (const story of stories) {
-      if (!storiesByUser[story.userId]) {
-        // Get user details for the story
-        const user = await User.findById(story.userId);
-        storiesByUser[story.userId] = {
-          user: {
-            id: user.id,
-            username: user.username,
-            profilePicture: user.profilePicture
-          },
+    const storiesByUser = stories.reduce((acc, story) => {
+      const storyUserId = story.userId;
+      if (!acc[storyUserId]) {
+        acc[storyUserId] = {
+          user: userMap[storyUserId] || { id: storyUserId },
           stories: []
         };
       }
-      
-      storiesByUser[story.userId].stories.push(story);
-    }
-    
-    res.json(Object.values(storiesByUser));
+      acc[storyUserId].stories.push(story);
+      return acc;
+    }, {});
+
+    // Convert to array format for response
+    const feedStories = Object.values(storiesByUser);
+
+    res.status(200).json({
+      message: 'Stories feed retrieved successfully',
+      stories: feedStories
+    });
+
   } catch (error) {
     console.error('Error fetching stories feed:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+    
+
+
 
 // Get a specific story by 
 //Gets the story ID from the URL parameters
@@ -119,118 +214,244 @@ const getStoriesFeed = async (req, res) => {
 const getStoryById = async (req, res) => {
   try {
     const storyId = req.params.id;
+
+    // Fetch the story by ID
     const story = await Story.findById(storyId);
-    
+
     if (!story) {
       return res.status(404).json({ message: 'Story not found' });
     }
-    
-    // Check if story is 
-    //Calls the isExpired() method on the story object to check if it's older than 24 hours
-    //Returns 410 (Gone) status code if the story has expired
-    if (story.isExpired()) {
+
+    // Check if the story has expired (older than 24 hours)
+    if (story.isExpired && typeof story.isExpired === 'function' && story.isExpired()) {
       return res.status(410).json({ message: 'Story has expired' });
     }
-    
-    // Get user details for the story
-    const user = await User.findById(story.userId);
-    
-    // Check if the current user has permission to view the story
-    //Gets the user who created the story and checks the privacy settings
-    /*
-      Checks privacy settings:
-      If the story is set to 'friends' privacy
-      And the current user is not in the creator's friends list
-      And the current user is not the creator
-      Then returns 403 (Forbidden) error
-    */
-    if (story.privacy === 'friends' && !user.friends.includes(req.user.id) && story.userId !== req.user.id) {
+
+    // Fetch the story creator's user data
+    const creator = await UserService.findById(story.userId);
+
+    if (!creator) {
+      return res.status(404).json({ message: 'Story creator not found' });
+    }
+
+    // Ensure that only the story creator and their friends can view the story
+    const isCreator = req.user.id === story.userId;
+    const isFriend = (creator.friends || []).includes(req.user.id);
+
+    if (!isCreator && !isFriend) {
       return res.status(403).json({ message: 'You do not have permission to view this story' });
     }
-    
-    //Returns both the story data and minimal user data for displaying
-    res.json({ 
+
+    // Respond with the story and minimal user data
+    res.status(200).json({
       story,
       user: {
-        id: user.id,
-        username: user.username,
-        profilePicture: user.profilePicture
-      } 
+        id: creator.id,
+        username: creator.username,
+        profilePicture: creator.profilePicture
+      }
     });
+
   } catch (error) {
     console.error('Error fetching story:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-// Mark a story as viewed
+// Mark a story as viewed (updated)
 const viewStory = async (req, res) => {
   try {
     const storyId = req.params.id;
     const userId = req.user.id;
-    
+
+    if (!storyId) {
+      return res.status(400).json({ message: 'Story ID is required' });
+    }
+
+    // Get the story
     const story = await Story.findById(storyId);
-    
     if (!story) {
       return res.status(404).json({ message: 'Story not found' });
     }
-    
+
     // Check if story is expired
-    if (story.isExpired()) {
-      return res.status(410).json({ message: 'Story has expired' });
+    const now = new Date();
+    const expiresAt = new Date(story.expiresAt);
+    if (now > expiresAt || !story.isActive) {
+      return res.status(404).json({ message: 'Story has expired' });
     }
-    
-    // Add viewer
-    await story.addViewer(userId);
-    
-    res.json({ 
-      message: 'Story viewed', 
-      viewCount: story.viewCount 
+
+    let hasViewed = story.viewers.includes(userId);
+    let updatedStory;
+
+    // If user hasn't viewed the story yet, update viewer list and count
+    if (!hasViewed) {
+      const updatedViewers = [...story.viewers, userId];
+      const updatedViewCount = updatedViewers.length;
+
+      await Story.updateById(storyId, {
+        viewers: updatedViewers,
+        viewCount: updatedViewCount
+      });
+
+      hasViewed = true;
+    }
+
+    // Fetch viewer details
+    const viewerDetails = [];
+    for (const viewerId of story.viewers) {
+      const user = await UserService.findById(viewerId);
+      if (user) {
+        viewerDetails.push({
+          id: user.id,
+          username: user.username,
+          profilePicture: user.profilePicture
+        });
+      }
+    }
+
+    res.status(200).json({
+      message: hasViewed ? 'Story already viewed' : 'Story viewed successfully',
+      viewCount: story.viewers.length,
+      viewers: viewerDetails
     });
+
   } catch (error) {
-    console.error('Error marking story as viewed:', error);
+    console.error('Error viewing story:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-// Delete a story
-const deleteStory = async (req, res) => {
+
+//@desc     Update a story by story ID
+const updateStoryByStoryId = async (req, res) => {
   try {
     const storyId = req.params.id;
-    
-    // Check if story exists
-    const story = await Story.findById(storyId);
-    
-    if (!story) {
-      return res.status(404).json({ message: 'Story not found' });
-    }
-    
-    // Check if user owns the story
-    if (story.userId !== req.user.id) {
-      return res.status(403).json({ message: 'Unauthorized to delete this story' });
-    }
-    
-    // Delete media file from storage if it exists in the firebase storage
-    //Checks if the story has a media URL and deletes it from storage using the deleteFileFromStorage function
-    if (story.mediaUrl) {
-      await deleteFileFromStorage(story.mediaUrl);
+    if (!storyId) {
+      return res.status(400).json({ message: 'Story ID is required' });
     }
 
-    // Delete the story
-    await Story.findByIdAndDelete(storyId);
-    
-    res.json({ message: 'Story deleted successfully' });
+    // Fetch the existing story
+    const existingStory = await Story.findById(storyId);
+    if (!existingStory) {
+      return res.status(404).json({ message: 'Story not found' });
+    }
+
+    // Check if the logged-in user is the author
+    if (existingStory.userId !== req.user.id) {
+      return res.status(403).json({ message: 'Unauthorized: You can only update your own stories' });
+    }
+
+    const { content, media, type, caption, privacy } = req.body;
+
+    // Prepare update data
+    const updateData = {};
+
+    if (content !== undefined) updateData.content = content;
+    if (type !== undefined) updateData.mediaType = type; // fixed incorrect variable name from 'mediaType'
+    if (caption !== undefined) updateData.caption = caption;
+    if (privacy !== undefined) updateData.privacy = privacy;
+
+    // Upload new media if provided
+    if (media) {
+      try {
+        const mediaUrl = await uploadMedia(media);
+        updateData.media = mediaUrl;
+      } catch (error) {
+        return res.status(400).json({ error: 'Failed to upload media', message: error.message });
+      }
+    }
+
+    // Ensure we have something to update
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: 'No valid fields to update' });
+    }
+
+    // Check if the story is expired or inactive
+    const now = new Date();
+    const expiresAt = new Date(existingStory.expiresAt);
+    if (now > expiresAt || !existingStory.isActive) {
+      return res.status(400).json({ message: 'Cannot update an expired or inactive story' });
+    }
+
+    // Add updatedAt timestamp
+    updateData.updatedAt = new Date().toISOString();
+
+    // Perform the update
+    const updatedStory = await Story.updateById(storyId, updateData);
+    if (!updatedStory) {
+      return res.status(500).json({ message: 'Failed to update story' });
+    }
+
+    // Fetch the author's data
+    const author = await UserService.findById(updatedStory.userId);
+    if (!author) {
+      return res.status(404).json({ message: 'Author not found' });
+    }
+
+    // Compose response with author info
+    const populatedStory = {
+      ...updatedStory,
+      author: {
+        id: author.id,
+        firstName: author.firstName,
+        lastName: author.lastName,
+        username: author.username,
+        profilePicture: author.profilePicture
+      }
+    };
+
+    res.status(200).json({ message: 'Story updated successfully', story: populatedStory });
   } catch (error) {
-    console.error('Error deleting story:', error);
+    console.error('Update story error:', error.message);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
+
+//@desc     Delete a story by story ID (admin function)
+const deleteStoryByStoryId = async (req, res) => {
+  try {
+    const storyId = req.params.id;
+
+    if (!storyId) {
+      return res.status(400).json({ message: 'Story ID is required' });
+    }
+
+    // Fetch the story
+    const existingStory = await Story.findById(storyId);
+    if (!existingStory) {
+      return res.status(404).json({ message: 'Story not found' });
+    }
+
+    // Authorization check
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
+    const isOwner = existingStory.userId === req.user.id;
+
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ message: 'Unauthorized: Only the owner or an admin can delete the story' });
+    }
+
+    // Perform the deletion
+    const deleted = await Story.deleteById(storyId);
+    if (!deleted) {
+      return res.status(500).json({ message: 'Failed to delete story' });
+    }
+
+    res.status(200).json({ message: 'Story deleted successfully' });
+  } catch (error) {
+    console.error('Delete story error:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
 module.exports = {
-  createStory,
-  getCurrentUserStories,
-  getStoriesFeed,
-  getStoryById,
-  viewStory,
-  deleteStory
+  createStory,//done
+  //getCurrentUserStories,
+  getStoriesFeed,//done
+  getStoryById,//done
+  viewStory,//done
+  updateStoryByStoryId,//done
+  deleteStoryByStoryId,//done
 };

@@ -46,20 +46,12 @@ const validatePost = (req, res, next) => {
     media: Joi.alternatives().try(
       Joi.string().uri(),                         // media link
       Joi.string().pattern(/^data:.*;base64,.*/), // base64 image/video
-      Joi.object({ path: Joi.string().required() }), // multer-style file
-      Joi.valid(null),
-      Joi.array().items(
-        Joi.alternatives().try(
-          Joi.string(),
-          Joi.object({ path: Joi.string().required() })
-        )
-      )
+      Joi.valid(null)
     ).optional(),
-
     mediaType: Joi.when('media', {
       is: Joi.exist().not(null),
       then: Joi.string().valid('image', 'video').required(),
-      otherwise: Joi.string().valid('text', 'image', 'video').optional()
+      otherwise: Joi.string().valid('image', 'video').optional()
     }),
     tags: Joi.array().items(Joi.string()).optional(),
     privacy: Joi.string().valid('public', 'private', 'friends').default('public'),
@@ -92,19 +84,8 @@ const validateComment = (req, res, next) => {
     post: Joi.string().optional(),              // ID of the post the comment belongs to
     user: Joi.string().optional(),              // ID of the user making the comment
     text: Joi.string().optional(),              // Text content of the comment
-    media: Joi.alternatives().try(
-      Joi.string().uri(),                         // media link
-      Joi.string().pattern(/^data:.*;base64,.*/), // base64 image/video
-      Joi.object({ path: Joi.string().required() }), // multer-style file
-      Joi.valid(null),
-      Joi.array().items(
-        Joi.alternatives().try(
-          Joi.string(),
-          Joi.object({ path: Joi.string().required() })
-        )
-      )
-    ).optional(),
-    likes: Joi.array().items(Joi.string()).optional(),     // Array of user IDs who liked
+    media: Joi.string().uri().allow(null, ''),  // Optional media (URL)
+    //     likes: Joi.array().items(Joi.string()).optional(),     // Array of user IDs who liked
     replies: Joi.array().items(Joi.object()).optional(),   // Array of replies (optional objects)
     createdAt: Joi.date().optional(),
     updatedAt: Joi.date().optional(),
@@ -118,5 +99,59 @@ const validateComment = (req, res, next) => {
 };
 
 
+// Validate story creation
+const validateStory = (req, res, next) => {
+  const schema = Joi.object({
+    // Content validation - at least one of content or media is required
+    content: Joi.string().allow('', null).optional(),
+    
+    // Media validation - supports multiple formats for Cloudinary upload
+    media: Joi.alternatives().try(
+      Joi.string().uri(),                         // media link
+      Joi.string().pattern(/^data:.;base64,./), // base64 image/video
+      Joi.object({ path: Joi.string().required() }), // multer-style file
+      Joi.valid(null),
+      Joi.array().items(
+        Joi.alternatives().try(
+          Joi.string(),
+          Joi.object({ path: Joi.string().required() })
+        )
+      )
+    ).optional(),
 
-module.exports = {validateUser, validatePost, validateComment};
+    type: Joi.when('media', {
+      is: Joi.exist().not(null),
+      then: Joi.string().valid('image', 'video').required(),
+      otherwise: Joi.string().valid('text', 'image', 'video').optional()
+    }),
+    // Story styling options
+    caption: Joi.string().allow('').max(500).optional(),
+    
+    // Privacy settings
+    privacy: Joi.string().valid('public', 'friends', 'private').default('friends'),
+
+    // Auto-generated fields (optional for validation but will be set by server)
+    userId: Joi.string().optional(),
+    viewers: Joi.array().items(Joi.string()).optional(),
+    viewCount: Joi.number().integer().min(0).optional(),
+    isActive: Joi.boolean().default(true),
+    
+  }).custom((value, helpers) => {
+    // Custom validation: ensure at least content or media is provided
+    if (!value.content && !value.media) {
+      return helpers.error('any.custom', { message: 'Either content or media is required for a story' });
+    }
+    return value;
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  next();
+}; 
+
+
+
+
+module.exports = {validateUser, validatePost, validateComment, validateStory};
