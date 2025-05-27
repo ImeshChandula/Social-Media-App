@@ -9,6 +9,7 @@ function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [showStoryModal, setShowStoryModal] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -33,6 +34,9 @@ function ProfilePage() {
     navigate("/create-post");
   };
 
+  const handleCreateStory = () => {
+  navigate("/create-story");
+};
   return (
     <motion.div
       className="container text-center py-5 py-md-0 mt-2 mt-md-0"
@@ -109,12 +113,14 @@ function ProfilePage() {
               </motion.button>
 
               <motion.button
-                className="btn btn-secondary"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Add to Story
-              </motion.button>
+  className="btn btn-secondary"
+  whileHover={{ scale: 1.05 }}
+  whileTap={{ scale: 0.95 }}
+  onClick={handleCreateStory}
+>
+  Add to Story
+</motion.button>
+
             </div>
           </motion.div>
 

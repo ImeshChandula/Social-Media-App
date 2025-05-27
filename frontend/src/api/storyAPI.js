@@ -1,6 +1,5 @@
 // src/api/storyAPI.js
-import { axiosInstance } from "../lib/axios"; // Adjust path if needed
-
+import { axiosInstance } from "../lib/axios";
 export const getFeedStories = () => {
     return axiosInstance.get("/stories/feed");
 };
