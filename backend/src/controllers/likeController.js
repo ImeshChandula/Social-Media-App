@@ -36,16 +36,21 @@ const likeToAPostByPostId = async (req, res) => {
             return res.status(400).json({ success: false, message: "Failed to like this post"});
         }
 
-        // Send notification to post owner
-        const userData = await UserService.findById(userId);
-        const name = `${userData.firstName} ${userData.lastName}`;
-        if (updatedPost.author !== userId) {
-            await notificationUtils.sendLikePostNotification(
-                updatedPost.author, // recipient
-                userId,         // sender
-                postId,
-                name
-            );
+        // Send notification to post owner ONLY when liking (not unliking)
+        if (actionPerformed === 'liked' && updatedPost.author.toString() !== userId.toString()) {
+            try {
+                const userData = await UserService.findById(userId);
+                const name = `${userData.firstName} ${userData.lastName}`;
+                await notificationUtils.sendLikePostNotification(
+                    updatedPost.author, // recipient
+                    userId,             // sender
+                    postId,
+                    name
+                );
+            } catch (notificationError) {
+                // Log notification error but don't fail the like operation
+                console.error('Error sending like notification:', notificationError);
+            }
         }
 
         return res.status(200).json({ 

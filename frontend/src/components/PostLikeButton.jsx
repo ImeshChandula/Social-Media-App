@@ -11,6 +11,10 @@ const PostLikeButton = ({ postId, initialIsLiked = false, initialLikeCount = 0, 
         if (loading) return;
         setLoading(true);
 
+        // Store current state for potential rollback
+        const currentIsLiked = isLiked;
+        const currentLikeCount = likeCount;
+
         // Optimistic update - update UI immediately
         const newIsLiked = !isLiked;
         const newLikeCount = newIsLiked ? likeCount + 1 : likeCount - 1;
@@ -23,7 +27,7 @@ const PostLikeButton = ({ postId, initialIsLiked = false, initialLikeCount = 0, 
             onLikeUpdate(postId, newIsLiked, newLikeCount);
         }
 
-        console.log("Liking post with id:", postId);
+        console.log(`${newIsLiked ? 'Liking' : 'Un-liking'} post with id:`, postId);
 
         try {
             const res = await axiosInstance.post(`/likes/toPost/${postId}`);
@@ -40,8 +44,8 @@ const PostLikeButton = ({ postId, initialIsLiked = false, initialLikeCount = 0, 
             console.error("Error toggling like:", error.response?.data || error.message);
             
             // Revert optimistic update on error
-            setIsLiked(isLiked);
-            setLikeCount(likeCount);
+            setIsLiked(currentIsLiked);
+            setLikeCount(currentLikeCount);
             
             if (onLikeUpdate) {
                 onLikeUpdate(postId, isLiked, likeCount);
