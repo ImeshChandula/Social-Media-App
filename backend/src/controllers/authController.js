@@ -10,7 +10,7 @@ const registerUser = async (req, res) => {
         // check if user already exists
         let user = await UserService.findByEmail(email);
         if (user) {
-            return res.status(400).json({ msg: "User already exists" });
+            return res.status(400).json({ message: "User already exists" });
         }
 
         const lowercaseUsername = username.toLowerCase();
@@ -47,10 +47,10 @@ const registerUser = async (req, res) => {
         newUser.password = undefined;
         newUser._isPasswordModified = undefined;
 
-        res.status(201).json({ msg: "User registered successfully", newUser });
+        res.status(201).json({ message: "User registered successfully", newUser });
         console.log("User registered successfully.");
-    } catch (err) {
-        console.error(err.message);
+    } catch (error) {
+        console.error(error.message);
         res.status(500).send('Server error');
     }
 };
@@ -64,13 +64,13 @@ const loginUser = async (req, res) => {
         // check if user exists
         const user = await UserService.findByEmail(email);
         if (!user){
-            return res.status(400).json({ msg: 'Invalid credentials' });
+            return res.status(400).json({ message: 'Invalid credentials' });
         }
 
         // validate password
         const isMatch = await UserService.comparePassword(password, user.password);
         if (!isMatch){
-            return res.status(400).json({ msg: 'Invalid credentials' });
+            return res.status(400).json({ message: 'Invalid credentials' });
         }
 
         // update last login
