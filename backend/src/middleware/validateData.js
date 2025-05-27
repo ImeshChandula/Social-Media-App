@@ -3,7 +3,12 @@ const Joi = require('joi');
 // Validate user registration
 const validateUserData = (req, res, next) => {
   const schema = Joi.object({
-    // Optional fields
+    // User basic info - now included for profile updates
+    username: Joi.string().min(3).max(30).optional(),
+    firstName: Joi.string().min(1).max(50).optional(),
+    lastName: Joi.string().min(1).max(50).optional(),
+
+    // Profile fields
     profilePicture: Joi.string().uri().optional(), // assuming it's a URL
     coverPhoto: Joi.string().uri().optional(),
     bio: Joi.string().allow('').optional(),

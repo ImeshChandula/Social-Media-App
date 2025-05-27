@@ -4,7 +4,7 @@ import { axiosInstance } from "../lib/axios";
 import '../styles/EditProfile.css';
 
 function EditProfile() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
@@ -155,7 +155,20 @@ function EditProfile() {
     setUpdating(true);
 
     try {
-      await axiosInstance.patch(`/users/updateProfile/${userData.id}`, formData);
+      // Prepare the data to send
+      const dataToSend = { ...formData };
+
+      // Convert birthday to ISO 8601 format if it exists
+      if (dataToSend.birthday && dataToSend.birthday.trim() !== '') {
+        // Create a date object from the YYYY-MM-DD string and convert to ISO
+        const birthdayDate = new Date(dataToSend.birthday + 'T00:00:00.000Z');
+        dataToSend.birthday = birthdayDate.toISOString();
+      } else {
+        // Remove birthday field if empty to avoid validation error
+        delete dataToSend.birthday;
+      }
+
+      await axiosInstance.patch(`/users/updateProfile/${userData.id}`, dataToSend);
       alert('Profile updated successfully!');
       setTimeout(() => {
         navigate(-1);
@@ -163,7 +176,8 @@ function EditProfile() {
       );
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Error updating profile');
+      const errorMessage = error.response?.data?.message || 'Error updating profile';
+      alert(errorMessage);
     } finally {
       setUpdating(false);
     }
