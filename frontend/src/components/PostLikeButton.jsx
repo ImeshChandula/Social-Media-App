@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { axiosInstance } from "../lib/axios";
 
-const PostLikeButton = ({ postId, initialIsLiked = false, initialLikeCount = 0 }) => {
+const PostLikeButton = ({ postId, initialIsLiked = false, initialLikeCount = 0, onLikeUpdate  }) => {
     const [isLiked, setIsLiked] = useState(initialIsLiked);
     const [likeCount, setLikeCount] = useState(initialLikeCount);
     const [loading, setLoading] = useState(false);
@@ -11,15 +11,41 @@ const PostLikeButton = ({ postId, initialIsLiked = false, initialLikeCount = 0 }
         if (loading) return;
         setLoading(true);
 
+        // Optimistic update - update UI immediately
+        const newIsLiked = !isLiked;
+        const newLikeCount = newIsLiked ? likeCount + 1 : likeCount - 1;
+        
+        setIsLiked(newIsLiked);
+        setLikeCount(newLikeCount);
+        
+        // Update parent component immediately
+        if (onLikeUpdate) {
+            onLikeUpdate(postId, newIsLiked, newLikeCount);
+        }
+
         console.log("Liking post with id:", postId);
 
         try {
             const res = await axiosInstance.post(`/likes/toPost/${postId}`);
-            const { isLiked, likeCount } = res.data.data;
-            setIsLiked(isLiked);
-            setLikeCount(likeCount);
+            const { isLiked: serverIsLiked, likeCount: serverLikeCount } = res.data.data;
+            
+            // Update with server response (in case our optimistic update was wrong)
+            setIsLiked(serverIsLiked);
+            setLikeCount(serverLikeCount);
+
+            if (onLikeUpdate) {
+                onLikeUpdate(postId, serverIsLiked, serverLikeCount);
+            }
         } catch (error) {
             console.error("Error toggling like:", error.response?.data || error.message);
+            
+            // Revert optimistic update on error
+            setIsLiked(isLiked);
+            setLikeCount(likeCount);
+            
+            if (onLikeUpdate) {
+                onLikeUpdate(postId, isLiked, likeCount);
+            }
         } finally {
             setLoading(false);
         }

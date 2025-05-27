@@ -3,7 +3,7 @@ import { FaCommentAlt, FaShare } from "react-icons/fa";
 import PostDropdown from "./PostDropdown";
 import PostLikeButton from "./PostLikeButton";
 
-const PostCard = ({ post, isUserPost = false }) => {
+const PostCard = ({ post, isUserPost = false, onLikeUpdate  }) => {
     const mediaArray = Array.isArray(post.media)
         ? post.media
         : post.media
@@ -71,9 +71,10 @@ const PostCard = ({ post, isUserPost = false }) => {
             <div className="card-footer bg-dark d-flex justify-content-between text-white-50 small rounded-bottom-4 border-top border-secondary">
                 <div className="d-flex align-items-center gap-1">
                     <PostLikeButton
-                        postId={post._id}
+                        postId={post._id || post.id}
                         initialIsLiked={post.isLiked}
-                        initialLikeCount={post.likes?.length}
+                        initialLikeCount={post.likeCount}
+                        onLikeUpdate={onLikeUpdate}
                     />
                 </div>
                 <div className="d-flex align-items-center gap-1">
