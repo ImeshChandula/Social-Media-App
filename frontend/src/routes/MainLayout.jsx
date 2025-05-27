@@ -10,6 +10,7 @@ import NotificationPage from "../pages/Notifications";
 import ProfilePage from "../pages/ProfilePage";
 import CreatePost from "../components/CreatePost";
 import EditProfile from "../components/EditProfile"
+import CreateStory from "../components/CreateStory";
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -35,6 +36,7 @@ const MainLayout = () => {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/edit-profile" element={<EditProfile />} />
+            <Route path="/create-story" element={<CreateStory />} />
           </Routes>
         </div>
       </div>
