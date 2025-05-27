@@ -1,6 +1,7 @@
 import React from "react";
-import { FaThumbsUp, FaCommentAlt, FaShare } from "react-icons/fa";
+import { FaCommentAlt, FaShare } from "react-icons/fa";
 import PostDropdown from "./PostDropdown";
+import PostLikeButton from "./PostLikeButton";
 
 const PostCard = ({ post, isUserPost = false }) => {
     const mediaArray = Array.isArray(post.media)
@@ -31,8 +32,6 @@ const PostCard = ({ post, isUserPost = false }) => {
                         </small>
                     </div>
                 </div>
-
-                {/* User Post Dropdown */}
                 {isUserPost && (
                     <PostDropdown
                         onUpdate={() => alert(`Update post ${post._id}`)}
@@ -45,7 +44,6 @@ const PostCard = ({ post, isUserPost = false }) => {
             <div className="card-body bg-dark p-4 rounded-bottom-4">
                 <p className="text-white mb-3 text-start">{post.content}</p>
 
-                {/* Media Preview */}
                 {mediaArray.length > 0 && (
                     <div className="d-flex flex-wrap gap-3 justify-content-center">
                         {mediaArray.map((url, idx) =>
@@ -72,8 +70,11 @@ const PostCard = ({ post, isUserPost = false }) => {
             {/* Footer */}
             <div className="card-footer bg-dark d-flex justify-content-between text-white-50 small rounded-bottom-4 border-top border-secondary">
                 <div className="d-flex align-items-center gap-1">
-                    <FaThumbsUp />
-                    <span>{post.likes?.length || 0} Likes</span>
+                    <PostLikeButton
+                        postId={post._id}
+                        initialIsLiked={post.isLiked}
+                        initialLikeCount={post.likes?.length || 0}
+                    />
                 </div>
                 <div className="d-flex align-items-center gap-1">
                     <FaCommentAlt />

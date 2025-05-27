@@ -28,19 +28,18 @@ const Feed = ({ type = "all" }) => {
         fetchFeed();
     }, [type]);
 
-    if (loading)
-        return <div className="text-white text-center my-5 fs-5">Loading feed...</div>;
-
-    if (error)
-        return <div className="text-danger text-center my-5 fs-5">Error loading feed: {error}</div>;
-
-    if (!posts.length)
-        return <div className="text-white text-center my-5 fs-5">No posts found</div>;
+    if (loading) return <div className="text-white text-center my-5 fs-5">Loading feed...</div>;
+    if (error) return <div className="text-danger text-center my-5 fs-5">Error loading feed: {error}</div>;
+    if (!posts.length) return <div className="text-white text-center my-5 fs-5">No posts found</div>;
 
     return (
         <div className="container my-4">
             {posts.map((post, index) => (
-                <PostCard key={post._id || post.id || index} post={post} />
+                <PostCard
+                    key={post._id || post.id || index}
+                    post={post}
+                    isUserPost={post.isUserPost}
+                />
             ))}
         </div>
     );
