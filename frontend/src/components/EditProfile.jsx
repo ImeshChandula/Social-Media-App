@@ -1,8 +1,373 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { axiosInstance } from "../lib/axios";
+import '../styles/EditProfile.css';
+
 function EditProfile() {
+    const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
+  const [uploadingCoverPhoto, setUploadingCoverPhoto] = useState(false);
+  
+  const [userData, setUserData] = useState({
+    id: '',
+    username: '',
+    firstName: '',
+    lastName: '',
+    profilePicture: '',
+    coverPhoto: '',
+    bio: '',
+    location: '',
+    birthday: '',
+    accountStatus: 'active',
+    role: ''
+  });
+
+  const [formData, setFormData] = useState({
+    username: '',
+    firstName: '',
+    lastName: '',
+    bio: '',
+    location: '',
+    birthday: '',
+    accountStatus: 'active'
+  });
+
+  // Fetch user data on component mount
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const response = await axiosInstance.get('/users/myProfile');
+      const data = response.data;
+      
+        setUserData(data.user);
+        setFormData({
+            username: data.user.username || '',
+            firstName: data.user.firstName || '',
+            lastName: data.user.lastName || '',
+            bio: data.user.bio || '',
+            location: data.user.location || '',
+            birthday: data.user.birthday ? data.user.birthday.split('T')[0] : '',
+            accountStatus: data.user.accountStatus || 'active'
+        });
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Convert file to base64
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // Handle profile picture upload
+  const handleProfilePicUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size must be less than 10MB');
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    try {
+        setUploadingProfilePic(true);
+        const base64 = await convertToBase64(file);
+        
+        const response = await axiosInstance.patch(`/users/updateProfilePic/${userData.id}`, {
+            profilePicture: base64
+        });
+
+        setUserData(prev => ({ ...prev, profilePicture: response.data.updatedUser.profilePicture }));
+        alert('Profile picture updated successfully!');
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      alert('Error uploading profile picture');
+    } finally {
+      setUploadingProfilePic(false);
+    }
+  };
+
+  // Handle cover photo upload
+  const handleCoverPhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size must be less than 10MB');
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    try {
+      setUploadingCoverPhoto(true);
+      const base64 = await convertToBase64(file);
+      
+        const response = await axiosInstance.patch(`/users/updateCoverPic/${userData.id}`, {
+            coverPhoto: base64
+        });
+
+        setUserData(prev => ({ ...prev, coverPhoto: response.data.updatedUser.coverPhoto }));
+        alert('Cover photo updated successfully!');
+    } catch (error) {
+      console.error('Error uploading cover photo:', error);
+      alert('Error uploading cover photo');
+    } finally {
+      setUploadingCoverPhoto(false);
+    }
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setUpdating(true);
+
+    try {
+      await axiosInstance.patch(`/users/updateProfile/${userData.id}`, formData);
+      alert('Profile updated successfully!');
+      setTimeout(() => {
+        navigate(-1);
+        }, 5000
+      );
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Error updating profile');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleResetPassword = () => {
+    navigate('/resetPassword');
+  };
+
+  if (loading) {
     return (
-        <div>
-            <h1>edit profile page</h1>
+      <div className="edit-profile-container">
+        <div className="loading-spinner">Loading...</div>
+      </div>
+    );
+  }
+
+
+  
+    return (
+        <div className="edit-profile-container">
+      <div className="edit-profile-card">
+        <div className="profile-header">
+          <h1>Edit Profile</h1>
+          <button 
+            className="back-btn"
+            onClick={() => navigate(-1)}
+          >
+            ← Back
+          </button>
         </div>
+
+        {/* Cover Photo Section */}
+        <div className="cover-photo-section">
+          <div 
+            className="cover-photo"
+            style={{ backgroundImage: `url(${userData.coverPhoto})` }}
+          >
+            <div className="cover-photo-overlay">
+              <label className="upload-btn cover-upload-btn">
+                {uploadingCoverPhoto ? 'Uploading...' : 'Edit Cover Photo'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCoverPhotoUpload}
+                  disabled={uploadingCoverPhoto}
+                  style={{ display: 'none' }}
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Profile Picture Section */}
+        <div className="profile-pic-section">
+          <div className="profile-pic-container">
+            <img
+              src={userData.profilePicture}
+              alt="Profile"
+              className="profile-pic"
+            />
+            <label className="upload-btn profile-upload-btn">
+              {uploadingProfilePic ? '...' : 'Edit'}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePicUpload}
+                disabled={uploadingProfilePic}
+                style={{ display: 'none' }}
+              />
+            </label>
+          </div>
+        </div>
+
+        {/* Form Section */}
+        <form onSubmit={handleSubmit} className="edit-form">
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="username">Username</label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="firstName">First Name</label>
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="lastName">Last Name</label>
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                value={userData.email}
+                disabled
+                className="disabled-input"
+              />
+              <small>Email cannot be changed</small>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="location">Location</label>
+              <input
+                type="text"
+                id="location"
+                name="location"
+                value={formData.location}
+                onChange={handleInputChange}
+                placeholder="Enter your location"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="birthday">Birthday</label>
+              <input
+                type="date"
+                id="birthday"
+                name="birthday"
+                value={formData.birthday}
+                onChange={handleInputChange}
+              />
+            </div>
+
+            <div className="form-group full-width">
+              <label htmlFor="bio">Bio</label>
+              <textarea
+                id="bio"
+                name="bio"
+                value={formData.bio}
+                onChange={handleInputChange}
+                placeholder="Tell us about yourself..."
+                rows="4"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="accountStatus">Account Status</label>
+              <select
+                id="accountStatus"
+                name="accountStatus"
+                value={formData.accountStatus}
+                onChange={handleInputChange}
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div className="form-actions">
+            <button
+              type="button"
+              className="reset-password-btn"
+              onClick={handleResetPassword}
+            >
+              Reset Password
+            </button>
+            
+            <div className="submit-actions">
+              <button
+                type="button"
+                className="cancel-btn"
+                onClick={() => navigate(-1)}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="submit-btn"
+                disabled={updating}
+              >
+                {updating ? 'Updating...' : 'Update Profile'}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
     )
 }
 export default EditProfile

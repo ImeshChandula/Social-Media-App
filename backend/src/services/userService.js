@@ -108,7 +108,11 @@ const UserService = {
             if (!userDoc.exists) {
                 return false;
             }
-            
+
+            if (updateData.username) {
+                updateData.username = updateData.username.toLowerCase();
+            }
+
             updateData.updatedAt = new Date().toISOString();
         
             await userCollection.doc(id).update(updateData);

@@ -27,12 +27,12 @@ router.patch('/updateProfile/:id', validateUserData, authenticateUser, userContr
 //@route   PATCH api/users/updateProfilePic
 //@desc    Update user profile Image
 //@access  Private
-router.patch("/updateProfilePic/:id", validateUser, authenticateUser, userController.updateUserProfileImage);
+router.patch("/updateProfilePic/:id", validateUserData, authenticateUser, userController.updateUserProfileImage);
 
 //@route   PATCH api/users/updateCoverPic
 //@desc    Update user profile Cover Photo
 //@access  Private
-router.patch("/updateCoverPic/:id", validateUser, authenticateUser, userController.updateUserProfileCoverPhoto);
+router.patch("/updateCoverPic/:id", validateUserData, authenticateUser, userController.updateUserProfileCoverPhoto);
 
 //@route   GET api/users/getAllUsers
 //@desc    Get All user data
