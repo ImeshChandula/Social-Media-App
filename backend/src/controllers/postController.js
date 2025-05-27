@@ -95,6 +95,7 @@ const createPost = async (req, res) => {
 //@desc     Get all posts
 const getAllPosts = async (req, res) => {
     try {
+        const currentUserId = req.user.id;
         const posts = await PostService.findAll();
         if (!posts.length) {
             return res.status(200).json({message: "No posts found", posts: []});
@@ -140,13 +141,17 @@ const getAllPosts = async (req, res) => {
             if (post.author && typeof post.author === 'string' && authorsMap[post.author]) {
                 authorData = authorsMap[post.author];
             }
+
+             // Check if current user has liked this post
+            const isLiked = currentUserId ? (post.likes || []).includes(currentUserId) : false;
             
             // Create a new object with post properties
             const postObj = {
                 ...post,
-                likeCount: post.likeCount,
+                likeCount: post.likes ? post.likes.length : (post.likeCount || 0),
                 commentCount: post.commentCount,
                 shareCount: post.shareCount,
+                isLiked: isLiked,
                 author: authorData
             };
             

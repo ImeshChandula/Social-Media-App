@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect  } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { axiosInstance } from "../lib/axios";
 
@@ -6,6 +6,12 @@ const PostLikeButton = ({ postId, initialIsLiked = false, initialLikeCount = 0, 
     const [isLiked, setIsLiked] = useState(initialIsLiked);
     const [likeCount, setLikeCount] = useState(initialLikeCount);
     const [loading, setLoading] = useState(false);
+
+    // Sync with props when they change (e.g., after page refresh)
+    useEffect(() => {
+        setIsLiked(initialIsLiked);
+        setLikeCount(initialLikeCount);
+    }, [initialIsLiked, initialLikeCount]);
 
     const toggleLike = async () => {
         if (loading) return;
