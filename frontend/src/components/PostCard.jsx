@@ -73,7 +73,7 @@ const PostCard = ({ post, isUserPost = false }) => {
                     <PostLikeButton
                         postId={post._id}
                         initialIsLiked={post.isLiked}
-                        initialLikeCount={post.likeCount}
+                        initialLikeCount={post.likes?.length}
                     />
                 </div>
                 <div className="d-flex align-items-center gap-1">
