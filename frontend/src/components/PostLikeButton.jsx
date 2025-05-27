@@ -10,6 +10,9 @@ const PostLikeButton = ({ postId, initialIsLiked = false, initialLikeCount = 0 }
     const toggleLike = async () => {
         if (loading) return;
         setLoading(true);
+
+        console.log("Liking post with id:", postId);
+
         try {
             const res = await axiosInstance.post(`/likes/toPost/${postId}`);
             const { isLiked, likeCount } = res.data.data;
