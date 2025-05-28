@@ -24,7 +24,7 @@ const App = () => {
     checkAuth();
   }, []);
 
-  if (checkingAuth) return <div>Loading...</div>;
+  if (checkingAuth) return <div className="loading-spinner">Loading...</div>;
 
   return (
     <Router>

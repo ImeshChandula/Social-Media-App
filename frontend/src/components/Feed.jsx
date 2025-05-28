@@ -39,7 +39,7 @@ const Feed = ({ type = "all" }) => {
         );
     };
 
-    if (loading) return <div className="text-white text-center my-5 fs-5">Loading feed...</div>;
+    if (loading) return <div className="text-white text-center my-5 fs-5 loading-spinner">Loading feed...</div>;
     if (error) return <div className="text-danger text-center my-5 fs-5">Error loading feed: {error}</div>;
     if (!posts.length) return <div className="text-white text-center my-5 fs-5">No posts found</div>;
 

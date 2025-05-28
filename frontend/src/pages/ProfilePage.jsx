@@ -46,7 +46,7 @@ function ProfilePage() {
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       {loading ? (
-        <p className="text-white-50">Loading...</p>
+        <p className="text-white-50 loading-spinner">Loading...</p>
       ) : error ? (
         <div className="alert alert-danger">{error}</div>
       ) : (
