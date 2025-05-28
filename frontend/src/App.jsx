@@ -4,6 +4,7 @@ import Login from "./routes/login";
 import Register from "./routes/Register"
 import MainLayout from "./routes/MainLayout";
 import { axiosInstance } from "./lib/axios";
+import EditProfile from "./components/EditProfile";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -28,18 +29,32 @@ const App = () => {
   return (
     <Router>
       <Routes>
+
         <Route
           path="/login"
           element={!isLoggedIn ? <Login setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" />}
         />
+
         <Route
           path="/register"
           element={!isLoggedIn ? <Register setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" />}
         />
+
         <Route
           path="/*"
           element={isLoggedIn ? <MainLayout /> : <Navigate to="/login" />}
         />
+
+        <Route
+          path="/edit-profile"
+          element={isLoggedIn ? <EditProfile /> : <Navigate to="/login" />}
+        />
+        
+        <Route
+          path="/edit-profile"
+          element={isLoggedIn ? <EditProfile /> : <Navigate to="/login" />}
+        />
+
       </Routes>
     </Router>
   );

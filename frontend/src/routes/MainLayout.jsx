@@ -37,7 +37,6 @@ const MainLayout = () => {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/profile/:username" element={<OtherUserProfiles />} />
             <Route path="/create-post" element={<CreatePost />} />
-            <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/create-story" element={<CreateStory />} />
           </Routes>
         </div>
