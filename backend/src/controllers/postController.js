@@ -253,7 +253,8 @@ const getAllPhotoPosts = async (req, res) => {};
 const getAllPostsByUserId = async (req, res) => {
     try {
         const userId = req.params.id || req.user.id;
-        
+        const currentUserId = req.user.id;
+
         // Get posts by user ID
         const posts = await PostService.findByUserId(userId);
         
@@ -278,12 +279,16 @@ const getAllPostsByUserId = async (req, res) => {
         
         // Populate posts with user data
         const populatedPosts = posts.map(post => {
+            // Check if current user has liked this post
+            const isLiked = post.likes && post.likes.includes(currentUserId);
+
             // Create a new object with post properties
             const postObj = {
                 ...post,
                 likeCount: post.likeCount,
                 commentCount: post.commentCount,
                 shareCount: post.shareCount,
+                isLiked: isLiked,
                 author: authorData
             };
             return postObj;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
-import { motion } from "framer-motion";
+// eslint-disable-next-line no-unused-vars
+import  {motion}  from "framer-motion";
 import PostCard from "./PostCard";
 
 const UserPosts = () => {
@@ -21,6 +22,21 @@ const UserPosts = () => {
         fetchPosts();
     }, []);
 
+    // Handle like updates
+    const handleLikeUpdate = (postId, newLikeCount, newIsLiked) => {
+        setPosts(prevPosts => 
+            prevPosts.map(post => 
+                post._id === postId || post.id === postId
+                    ? { 
+                        ...post, 
+                        likeCount: newLikeCount, 
+                        isLiked: newIsLiked 
+                    }
+                    : post
+            )
+        );
+    };
+
     if (error) return <div className="alert alert-warning">{error}</div>;
     if (posts.length === 0) return <p className="text-center text-white">No posts to show.</p>;
 
@@ -33,7 +49,11 @@ const UserPosts = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                 >
-                    <PostCard post={post} isUserPost={true} />
+                    <PostCard 
+                        post={post} 
+                        isUserPost={true} 
+                        onLikeUpdate={handleLikeUpdate}
+                    />
                 </motion.div>
             ))}
         </div>
