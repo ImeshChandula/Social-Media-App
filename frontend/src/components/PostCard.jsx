@@ -1,14 +1,24 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { FaCommentAlt, FaShare } from "react-icons/fa";
 import PostDropdown from "./PostDropdown";
 import PostLikeButton from "./PostLikeButton";
 
-const PostCard = ({ post, isUserPost = false, onLikeUpdate  }) => {
+const PostCard = ({ post, isUserPost = false, onLikeUpdate }) => {
+
+    const navigate = useNavigate();
+
     const mediaArray = Array.isArray(post.media)
         ? post.media
         : post.media
             ? [post.media]
             : [];
+
+    const handleNavigateToProfile = () => {
+        if (post.author?.username) {
+            navigate(`/profile/${post.author.username}`);
+        }
+    };
 
     return (
         <div className="card bg-secondary bg-opacity-10 border-secondary text-white mb-4 shadow-sm rounded-4">
@@ -22,7 +32,7 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate  }) => {
                         style={{ width: 50, height: 50, objectFit: "cover" }}
                     />
                     <div className="flex-grow-1 text-start">
-                        <h6 className="mb-0 fw-bold text-white">
+                        <h6 className="mb-0 fw-bold text-white cursor-pointer" onClick={handleNavigateToProfile} >
                             {`${post.author?.firstName || ""} ${post.author?.lastName || ""}`}
                         </h6>
                         <small className="text-white-50">

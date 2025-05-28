@@ -8,6 +8,7 @@ import Members from "../pages/Members";
 import Videos from "../pages/Videos";
 import NotificationPage from "../pages/Notifications";
 import ProfilePage from "../pages/ProfilePage";
+import UserProfile from "../components/UserProfile";
 import CreatePost from "../components/CreatePost";
 import EditProfile from "../components/EditProfile"
 import CreateStory from "../components/CreateStory";
@@ -34,6 +35,7 @@ const MainLayout = () => {
             <Route path="/videos" element={<Videos />} />
             <Route path="/notifications" element={<NotificationPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/:username" element={<UserProfile />} />
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/create-story" element={<CreateStory />} />
