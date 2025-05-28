@@ -146,6 +146,39 @@ function ProfilePage() {
             </div>
           </motion.div>
 
+          <motion.div
+            className="mt-4 p-3 bg-dark rounded text-start text-white-50"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+          >
+            <h5 className="text-white mb-3">Bio</h5>
+
+            {user?.bio && (
+              <p className="mb-1">
+                <strong className="text-white">About:</strong> {user.bio}
+              </p>
+            )}
+
+            {user?.location && (
+              <p className="mb-1">
+                <strong className="text-white">Location:</strong> {user.location}
+              </p>
+            )}
+
+            {user?.birthday && (
+              <p className="mb-1">
+                <strong className="text-white">Birthday:</strong> {new Date(user.birthday).toLocaleDateString()}
+              </p>
+            )}
+
+            {user?.accountstatus && (
+              <p className="mb-0">
+                <strong className="text-white">Account Status:</strong> {user.accountstatus}
+              </p>
+            )}
+          </motion.div>
+
           {/* User Posts */}
           <div className="mt-5">
             <UserPosts />
