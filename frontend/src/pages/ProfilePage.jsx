@@ -35,8 +35,9 @@ function ProfilePage() {
   };
 
   const handleCreateStory = () => {
-  navigate("/create-story");
-};
+    navigate("/create-story");
+  };
+
   return (
     <motion.div
       className="container text-center py-5 py-md-0 mt-2 mt-md-0"
@@ -113,13 +114,13 @@ function ProfilePage() {
               </motion.button>
 
               <motion.button
-  className="btn btn-secondary"
-  whileHover={{ scale: 1.05 }}
-  whileTap={{ scale: 0.95 }}
-  onClick={handleCreateStory}
->
-  Add to Story
-</motion.button>
+                className="btn btn-secondary"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleCreateStory}
+              >
+                Add to Story
+              </motion.button>
 
             </div>
           </motion.div>
@@ -143,6 +144,39 @@ function ProfilePage() {
               <div><strong>{user?.videosCount || 0}</strong></div>
               <div>Videos</div>
             </div>
+          </motion.div>
+
+          <motion.div
+            className="mt-4 p-3 bg-dark rounded text-start text-white-50"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+          >
+            <h5 className="text-white mb-3">Bio</h5>
+
+            {user?.bio && (
+              <p className="mb-1">
+                <strong className="text-white">About:</strong> {user.bio}
+              </p>
+            )}
+
+            {user?.location && (
+              <p className="mb-1">
+                <strong className="text-white">Location:</strong> {user.location}
+              </p>
+            )}
+
+            {user?.birthday && (
+              <p className="mb-1">
+                <strong className="text-white">Birthday:</strong> {new Date(user.birthday).toLocaleDateString()}
+              </p>
+            )}
+
+            {user?.accountstatus && (
+              <p className="mb-0">
+                <strong className="text-white">Account Status:</strong> {user.accountstatus}
+              </p>
+            )}
           </motion.div>
 
           {/* User Posts */}
