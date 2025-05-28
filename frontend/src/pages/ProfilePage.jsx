@@ -172,9 +172,9 @@ function ProfilePage() {
               </p>
             )}
 
-            {user?.accountstatus && (
+            {user?.accountStatus && (
               <p className="mb-0">
-                <strong className="text-white">Account Status:</strong> {user.accountstatus}
+                <strong className="text-white">Account Status:</strong> {user.accountStatus}
               </p>
             )}
           </motion.div>
