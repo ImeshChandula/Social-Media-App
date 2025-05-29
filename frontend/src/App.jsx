@@ -5,7 +5,6 @@ import Register from "./routes/Register"
 import MainLayout from "./routes/MainLayout";
 import { axiosInstance } from "./lib/axios";
 import EditProfile from "./components/EditProfile";
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
