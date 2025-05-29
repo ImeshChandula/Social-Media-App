@@ -107,35 +107,52 @@ const getCurrentUser  = async (req, res) => {
 
 
 //@desc     Get user by username
-const getUserByUsername = async (req,res) => {
+const searchUsersByUsername = async (req,res) => {
     try {
-        const username = req.params.username;
+        const { q: searchTerm, limit = 10 } = req.query;
 
-        const user = await UserService.findByUsername(username);
-        if (!user) {
-            return res.status(404).json({ msg: 'User not found'});
+        if (!searchTerm || searchTerm.trim().length === 0) {
+            return res.status(400).json({ 
+                msg: 'Search term is required',
+                users: []
+            });
         }
 
-        const posts = await PostService.findByUserId(user.id);
-        const postsCount = posts.length;
+        // Use the comprehensive search function
+        const users = await UserService.searchUsers(searchTerm, parseInt(limit));
 
-        // remove password
-        user.password = undefined;
-        user._isPasswordModified = undefined;
+        // Remove sensitive information from all users
+        const sanitizedUsers = users.map(user => {
+            user.password = undefined;
+            user._isPasswordModified = undefined;
+            user.resetOtp = undefined;
+            user.resetOtpExpiredAt = undefined;
+            
+            return {
+                id: user.id,
+                username: user.username,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                profilePicture: user.profilePicture,
+                bio: user.bio,
+                location: user.location,
+                friendsCount: user.friendsCount,
+                // Add any other fields you want to show in search results
+            };
+        });
 
-        // Create response object with user data and calculated fields
-        const userResponse = {
-            ...user,
-            // Access the getter methods to include the counts
-            friendsCount: user.friendsCount,
-            friendRequestCount: user.friendRequestCount,
-            postsCount: postsCount
-        };
+        res.status(200).json({
+            msg: `Found ${sanitizedUsers.length} users`,
+            users: sanitizedUsers,
+            searchTerm: searchTerm
+        });
 
-        res.status(200).json({msg: "User found: ", user: userResponse});
     } catch (error) {
-        console.error(error.message);
-        res.status(500).send('Server Error');
+        console.error('Error searching users:', error);
+        res.status(500).json({ 
+            msg: 'Server Error',
+            users: []
+        });
     }
 };
 
@@ -264,7 +281,7 @@ module.exports = {
     getAllUsers,
     deleteUser,
     getCurrentUser,
-    getUserByUsername,
+    searchUsersByUsername,
     updateUserProfile,
     updateUserProfileImage,
     updateUserProfileCoverPhoto

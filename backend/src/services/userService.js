@@ -66,20 +66,89 @@ const UserService = {
         }
     },
 
-    // Get a user by username
-    async findByUsername(username) {
+    // Search users by name (searches both username, firstName, and lastName)
+    async searchUsers(searchTerm, limit = 10) {
         try {
-            const lowercaseUsername = username.toLowerCase();
-            const snapshot = await userCollection.where('username', '==', lowercaseUsername).get();
-            
-            if (snapshot.empty) {
-                return null;
+            if (!searchTerm || searchTerm.trim().length === 0) {
+                return [];
             }
 
-            const userDoc = snapshot.docs[0];
-            return new User(userDoc.id, userDoc.data());
+            const searchTermLower = searchTerm.toLowerCase().trim();
+            const users = [];
+
+            // Search by username
+            const usernameQuery = await userCollection
+                .where('username', '>=', searchTermLower)
+                .where('username', '<=', searchTermLower + '\uf8ff')
+                .limit(limit)
+                .get();
+
+            usernameQuery.docs.forEach(doc => {
+                users.push(new User(doc.id, doc.data()));
+            });
+
+            // Search by firstName
+            const firstNameQuery = await userCollection
+                .where('firstName', '>=', searchTermLower)
+                .where('firstName', '<=', searchTermLower + '\uf8ff')
+                .limit(limit)
+                .get();
+
+            firstNameQuery.docs.forEach(doc => {
+                // Avoid duplicates
+                if (!users.find(user => user.id === doc.id)) {
+                    users.push(new User(doc.id, doc.data()));
+                }
+            });
+
+            // Search by lastName
+            const lastNameQuery = await userCollection
+                .where('lastName', '>=', searchTermLower)
+                .where('lastName', '<=', searchTermLower + '\uf8ff')
+                .limit(limit)
+                .get();
+
+            lastNameQuery.docs.forEach(doc => {
+                // Avoid duplicates
+                if (!users.find(user => user.id === doc.id)) {
+                    users.push(new User(doc.id, doc.data()));
+                }
+            });
+
+            // Sort by relevance (exact matches first, then partial matches)
+            users.sort((a, b) => {
+                const aUsername = a.username.toLowerCase();
+                const bUsername = b.username.toLowerCase();
+                const aFirstName = a.firstName.toLowerCase();
+                const bFirstName = b.firstName.toLowerCase();
+                const aLastName = a.lastName.toLowerCase();
+                const bLastName = b.lastName.toLowerCase();
+                const aFullName = `${aFirstName} ${aLastName}`;
+                const bFullName = `${bFirstName} ${bLastName}`;
+
+                // Exact username match gets highest priority
+                if (aUsername === searchTermLower) return -1;
+                if (bUsername === searchTermLower) return 1;
+
+                // Exact full name match
+                if (aFullName === searchTermLower) return -1;
+                if (bFullName === searchTermLower) return 1;
+
+                // Username starts with search term
+                if (aUsername.startsWith(searchTermLower) && !bUsername.startsWith(searchTermLower)) return -1;
+                if (bUsername.startsWith(searchTermLower) && !aUsername.startsWith(searchTermLower)) return 1;
+
+                // First name starts with search term
+                if (aFirstName.startsWith(searchTermLower) && !bFirstName.startsWith(searchTermLower)) return -1;
+                if (bFirstName.startsWith(searchTermLower) && !aFirstName.startsWith(searchTermLower)) return 1;
+
+                // Alphabetical order
+                return aUsername.localeCompare(bUsername);
+            });
+
+            return users.slice(0, limit);
         } catch (error) {
-            console.error('Error finding user by username:', error);
+            console.error('Error searching users:', error);
             throw error;
         }
     },
