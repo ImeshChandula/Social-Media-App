@@ -69,17 +69,18 @@ const UserService = {
     // Get a user by username
     async findByUsername(username) {
         try {
-        const snapshot = await userCollection.where('username', '==', username).get();
-        
-        if (snapshot.empty) {
-            return null;
-        }
+            const lowercaseUsername = username.toLowerCase();
+            const snapshot = await userCollection.where('username', '==', lowercaseUsername).get();
+            
+            if (snapshot.empty) {
+                return null;
+            }
 
-        const userDoc = snapshot.docs[0];
-        return new User(userDoc.id, userDoc.data());
+            const userDoc = snapshot.docs[0];
+            return new User(userDoc.id, userDoc.data());
         } catch (error) {
-        console.error('Error finding user by username:', error);
-        throw error;
+            console.error('Error finding user by username:', error);
+            throw error;
         }
     },
 
