@@ -5,6 +5,7 @@ import Login from "./routes/login";
 import Register from "./routes/Register"
 import MainLayout from "./routes/MainLayout";
 import { axiosInstance } from "./lib/axios";
+import EditProfile from "./components/EditProfile";
 import ResetPassword from "./routes/ResetPassword";
 
 const App = () => {
@@ -26,7 +27,7 @@ const App = () => {
     checkAuth();
   }, []);
 
-  if (checkingAuth) return <div>Loading...</div>;
+  if (checkingAuth) return <div className="loading-spinner">Loading...</div>;
 
   return (
     <div>
@@ -62,18 +63,32 @@ const App = () => {
 
     <Router>
       <Routes>
+
         <Route
           path="/login"
           element={!isLoggedIn ? <Login setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" />}
         />
+
         <Route
           path="/register"
           element={!isLoggedIn ? <Register setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" />}
         />
+
         <Route
           path="/*"
           element={isLoggedIn ? <MainLayout /> : <Navigate to="/login" />}
         />
+
+        <Route
+          path="/edit-profile"
+          element={isLoggedIn ? <EditProfile /> : <Navigate to="/login" />}
+        />
+        
+        <Route
+          path="/edit-profile"
+          element={isLoggedIn ? <EditProfile /> : <Navigate to="/login" />}
+        />
+
 
         <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>

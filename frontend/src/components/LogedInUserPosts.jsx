@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
-// eslint-disable-next-line no-unused-vars
-import  {motion}  from "framer-motion";
+import { motion } from "framer-motion";
 import PostCard from "./PostCard";
 
 const UserPosts = () => {
     const [posts, setPosts] = useState([]);
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -16,26 +16,37 @@ const UserPosts = () => {
             } catch (err) {
                 console.error(err);
                 setError("Failed to fetch posts.");
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchPosts();
     }, []);
 
-    // Handle like updates
     const handleLikeUpdate = (postId, newLikeCount, newIsLiked) => {
-        setPosts(prevPosts => 
-            prevPosts.map(post => 
+        setPosts(prevPosts =>
+            prevPosts.map(post =>
                 post._id === postId || post.id === postId
-                    ? { 
-                        ...post, 
-                        likeCount: newLikeCount, 
-                        isLiked: newIsLiked 
+                    ? {
+                        ...post,
+                        likeCount: newLikeCount,
+                        isLiked: newIsLiked
                     }
                     : post
             )
         );
     };
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-40">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-white loading-spinner">
+                    Loading...
+                </div>
+            </div>
+        );
+    }
 
     if (error) return <div className="alert alert-warning">{error}</div>;
     if (posts.length === 0) return <p className="text-center text-white">No posts to show.</p>;
@@ -49,9 +60,9 @@ const UserPosts = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                 >
-                    <PostCard 
-                        post={post} 
-                        isUserPost={true} 
+                    <PostCard
+                        post={post}
+                        isUserPost={true}
                         onLikeUpdate={handleLikeUpdate}
                     />
                 </motion.div>
