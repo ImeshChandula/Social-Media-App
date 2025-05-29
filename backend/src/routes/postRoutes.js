@@ -33,6 +33,11 @@ router.get('/feed', authenticateUser, postController.getAllPosts);
 // @access  Private
 router.get('/feed/videos', authenticateUser, postController.getAllVideoPosts);
 
+// @route   GET /api/posts/feed/photos
+// @desc    Get video posts for user's feed
+// @access  Private
+router.get('/feed/photos', authenticateUser, postController.getAllPhotoPosts);
+
 // @route   PATCH /api/posts/update/:id
 // @desc    Update Post By Post Id
 // @access  Private
