@@ -4,9 +4,10 @@ import { axiosInstance } from "../lib/axios";
 import { Link } from "react-router-dom";
 
 const Stories = () => {
-    const [stories, setStories] = useState([]);
+    const [storyFeed, setStoryFeed] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
 
     useEffect(() => {
         const fetchStories = async () => {
@@ -14,10 +15,10 @@ const Stories = () => {
                 setLoading(true);
                 setError(null);
                 const res = await axiosInstance.get("/stories/feed");
-                const storiesData = res.data.storiess || res.data || [];
-                setStories(storiesData);
+                const storiesArray = res.data.stories || res.data || [];
+                setStoryFeed(storiesArray);
             } catch (err) {
-                setError(err.response?.data?.msg || err.message || "Failed to fetch stories");
+                setError(err.response?.data?.message || err.message || "Failed to fetch stories");
             } finally {
                 setLoading(false);
             }
@@ -28,61 +29,38 @@ const Stories = () => {
 
     if (loading) return <div className="text-white text-center my-3 fs-5">Loading stories...</div>;
     if (error) return <div className="text-danger text-center my-3 fs-5">Error loading stories: {error}</div>;
-    if (!stories.length) return <div className="text-white text-center my-3 fs-5">No stories found</div>;
+    if (!storyFeed.length) return <div className="text-white text-center my-3 fs-5">No stories found</div>;
 
+    
+    
     return (
-        <div className="d-flex gap-3 overflow-auto mb-4">
-            {stories.map((userStory) => {
-                const user = userStory.user;
-                const storyId = userStory.stories[0]?._id;
-                const bg = userStory.stories[0]?.media || "https://via.placeholder.com/150";
-
-                return (
-                    <Link
-                        to={`/stories/${storyId}/view`}
-                        key={storyId}
-                        className="text-decoration-none"
-                    >
-                        <div
-                            className="position-relative rounded-4"
-                            style={{
-                                width: "110px",
-                                height: "180px",
-                                backgroundImage: `url(${bg})`,
-                                backgroundSize: "cover",
-                                backgroundPosition: "center",
-                                flex: "0 0 auto",
-                                borderRadius: "15px",
-                                overflow: "hidden",
-                            }}
-                        >
+        <div className="mb-4">
+            {storyFeed.map(({ user, stories }) => (
+                stories.map((story) => (
+                    <div key={story._id} className="card bg-dark text-white mb-4">
+                        <div className="card-header d-flex align-items-center">
                             <img
-                                src={user.profilePic}
+                                src={stories.author?.username}
                                 alt={user.username}
-                                className="rounded-circle border border-2 border-primary"
-                                style={{
-                                    width: "40px",
-                                    height: "40px",
-                                    position: "absolute",
-                                    top: "10px",
-                                    left: "10px",
-                                    objectFit: "cover",
-                                }}
+                                className="rounded-circle me-2"
+                                style={{ width: "40px", height: "40px", objectFit: "cover" }}
                             />
-                            <div
-                                className="position-absolute bottom-0 start-0 end-0 text-white text-center"
-                                style={{
-                                    background: "rgba(0, 0, 0, 0.4)",
-                                    fontSize: "14px",
-                                    padding: "5px",
-                                }}
-                            >
-                                {user.username}
-                            </div>
+                            <strong>{user.username}</strong>
                         </div>
-                    </Link>
-                );
-            })}
+                        <Link to={`/stories/${story._id}/view`} className="text-decoration-none">
+                            <img
+                                src={story.media}
+                                alt="Story"
+                                className="card-img-top"
+                                style={{ maxHeight: "400px", objectFit: "cover" }}
+                            />
+                        </Link>
+                        <div className="card-body">
+                            <p className="card-text">Views: {story.viewCount || 0}</p>
+                        </div>
+                    </div>
+                ))
+            ))}
         </div>
     );
 };
