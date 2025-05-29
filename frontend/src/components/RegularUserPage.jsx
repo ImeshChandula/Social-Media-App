@@ -1,74 +1,10 @@
+import Stories from "./Stories";
 import Feed from "./Feed";
 
 const RegularUserPage = () => {
-    const stories = [
-        {
-            id: 1,
-            name: "You",
-            img: "https://randomuser.me/api/portraits/women/11.jpg",
-            bg: "https://randomuser.me/api/portraits/men/32.jpg",
-        },
-        {
-            id: 2,
-            name: "Aman",
-            img: "https://randomuser.me/api/portraits/men/22.jpg",
-            bg: "https://randomuser.me/api/portraits/men/32.jpg",
-        },
-        {
-            id: 3,
-            name: "Priya",
-            img: "https://randomuser.me/api/portraits/women/33.jpg",
-            bg: "https://randomuser.me/api/portraits/men/32.jpg",
-        },
-    ];
-
     return (
         <div className="py-5 py-md-0 mt-2 mt-md-0">
-            {/* Stories */}
-            <div className="d-flex gap-3 overflow-auto mb-4">
-                {stories.map((story) => (
-                    <div
-                        key={story.id}
-                        className="position-relative rounded-4"
-                        style={{
-                            width: "110px",
-                            height: "180px",
-                            backgroundImage: `url(${story.bg})`,
-                            backgroundSize: "cover",
-                            backgroundPosition: "center",
-                            flex: "0 0 auto",
-                            borderRadius: "15px",
-                            overflow: "hidden",
-                        }}
-                    >
-                        <img
-                            src={story.img}
-                            alt={story.name}
-                            className="rounded-circle border border-2 border-primary"
-                            style={{
-                                width: "40px",
-                                height: "40px",
-                                position: "absolute",
-                                top: "10px",
-                                left: "10px",
-                                objectFit: "cover",
-                            }}
-                        />
-                        <div
-                            className="position-absolute bottom-0 start-0 end-0 text-white text-center"
-                            style={{
-                                background: "rgba(0, 0, 0, 0.4)",
-                                fontSize: "14px",
-                                padding: "5px",
-                            }}
-                        >
-                            {story.name}
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Feed Section */}
+            <Stories />
             <Feed />
         </div>
     );
