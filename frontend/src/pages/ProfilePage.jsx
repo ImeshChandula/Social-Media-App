@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
 import { useNavigate } from "react-router-dom";
-import UserPosts from "../components/LogedInUserPosts";
+import UserPosts from "../components/UserPosts";
 
 function ProfilePage() {
   const [user, setUser] = useState(null);

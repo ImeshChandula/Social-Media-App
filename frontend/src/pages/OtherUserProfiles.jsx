@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
+import OtherUserPosts from "../components/OtherUserPosts";
 
 const OtherUserProfiles = () => {
   const { username } = useParams();
@@ -39,53 +40,123 @@ const OtherUserProfiles = () => {
 
   return (
     <motion.div
-      className="container text-center py-5 mt-2"
+      className="container text-center mt-2"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      {/* Profile Picture */}
-      <motion.img
-        src={user.profilePicture}
-        alt={`${user.firstName || user.username}'s avatar`}
-        className="rounded-circle border border-white shadow profile-pic-animate mb-3"
-        style={{ width: "120px", height: "120px", objectFit: "cover" }}
-        whileHover={{ scale: 1.05 }}
-      />
+      {/* Cover Photo */}
+      <div className="position-relative mb-5">
+        <motion.img
+          src={user?.coverPhoto}
+          alt="Cover"
+          className="img-fluid w-100 rounded"
+          style={{ objectFit: "cover", height: "200px" }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.6, type: "spring", stiffness: 50 }}
+        />
 
-      {/* User Name */}
-      <h2 className="fw-bold mb-1">
-        {user.firstName && user.lastName
-          ? `${user.firstName} ${user.lastName}`
-          : user.username}
-      </h2>
-
-      {/* Username and Email */}
-      <p className="text-white-50 mb-3">@{user.username}</p>
-      <p className="text-white-50 mb-3">{user.email}</p>
-
-      {/* Bio */}
-      <div className="bg-dark rounded p-3 text-white-50 mb-4 text-start">
-        <h5 className="text-white">Bio</h5>
-        <p>{user.bio || "This user has not added a bio yet."}</p>
+        <motion.img
+          src={user?.profilePicture}
+          alt="Profile"
+          className="rounded-circle border border-white shadow profile-pic-animate"
+          whileHover={{ scale: 1.05 }}
+          style={{
+            width: "120px",
+            height: "120px",
+            objectFit: "cover",
+            position: "absolute",
+            bottom: "-60px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 1,
+          }}
+        />
       </div>
 
-      {/* Optional Extra Fields */}
-      {user.location && (
-        <p className="text-white-50 mb-1">
-          <strong>Location:</strong> {user.location}
-        </p>
-      )}
-      {user.birthday && (
-        <p className="text-white-50 mb-1">
-          <strong>Birthday:</strong> {new Date(user.birthday).toLocaleDateString()}
-        </p>
-      )}
-      {user.accountStatus && (
-        <p className="text-white-50 mb-0">
-          <strong>Account Status:</strong> {user.accountStatus}
-        </p>
-      )}
+      {/* User Info */}
+      <motion.div
+        className="mt-5 py-3"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.4 }}
+      >
+        <h4 className="fw-bold">
+          {user?.firstName && user?.lastName
+            ? `${user.firstName} ${user.lastName}`
+            : "Unnamed User"}
+        </h4>
+        <p className="text-white-50 mb-3">@{user?.username}</p>
+        <div className="d-flex justify-content-center flex-wrap gap-2">
+          <motion.button
+            className="btn btn-success"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Add Friend
+          </motion.button>
+        </div>
+      </motion.div>
+
+      {/* Stats */}
+      <motion.div
+        className="row mt-3 text-white-50"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.7, duration: 0.5 }}
+      >
+        <div className="col-4 col-md-2 offset-md-3">
+          <div><strong>{user?.friends?.length}</strong></div>
+          <div>Friends</div>
+        </div>
+        <div className="col-4 col-md-2">
+          <div><strong>{user?.photosCount || 0}</strong></div>
+          <div>Photos</div>
+        </div>
+        <div className="col-4 col-md-2">
+          <div><strong>{user?.videosCount || 0}</strong></div>
+          <div>Videos</div>
+        </div>
+      </motion.div>
+
+      <motion.div
+        className="mt-4 p-3 bg-dark rounded text-start text-white-50"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8, duration: 0.5 }}
+      >
+        <h5 className="text-white mb-3">Bio</h5>
+
+        {user?.bio && (
+          <p className="mb-1">
+            <strong className="text-white">About:</strong> {user.bio}
+          </p>
+        )}
+
+        {user?.location && (
+          <p className="mb-1">
+            <strong className="text-white">Location:</strong> {user.location}
+          </p>
+        )}
+
+        {user?.birthday && (
+          <p className="mb-1">
+            <strong className="text-white">Birthday:</strong> {new Date(user.birthday).toLocaleDateString()}
+          </p>
+        )}
+
+        {user?.accountStatus && (
+          <p className="mb-0">
+            <strong className="text-white">Account Status:</strong> {user.accountStatus}
+          </p>
+        )}
+      </motion.div>
+
+      {/* User Posts */}
+      <div className="mt-5">
+        <OtherUserPosts />
+      </div>
     </motion.div>
   );
 };
