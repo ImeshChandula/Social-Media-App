@@ -80,7 +80,7 @@ const Login = ({ setIsLoggedIn }) => {
               />
               <span>Remember me</span>
             </label>
-            <a href="/forgot-password" className="login-forgot">Forgot Password?</a>
+            <a href="/reset-password" className="login-forgot">Forgot Password?</a>
           </div>
 
           {error && <div className="login-error">{error}</div>}

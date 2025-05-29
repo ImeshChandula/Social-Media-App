@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { axiosInstance } from "../lib/axios";
 import '../styles/EditProfile.css';
@@ -56,6 +57,7 @@ function EditProfile() {
         });
     } catch (error) {
       console.error('Error fetching user data:', error);
+      toast.error("Failed to load user");
     } finally {
       setLoading(false);
     }
@@ -86,13 +88,13 @@ function EditProfile() {
 
     // Check file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
-      alert('File size must be less than 10MB');
+      toast.error('File size must be less than 10MB');
       return;
     }
 
     // Check file type
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      toast.error('Please select an image file');
       return;
     }
 
@@ -105,10 +107,10 @@ function EditProfile() {
         });
 
         setUserData(prev => ({ ...prev, profilePicture: response.data.updatedUser.profilePicture }));
-        alert('Profile picture updated successfully!');
+        toast.success('Profile picture updated successfully!');
     } catch (error) {
       console.error('Error uploading profile picture:', error);
-      alert('Error uploading profile picture');
+      toast.error('Error uploading profile picture');
     } finally {
       setUploadingProfilePic(false);
     }
@@ -121,13 +123,13 @@ function EditProfile() {
 
     // Check file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
-      alert('File size must be less than 10MB');
+      toast.error('File size must be less than 10MB');
       return;
     }
 
     // Check file type
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      toast.error('Please select an image file');
       return;
     }
 
@@ -140,10 +142,10 @@ function EditProfile() {
         });
 
         setUserData(prev => ({ ...prev, coverPhoto: response.data.updatedUser.coverPhoto }));
-        alert('Cover photo updated successfully!');
+        toast.success('Cover photo updated successfully!');
     } catch (error) {
       console.error('Error uploading cover photo:', error);
-      alert('Error uploading cover photo');
+      toast.error('Error uploading cover photo');
     } finally {
       setUploadingCoverPhoto(false);
     }
@@ -169,7 +171,7 @@ function EditProfile() {
       }
 
       await axiosInstance.patch(`/users/updateProfile/${userData.id}`, dataToSend);
-      alert('Profile updated successfully!');
+      toast.success('Profile updated successfully!');
       setTimeout(() => {
         navigate(-1);
         }, 5000
@@ -177,14 +179,14 @@ function EditProfile() {
     } catch (error) {
       console.error('Error updating profile:', error);
       const errorMessage = error.response?.data?.message || 'Error updating profile';
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setUpdating(false);
     }
   };
 
   const handleResetPassword = () => {
-    navigate('/resetPassword');
+    navigate('/reset-password');
   };
 
   if (loading) {
