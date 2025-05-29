@@ -32,6 +32,11 @@ router.get("/friend-requests/getAll", authenticateUser, friendController.getPend
 // @access  Private
 router.get('/allFriends', authenticateUser, friendController.getFriendsList);
 
+// @desc    Get all suggest friends
+// @route   GET /api/friends/allSuggestFriends
+// @access  Private
+router.get('/allSuggestFriends', authenticateUser, friendController.getAllSuggestFriends);
+
 // @desc    Remove a friend
 // @route   DELETE /api/friends/removeFriend/:id
 // @access  Private

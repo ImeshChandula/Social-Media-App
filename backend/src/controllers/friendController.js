@@ -1,4 +1,5 @@
 const UserService = require('../services/userService');
+const FriendService = require('../services/friendService');
 const notificationUtils = require('../utils/notificationUtils');
 
 
@@ -139,6 +140,95 @@ const getFriendsList = async (req, res) => {
 };
 
 
+// @desc    Get all suggest friends
+// @route   GET /api/friends/allSuggestFriends
+const getAllSuggestFriends = async (req, res) => {
+  try {
+        // Get current user ID from the request (assuming it's set by authentication middleware)
+        const currentUserId = req.user.id;
+        
+        if (!currentUserId) {
+            return res.status(401).json({
+                success: false,
+                message: 'User authentication required'
+            });
+        }
+
+        // Get current user to access their friends array
+        const currentUser = await UserService.findById(currentUserId);
+        
+        if (!currentUser) {
+            return res.status(404).json({
+                success: false,
+                message: 'Current user not found'
+            });
+        }
+
+        // Get all users from the database
+        const allUsers = await UserService.findAll();
+
+        // Filter out suggested friends:
+        // 1. Exclude current user
+        // 2. Exclude users who are already friends
+        // 3. Exclude users who have pending friend requests (optional)
+        const suggestedFriends = allUsers.filter(user => {
+            // Don't suggest the current user
+            if (user.id === currentUserId) {
+                return false;
+            }
+
+            // Don't suggest users who are already friends
+            if (currentUser.friends.includes(user.id)) {
+                return false;
+            }
+
+            // Optional: Don't suggest users who already have pending friend requests
+            if (currentUser.friendRequests.includes(user.id)) {
+                return false;
+            }
+
+            // Only suggest active users
+            if (user.accountStatus === 'inactive' || user.accountStatus == 'banned') {
+                return false;
+            }
+
+            return true;
+        });
+
+        // Remove sensitive information before sending response
+        const sanitizedSuggestedFriends = suggestedFriends.map(user => ({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            profilePicture: user.profilePicture,
+            bio: user.bio,
+            location: user.location,
+            friendsCount: user.friendsCount,
+            // Don't include password, resetOtp, etc.
+        }));
+
+        return res.status(200).json({
+            success: true,
+            message: 'Suggested friends retrieved successfully',
+            data: {
+                suggestedFriends: sanitizedSuggestedFriends,
+                count: sanitizedSuggestedFriends.length
+            }
+        });
+
+    } catch (error) {
+        console.error('Error getting suggested friends:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
+
 
 module.exports = {
   sendFriendRequest,
@@ -146,5 +236,6 @@ module.exports = {
   rejectFriendRequest,
   getPendingFriendRequests,
   removeFriend,
-  getFriendsList
+  getFriendsList,
+  getAllSuggestFriends
 };
