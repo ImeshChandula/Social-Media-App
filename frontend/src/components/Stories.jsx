@@ -14,7 +14,8 @@ const Stories = () => {
                 setLoading(true);
                 setError(null);
                 const res = await axiosInstance.get("/stories/feed");
-                setStories(res.data);
+                const storiesData = res.data.storiess || res.data || [];
+                setStories(storiesData);
             } catch (err) {
                 setError(err.response?.data?.msg || err.message || "Failed to fetch stories");
             } finally {
