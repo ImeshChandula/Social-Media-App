@@ -12,6 +12,8 @@ import OtherUserProfiles from "../pages/OtherUserProfiles";
 import CreatePost from "../components/CreatePost";
 import EditProfile from "../components/EditProfile"
 import CreateStory from "../components/CreateStory";
+import Stories from "../components/Stories";
+import StoryViewEdit from "../components/StoryViewEdit";
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -38,6 +40,8 @@ const MainLayout = () => {
             <Route path="/profile/:username" element={<OtherUserProfiles />} />
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/create-story" element={<CreateStory />} />
+             <Route path="/stories" element={<Stories />} />
+            <Route path="/stories/:id" element={<StoryViewEdit />} />
           </Routes>
         </div>
       </div>
