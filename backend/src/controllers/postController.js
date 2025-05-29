@@ -31,7 +31,7 @@ const createPost = async (req, res) => {
         // Only upload media if provided
         if (media) {
             try {
-                const imageUrl = await uploadMedia(media);
+                const imageUrl = await uploadMedia(media, mediaType);
                 postData.media = imageUrl;
             } catch (error) {
                 return res.status(400).json({error: "Failed to upload media", message: error.message});

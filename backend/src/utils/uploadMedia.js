@@ -34,27 +34,51 @@ const uploadImage = async (imageData) => {
 };
 
 
-const uploadMedia = async (media) => {
+const uploadMedia = async (media, mediaType) => {
     try {
         // Make sure cloudinary is properly initialized
         if (!cloudinary || typeof cloudinary.uploader.upload !== 'function') {
             throw new Error('Cloudinary is not properly configured');
         }
+
+        // Determine upload options based on media type
+        const getUploadOptions = (type) => {
+            const options = {};
+            
+            if (type === 'video') {
+                options.resource_type = 'video';
+                options.quality = 'auto';
+                options.fetch_format = 'auto';
+            } else if (type === 'image') {
+                options.resource_type = 'image';
+                options.quality = 'auto';
+                options.fetch_format = 'auto';
+            } else {
+                // Auto-detect resource type
+                options.resource_type = 'auto';
+            }
+            
+            return options;
+        };
         
         let uploadResponse;
+        const uploadOptions = getUploadOptions(mediaType);
+
         // Check the type of media and handle appropriately
         if (Array.isArray(media)) {
             // If it's an array of media files
-            const uploadPromises = media.map(item => cloudinary.uploader.upload(item.path || item));
+            const uploadPromises = media.map(item => 
+                cloudinary.uploader.upload(item.path || item, uploadOptions)
+            );
             const uploadResults = await Promise.all(uploadPromises);
             uploadResponse = uploadResults.map(result => result.secure_url);
         } else if (typeof media === 'object' && media !== null && media.path) {
             // If it's a file object from multer
-            const uploadResults = await cloudinary.uploader.upload(media.path);
+            const uploadResults = await cloudinary.uploader.upload(media.path, uploadOptions);
             uploadResponse = uploadResults.secure_url;
         } else if (typeof media === 'string') {
             // If it's a base64 string or a URL
-            const uploadResults = await cloudinary.uploader.upload(media);
+            const uploadResults = await cloudinary.uploader.upload(media, uploadOptions);
             uploadResponse = uploadResults.secure_url;
         } else {
             throw new Error('Invalid media format');
@@ -63,10 +87,7 @@ const uploadMedia = async (media) => {
         return uploadResponse;
     } catch (uploadError) {
         console.error('Media upload error:', uploadError);
-        return res.status(400).json({ 
-            error: "Failed to upload media. Invalid format or Cloudinary configuration issue.",
-            details: uploadError.message
-        });
+        throw new Error(`Failed to upload media: ${uploadError.message}`);
     }
 };
 
