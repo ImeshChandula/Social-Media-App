@@ -108,7 +108,43 @@ const getCurrentUser  = async (req, res) => {
 };
 
 
-//@desc     Get user by username
+//@desc     Get user by id
+const getUserById = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await UserService.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found'});
+        }
+
+        const posts = await PostService.findByUserId(req.user.id);
+        const postsCount = posts.length;
+
+        // Remove password before sending user
+        user.password = undefined;
+        user._isPasswordModified = undefined;
+        user.resetOtp = undefined;
+        user.resetOtpExpiredAt = undefined;
+
+        // Create response object with user data and calculated fields
+        const userResponse = {
+            ...user,
+            // Access the getter methods to include the counts
+            friendsCount: user.friendsCount,
+            friendRequestCount: user.friendRequestCount,
+            postsCount: postsCount
+        };
+
+        res.status(200).json({success: true, message: "User found: ", user: userResponse});
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+
+//@desc     Search user by username
 const searchUsersByUsername = async (req,res) => {
     try {
         const { q: searchTerm, limit = 10 } = req.query;
@@ -288,6 +324,7 @@ const updateUserProfileCoverPhoto = async (req, res) => {
 module.exports = {
     getAllUsers,
     deleteUser,
+    getUserById,
     getCurrentUser,
     searchUsersByUsername,
     updateUserProfile,

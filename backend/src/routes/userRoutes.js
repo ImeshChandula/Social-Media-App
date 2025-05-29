@@ -14,6 +14,11 @@ const router = express.Router();
 //@access  Private 
 router.get("/myProfile", authenticateUser, userController.getCurrentUser);
 
+//@route   GET api/users/getUserById/:id
+//@desc    Get user by id
+//@access  Private 
+router.get('/getUserById/:id', authenticateUser, userController.getUserById);
+
 //@route   GET /api/users/search?q=john&limit=10
 //@desc    Search user by username
 //@access  Private 
