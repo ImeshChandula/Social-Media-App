@@ -7,11 +7,10 @@ const userCollection = db.collection('users');
 
 const FriendService = {
     // Send a Friend Request
-    async sendFriendRequest(senderId, recipientUsername) {
+    async sendFriendRequest(senderId, recipientEmail) {
         try {
-        // Find the recipient by username (case insensitive)
-        const lowercaseUsername = recipientUsername.toLowerCase();
-        const snapshot = await userCollection.where('username', '==', lowercaseUsername).get();
+        
+        const snapshot = await userCollection.where('email', '==', recipientEmail).get();
         
         if (snapshot.empty) {
             return { success: false, message: 'User not found' };
@@ -173,7 +172,8 @@ const FriendService = {
                 username: requesterData.username,
                 profilePicture: requesterData.profilePicture,
                 firstName: requesterData.firstName,
-                lastName: requesterData.lastName
+                lastName: requesterData.lastName,
+                friendsCount: requesterData.friendsCount,
             });
             }
         }
@@ -241,7 +241,7 @@ const FriendService = {
     },
 
 
-    // Add this method to your User class
+    // Get Friend List
     async getFriendsList(userId) {
         try {
         const userDoc = await userCollection.doc(userId).get();
@@ -269,7 +269,8 @@ const FriendService = {
                 username: friendData.username,
                 profilePicture: friendData.profilePicture,
                 firstName: friendData.firstName,
-                lastName: friendData.lastName
+                lastName: friendData.lastName,
+                friendsCount: friendData.friendsCount,
             });
             }
         }

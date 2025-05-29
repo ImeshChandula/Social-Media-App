@@ -9,11 +9,16 @@ const sendFriendRequest = async (req, res) => {
   try {
     const recipientId  = req.params.id;
     const senderId = req.user.id; // From auth middleware
+
+    const recipient = await UserService.findById(recipientId);
+    if (!recipient) {
+      return res.status(404).json({ success: false, message: "Recipient not found" });
+    }
     
-    const result = await UserService.sendFriendRequest(senderId, recipientId);
+    const result = await FriendService.sendFriendRequest(senderId, recipient.email);
     
-    if (!result.success) {
-      return res.status(400).json({ message: result.message });
+    if (!result) {
+      return res.status(400).json({ success: false, message: result.message });
     }
 
     // Send notification
@@ -25,10 +30,10 @@ const sendFriendRequest = async (req, res) => {
         senderName
     );
     
-    res.status(200).json({ message: result.message });
+    res.status(200).json({ success: true, message: "Friend request sent successfully" });
   } catch (error) {
     console.error('Error in sendFriendRequest controller:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ error: error.message, message: "Server error" });
   }
 };
 
@@ -39,25 +44,25 @@ const acceptFriendRequest = async (req, res) => {
     const requesterId = req.params.id;
     const userId = req.user.id; // From auth middleware
     
-    const result = await UserService.acceptFriendRequest(userId, requesterId);
+    const result = await FriendService.acceptFriendRequest(userId, requesterId);
     
-    if (!result.success) {
-      return res.status(400).json({ message: result.message });
+    if (!result) {
+      return res.status(400).json({ success: false, message: result.message });
     }
 
     // Send notification to original sender
     const userData = await UserService.findById(userId);
-    const username = await userData.firstName + ' ' + userData.lastName;
+    const username = userData.firstName + ' ' + userData.lastName;
     await notificationUtils.sendAcceptRequestNotification(
         requesterId, // Get this from your friend request document
         userId,
         username
     );
     
-    res.status(200).json({ message: result.message });
+    res.status(200).json({ success: true, message: "Accept Friend request successfully" });
   } catch (error) {
     console.error('Error in acceptFriendRequest controller:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ error: error.message, message: 'Server error' });
   }
 };
 
@@ -68,13 +73,13 @@ const rejectFriendRequest = async (req, res) => {
     const requesterId = req.params.id;
     const userId = req.user.id; // From auth middleware
     
-    const result = await UserService.rejectFriendRequest(userId, requesterId);
+    const result = await FriendService.rejectFriendRequest(userId, requesterId);
     
     if (!result.success) {
-      return res.status(400).json({ message: result.message });
+      return res.status(400).json({ success: false, message: result.message });
     }
     
-    res.status(200).json({ message: result.message });
+    res.status(200).json({ success: true, message: result.message });
   } catch (error) {
     console.error('Error in rejectFriendRequest controller:', error);
     res.status(500).json({ message: 'Server error' });
@@ -87,16 +92,16 @@ const getPendingFriendRequests = async (req, res) => {
   try {
     const userId = req.user.id; // From auth middleware
     
-    const result = await UserService.getPendingFriendRequests(userId);
+    const result = await FriendService.getPendingFriendRequests(userId);
     
     if (!result.success) {
-      return res.status(400).json({ message: result.message });
+      return res.status(400).json({ success: false, message: result.message });
     }
     
-    res.status(200).json({ requests: result.requests });
+    res.status(200).json({ success: true, data: result.requests });
   } catch (error) {
     console.error('Error in getPendingFriendRequests controller:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
@@ -107,13 +112,13 @@ const removeFriend = async (req, res) => {
     const friendId = req.params.id;
     const userId = req.user.id; // From auth middleware
     
-    const result = await UserService.removeFriend(userId, friendId);
+    const result = await FriendService.removeFriend(userId, friendId);
     
     if (!result.success) {
-      return res.status(400).json({ message: result.message });
+      return res.status(400).json({ success: false, message: result.message });
     }
     
-    res.status(200).json({ message: result.message });
+    res.status(200).json({ success: true, message: result.message });
   } catch (error) {
     console.error('Error in removeFriend controller:', error);
     res.status(500).json({ message: 'Server error' });
@@ -126,13 +131,13 @@ const getFriendsList = async (req, res) => {
   try {
     const userId = req.user.id; // From auth middleware
     
-    const result = await UserService.getFriendsList(userId);
+    const result = await FriendService.getFriendsList(userId);
     
     if (!result.success) {
-      return res.status(400).json({ message: result.message });
+      return res.status(400).json({ success: false, message: result.message });
     }
     
-    res.status(200).json({ friends: result.friends });
+    res.status(200).json({ success: true, data: result.friends });
   } catch (error) {
     console.error('Error in getFriendsList controller:', error);
     res.status(500).json({ message: 'Server error' });
@@ -199,12 +204,9 @@ const getAllSuggestFriends = async (req, res) => {
         const sanitizedSuggestedFriends = suggestedFriends.map(user => ({
             id: user.id,
             username: user.username,
-            email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
             profilePicture: user.profilePicture,
-            bio: user.bio,
-            location: user.location,
             friendsCount: user.friendsCount,
             // Don't include password, resetOtp, etc.
         }));
