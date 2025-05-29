@@ -116,7 +116,8 @@ const getUserByUsername = async (req,res) => {
             return res.status(404).json({ msg: 'User not found'});
         }
 
-        const postsCount = await UserService.getPostsCount(req.user.id);
+        const posts = await PostService.findByUserId(user.id);
+        const postsCount = posts.length;
 
         // remove password
         user.password = undefined;
