@@ -35,6 +35,8 @@ const getAllUsers = async (req, res) => {
         const sanitizedUsers = sortedUsers.map(user => {
             user.password = undefined;
             user._isPasswordModified = undefined;
+            user.resetOtp = undefined;
+            user.resetOtpExpiredAt = undefined;
             return user;
         });
 
@@ -189,6 +191,8 @@ const updateUserProfile = async (req, res) => {
         // remove password
         updatedUser.password = undefined;
         updatedUser._isPasswordModified = undefined;
+        user.resetOtp = undefined;
+        user.resetOtpExpiredAt = undefined;
         
         console.log('Profile updated successfully for user:', req.user.id);
         res.status(201).json({mag:"Profile updated successfully.", user: updatedUser});
@@ -230,6 +234,8 @@ const updateUserProfileImage = async (req, res) => {
         // remove password
         updatedUser.password = undefined;
         updatedUser._isPasswordModified = undefined;
+        user.resetOtp = undefined;
+        user.resetOtpExpiredAt = undefined;
 
         res.status(201).json({msg: "Profile picture updated successfully", updatedUser})
     } catch (error) {
@@ -269,6 +275,8 @@ const updateUserProfileCoverPhoto = async (req, res) => {
         // remove password
         updatedUser.password = undefined;
         updatedUser._isPasswordModified = undefined;
+        user.resetOtp = undefined;
+        user.resetOtpExpiredAt = undefined;
 
         res.status(201).json({msg: "Cover Photo updated successfully", updatedUser})
     } catch (error) {
