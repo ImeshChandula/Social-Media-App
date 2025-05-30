@@ -302,7 +302,7 @@ body,
     box-sizing: border-box;
 }
 
-.input-icon {
+.hide-show-eye {
     position: absolute;
     top: 50%;
     right: 12px;
@@ -314,7 +314,7 @@ body,
     user-select: none;
 }
 
-.input-icon:hover {
+.hide-show-eye:hover {
     color: #fff;
 }
 
