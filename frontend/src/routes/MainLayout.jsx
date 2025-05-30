@@ -12,7 +12,7 @@ import OtherUserProfiles from "../pages/OtherUserProfiles";
 import CreatePost from "../components/CreatePost";
 import CreateStory from "../components/CreateStory";
 import Stories from "../components/Stories";
-import StoryViewEdit from "../components/StoryViewEdit";
+import StoriesPopup from "../components/StoriesPopup";
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -40,7 +40,7 @@ const MainLayout = () => {
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/create-story" element={<CreateStory />} />
             <Route path="/stories" element={<Stories />} />
-            <Route path="/stories/:id" element={<StoryViewEdit />} />
+            <Route path="/stories/:id" element={<StoriesPopup />} />
           </Routes>
         </div>
       </div>

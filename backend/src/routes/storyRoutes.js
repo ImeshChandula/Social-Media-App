@@ -1,7 +1,7 @@
 const express = require('express');
 const { authenticateUser } = require('../middleware/authMiddleware');
 const { validateStory } = require("../middleware/validator");
-const storyController  = require('../controllers/storyController');
+const storyController = require('../controllers/storyController');
 
 const router = express.Router();
 
@@ -16,7 +16,7 @@ router.post('/createStory', validateStory, authenticateUser, storyController.cre
 // // @route   GET /api/stories/me
 // // @desc    Get all stories by the logged-in user (latest at top)
 // // @access  Private
-// router.get('/me', authenticateUser, storyController.getCurrentUserStories);
+//router.get('/me', authenticateUser, storyController.getCurrentUserStories);
 
 // @route   GET api/stories/feed
 // @desc    Get stories for user's feed

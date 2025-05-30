@@ -7,28 +7,28 @@ const Feedstories = ({ type = "all" }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchFeed = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      let endpoint = "/stories/feed";
-      if (type === "me") {
-        endpoint = "/stories/me";
-      }
-
-      const res = await axiosInstance.get(endpoint);
-      const storiesData = res.data.stories || res.data || [];
-
-      setStories(storiesData);
-    } catch (err) {
-      setError(err.response?.data?.msg || err.message || "Failed to fetch stories");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchFeed = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        let endpoint = "/stories/feed";
+        if (type === "me") {
+          endpoint = "/stories/me";
+        }
+
+        const res = await axiosInstance.get(endpoint);
+        const storiesData = res.data.stories || res.data || [];
+
+        setStories(storiesData);
+      } catch (err) {
+        setError(err.response?.data?.msg || err.message || "Failed to fetch stories");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchFeed();
   }, [type]);
 
@@ -42,9 +42,16 @@ const Feedstories = ({ type = "all" }) => {
     );
   };
 
-  if (loading) return <div className="text-white text-center my-5 fs-5">Loading feed...</div>;
-  if (error) return <div className="text-danger text-center my-5 fs-5">Error loading feed: {error}</div>;
-  if (!stories.length) return <div className="text-white text-center my-5 fs-5">No stories found</div>;
+  if (loading)
+    return <div className="text-white text-center my-5 fs-5">Loading stories...</div>;
+  if (error)
+    return (
+      <div className="text-danger text-center my-5 fs-5">
+        Error loading stories: {error}
+      </div>
+    );
+  if (!stories.length)
+    return <div className="text-white text-center my-5 fs-5">No stories found</div>;
 
   return (
     <div className="container my-4">
