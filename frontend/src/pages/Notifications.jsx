@@ -1,80 +1,254 @@
-import React, { useEffect, useState } from "react";
-import { axiosInstance } from "../lib/axios";
-import socket from "../lib/socket";
+import { useState, useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
+import { axiosInstance } from '../lib/axios'; 
+import '../styles/Notifications.css';
 
 function NotificationPage() {
   const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [offset, setOffset] = useState(0);
+  const socketRef = useRef(null);
+  const dropdownRef = useRef(null);
 
+  // Initialize Socket.IO connection
   useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const res = await axiosInstance.get("/api/notifications");
-        setNotifications(res.data.notifications || res.data);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load notifications.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNotifications();
-
-    // Listen for new notifications via socket
-    socket.on("new_notification", (newNote) => {
-      console.log("Received real-time notification:", newNote);
-      setNotifications((prev) => [newNote, ...prev]);
+    // For Socket.IO, you might still need the token from cookie
+    // If your backend socket middleware reads from cookies, you can remove the auth object
+    socketRef.current = io(import.meta.env.VITE_APP_BACKEND_URL, {
+      withCredentials: true // This will send cookies
     });
 
-    // Clean up on unmount
+    // Listen for new notifications
+    socketRef.current.on('newNotification', (notification) => {
+      setNotifications(prev => [notification, ...prev]);
+      setNotificationCount(prev => prev + 1);
+    });
+
     return () => {
-      socket.off("new_notification");
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
     };
   }, []);
 
+  // Fetch notifications
+  const fetchNotifications = async (reset = false) => {
+    try {
+      setLoading(true);
+      const currentOffset = reset ? 0 : offset;
+      
+      const response = await axiosInstance.get('/notifications/me', {
+        params: {
+          limit: 10,
+          offset: currentOffset
+        }
+      });
+
+      if (response.data.success) {
+        if (reset) {
+          setNotifications(response.data.data);
+          setOffset(10);
+        } else {
+          setNotifications(prev => [...prev, ...response.data.data]);
+          setOffset(prev => prev + 10);
+        }
+        setHasMore(response.data.data.length === 10);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch notification count
+  const fetchNotificationCount = async () => {
+    try {
+      const response = await axiosInstance.get('/notifications/count');
+      
+      if (response.data.success) {
+        setNotificationCount(response.data.data.count);
+      }
+    } catch (error) {
+      console.error('Error fetching notification count:', error);
+    }
+  };
+
+  // Mark notification as read
+  const markAsRead = async (notificationId) => {
+    try {
+      const response = await axiosInstance.put(`/notifications/read/${notificationId}`);
+
+      if (response.data.success) {
+        setNotifications(prev =>
+          prev.map(notif =>
+            notif.id === notificationId ? { ...notif, read: true } : notif
+          )
+        );
+        setNotificationCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  // Mark all as read
+  const markAllAsRead = async () => {
+    try {
+      const response = await axiosInstance.put('/notifications/read-all');
+
+      if (response.data.success) {
+        setNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
+        setNotificationCount(0);
+      }
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
+  };
+
+  // Handle dropdown toggle
+  const toggleDropdown = () => {
+    if (!isOpen) {
+      fetchNotifications(true);
+      fetchNotificationCount();
+    }
+    setIsOpen(!isOpen);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Format notification time
+  const formatTime = (timestamp) => {
+    const now = new Date();
+    const notifTime = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+    const diffMs = now - notifTime;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return notifTime.toLocaleDateString();
+  };
+
+  // Get notification icon based on type
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case 'like': return '❤️';
+      case 'comment': return '💬';
+      case 'friend_request': return '👤';
+      case 'friend_accept': return '✅';
+      case 'post': return '📝';
+      case 'story': return '📷';
+      default: return '🔔';
+    }
+  };
+
+  // Load more notifications
+  const loadMore = () => {
+    if (!loading && hasMore) {
+      fetchNotifications(false);
+    }
+  };
+
   return (
-    <div className="notification-wrapper d-flex flex-column flex-md-row min-vh-100 bg-black text-white">
-      <div className="flex-grow-1 bg-dark text-white p-3 p-md-4">
-        <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
-          <h4 className="fw-bold mb-2 mb-md-0">Notifications</h4>
-          <span className="text-success fw-semibold cursor-pointer">Mark all as read</span>
-        </div>
-
-        {loading ? (
-          <p className="text-white-50">Loading notifications...</p>
-        ) : error ? (
-          <div className="alert alert-danger">{error}</div>
-        ) : notifications.length === 0 ? (
-          <p className="text-white-50">No new notifications.</p>
-        ) : (
-          <div className="notification-list overflow-auto" style={{ maxHeight: "70vh" }}>
-            {notifications.map((note, index) => (
-              <div
-                className="notification-item d-flex align-items-start p-3 mb-2 border border-secondary rounded"
-                key={index}
-              >
-                <div
-                  className="avatar bg-secondary rounded-circle text-white d-flex align-items-center justify-content-center me-3 flex-shrink-0"
-                  style={{ width: "40px", height: "40px" }}
-                >
-                  {note.user?.charAt(0).toUpperCase() || "U"}
-                </div>
-                <div>
-                  <strong>{note.user || "Unknown User"}</strong>: {note.message}
-                  <div className="text-muted-dark" style={{ fontSize: "12px" }}>
-                    {new Date(note.createdAt || note.time).toLocaleString()}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+    <div className="notifications-container" ref={dropdownRef}>
+      <button className="notifications-bell" onClick={toggleDropdown}>
+        <svg className="bell-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 19V20H3V19L5 17V11C5 7.9 7 5.2 9.9 4.4C10.1 4.2 10 4 10 4C10 2.9 10.9 2 12 2S14 2.9 14 4C14 4 13.9 4.2 14.1 4.4C17 5.2 19 7.9 19 11V17L21 19ZM7 19H17V18L15 16V11C15 8.2 13.4 6 12 6S9 8.2 9 11V16L7 18V19Z"/>
+        </svg>
+        {notificationCount > 0 && (
+          <span className="notification-badge">{notificationCount > 99 ? '99+' : notificationCount}</span>
         )}
+      </button>
 
-        <div className="text-center mt-3">
-          <span className="text-success fw-bold cursor-pointer">See more notifications</span>
+      {isOpen && (
+        <div className="notifications-dropdown">
+          <div className="notifications-header">
+            <h3>Notifications</h3>
+            {notificationCount > 0 && (
+              <button className="mark-all-read" onClick={markAllAsRead}>
+                Mark all as read
+              </button>
+            )}
+          </div>
+
+          <div className="notifications-list">
+            {loading && notifications.length === 0 ? (
+              <div className="notifications-loading">
+                <div className="loading-spinner"></div>
+                <p>Loading notifications...</p>
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="no-notifications">
+                <div className="no-notifications-icon">🔔</div>
+                <p>No notifications yet</p>
+                <span>When you get notifications, they'll show up here</span>
+              </div>
+            ) : (
+              <>
+                {notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`notification-item ${!notification.read ? 'unread' : ''}`}
+                    onClick={() => !notification.read && markAsRead(notification.id)}
+                  >
+                    <div className="notification-avatar">
+                      {notification.senderProfilePicture ? (
+                        <img src={notification.senderProfilePicture} alt="" />
+                      ) : (
+                        <div className="avatar-placeholder">
+                          {notification.senderName?.charAt(0) || '?'}
+                        </div>
+                      )}
+                      <span className="notification-type-icon">
+                        {getNotificationIcon(notification.type)}
+                      </span>
+                    </div>
+                    
+                    <div className="notification-content">
+                      <div className="notification-text">
+                        <strong>{notification.senderName || 'Someone'}</strong>
+                        <span> {notification.message}</span>
+                      </div>
+                      <div className="notification-time">
+                        {formatTime(notification.createdAt)}
+                      </div>
+                    </div>
+                    
+                    {!notification.read && <div className="unread-dot"></div>}
+                  </div>
+                ))}
+                
+                {hasMore && (
+                  <button 
+                    className="load-more-btn" 
+                    onClick={loadMore}
+                    disabled={loading}
+                  >
+                    {loading ? 'Loading...' : 'Load more'}
+                  </button>
+                )}
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

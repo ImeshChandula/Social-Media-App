@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { axiosInstance } from '../lib/axios';
+import toast from 'react-hot-toast';
 
 const CreatePost = () => {
     const initialState = {
@@ -94,12 +95,14 @@ const CreatePost = () => {
             const res = await axiosInstance.post('/posts/createPost', payload);
 
             setMessage({ type: 'success', text: res.data.message || 'Post created successfully!' });
+            toast.success(res.data.message || 'Post created successfully!');
             setFormData(initialState);
         } catch (error) {
             setMessage({
                 type: 'danger',
                 text: error.response?.data?.message || 'Failed to create post.',
             });
+            toast.error(error.response?.data?.message || 'Failed to create post.')
         } finally {
             setLoading(false);
         }
