@@ -205,7 +205,7 @@ function NotificationPage() {
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`notification-item ${!notification.read ? 'unread' : ''}`}
+                    className={`mt-2 notification-item ${!notification.read ? 'unread' : ''}`}
                     onClick={() => !notification.read && markAsRead(notification.id)}
                   >
                     <div className="notification-avatar">
