@@ -5,7 +5,7 @@ import { axiosInstance } from "../lib/axios";
 import OtherUserPosts from "../components/OtherUserPosts";
 
 const OtherUserProfiles = () => {
-  const { username } = useParams();
+  const { id } = useParams();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -15,7 +15,7 @@ const OtherUserProfiles = () => {
       setLoading(true);
       setError("");
       try {
-        const res = await axiosInstance.get(`/users/getUserByUsername/${username}`);
+        const res = await axiosInstance.get(`/users/getUserById/${id}`);
         setUser(res.data.user || res.data);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to load user profile");
@@ -24,7 +24,7 @@ const OtherUserProfiles = () => {
       }
     };
     fetchUser();
-  }, [username]);
+  }, [id]);
 
   if (loading) {
     return <p className="text-white-50 loading-spinner">Loading user profile...</p>;
@@ -107,7 +107,7 @@ const OtherUserProfiles = () => {
         transition={{ delay: 0.7, duration: 0.5 }}
       >
         <div className="col-4 col-md-2 offset-md-3">
-          <div><strong>{user?.friends?.length}</strong></div>
+          <div><strong>{user?.friends?.length || 0}</strong></div>
           <div>Friends</div>
         </div>
         <div className="col-4 col-md-2">
@@ -120,6 +120,7 @@ const OtherUserProfiles = () => {
         </div>
       </motion.div>
 
+      {/* Bio */}
       <motion.div
         className="mt-4 p-3 bg-dark rounded text-start text-white-50"
         initial={{ opacity: 0, y: 10 }}
@@ -127,33 +128,33 @@ const OtherUserProfiles = () => {
         transition={{ delay: 0.8, duration: 0.5 }}
       >
         <h5 className="text-white mb-3">Bio</h5>
-
         {user?.bio && (
           <p className="mb-1">
-            <strong className="text-white">About:</strong> {user.bio}
+            <strong className="text-white">About:</strong>
+            {user.bio}
           </p>
         )}
-
         {user?.location && (
           <p className="mb-1">
-            <strong className="text-white">Location:</strong> {user.location}
+            <strong className="text-white">Location:</strong>
+            {user.location}
           </p>
         )}
-
         {user?.birthday && (
           <p className="mb-1">
-            <strong className="text-white">Birthday:</strong> {new Date(user.birthday).toLocaleDateString()}
+            <strong className="text-white">Birthday:</strong>
+            {new Date(user.birthday).toLocaleDateString()}
           </p>
         )}
-
         {user?.accountStatus && (
           <p className="mb-0">
-            <strong className="text-white">Account Status:</strong> {user.accountStatus}
+            <strong className="text-white">Account Status:</strong>
+            {user.accountStatus}
           </p>
         )}
       </motion.div>
 
-      {/* User Posts */}
+      {/* Posts */}
       <div className="mt-5">
         <OtherUserPosts />
       </div>

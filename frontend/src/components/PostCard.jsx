@@ -15,8 +15,8 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate }) => {
             : [];
 
     const handleNavigateToProfile = () => {
-        if (post.author?.username) {
-            navigate(`/profile/${post.author.username}`);
+        if (post.author?.id) {
+            navigate(`/profile/${post.author.id}`);
         }
     };
 
@@ -24,15 +24,15 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate }) => {
         <div className="card bg-secondary bg-opacity-10 border-secondary text-white mb-4 shadow-sm rounded-4">
             {/* Header */}
             <div className="card-header bg-dark d-flex align-items-center justify-content-between p-3 rounded-top-4 border-bottom border-secondary">
-                <div className="d-flex align-items-center gap-3">
+                <div className="d-flex align-items-center gap-3" onClick={handleNavigateToProfile}>
                     <img
                         src={post.author?.profilePicture}
                         alt="Profile"
-                        className="rounded-circle border border-secondary"
+                        className="rounded-circle border border-secondary cursor-pointer"
                         style={{ width: 50, height: 50, objectFit: "cover" }}
                     />
                     <div className="flex-grow-1 text-start">
-                        <h6 className="mb-0 fw-bold text-white cursor-pointer" onClick={handleNavigateToProfile} >
+                        <h6 className="mb-0 fw-bold text-white cursor-pointer" >
                             {`${post.author?.firstName || ""} ${post.author?.lastName || ""}`}
                         </h6>
                         <small className="text-white-50">

@@ -36,7 +36,7 @@ const MainLayout = () => {
             <Route path="/videos" element={<Videos />} />
             <Route path="/notifications" element={<NotificationPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/profile/:username" element={<OtherUserProfiles />} />
+            <Route path="/profile/:id" element={<OtherUserProfiles />} />
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/create-story" element={<CreateStory />} />
             <Route path="/stories" element={<Stories />} />
