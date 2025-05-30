@@ -26,26 +26,18 @@ const OtherUserProfiles = () => {
     fetchUser();
   }, [id]);
 
-  if (loading) {
-    return <p className="text-white-50 loading-spinner">Loading user profile...</p>;
-  }
-
-  if (error) {
-    return <div className="alert alert-danger">{error}</div>;
-  }
-
-  if (!user) {
-    return <p className="text-white-50">User not found.</p>;
-  }
+  if (loading) return <p className="text-white-50 text-center mt-5 loading-spinner">Loading user profile...</p>;
+  if (error) return <div className="alert alert-danger mt-5">{error}</div>;
+  if (!user) return <p className="text-white-50 text-center mt-5">User not found.</p>;
 
   return (
     <motion.div
-      className="container text-center mt-2"
+      className="container text-center mt-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      transition={{ duration: 0.6 }}
     >
-      {/* Cover Photo */}
+      {/* Cover Photo & Profile Picture */}
       <div className="position-relative mb-5">
         <motion.img
           src={user?.coverPhoto}
@@ -80,42 +72,33 @@ const OtherUserProfiles = () => {
         className="mt-5 py-3"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6, duration: 0.4 }}
+        transition={{ delay: 0.3 }}
       >
-        <h4 className="fw-bold">
-          {user?.firstName && user?.lastName
-            ? `${user.firstName} ${user.lastName}`
-            : "Unnamed User"}
+        <h4 className="fw-bold text-white">
+          {user.firstName || user.lastName ? `${user.firstName} ${user.lastName}` : "Unnamed User"}
         </h4>
-        <p className="text-white-50 mb-3">@{user?.username}</p>
-        <div className="d-flex justify-content-center flex-wrap gap-2">
-          <motion.button
-            className="btn btn-success"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Add Friend
-          </motion.button>
-        </div>
+        <p className="text-white-50">@{user.username}</p>
+        <motion.button
+          className="btn btn-success"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Add Friend
+        </motion.button>
       </motion.div>
 
       {/* Stats */}
-      <motion.div
-        className="row mt-3 text-white-50"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.7, duration: 0.5 }}
-      >
+      <motion.div className="row mt-4 text-white-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
         <div className="col-4 col-md-2 offset-md-3">
-          <div><strong>{user?.friends?.length || 0}</strong></div>
+          <div><strong>{user.friends?.length || 0}</strong></div>
           <div>Friends</div>
         </div>
         <div className="col-4 col-md-2">
-          <div><strong>{user?.photosCount || 0}</strong></div>
+          <div><strong>{user.photosCount || 0}</strong></div>
           <div>Photos</div>
         </div>
         <div className="col-4 col-md-2">
-          <div><strong>{user?.videosCount || 0}</strong></div>
+          <div><strong>{user.videosCount || 0}</strong></div>
           <div>Videos</div>
         </div>
       </motion.div>
@@ -125,38 +108,18 @@ const OtherUserProfiles = () => {
         className="mt-4 p-3 bg-dark rounded text-start text-white-50"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, duration: 0.5 }}
+        transition={{ delay: 0.7 }}
       >
         <h5 className="text-white mb-3">Bio</h5>
-        {user?.bio && (
-          <p className="mb-1">
-            <strong className="text-white">About:</strong>
-            {user.bio}
-          </p>
-        )}
-        {user?.location && (
-          <p className="mb-1">
-            <strong className="text-white">Location:</strong>
-            {user.location}
-          </p>
-        )}
-        {user?.birthday && (
-          <p className="mb-1">
-            <strong className="text-white">Birthday:</strong>
-            {new Date(user.birthday).toLocaleDateString()}
-          </p>
-        )}
-        {user?.accountStatus && (
-          <p className="mb-0">
-            <strong className="text-white">Account Status:</strong>
-            {user.accountStatus}
-          </p>
-        )}
+        {user.bio && <p><strong className="text-white">About:</strong> {user.bio}</p>}
+        {user.location && <p><strong className="text-white">Location:</strong> {user.location}</p>}
+        {user.birthday && <p><strong className="text-white">Birthday:</strong> {new Date(user.birthday).toLocaleDateString()}</p>}
+        {user.accountStatus && <p><strong className="text-white">Account Status:</strong> {user.accountStatus}</p>}
       </motion.div>
 
       {/* Posts */}
       <div className="mt-5">
-        <OtherUserPosts />
+        <OtherUserPosts userId={user._id || id} />
       </div>
     </motion.div>
   );
