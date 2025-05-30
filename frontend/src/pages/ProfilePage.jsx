@@ -180,7 +180,7 @@ function ProfilePage() {
           </motion.div>
 
           {/* User Posts */}
-          <div className="mt-5">
+          <div>
             <UserPosts />
           </div>
         </>

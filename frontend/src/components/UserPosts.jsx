@@ -52,7 +52,7 @@ const UserPosts = () => {
     if (posts.length === 0) return <p className="text-center text-white">No posts to show.</p>;
 
     return (
-        <div className="container my-4">
+        <div className="container my-3">
             {posts.map((post, index) => (
                 <motion.div
                     key={post._id || index}

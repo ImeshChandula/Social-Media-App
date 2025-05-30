@@ -118,7 +118,7 @@ const OtherUserProfiles = () => {
       </motion.div>
 
       {/* Posts */}
-      <div className="mt-5">
+      <div>
         <OtherUserPosts userId={user._id || id} />
       </div>
     </motion.div>

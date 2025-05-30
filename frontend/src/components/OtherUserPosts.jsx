@@ -44,7 +44,7 @@ const OtherUserPosts = ({ userId, type = "all" }) => {
     if (!posts.length) return <div className="text-white text-center my-5 fs-5">No posts found</div>;
 
     return (
-        <div className="container my-4">
+        <div className="container">
             {posts.map((post, index) => (
                 <PostCard
                     key={post._id || post.id || index}
