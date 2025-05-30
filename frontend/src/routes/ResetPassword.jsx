@@ -40,7 +40,7 @@ const ResetPassword = () => {
         let redirectTimer;
         if (step === 'success') {
             redirectTimer = setTimeout(() => {
-                navigate(-1);
+                navigate('/login');
             }, 5000);
         }
         
