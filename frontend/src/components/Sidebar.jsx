@@ -22,7 +22,7 @@ const navItems = [
   { name: "Home", path: "/", icon: <FaHome /> },
   { name: "Members", path: "/members", icon: <FaUsers /> },
   { name: "Videos", path: "/videos", icon: <FaVideo /> },
-  { name: "Notifications", path: "/notifications", icon: <FaBell /> },
+  //{ name: "Notifications", path: "/notifications", icon: <FaBell /> },
   { name: "Profile", path: "/profile", icon: <FaUserCircle /> },
 ];
 

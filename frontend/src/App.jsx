@@ -83,12 +83,6 @@ const App = () => {
           path="/edit-profile"
           element={isLoggedIn ? <EditProfile /> : <Navigate to="/login" />}
         />
-        
-        <Route
-          path="/edit-profile"
-          element={isLoggedIn ? <EditProfile /> : <Navigate to="/login" />}
-        />
-
 
         <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>

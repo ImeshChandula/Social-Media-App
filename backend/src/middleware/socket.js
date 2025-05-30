@@ -4,7 +4,12 @@ const socketHandler = (io) => {
   // Middleware for authentication
   io.use((socket, next) => {
     try {
-      const token = socket.handshake.auth.token;
+      // Get token from cookies instead of auth
+      const token = socket.handshake.headers.cookie
+        ?.split('; ')
+        .find(row => row.startsWith('authToken='))
+        ?.split('=')[1];
+        
       if (!token) return next(new Error("Authentication error"));
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
