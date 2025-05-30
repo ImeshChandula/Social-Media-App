@@ -1,103 +1,100 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { FaCommentAlt, FaShare } from "react-icons/fa";
-import PostDropdown from "./PostDropdown";
-import PostLikeButton from "./PostLikeButton";
+import React, { useState } from "react";
+import moment from "moment";
+import StoriesPopup from "./StoriesPopup";
+import { axiosInstance } from "../lib/axios";
 
-const Stories = ({ stories, isUserPost = false, onLikeUpdate }) => {
+const Stories = ({ post, isUserPost = false, onDelete, onUpdate }) => {
+  const [showPopup, setShowPopup] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [caption, setCaption] = useState(post.caption || "");
 
-    const navigate = useNavigate();
+  const handleDelete = async () => {
+    try {
+      await axiosInstance.delete(`/stories/delete/${post._id}`);
+      onDelete?.(post._id);
+    } catch (err) {
+      console.error("Failed to delete story:", err);
+    }
+  };
 
-    const mediaArray = Array.isArray(stories.media)
-        ? stories.media
-        : stories.media
-            ? [stories.media]
-            : [];
+  const handleUpdate = async () => {
+    try {
+      const res = await axiosInstance.patch(`/stories/update/${post._id}`, {
+        caption,
+      });
+      onUpdate?.(res.data.story);
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Failed to update story:", err);
+    }
+  };
 
-    const handleNavigateToProfile = () => {
-        if (stories.author?.username) {
-            navigate(`/profile/${stories.author.username}`);
-        }
-    };
+  const renderMedia = () => {
+    if (post.type === "image") {
+      return <img src={post.mediaUrl} alt="story" className="img-fluid rounded" />;
+    } else if (post.type === "video") {
+      return (
+        <video controls className="w-100 rounded">
+          <source src={post.mediaUrl} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      );
+    }
+    return null;
+  };
 
-    return (
-        <div className="card bg-secondary bg-opacity-10 border-secondary text-white mb-4 shadow-sm rounded-4">
-            {/* Header */}
-            <div className="card-header bg-dark d-flex align-items-center justify-content-between p-3 rounded-top-4 border-bottom border-secondary">
-                <div className="d-flex align-items-center gap-3">
-                    <img
-                        src={stories.author?.profilePicture}
-                        alt="Profile"
-                        className="rounded-circle border border-secondary"
-                        style={{ width: 50, height: 50, objectFit: "cover" }}
-                    />
-                    <div className="flex-grow-1 text-start">
-                        <h6 className="mb-0 fw-bold text-white cursor-pointer" onClick={handleNavigateToProfile} >
-                            {`${stories.author?.firstName || ""} ${stories.author?.lastName || ""}`}
-                        </h6>
-                        <small className="text-white-50">
-                            {stories.createdAt
-                                ? new Date(stories.createdAt).toLocaleString()
-                                : ""}
-                        </small>
-                    </div>
-                </div>
-                {isUserPost && (
-                    <PostDropdown
-                        onUpdate={() => alert(`Update post ${stories._id}`)}
-                        onDelete={() => alert(`Delete post ${stories._id}`)}
-                    />
-                )}
-            </div>
-
-            {/* Content */}
-            <div className="card-body bg-dark p-4 rounded-bottom-4">
-                <p className="text-white mb-3 text-start">{stories.content}</p>
-
-                {mediaArray.length > 0 && (
-                    <div className="d-flex flex-wrap gap-3 justify-content-center">
-                        {mediaArray.map((url, idx) =>
-                            url ? (
-                                <img
-                                    key={idx}
-                                    src={url}
-                                    className="img-fluid rounded"
-                                    style={{
-                                        maxHeight: "300px",
-                                        maxWidth: "100%",
-                                        objectFit: "cover",
-                                        border: "1px solid #444",
-                                    }}
-                                    loading="lazy"
-                                    alt={`Post media ${idx + 1}`}
-                                />
-                            ) : null
-                        )}
-                    </div>
-                )}
-            </div>
-
-            {/* Footer */}
-            <div className="card-footer bg-dark d-flex justify-content-between text-white-50 small rounded-bottom-4 border-top border-secondary">
-                <div className="d-flex align-items-center gap-1">
-                    <PostLikeButton
-                        postId={stories._id || stories.id}
-                        initialIsLiked={stories.isLiked}
-                        initialLikeCount={stories.likeCount}
-                        onLikeUpdate={onLikeUpdate}
-                    />
-                </div>
-                <div className="d-flex align-items-center gap-1">
-                    <FaCommentAlt />
-                    <span>{stories.comments?.length || 0} Comments</span>
-                </div>
-                <div className="d-flex align-items-center gap-1">
-                    <FaShare />
-                    <span>{stories.shares?.length || 0} Shares</span>
-                </div>
-            </div>
+  return (
+    <div className="card bg-dark text-white mb-4 position-relative p-3">
+      <div className="d-flex justify-content-between align-items-start mb-2">
+        <div>
+          <h6 className="mb-0">{post.user?.username || "Unknown User"}</h6>
+          <small className="text-muted">{moment(post.createdAt).fromNow()}</small>
         </div>
-    );
+
+        {isUserPost && (
+          <div className="position-relative">
+            <button
+              className="btn btn-sm text-light"
+              onClick={() => setShowPopup((prev) => !prev)}
+            >
+              ⋮
+            </button>
+            {showPopup && (
+              <StoriesPopup
+                onDelete={handleDelete}
+                onEdit={() => {
+                  setIsEditing(true);
+                  setShowPopup(false);
+                }}
+              />
+            )}
+          </div>
+        )}
+      </div>
+
+      {renderMedia()}
+
+      <div className="mt-3">
+        {isEditing ? (
+          <div>
+            <textarea
+              className="form-control mb-2"
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+            />
+            <button className="btn btn-sm btn-success me-2" onClick={handleUpdate}>
+              Save
+            </button>
+            <button className="btn btn-sm btn-secondary" onClick={() => setIsEditing(false)}>
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <p className="mt-2">{post.caption}</p>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default Stories;
