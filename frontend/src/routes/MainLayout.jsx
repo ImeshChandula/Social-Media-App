@@ -36,7 +36,7 @@ const MainLayout = () => {
               {/* You can add breadcrumbs or page title here */}
               <h5 className="mb-0 text-light">Social App</h5>
             </div>
-            
+
             {/* Right side - Notification Bell */}
             <div className="d-flex align-items-center gap-3">
               <NotificationPage />
@@ -45,12 +45,12 @@ const MainLayout = () => {
           </div>
 
           {/* Main Content */}
-          <div className="flex-grow-1 py-3 px-4" style={{ overflowY: "auto" }}>
+          <div className="col flex-grow-1 py-3 px-4" style={{ overflowY: "auto" }}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/members" element={<Members />} />
               <Route path="/videos" element={<Videos />} />
-              
+
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/profile/:id" element={<OtherUserProfiles />} />
               <Route path="/create-post" element={<CreatePost />} />
@@ -59,23 +59,8 @@ const MainLayout = () => {
               <Route path="/stories/:id" element={<StoriesPopup />} />
             </Routes>
           </div>
-        {/* Main Content */}
-        <div className="col py-3 px-4" style={{ overflowY: "auto", height: "100vh" }}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/members" element={<Members />} />
-            <Route path="/videos" element={<Videos />} />
-            <Route path="/notifications" element={<NotificationPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/profile/:id" element={<OtherUserProfiles />} />
-            <Route path="/create-post" element={<CreatePost />} />
-            <Route path="/create-story" element={<CreateStory />} />
-            <Route path="/stories" element={<Stories />} />
-            <Route path="/stories/:id" element={<StoriesPopup />} />
-          </Routes>
         </div>
       </div>
-    </div>
     </div>
   );
 };
