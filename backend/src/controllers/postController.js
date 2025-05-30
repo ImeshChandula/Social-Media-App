@@ -2,6 +2,7 @@ const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const {uploadMedia} = require('../utils/uploadMedia');
 const {deleteAllComments} = require('../services/userDeletionService');
+const {validateAndProcessMedia} = require('../middleware/mediaValidation');
 const notificationUtils = require('../utils/notificationUtils');
 const { error } = require('console');
 
@@ -31,10 +32,36 @@ const createPost = async (req, res) => {
         // Only upload media if provided
         if (media) {
             try {
-                const imageUrl = await uploadMedia(media, mediaType);
+                console.log(`Starting ${mediaType} upload...`);
+                
+                // Validate media before upload
+                const validatedMedia = validateAndProcessMedia(media, mediaType);
+
+                const imageUrl  = await uploadMedia(validatedMedia, mediaType);
                 postData.media = imageUrl;
+
+                console.log(`${mediaType} uploaded successfully:`);
             } catch (error) {
-                return res.status(400).json({error: "Failed to upload media", message: error.message});
+                console.error('Media upload failed:', error);
+
+                if (error.message.includes('timeout')) {
+                    return res.status(408).json({
+                        error: "Upload timeout", 
+                        message: "Your file is too large or upload is taking too long. Please try compressing the video or use a smaller file.",
+                        suggestion: "For videos over 25MB, consider compressing to reduce file size."
+                    });
+                } else if (error.message.includes('File size')) {
+                    return res.status(413).json({
+                        error: "File too large",
+                        message: error.message,
+                        maxSize: mediaType === 'video' ? '50MB' : '15MB'
+                    });
+                } else {
+                    return res.status(400).json({
+                        error: "Failed to upload media", 
+                        message: error.message
+                    });
+                }
             }
         }
         
