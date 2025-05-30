@@ -191,7 +191,7 @@ function NotificationPage() {
           <div className="notifications-list">
             {loading && notifications.length === 0 ? (
               <div className="notifications-loading">
-                <div className="loading-spinner"></div>
+                <div className="notification-loading-spinner"></div>
                 <p>Loading notifications...</p>
               </div>
             ) : notifications.length === 0 ? (

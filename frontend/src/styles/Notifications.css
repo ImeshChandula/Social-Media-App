@@ -300,7 +300,7 @@
   color: #94a3b8;
 }
 
-.loading-spinner {
+.notification-loading-spinner {
   width: 32px;
   height: 32px;
   border: 3px solid rgba(255, 255, 255, 0.1);
