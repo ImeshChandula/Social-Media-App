@@ -59,8 +59,23 @@ const MainLayout = () => {
               <Route path="/stories/:id" element={<StoriesPopup />} />
             </Routes>
           </div>
+        {/* Main Content */}
+        <div className="col py-3 px-4" style={{ overflowY: "auto", height: "100vh" }}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/members" element={<Members />} />
+            <Route path="/videos" element={<Videos />} />
+            <Route path="/notifications" element={<NotificationPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/:id" element={<OtherUserProfiles />} />
+            <Route path="/create-post" element={<CreatePost />} />
+            <Route path="/create-story" element={<CreateStory />} />
+            <Route path="/stories" element={<Stories />} />
+            <Route path="/stories/:id" element={<StoriesPopup />} />
+          </Routes>
         </div>
       </div>
+    </div>
     </div>
   );
 };

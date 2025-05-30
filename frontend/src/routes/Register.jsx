@@ -122,7 +122,7 @@ const Register = () => {
               className="register-input-password"
             />
             <span
-              className="input-icon"
+              className="hide-show-eye"
               onClick={togglePasswordVisibility}
               title={showPassword ? 'Hide password' : 'Show password'}
             >

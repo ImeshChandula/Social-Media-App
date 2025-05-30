@@ -65,7 +65,7 @@ const Login = ({ setIsLoggedIn }) => {
               className="login-input-password"
               required
             />
-            <span className="input-icon" onClick={togglePasswordVisibility}>
+            <span className="hide-show-eye" onClick={togglePasswordVisibility}>
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
