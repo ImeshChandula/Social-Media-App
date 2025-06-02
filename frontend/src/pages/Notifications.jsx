@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
+import toast from 'react-hot-toast';
 import { axiosInstance } from '../lib/axios'; 
 import '../styles/Notifications.css';
 
@@ -79,6 +80,9 @@ function NotificationPage() {
       const response = await axiosInstance.get('/notifications/count');
       
       if (response.data.success) {
+        if (response.data.data.count > notificationCount) {
+          toast.success("You have new Notifications")
+        }
         setNotificationCount(response.data.data.count);
       }
     } catch (error) {

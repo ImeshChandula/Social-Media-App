@@ -9,15 +9,18 @@ class NotificationService {
         try {
             // Get sender information
             const senderDoc = await db.collection('users').doc(senderId).get();
+
             const senderData = senderDoc.exists ? senderDoc.data() : {};
 
+            const senderName = senderData.firstName && senderData.lastName 
+            ? `${senderData.firstName} ${senderData.lastName}` 
+            : senderData.username || 'Someone';
+
             // Create notification document
-            const notificationRef = db.collection('notifications').doc();
-            
-            await notificationRef.set({
+            const notificationData = {
                 recipientId,
                 senderId,
-                senderName: senderData.firstName + senderData.lastName || senderData.username || 'Someone',
+                senderName: senderName,
                 senderProfilePicture: senderData.profilePicture || null,
                 type,
                 entityId,
@@ -26,7 +29,10 @@ class NotificationService {
                 message,
                 timestamp: admin.firestore.FieldValue.serverTimestamp(),
                 data: additionalData
-            });
+            };
+          
+            const notificationRef = db.collection('notifications').doc();
+            await notificationRef.set(notificationData);
 
             // Increment user's notification counter
             const userRef = db.collection('users').doc(recipientId);
@@ -41,7 +47,7 @@ class NotificationService {
                         id: notificationRef.id,
                         recipientId,
                         senderId,
-                        senderName: senderData.firstName + senderData.lastName || senderData.username || 'Someone',
+                        senderName: senderName,
                         senderProfilePicture: senderData.profilePicture || null,
                         type,
                         entityId,
@@ -61,7 +67,7 @@ class NotificationService {
                         increment: 1
                     });
                 }
-            
+
             return notificationRef.id;
         } catch (error) {
             console.error('Error creating notification:', error);
@@ -121,7 +127,7 @@ class NotificationService {
 
     // Get notifications for user
     async getNotificationsForUser(userId, limit = 20, offset = 0) {
-        try {
+        try {   
             const notificationsRef = db.collection('notifications');
             const query = notificationsRef
                 .where('recipientId', '==', userId)
@@ -132,15 +138,50 @@ class NotificationService {
             const snapshot = await query.get();
             
             const notifications = [];
-            snapshot.forEach(doc => {
-                //const data = doc.data();
-                notifications.push({
-                id: doc.id,
-                ...doc.data(),
-                //senderName: data.firstName + data.lastName || data.username || 'Someone',
-                //senderProfilePicture: data.profilePicture || null,
-                });
-            });
+
+            for (const doc of snapshot.docs) {
+                const data = doc.data();
+            
+                let notification = {
+                    id: doc.id,
+                    ...data,
+                };
+
+                // Handle legacy notifications that don't have senderName and senderProfilePicture
+                if (!data.senderName || data.senderProfilePicture === undefined) {
+                    try {
+                        // Get sender information for legacy notifications
+                        const senderDoc = await db.collection('users').doc(data.senderId).get();
+                        
+                        if (senderDoc.exists) {
+                            const senderData = senderDoc.data();
+                            
+                            // Add missing sender information
+                            notification.senderName = senderData.firstName && senderData.lastName 
+                                ? `${senderData.firstName} ${senderData.lastName}` 
+                                : senderData.username || 'Someone';
+                            
+                            notification.senderProfilePicture = senderData.profilePicture || null;
+                            
+                            /*console.log('Added sender info for legacy notification:', {
+                                senderName: notification.senderName,
+                                senderProfilePicture: notification.senderProfilePicture
+                            });*/
+                        } else {
+                            // Fallback if sender doesn't exist
+                            notification.senderName = 'Unknown User';
+                            notification.senderProfilePicture = null;
+                        }
+                    } catch (senderError) {
+                        console.error('Error fetching sender data for legacy notification:', senderError);
+                        // Fallback values
+                        notification.senderName = 'Unknown User';
+                        notification.senderProfilePicture = null;
+                    }
+                }
+
+                notifications.push(notification);
+            };
             
             return notifications;
         } catch (error) {
