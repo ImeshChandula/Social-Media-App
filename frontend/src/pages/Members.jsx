@@ -1,150 +1,211 @@
 import React, { useEffect, useState } from "react";
+import io from "socket.io-client";
 import {
     getAllSuggestedFriends,
     getAllPendingRequests,
     sendFriendRequest,
     acceptFriendRequest,
     rejectFriendRequest,
+    getAllFriends,
 } from "../lib/friendService";
 
 function Members() {
     const [suggested, setSuggested] = useState([]);
-    const [sent, setSent] = useState([]);
-    const [received, setReceived] = useState([]);
+    const [sentRequests, setSentRequests] = useState([]);
+    const [receivedRequests, setReceivedRequests] = useState([]);
+    const [friends, setFriends] = useState([]);
+    const [activeTab, setActiveTab] = useState("suggestions");
     const [loading, setLoading] = useState(true);
 
-    const getCurrentUserId = () => {
-        const user = JSON.parse(localStorage.getItem("user"));
-        return user?.id;
-    };
+    const currentUserId = JSON.parse(localStorage.getItem("user"))?.id;
 
-    const loadAll = async () => {
+    const loadAllData = async () => {
         setLoading(true);
         try {
-            const [sug, pend] = await Promise.all([
+            const [sug, pend, fr] = await Promise.all([
                 getAllSuggestedFriends(),
                 getAllPendingRequests(),
+                getAllFriends(),
             ]);
 
-            if (sug.data.success) {
-                setSuggested(sug.data.data.suggestedFriends);
-            }
+            if (sug.data.success) setSuggested(sug.data.data.suggestedFriends);
 
             if (pend.data.success) {
-                const me = getCurrentUserId();
                 const all = pend.data.data;
-                setSent(all.filter((r) => r.senderId === me));
-                setReceived(all.filter((r) => r.receiverId === me));
+                setSentRequests(all.filter((r) => r.senderId === currentUserId));
+                setReceivedRequests(all.filter((r) => r.receiverId === currentUserId));
             }
-        } catch (e) {
-            console.error("Error loading members:", e);
+
+            if (fr.data.success) setFriends(fr.data.data);
+        } catch (error) {
+            console.error("Error loading members data:", error);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        loadAll();
+        loadAllData();
     }, []);
 
-    const handleSend = async (id) => {
+    const handleSendRequest = async (id) => {
         try {
             await sendFriendRequest(id);
-            await loadAll();
+            await loadAllData();
         } catch (err) {
-            console.error("Send request failed:", err);
+            console.error("Failed to send request:", err);
         }
     };
 
-    const handleAccept = async (id) => {
+    const handleAcceptRequest = async (id) => {
         try {
             await acceptFriendRequest(id);
-            await loadAll();
+            await loadAllData();
         } catch (err) {
-            console.error("Accept failed:", err);
+            console.error("Failed to accept request:", err);
         }
     };
 
-    const handleReject = async (id) => {
+    const handleRejectRequest = async (id) => {
         try {
             await rejectFriendRequest(id);
-            await loadAll();
+            await loadAllData();
         } catch (err) {
-            console.error("Reject failed:", err);
+            console.error("Failed to reject request:", err);
         }
     };
 
-    // Remove suggested friend if already sent a request
-    const sentIds = new Set(sent.map((r) => r.receiverId));
-    const filteredSuggested = suggested.filter((p) => !sentIds.has(p.id));
+    // Exclude IDs already interacted with
+    const sentIds = new Set(sentRequests.map((r) => r.receiverId));
+    const receivedIds = new Set(receivedRequests.map((r) => r.senderId));
+    const friendIds = new Set(friends.map((f) => f.id));
+    const interactedIds = new Set([...sentIds, ...receivedIds, ...friendIds]);
+    const filteredSuggestions = suggested.filter(p => !interactedIds.has(p.id));
 
     return (
         <div className="p-4 text-white">
-            <h4>People You May Know</h4>
-            {loading ? <p>Loading...</p> : (
-                <div className="row">
-                    {filteredSuggested.length === 0 ? <p>No suggestions.</p> : filteredSuggested.map((p) => (
-                        <div className="col-md-3" key={p.id}>
-                            <div className="card bg-dark text-white mb-3">
-                                <img
-                                    src={p.profilePicture || 'https://via.placeholder.com/150'}
-                                    className="card-img-top"
-                                    alt="user"
-                                    style={{ height: "160px", objectFit: "cover" }}
-                                />
-                                <div className="card-body">
-                                    <h5>{p.firstName} {p.lastName}</h5>
-                                    <button
-                                        onClick={() => handleSend(p.id)}
-                                        className="btn btn-success w-100"
-                                    >
-                                        Add Friend
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+            <ul className="nav nav-tabs mb-3">
+                {["suggestions", "sent", "received", "friends"].map((tab) => (
+                    <li className="nav-item" key={tab}>
+                        <button
+                            className={`nav-link ${activeTab === tab ? "active" : ""}`}
+                            onClick={() => setActiveTab(tab)}
+                        >
+                            {tab.charAt(0).toUpperCase() + tab.slice(1)}{" "}
+                            {tab === "suggestions" && `(${filteredSuggestions.length})`}
+                            {tab === "sent" && `(${sentRequests.length})`}
+                            {tab === "received" && `(${receivedRequests.length})`}
+                            {tab === "friends" && `(${friends.length})`}
+                        </button>
+                    </li>
+                ))}
+            </ul>
 
-            <h5 className="mt-5">📤 Sent Friend Requests</h5>
-            {sent.length === 0 ? <p>None</p> : (
-                <div className="row">
-                    {sent.map(r => (
-                        <div key={r._id} className="col-md-4">
-                            <div className="card bg-secondary text-white p-3 mb-3">
-                                <span>{r.receiverName || "Friend"}</span>
-                            </div>
+            {loading ? (
+                <p>Loading...</p>
+            ) : (
+                <>
+                    {activeTab === "suggestions" && (
+                        <div className="row">
+                            {filteredSuggestions.length === 0 ? (
+                                <p>No friend suggestions available.</p>
+                            ) : (
+                                filteredSuggestions.map((user) => (
+                                    <div className="col-md-3" key={user.id}>
+                                        <div className="card bg-dark text-white mb-3">
+                                            <img
+                                                src={user.profilePicture || "https://via.placeholder.com/150"}
+                                                alt="profile"
+                                                className="card-img-top"
+                                                style={{ height: "160px", objectFit: "cover" }}
+                                            />
+                                            <div className="card-body">
+                                                <h5>{user.firstName} {user.lastName}</h5>
+                                                <button
+                                                    onClick={() => handleSendRequest(user.id)}
+                                                    className="btn btn-success w-100"
+                                                    disabled={sentIds.has(user.id)}
+                                                >
+                                                    {sentIds.has(user.id) ? "Request Sent" : "Add Friend"}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
-                    ))}
-                </div>
-            )}
+                    )}
 
-            <h5 className="mt-5">📥 Received Friend Requests</h5>
-            {received.length === 0 ? <p>None</p> : (
-                <div className="row">
-                    {received.map(r => (
-                        <div key={r._id} className="col-md-4">
-                            <div className="card bg-dark text-white p-3 mb-3">
-                                <span>{r.senderName || "Someone"}</span>
-                                <div className="mt-2 d-flex gap-2">
-                                    <button
-                                        className="btn btn-sm btn-success"
-                                        onClick={() => handleAccept(r.senderId)}
-                                    >
-                                        Accept
-                                    </button>
-                                    <button
-                                        className="btn btn-sm btn-danger"
-                                        onClick={() => handleReject(r.senderId)}
-                                    >
-                                        Reject
-                                    </button>
-                                </div>
-                            </div>
+                    {activeTab === "sent" && (
+                        <div className="row">
+                            {sentRequests.length === 0 ? (
+                                <p>No sent requests.</p>
+                            ) : (
+                                sentRequests.map((req) => (
+                                    <div className="col-md-4" key={req._id}>
+                                        <div className="card bg-secondary text-white p-3 mb-3">
+                                            <span>{req.receiverName || "Unknown User"}</span>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
-                    ))}
-                </div>
+                    )}
+
+                    {activeTab === "received" && (
+                        <div className="row">
+                            {receivedRequests.length === 0 ? (
+                                <p>No received requests.</p>
+                            ) : (
+                                receivedRequests.map((req) => (
+                                    <div className="col-md-4" key={req._id}>
+                                        <div className="card bg-dark text-white p-3 mb-3">
+                                            <span>{req.senderName || "Someone"}</span>
+                                            <div className="mt-2 d-flex gap-2">
+                                                <button
+                                                    className="btn btn-sm btn-success"
+                                                    onClick={() => handleAcceptRequest(req.senderId)}
+                                                >
+                                                    Accept
+                                                </button>
+                                                <button
+                                                    className="btn btn-sm btn-danger"
+                                                    onClick={() => handleRejectRequest(req.senderId)}
+                                                >
+                                                    Reject
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === "friends" && (
+                        <div className="row">
+                            {friends.length === 0 ? (
+                                <p>No friends yet.</p>
+                            ) : (
+                                friends.map((f) => (
+                                    <div key={f.id} className="col-md-3">
+                                        <div className="card bg-success text-white mb-3">
+                                            <img
+                                                src={f.profilePicture || "https://via.placeholder.com/150"}
+                                                alt="friend"
+                                                className="card-img-top"
+                                                style={{ height: "160px", objectFit: "cover" }}
+                                            />
+                                            <div className="card-body">
+                                                <h5>{f.firstName} {f.lastName}</h5>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );

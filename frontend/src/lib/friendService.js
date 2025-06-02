@@ -1,4 +1,4 @@
-import { axiosInstance } from "../lib/axios"; // uses your axios setup
+import { axiosInstance } from "../lib/axios";
 
 export const getAllSuggestedFriends = () =>
     axiosInstance.get("/friends/allSuggestFriends");
@@ -6,7 +6,6 @@ export const getAllSuggestedFriends = () =>
 export const sendFriendRequest = (id) =>
     axiosInstance.post(`/friends/friend-request/send/${id}`);
 
-// (Optional) You can also include these:
 export const acceptFriendRequest = (id) =>
     axiosInstance.post(`/friends/friend-request/accept/${id}`);
 
