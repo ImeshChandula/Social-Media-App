@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import PostCard from "./PostCard";
 
-const Feed = ({ type = "all" }) => {
+const Feed = () => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -13,8 +13,7 @@ const Feed = ({ type = "all" }) => {
                 setLoading(true);
                 setError(null);
 
-                const endpoint = type === "videos" ? "/posts/feed/videos" : "/posts/feed";
-                const res = await axiosInstance.get(endpoint);
+                const res = await axiosInstance.get("/posts/feed");
                 const postsData = res.data.posts || res.data || [];
 
                 setPosts(postsData);
@@ -26,12 +25,11 @@ const Feed = ({ type = "all" }) => {
         };
 
         fetchFeed();
-    }, [type]);
+    }, []);
 
-    // Function to update like status for a specific post
     const updatePostLike = (postId, isLiked, likeCount) => {
-        setPosts(prevPosts => 
-            prevPosts.map(post => 
+        setPosts(prevPosts =>
+            prevPosts.map(post =>
                 post._id === postId || post.id === postId
                     ? { ...post, isLiked, likeCount }
                     : post
