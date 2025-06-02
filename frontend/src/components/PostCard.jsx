@@ -5,7 +5,6 @@ import PostDropdown from "./PostDropdown";
 import PostLikeButton from "./PostLikeButton";
 
 const PostCard = ({ post, isUserPost = false, onLikeUpdate }) => {
-
     const navigate = useNavigate();
 
     const mediaArray = Array.isArray(post.media)
@@ -20,6 +19,39 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate }) => {
         }
     };
 
+    const renderMedia = (url, idx) => {
+        const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
+
+        return isVideo ? (
+            <video
+                key={idx}
+                src={url}
+                className="rounded"
+                controls
+                style={{
+                    maxHeight: "300px",
+                    maxWidth: "100%",
+                    objectFit: "cover",
+                    border: "1px solid #444",
+                }}
+            />
+        ) : (
+            <img
+                key={idx}
+                src={url}
+                className="img-fluid rounded"
+                alt={`Post media ${idx + 1}`}
+                style={{
+                    maxHeight: "300px",
+                    maxWidth: "100%",
+                    objectFit: "cover",
+                    border: "1px solid #444",
+                }}
+                loading="lazy"
+            />
+        );
+    };
+
     return (
         <div className="card bg-secondary bg-opacity-10 border-secondary text-white mb-4 shadow-sm rounded-4">
             {/* Header */}
@@ -32,7 +64,7 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate }) => {
                         style={{ width: 50, height: 50, objectFit: "cover" }}
                     />
                     <div className="flex-grow-1 text-start">
-                        <h6 className="mb-0 fw-bold text-white cursor-pointer" >
+                        <h6 className="mb-0 fw-bold text-white cursor-pointer">
                             {`${post.author?.firstName || ""} ${post.author?.lastName || ""}`}
                         </h6>
                         <small className="text-white-50">
@@ -56,23 +88,7 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate }) => {
 
                 {mediaArray.length > 0 && (
                     <div className="d-flex flex-wrap gap-3 justify-content-center">
-                        {mediaArray.map((url, idx) =>
-                            url ? (
-                                <img
-                                    key={idx}
-                                    src={url}
-                                    className="img-fluid rounded"
-                                    style={{
-                                        maxHeight: "300px",
-                                        maxWidth: "100%",
-                                        objectFit: "cover",
-                                        border: "1px solid #444",
-                                    }}
-                                    loading="lazy"
-                                    alt={`Post media ${idx + 1}`}
-                                />
-                            ) : null
-                        )}
+                        {mediaArray.map(renderMedia)}
                     </div>
                 )}
             </div>
