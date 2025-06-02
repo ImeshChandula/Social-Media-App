@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { FaCommentAlt, FaShare } from "react-icons/fa";
 import PostDropdown from "./PostDropdown";
 import PostLikeButton from "./PostLikeButton";
+import { axiosInstance } from "../lib/axios";
 
-const PostCard = ({ post, isUserPost = false, onLikeUpdate }) => {
+const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
     const navigate = useNavigate();
 
     const mediaArray = Array.isArray(post.media)
@@ -16,6 +17,19 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate }) => {
     const handleNavigateToProfile = () => {
         if (post.author?.id) {
             navigate(`/profile/${post.author.id}`);
+        }
+    };
+
+    const handleDelete = async () => {
+        const confirmed = window.confirm("Are you sure you want to delete this post?");
+        if (!confirmed) return;
+
+        try {
+            await axiosInstance.delete(`/posts/delete/${post._id || post.id}`);
+            onDeletePost?.(post._id);
+        } catch (error) {
+            console.error("Failed to delete post:", error);
+            alert("Failed to delete post. Please try again.");
         }
     };
 
@@ -77,7 +91,7 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate }) => {
                 {isUserPost && (
                     <PostDropdown
                         onUpdate={() => alert(`Update post ${post._id}`)}
-                        onDelete={() => alert(`Delete post ${post._id}`)}
+                        onDelete={handleDelete}
                     />
                 )}
             </div>
