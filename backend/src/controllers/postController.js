@@ -200,7 +200,7 @@ const getAllPosts = async (req, res) => {
 //@desc     Get all video posts
 const getAllVideoPosts = async (req, res) => {
     try {
-        const mediaType = video;
+        const mediaType = "video";
 
         const posts = await PostService.findByMediaType(mediaType);
         if (!posts.length) {
@@ -275,7 +275,7 @@ const getAllVideoPosts = async (req, res) => {
 //@desc     Get all video posts
 const getAllPhotoPosts = async (req, res) => {
     try {
-        const mediaType = image;
+        const mediaType = "image";
 
         const posts = await PostService.findByMediaType(mediaType);
         if (!posts.length) {
