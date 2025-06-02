@@ -117,7 +117,7 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
                 {isUserPost && (
                     <PostDropdown
                         onUpdate={() => alert(`Update post ${post._id}`)}
-                        onDelete={handleDelete}
+                        onDelete={{ postId: post._id || post.id, handler: onDeletePost }}
                     />
                 )}
             </div>
