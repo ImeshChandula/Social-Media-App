@@ -22,9 +22,18 @@ function NotificationPage() {
     });
 
     // Listen for new notifications
-    socketRef.current.on('newNotification', (notification) => {
+    socketRef.current.on('new_notification', (notification) => {
       setNotifications(prev => [notification, ...prev]);
       setNotificationCount(prev => prev + 1);
+    });
+
+    // Listen for notification count updates
+    socketRef.current.on('notification_count_update', (data) => {
+      if (data.increment) {
+        setNotificationCount(prev => prev + data.increment);
+      } else if (data.newCount !== undefined) {
+        setNotificationCount(data.newCount);
+      }
     });
 
     return () => {
@@ -32,7 +41,7 @@ function NotificationPage() {
         socketRef.current.disconnect();
       }
     };
-  }, []);
+  }, []); 
 
   // Fetch notifications
   const fetchNotifications = async (reset = false) => {
@@ -85,7 +94,7 @@ function NotificationPage() {
       if (response.data.success) {
         setNotifications(prev =>
           prev.map(notif =>
-            notif.id === notificationId ? { ...notif, read: true } : notif
+            notif.id === notificationId ? { ...notif, isRead: true } : notif
           )
         );
         setNotificationCount(prev => Math.max(0, prev - 1));
@@ -101,7 +110,7 @@ function NotificationPage() {
       const response = await axiosInstance.put('/notifications/read-all');
 
       if (response.data.success) {
-        setNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
+        setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
         setNotificationCount(0);
       }
     } catch (error) {
@@ -132,8 +141,29 @@ function NotificationPage() {
 
   // Format notification time
   const formatTime = (timestamp) => {
+    if (!timestamp) return 'Unknown time';
+    
+    let notifTime;
+    
+    // Handle Firestore timestamp
+    if (timestamp?._seconds) {
+      notifTime = new Date(timestamp._seconds * 1000);
+    } 
+    // Handle Firestore timestamp with toDate method
+    else if (timestamp?.toDate && typeof timestamp.toDate === 'function') {
+      notifTime = timestamp.toDate();
+    }
+    // Handle regular timestamp string/number
+    else {
+      notifTime = new Date(timestamp);
+    }
+    
+    // Check if date is valid
+    if (isNaN(notifTime.getTime())) {
+      return 'Unknown time';
+    }
+    
     const now = new Date();
-    const notifTime = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
     const diffMs = now - notifTime;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
@@ -149,13 +179,22 @@ function NotificationPage() {
   // Get notification icon based on type
   const getNotificationIcon = (type) => {
     switch (type) {
-      case 'like': return '❤️';
-      case 'comment': return '💬';
-      case 'friend_request': return '👤';
-      case 'friend_accept': return '✅';
-      case 'post': return '📝';
-      case 'story': return '📷';
-      default: return '🔔';
+      case 'like_post':
+      case 'like_reply': 
+        return '❤️';
+      case 'comment':
+      case 'reply': 
+        return '💬';
+      case 'friend_request': 
+        return '👤';
+      case 'accept_request': 
+        return '✅';
+      case 'post': 
+        return '📝';
+      case 'story': 
+        return '📷';
+      default: 
+        return '🔔';
     }
   };
 
@@ -205,15 +244,16 @@ function NotificationPage() {
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`mt-2 notification-item ${!notification.read ? 'unread' : ''}`}
-                    onClick={() => !notification.read && markAsRead(notification.id)}
+                    className={`mt-2 notification-item ${!notification.isRead ? 'unread' : ''}`}
+                    onClick={() => !notification.isRead && markAsRead(notification.id)}
                   >
                     <div className="notification-avatar">
                       {notification.senderProfilePicture ? (
                         <img src={notification.senderProfilePicture} alt="" />
                       ) : (
                         <div className="avatar-placeholder">
-                          {notification.senderName?.charAt(0) || '?'}
+                          {/* Get first letter from sender's name from the message */}
+                          {notification.message?.split(' ')[0]?.charAt(0) || '?'}
                         </div>
                       )}
                       <span className="notification-type-icon">
@@ -223,15 +263,15 @@ function NotificationPage() {
                     
                     <div className="notification-content">
                       <div className="notification-text">
-                        <strong>{notification.senderName || 'Someone'}</strong>
-                        <span> {notification.message}</span>
+                        {/* Display the full message without adding "Someone" */}
+                        <span>{notification.message}</span>
                       </div>
                       <div className="notification-time">
-                        {formatTime(notification.createdAt)}
+                        {formatTime(notification.timestamp)}
                       </div>
                     </div>
                     
-                    {!notification.read && <div className="unread-dot"></div>}
+                    {!notification.isRead && <div className="unread-dot"></div>}
                   </div>
                 ))}
                 

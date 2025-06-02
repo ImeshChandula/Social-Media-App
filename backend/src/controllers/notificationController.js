@@ -1,7 +1,7 @@
 const notificationService = require('../services/notificationService');
-const { db } = require('../config/firebase');
+const { connectFirebase  } = require('../config/firebase');
 const admin = require('firebase-admin');
-
+const { db } = connectFirebase();
 
 const getNotifications = async (req, res) => {
   try {

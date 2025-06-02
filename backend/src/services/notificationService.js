@@ -7,54 +7,62 @@ class NotificationService {
     // Create notification
     async createNotification(recipientId, senderId, type, entityId, entityType, message, additionalData = {}) {
         try {
-        // Create notification document
-        const notificationRef = db.collection('notifications').doc();
-        
-        await notificationRef.set({
-            recipientId,
-            senderId,
-            type,
-            entityId,
-            entityType,
-            isRead: false,
-            message,
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            data: additionalData
-        });
+            // Get sender information
+            const senderDoc = await db.collection('users').doc(senderId).get();
+            const senderData = senderDoc.exists ? senderDoc.data() : {};
 
-        // Increment user's notification counter
-        const userRef = db.collection('users').doc(recipientId);
-        await userRef.update({
-            notificationCount: admin.firestore.FieldValue.increment(1)
-        });
+            // Create notification document
+            const notificationRef = db.collection('notifications').doc();
+            
+            await notificationRef.set({
+                recipientId,
+                senderId,
+                senderName: senderData.firstName + senderData.lastName || senderData.username || 'Someone',
+                senderProfilePicture: senderData.profilePicture || null,
+                type,
+                entityId,
+                entityType,
+                isRead: false,
+                message,
+                timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                data: additionalData
+            });
 
-        // Emit real-time notification (check if io is available)
-            if (global.io) {
-                // Create the notification object to emit
-                const realtimeNotification = {
-                    id: notificationRef.id,
-                    recipientId,
-                    senderId,
-                    type,
-                    entityId,
-                    entityType,
-                    message,
-                    timestamp: new Date(),
-                    isRead: false,
-                    data: additionalData
-                };
-                
-                // Emit to the specific user's room
-                global.io.to(`user_${recipientId}`).emit('new_notification', realtimeNotification);
-                
-                // Also emit notification count update
-                global.io.to(`user_${recipientId}`).emit('notification_count_update', {
-                    userId: recipientId,
-                    increment: 1
-                });
-            }
-        
-        return notificationRef.id;
+            // Increment user's notification counter
+            const userRef = db.collection('users').doc(recipientId);
+            await userRef.update({
+                notificationCount: admin.firestore.FieldValue.increment(1)
+            });
+
+            // Emit real-time notification (check if io is available)
+                if (global.io) {
+                    // Create the notification object to emit
+                    const realtimeNotification = {
+                        id: notificationRef.id,
+                        recipientId,
+                        senderId,
+                        senderName: senderData.firstName + senderData.lastName || senderData.username || 'Someone',
+                        senderProfilePicture: senderData.profilePicture || null,
+                        type,
+                        entityId,
+                        entityType,
+                        message,
+                        timestamp: new Date(),
+                        isRead: false,
+                        data: additionalData
+                    };
+                    
+                    // Emit to the specific user's room
+                    global.io.to(`user_${recipientId}`).emit('new_notification', realtimeNotification);
+                    
+                    // Also emit notification count update
+                    global.io.to(`user_${recipientId}`).emit('notification_count_update', {
+                        userId: recipientId,
+                        increment: 1
+                    });
+                }
+            
+            return notificationRef.id;
         } catch (error) {
             console.error('Error creating notification:', error);
             throw error;
@@ -125,9 +133,12 @@ class NotificationService {
             
             const notifications = [];
             snapshot.forEach(doc => {
+                //const data = doc.data();
                 notifications.push({
                 id: doc.id,
-                ...doc.data()
+                ...doc.data(),
+                //senderName: data.firstName + data.lastName || data.username || 'Someone',
+                //senderProfilePicture: data.profilePicture || null,
                 });
             });
             
