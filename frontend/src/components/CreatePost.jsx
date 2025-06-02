@@ -15,7 +15,6 @@ const CreatePost = () => {
 
     const [formData, setFormData] = useState(initialState);
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState(null);
 
     useEffect(() => {
         return () => {
@@ -73,12 +72,10 @@ const CreatePost = () => {
         e.preventDefault();
 
         if (!formData.content.trim() && !formData.media) {
-            return setMessage({ type: 'danger', text: 'Content or media is required.' });
+            return toast.error('Content or media is required.')
         }
 
         setLoading(true);
-        setMessage(null);
-
         try {
             const payload = {
                 content: formData.content,
@@ -93,15 +90,9 @@ const CreatePost = () => {
             };
 
             const res = await axiosInstance.post('/posts/createPost', payload);
-
-            setMessage({ type: 'success', text: res.data.message || 'Post created successfully!' });
             toast.success(res.data.message || 'Post created successfully!');
             setFormData(initialState);
         } catch (error) {
-            setMessage({
-                type: 'danger',
-                text: error.response?.data?.message || 'Failed to create post.',
-            });
             toast.error(error.response?.data?.message || 'Failed to create post.')
         } finally {
             setLoading(false);
@@ -113,12 +104,6 @@ const CreatePost = () => {
             <div className="card shadow-lg border-secondary rounded-4 bg-dark text-white">
                 <div className="card-body p-4">
                     <h3 className="text-center mb-4">📝 Create a Post</h3>
-
-                    {message && (
-                        <div className={`alert alert-${message.type}`} role="alert">
-                            {message.text}
-                        </div>
-                    )}
 
                     <form onSubmit={handleSubmit}>
                         <div className="mb-3">

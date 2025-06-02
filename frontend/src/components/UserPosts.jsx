@@ -38,6 +38,10 @@ const UserPosts = () => {
         );
     };
 
+    const handleDeletePost = (postId) => {
+        setPosts(prevPosts => prevPosts.filter(post => post._id !== postId && post.id !== postId));
+    };
+
     if (loading) {
         return (
             <div className="flex justify-center items-center h-40">
@@ -64,6 +68,7 @@ const UserPosts = () => {
                         post={post}
                         isUserPost={true}
                         onLikeUpdate={handleLikeUpdate}
+                        onDeletePost={handleDeletePost}
                     />
                 </motion.div>
             ))}
