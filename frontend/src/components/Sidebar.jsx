@@ -16,6 +16,7 @@ import {
   FaTimes,
   FaSignOutAlt,
 } from "react-icons/fa";
+import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { axiosInstance } from "../lib/axios";
 
 const navItems = [
@@ -24,6 +25,7 @@ const navItems = [
   { name: "Videos", path: "/videos", icon: <FaVideo /> },
   //{ name: "Notifications", path: "/notifications", icon: <FaBell /> },
   { name: "Profile", path: "/profile", icon: <FaUserCircle /> },
+  { name: "Dashboard", path: "/dashboard", icon: <TbLayoutDashboardFilled />}
 ];
 
 const shortcuts = [
