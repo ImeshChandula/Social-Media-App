@@ -9,7 +9,7 @@ const SidebarDashboard = ({ collapsed, setCollapsed }) => {
     const navigate = useNavigate();
 
     const shortcuts = [
-        { name: "Manage Users", path: "/users", icon: <FaUsersGear /> },
+        { name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> },
     ];
     
     const handleResize = () => {

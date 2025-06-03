@@ -79,12 +79,7 @@ const App = () => {
         <Route
           path="/register"
           element={!isLoggedIn ? <Register setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" />}
-        />
-
-        <Route
-          path="/*"
-          element={isLoggedIn ? <MainLayout /> : <Navigate to="/login" />}
-        />
+        /> 
 
         <Route
           path="/edit-profile"
@@ -92,10 +87,17 @@ const App = () => {
         />
 
         <Route path="/reset-password" element={<ResetPassword />} />
+        
         <Route 
-          path="/dashboard" 
+          path="/dashboard/*" 
           element={isLoggedIn && (authUser.role === "admin" || authUser.role === "super_admin") ? 
-            <Dashboard /> : <Navigate to="/login" />} />
+            <Dashboard /> : <Navigate to="/login" />} 
+        />
+
+        <Route
+          path="/*"
+          element={isLoggedIn ? <MainLayout /> : <Navigate to="/login" />}
+        />
       </Routes>
     </Router>
     </div>

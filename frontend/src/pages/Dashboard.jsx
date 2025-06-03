@@ -26,7 +26,9 @@ const Dashboard = () => {
           <div className="top-nav-bar bg-dark border-bottom border-secondary py-2 px-4 d-flex justify-content-between align-items-center">
             <div className="d-flex align-items-center">
               {/* You can add breadcrumbs or page title here */}
-              <h5 className="mb-0 text-light">Dashboard</h5>
+                <div className="mb-0 text-light">
+                    <h3>Welcome to Admin Dashboard</h3>
+                </div>
             </div>
 
             {/* Right side - Notification Bell */}
@@ -40,6 +42,9 @@ const Dashboard = () => {
           <div className="col flex-grow-1 py-3 px-4" style={{ overflowY: "auto" }}>
             {/* Related components */}
             <Routes>
+                {/* Default dashboard route */}
+                <Route path="/"  />
+                
                 <Route path="/users" element={<Users />} />
             </Routes>
           </div>
