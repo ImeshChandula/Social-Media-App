@@ -1,132 +1,125 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useEffect, useState } from "react";
+import { axiosInstance } from "../lib/axios"; 
 
 const Videos = () => {
-  const [selectedCategory, setSelectedCategory] = useState('For You');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [videos, setVideos] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const categories = ["For You", "Live", "Music", "News", "Technology"];
+  const categories = ["All", "Live", "Music", "News", "Technology"];
 
-  const allVideos = [
-    { title: "Full Body Workout", views: "1.2M views", time: "2 weeks ago", category: "For You" },
-    { title: "Morning Yoga Routine", views: "900K views", time: "1 week ago", category: "For You" },
-    { title: "Home Cardio Blast", views: "800K views", time: "5 days ago", category: "For You" },
-    { title: "Evening Stretching", views: "1M views", time: "3 weeks ago", category: "For You" },
-    { title: "Quick Fitness Tips", views: "1.5M views", time: "1 month ago", category: "For You" },
-    { title: "Top 10 Workouts", views: "2M views", time: "2 months ago", category: "For You" },
-    { title: "Live Concert Highlights", views: "500K views", time: "1 week ago", category: "Live" },
-    { title: "Top Music Hits 2025", views: "3M views", time: "3 days ago", category: "Music" },
-    { title: "Breaking News Update", views: "900K views", time: "1 day ago", category: "News" },
-    { title: "Latest Tech Trends", views: "2M views", time: "5 days ago", category: "Technology" },
-  ];
+  useEffect(() => {
+    const fetchMyVideos = async () => {
+      try {
+        const res = await axiosInstance.get("/posts/my-videos", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
-  const filteredVideos = allVideos.filter(
-    (video) =>
-      video.category === selectedCategory &&
-      video.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+        if (res.data && Array.isArray(res.data.posts)) {
+          setVideos(res.data.posts);
+        } else {
+          console.error("Unexpected response:", res.data);
+        }
+      } catch (err) {
+        console.error("Failed to load videos:", err);
+      }
+    };
+
+    fetchMyVideos();
+  }, []);
+
+  const filteredVideos = videos
+    .filter((video) =>
+      selectedCategory === "All" ? true : video.category === selectedCategory
+    )
+    .filter((video) =>
+      video.title?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
   return (
-    <div className="container mt-5">
-      {/* Top: Title and Search */}
-      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-        <h2 className="fs-2 mb-0">Videos</h2>
+    <div style={{ padding: "20px" }}>
+      <h2>My Videos</h2>
+
+      {/* Search and Filter */}
+      <div style={{ marginBottom: "20px" }}>
         <input
           type="text"
-          placeholder="Search Videos"
-          className="form-control"
-          style={{
-            width: "300px",
-            height: "45px",
-            borderRadius: "25px",
-            fontSize: "16px",
-            backgroundColor: "#f1f1f1",
-            color: "#000",
-          }}
+          placeholder="Search videos..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            padding: "10px",
+            width: "250px",
+            marginRight: "10px",
+            borderRadius: "5px",
+          }}
         />
-      </div>
-
-      {/* Category Tabs */}
-      <div className="d-flex mb-4 gap-3 flex-wrap">
-        {categories.map((cat, idx) => (
+        {categories.map((cat) => (
           <button
-            key={idx}
-            className={`btn ${selectedCategory === cat ? 'btn-success' : 'btn-outline-secondary'}`}
-            style={{ borderRadius: "25px", fontSize: "16px", padding: "8px 20px" }}
+            key={cat}
             onClick={() => setSelectedCategory(cat)}
+            style={{
+              margin: "5px",
+              padding: "8px 15px",
+              borderRadius: "20px",
+              backgroundColor:
+                selectedCategory === cat ? "#007bff" : "#e0e0e0",
+              color: selectedCategory === cat ? "white" : "black",
+              border: "none",
+              cursor: "pointer",
+            }}
           >
             {cat}
           </button>
         ))}
       </div>
 
-      {/* Main Section */}
-      <div className="row">
-        {/* Left Sidebar */}
-        <div className="col-md-3 mb-4">
-          <div
-            style={{
-              backgroundColor: "#6A6A6AFF",
-              borderRadius: "12px",
-              padding: "20px",
-              minHeight: "300px",
-            }}
-          >
-            <h5 className="mb-4 text-dark">Your Videos</h5>
-            <ul className="list-unstyled fs-6">
-              <li className="mb-3">📌 Watch Later</li>
-              <li className="mb-3">💾 Saved Videos</li>
-              <li className="mb-3">❤️ Liked Videos</li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Right Side - Videos */}
-        <div className="col-md-9">
-          <div className="row">
-            <AnimatePresence>
-              {filteredVideos.length > 0 ? (
-                filteredVideos.map((video, idx) => (
-                  <motion.div
-                    key={idx}
-                    className="col-md-6 col-lg-4 mb-4"
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -30 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <div className="bg-success rounded position-relative" style={{ minHeight: "220px" }}>
-                      <div
-  className="text-dark p-3 rounded-bottom"
-  style={{
-    position: "absolute",
-    bottom: "0",
-    width: "100%",
-    backgroundColor: "#d6d6d6"
-  }}
->
-  <p className="mb-1 fw-bold">{video.title}</p>
-  <small>{video.views} • {video.time}</small>
-</div>
-
-                    </div>
-                  </motion.div>
-                ))
-              ) : (
-                <motion.p
-                  className="fs-5 text-muted"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                >
-                  No videos found for "{selectedCategory}"
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
+      {/* Video Grid */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+          gap: "20px",
+        }}
+      >
+        {filteredVideos.length > 0 ? (
+          filteredVideos.map((video) => (
+            <div
+              key={video._id}
+              style={{
+                border: "1px solid #ccc",
+                borderRadius: "10px",
+                padding: "10px",
+                backgroundColor: "#f9f9f9",
+              }}
+            >
+              <video
+                width="100%"
+                height="200"
+                controls
+                style={{ borderRadius: "8px", objectFit: "cover" }}
+              >
+                <source
+                  src={
+                    video.videoUrl.startsWith("http")
+                      ? video.videoUrl
+                      : `${import.meta.env.VITE_APP_API_URL}${video.videoUrl}`
+                  }
+                  type="video/mp4"
+                />
+                Your browser does not support the video tag.
+              </video>
+              <h4>{video.title || "Untitled Video"}</h4>
+              <p style={{ fontSize: "14px", color: "#666" }}>
+                {video.views || 0} views · {video.time || "unknown"}
+              </p>
+            </div>
+          ))
+        ) : (
+          <p>No videos found.</p>
+        )}
       </div>
     </div>
   );

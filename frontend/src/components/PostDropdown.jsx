@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import PostDeleteButton from "./PostDeleteButton";
 
 const PostDropdown = ({ onUpdate, onDelete }) => {
     const [showDropdown, setShowDropdown] = useState(false);
@@ -20,8 +21,9 @@ const PostDropdown = ({ onUpdate, onDelete }) => {
             <button
                 className="btn btn-dark"
                 onClick={() => setShowDropdown((prev) => !prev)}
+                type="button"
             >
-                <BsThreeDotsVertical size={24}/>
+                <BsThreeDotsVertical size={24} />
             </button>
 
             {showDropdown && (
@@ -36,14 +38,16 @@ const PostDropdown = ({ onUpdate, onDelete }) => {
                     }}
                 >
                     <li>
-                        <button className="dropdown-item text-warning" onClick={onUpdate}>
+                        <button
+                            className="dropdown-item text-warning"
+                            onClick={onUpdate}
+                            type="button"
+                        >
                             Update
                         </button>
                     </li>
                     <li>
-                        <button className="dropdown-item text-danger" onClick={onDelete}>
-                            Delete
-                        </button>
+                        <PostDeleteButton postId={onDelete?.postId} onDeleteSuccess={onDelete?.handler} />
                     </li>
                 </ul>
             )}
