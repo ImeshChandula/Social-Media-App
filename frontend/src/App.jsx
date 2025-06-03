@@ -7,16 +7,23 @@ import MainLayout from "./routes/MainLayout";
 import { axiosInstance } from "./lib/axios";
 import EditProfile from "./components/EditProfile";
 import ResetPassword from "./routes/ResetPassword";
+import Dashboard from "./pages/Dashboard";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
+  // Auth user
+  const [authUser, setAuthUser] = useState(null);
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const res = await axiosInstance.get("/auth/checkCurrent");
-        if (res.data) setIsLoggedIn(true);
+        if (res.data) {
+          setIsLoggedIn(true);
+          setAuthUser(res.data);
+        };
       // eslint-disable-next-line no-unused-vars
       } catch (err) {
         setIsLoggedIn(false);
@@ -85,6 +92,10 @@ const App = () => {
         />
 
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route 
+          path="/dashboard" 
+          element={isLoggedIn && (authUser.role === "admin" || authUser.role === "super_admin") ? 
+            <Dashboard /> : <Navigate to="/login" />} />
       </Routes>
     </Router>
     </div>
