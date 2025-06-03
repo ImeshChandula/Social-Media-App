@@ -93,7 +93,7 @@ const deleteUser = async (req, res) => {
         // Call the external service to handle the entire deletion process
         await performUserDeletion(userToDelete.id);
         
-        res.status(200).json({ message: 'User deleted successfully' });
+        res.status(200).json({ success: true, message: 'User deleted successfully' });
     } catch (err) {
         console.error("Error deleting user:", err);
         res.status(500).json({ message: "Server error" });
@@ -257,11 +257,11 @@ const updateUserProfile = async (req, res) => {
         updatedUser.resetOtpExpiredAt = undefined;
         
         console.log('Profile updated successfully for user:', req.user.id);
-        res.status(201).json({mag:"Profile updated successfully.", user: updatedUser});
+        res.status(201).json({ success: true, message:"Profile updated successfully.", user: updatedUser});
 
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).send({success: true, message:'Server error'});
     }
 };
 

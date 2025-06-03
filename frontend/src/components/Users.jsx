@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Edit3, Trash2, Shield, User, Crown, Ban, CheckCircle, XCircle, Eye } from 'lucide-react';
 import { axiosInstance } from "../lib/axios";
 import styles from '../styles/UsersStyles';
+import toast from 'react-hot-toast';
 import "../styles/UserStyles.css";
 
 
@@ -47,31 +48,69 @@ const Users = () => {
 
   const updateUserRole = async (id, newRole) => {
     try {
-      await axiosInstance.patch(`/users/updateProfile/${id}`, { role: newRole });
-      fetchAllUsers(); // Refresh the list
-      setEditingUser(null);
+      const res = await axiosInstance.patch(`/users/updateProfile/${id}`, { role: newRole });
+      
+      if (res.data.success) {
+        toast.success("Role update successful");
+        fetchAllUsers(); // Refresh the list
+        setEditingUser(null);
+      }
     } catch (error) {
       console.error('Error updating user role:', error);
+
+      if (error.response) {
+        if (error.response.status === 403) {
+          toast.error('You do not have permission to update user roles');
+        } else if (error.response.status === 404) {
+          toast.error('User not found');
+        } else if (error.response.status === 400) {
+          toast.error('Invalid role value');
+        } else {
+          toast.error('Failed to update user role. Please try again.');
+        }
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+        toast.error('Network error. Please check your connection.');
+      } else {
+        console.error('Error setting up request:', error.message);
+        toast.error('An unexpected error occurred.');
+      }
     }
   };
 
   const updateAccountStatus = async (id, newStatus) => {
     try {
-      await axiosInstance.patch(`/users/updateProfile/${id}`, { accountStatus: newStatus });
-      fetchAllUsers(); // Refresh the list
-      setEditingUser(null);
+      const res = await axiosInstance.patch(`/users/updateProfile/${id}`, { accountStatus: newStatus });
+      
+      if (res.data.success) {
+        toast.success("Status update successful");
+        fetchAllUsers(); // Refresh the list
+        setEditingUser(null);
+      }
     } catch (error) {
       console.error('Error updating account status:', error);
+
+      if (error.response) {
+        console.error('Server responded with:', error.response.status, error.response.data);
+        toast.error(`Failed to update account status: ${error.response.data?.message || 'Server error'}`);
+      } else {
+        toast.error('Network error. Please try again.');
+      }
     }
   };
 
   const deleteUser = async (id) => {
     try {
-      await axiosInstance.delete(`/users/deleteUser/${id}`);
-      fetchAllUsers(); // Refresh the list
-      setShowDeleteModal(null);
+      const res = await axiosInstance.delete(`/users/deleteUser/${id}`);
+      
+      if (res.data.success) {
+        toast.success('User deleted successfully');
+        fetchAllUsers(); // Refresh the list
+        setShowDeleteModal(null);
+      }
     } catch (error) {
       console.error('Error deleting user:', error);
+      toast.error('Error deleting user');
     }
   };
 
