@@ -31,14 +31,40 @@ const getAllUsers = async (req, res) => {
             })
         : [];
 
-        // Remove passwords from response
-        const sanitizedUsers = sortedUsers.map(user => {
-            user.password = undefined;
-            user._isPasswordModified = undefined;
-            user.resetOtp = undefined;
-            user.resetOtpExpiredAt = undefined;
-            return user;
-        });
+        // Get posts count for each user and prepare sanitized response
+        const sanitizedUsers = await Promise.all(sortedUsers.map(async (user) => {
+            try {
+                // Get posts count for this user
+                const userPosts = await PostService.findByUserId(user.id);
+                const postsCount = userPosts.length;
+
+                // Create sanitized user object with counts
+                return {
+                    ...user,
+                    friendsCount: user.friendsCount,           // Using getter from User model
+                    friendRequestCount: user.friendRequestCount, // Using getter from User model
+                    postsCount: postsCount,
+                    // Remove sensitive data
+                    password: undefined,
+                    _isPasswordModified: undefined,
+                    resetOtp: undefined,
+                    resetOtpExpiredAt: undefined
+                };
+            } catch (error) {
+                console.error(`Error getting posts count for user ${user.id}:`, error);
+                // Return user with 0 posts count if there's an error
+                return {
+                    ...user,
+                    friendsCount: user.friendsCount,
+                    friendRequestCount: user.friendRequestCount,
+                    postsCount: 0,
+                    password: undefined,
+                    _isPasswordModified: undefined,
+                    resetOtp: undefined,
+                    resetOtpExpiredAt: undefined
+                };
+            }
+        }));
 
         res.status(200).json({count: sanitizedUsers.length, data: sanitizedUsers});
     } catch (err) {
@@ -65,7 +91,7 @@ const deleteUser = async (req, res) => {
         }
 
         // Call the external service to handle the entire deletion process
-        await performUserDeletion(userToDelete);
+        await performUserDeletion(userToDelete.id);
         
         res.status(200).json({ message: 'User deleted successfully' });
     } catch (err) {
@@ -227,8 +253,8 @@ const updateUserProfile = async (req, res) => {
         // remove password
         updatedUser.password = undefined;
         updatedUser._isPasswordModified = undefined;
-        user.resetOtp = undefined;
-        user.resetOtpExpiredAt = undefined;
+        updatedUser.resetOtp = undefined;
+        updatedUser.resetOtpExpiredAt = undefined;
         
         console.log('Profile updated successfully for user:', req.user.id);
         res.status(201).json({mag:"Profile updated successfully.", user: updatedUser});

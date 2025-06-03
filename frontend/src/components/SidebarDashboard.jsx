@@ -4,6 +4,8 @@ import { axiosInstance } from "../lib/axios";
 import { FaFacebookF, FaBars, FaTimes, FaSignOutAlt } from "react-icons/fa";
 import { FaUsersGear } from "react-icons/fa6";
 import { IoMdArrowRoundBack } from "react-icons/io";
+import styles from "../styles/DashboardStyle";
+
 
 const SidebarDashboard = ({ collapsed, setCollapsed }) => {
     const [mobileVisible, setMobileVisible] = useState(false);
@@ -56,7 +58,7 @@ const SidebarDashboard = ({ collapsed, setCollapsed }) => {
   return (
     <>
           {/* Mobile Top Bar */}
-          <div className="d-flex d-md-none align-items-center justify-content-between bg-dark text-white px-3 py-2">
+          <div className="d-flex d-md-none align-items-center justify-content-between text-white px-3 py-2" style={styles.backgroundColor}>
             <button
               className="btn btn-outline-light"
               onClick={toggleSidebar}
