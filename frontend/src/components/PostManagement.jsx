@@ -10,6 +10,7 @@ const PostManagement = () => {
     const [deleteLoading, setDeleteLoading] = useState({});
     const [hoveredCard, setHoveredCard] = useState(null);
     const [isMobile, setIsMobile] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(null);
 
     // Check if mobile screen
     useEffect(() => {
@@ -34,21 +35,21 @@ const PostManagement = () => {
     // Function to parse media URLs
     const parseMediaUrls = (media) => {
         if (!media) {
+            return [];
+        }
+        
+        // If it's already an array, return it after filtering empty values
+        if (Array.isArray(media)) {
+            return media.filter(url => url && typeof url === 'string' && url.trim().length > 0);
+        }
+        
+        // If it's a string, split by comma and filter out empty strings
+        if (typeof media === 'string') {
+            return media.split(',').map(url => url.trim()).filter(url => url.length > 0);
+        }
+        
+        // For any other type, return empty array
         return [];
-    }
-    
-    // If it's already an array, return it after filtering empty values
-    if (Array.isArray(media)) {
-        return media.filter(url => url && typeof url === 'string' && url.trim().length > 0);
-    }
-    
-    // If it's a string, split by comma and filter out empty strings
-    if (typeof media === 'string') {
-        return media.split(',').map(url => url.trim()).filter(url => url.length > 0);
-    }
-    
-    // For any other type, return empty array
-    return [];
     };
 
     // Fetch all posts
@@ -79,19 +80,15 @@ const PostManagement = () => {
         }
     };
 
-    const handleDeletePost = async (postId) => {
-        if (!window.confirm('Are you sure you want to delete this post?')) {
-            return;
-        }
-
+    const handleDeletePost = async (id) => {
         try {
-            setDeleteLoading(prev => ({ ...prev, [postId]: true }));
+            setDeleteLoading(prev => ({ ...prev, [id]: true }));
             
-            const response = await axiosInstance.delete(`/api/delete/${postId}`);
+            const response = await axiosInstance.delete(`/posts/delete/${id}`);
 
             if (response.data.success) {
                 // Remove post from state
-                setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
+                setPosts(prevPosts => prevPosts.filter(post => post.id !== id));
                 toast.success(response.data.message || 'Post deleted successfully!');
             } else {
                 toast.error(`Failed to delete post: ${response.data.message || 'Unknown error'}`);
@@ -100,220 +97,289 @@ const PostManagement = () => {
             console.error('Error deleting post:', error);
             toast.error('Error deleting post. Please try again.');
         } finally {
-            setDeleteLoading(prev => ({ ...prev, [postId]: false }));
+            setDeleteLoading(prev => ({ ...prev, [id]: false }));
+            setShowDeleteModal(null);
         }
     };
 
+    
+
+
+
   return (
-    <div style={getResponsiveStyles(styles.contentWrapper, { padding: isMobile ? '15px' : '20px' })}>
-      <div style={styles.container}>
-        <div style={styles.header}>
-          <h1 style={getResponsiveStyles(styles.title, { fontSize: isMobile ? '2rem' : '2.5rem' })}>
-            Post Management
-          </h1>
-          <p style={getResponsiveStyles(styles.subtitle, { fontSize: isMobile ? '1rem' : '1.1rem' })}>
-            Manage all posts across your platform
-          </p>
-        </div>
+        <div style={getResponsiveStyles(styles.contentWrapper, { padding: isMobile ? '15px' : '20px' })}>
+            <div style={styles.container}>
+                <div style={styles.header}>
+                    <h1 style={getResponsiveStyles(styles.title, { fontSize: isMobile ? '2rem' : '2.5rem' })}>
+                        Post Management
+                    </h1>
+                    <p style={getResponsiveStyles(styles.subtitle, { fontSize: isMobile ? '1rem' : '1.1rem' })}>
+                        Manage all posts across your platform
+                    </p>
+                </div>
 
-        <div style={styles.statsCard}>
-          <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem' }}>
-            Total Posts: {posts.length}
-          </h3>
-          <p style={{ margin: 0, opacity: 0.8 }}>
-            Monitor and manage all user posts from your admin dashboard
-          </p>
-        </div>
+                <div style={styles.statsCard}>
+                    <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem' }}>
+                        Total Posts: {posts.length}
+                    </h3>
+                    <p style={{ margin: 0, opacity: 0.8 }}>
+                        Monitor and manage all user posts from your admin dashboard
+                    </p>
+                </div>
 
-        {loading ? (
-          <div style={styles.loading}>Loading posts...</div>
-        ) : posts.length === 0 ? (
-          <div style={styles.noData}>No posts found</div>
-        ) : (
-          <div style={getResponsiveStyles(styles.postsGrid, { 
-            gridTemplateColumns: '1fr',
-            gap: isMobile ? '20px' : '25px'
-          })}>
-            {posts.map((post) => {
-              const mediaUrls = parseMediaUrls(post.media);
-              
-              return (
-              <div
-                key={post.id}
-                style={getResponsiveStyles(
-                  {
-                    ...styles.postCard,
-                    ...(hoveredCard === post.id && !isMobile ? styles.postCardHover : {})
-                  },
-                  { 
-                    padding: isMobile ? '20px' : '25px',
-                    borderRadius: isMobile ? '15px' : '20px'
-                  }
-                )}
-                onMouseEnter={() => !isMobile && setHoveredCard(post.id)}
-                onMouseLeave={() => !isMobile && setHoveredCard(null)}
-              >
-                <div style={getResponsiveStyles(styles.authorSection, {
-                  flexDirection: isMobile ? 'row' : 'row',
-                  alignItems: 'center',
-                  gap: '12px'
-                })}>
-                  <img
-                    src={post.author?.profilePicture || '/default-avatar.png'}
-                    alt={`${post.author?.firstName || 'User'} ${post.author?.lastName || ''}`}
-                    style={getResponsiveStyles(styles.avatar, {
-                      width: isMobile ? '45px' : '50px',
-                      height: isMobile ? '45px' : '50px'
-                    })}
-                    onError={(e) => {
-                      e.target.src = '/default-avatar.png';
-                    }}
-                  />
-                  <div style={styles.authorInfo}>
-                    <div style={getResponsiveStyles(styles.authorName, {
-                      fontSize: isMobile ? '1rem' : '1.1rem'
+                {loading ? (
+                    <div style={styles.loading}>Loading posts...</div>
+                ) : posts.length === 0 ? (
+                    <div style={styles.noData}>No posts found</div>
+                ) : (
+                    <div style={getResponsiveStyles(styles.postsGrid, { 
+                        gridTemplateColumns: '1fr',
+                        gap: isMobile ? '20px' : '25px'
                     })}>
-                      {post.author ? `${post.author.firstName} ${post.author.lastName}` : 'Unknown User'}
-                    </div>
-                    <div style={styles.username}>@{post.author?.username || 'unknown'}</div>
-                  </div>
-                </div>
+                        {posts.map((post) => {
+                            const mediaUrls = parseMediaUrls(post.media);
+                            
+                            return (
+                                <div
+                                    key={post.id}
+                                    style={getResponsiveStyles(
+                                        {
+                                            ...styles.postCard,
+                                            ...(hoveredCard === post.id && !isMobile ? styles.postCardHover : {})
+                                        },
+                                        { 
+                                            padding: isMobile ? '20px' : '25px',
+                                            borderRadius: isMobile ? '15px' : '20px'
+                                        }
+                                    )}
+                                    onMouseEnter={() => !isMobile && setHoveredCard(post.id)}
+                                    onMouseLeave={() => !isMobile && setHoveredCard(null)}
+                                >
+                                    <div style={getResponsiveStyles(styles.authorSection, {
+                                        flexDirection: isMobile ? 'row' : 'row',
+                                        alignItems: 'center',
+                                        gap: '12px'
+                                    })}>
+                                        <img
+                                            src={post.author?.profilePicture || '/default-avatar.png'}
+                                            alt={`${post.author?.firstName || 'User'} ${post.author?.lastName || ''}`}
+                                            style={getResponsiveStyles(styles.avatar, {
+                                                width: isMobile ? '45px' : '50px',
+                                                height: isMobile ? '45px' : '50px'
+                                            })}
+                                            onError={(e) => {
+                                                e.target.src = '/default-avatar.png';
+                                            }}
+                                        />
+                                        <div style={styles.authorInfo}>
+                                            <div style={getResponsiveStyles(styles.authorName, {
+                                                fontSize: isMobile ? '1rem' : '1.1rem'
+                                            })}>
+                                                {post.author ? `${post.author.firstName} ${post.author.lastName}` : 'Unknown User'}
+                                            </div>
+                                            <div style={styles.username}>@{post.author?.username || 'unknown'}</div>
+                                        </div>
+                                    </div>
 
-                <div style={styles.postContent}>{post.content}</div>
+                                    <div style={styles.postContent}>{post.content}</div>
+                                        
+                                    {/* render media */}
+                                    {mediaUrls.length > 0 && (
+                                        <div style={styles.mediaContainer}>
+                                            {mediaUrls.length === 1 ? (
+                                                // Single media item
+                                                post.mediaType === 'video' ? (
+                                                    <video
+                                                        src={mediaUrls[0]}
+                                                        style={{
+                                                            ...styles.media,
+                                                            aspectRatio: 'auto',
+                                                            maxHeight: '600px',
+                                                            width: '100%',
+                                                            objectFit: 'contain'
+                                                        }}
+                                                        controls
+                                                        muted
+                                                        preload="metadata"
+                                                        onError={(e) => {
+                                                            console.error('Video failed to load:', mediaUrls[0]);
+                                                            e.target.style.display = 'none';
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <img
+                                                        src={mediaUrls[0]}
+                                                        alt="Post media"
+                                                        style={{
+                                                            ...styles.media,
+                                                            aspectRatio: 'auto',
+                                                            maxHeight: '600px',
+                                                            width: '100%',
+                                                            objectFit: 'contain'
+                                                        }}
+                                                        onError={(e) => {
+                                                            console.error('Image failed to load:', mediaUrls[0]);
+                                                            e.target.style.display = 'none';
+                                                        }}
+                                                    />
+                                                )
+                                            ) : (
+                                                // Multiple images
+                                                <div style={{
+                                                    display: 'grid',
+                                                    gridTemplateColumns: mediaUrls.length === 2 ? '1fr 1fr' : 'repeat(auto-fit, minmax(150px, 1fr))',
+                                                    gap: '8px',
+                                                    borderRadius: '12px',
+                                                    overflow: 'hidden'
+                                                }}>
+                                                    {mediaUrls.map((url, index) => (
+                                                        <img
+                                                            key={index}
+                                                            src={url}
+                                                            alt={`Post media ${index + 1}`}
+                                                            style={{
+                                                                width: '100%',
+                                                                height: mediaUrls.length <= 2 ? '200px' : '150px',
+                                                                objectFit: 'cover',
+                                                                borderRadius: '8px'
+                                                            }}
+                                                            onError={(e) => {
+                                                                console.error(`Image ${index + 1} failed to load:`, url);
+                                                                e.target.style.display = 'none';
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <div style={styles.mediaType}>
+                                                {post.mediaType === 'video' ? <Video size={14} /> : <Image size={14} />}
+                                                {post.mediaType} {mediaUrls.length > 1 && `(${mediaUrls.length})`}
+                                            </div>
+                                        </div>
+                                    )}
 
-                {mediaUrls.length > 0 && (
-                  <div style={styles.mediaContainer}>
-                    {mediaUrls.length === 1 ? (
-                      // Single media item
-                      post.mediaType === 'video' ? (
-                        <video
-                          src={mediaUrls[0]}
-                          style={styles.media}
-                          controls
-                          muted
-                          preload="metadata"
-                          onError={(e) => {
-                            console.error('Video failed to load:', mediaUrls[0]);
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <img
-                          src={mediaUrls[0]}
-                          alt="Post media"
-                          style={styles.media}
-                          onError={(e) => {
-                            console.error('Image failed to load:', mediaUrls[0]);
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      )
-                    ) : (
-                      // Multiple images
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: mediaUrls.length === 2 ? '1fr 1fr' : 'repeat(auto-fit, minmax(150px, 1fr))',
-                        gap: '8px',
-                        borderRadius: '12px',
-                        overflow: 'hidden'
-                      }}>
-                        {mediaUrls.map((url, index) => (
-                          <img
-                            key={index}
-                            src={url}
-                            alt={`Post media ${index + 1}`}
-                            style={{
-                              width: '100%',
-                              height: mediaUrls.length <= 2 ? '200px' : '150px',
-                              objectFit: 'cover',
-                              borderRadius: '8px'
-                            }}
-                            onError={(e) => {
-                              console.error(`Image ${index + 1} failed to load:`, url);
-                              e.target.style.display = 'none';
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )}
-                    <div style={styles.mediaType}>
-                      {post.mediaType === 'video' ? <Video size={14} /> : <Image size={14} />}
-                      {post.mediaType} {mediaUrls.length > 1 && `(${mediaUrls.length})`}
+                                    <div style={getResponsiveStyles(styles.metaInfo, {
+                                        flexDirection: isMobile ? 'column' : 'row',
+                                        gap: isMobile ? '8px' : '15px',
+                                        alignItems: 'flex-start'
+                                    })}>
+                                        <div style={styles.metaItem}>
+                                            <Calendar size={14} />
+                                            {new Date(post.createdAt).toLocaleDateString()}
+                                        </div>
+                                        <div style={styles.metaItem}>
+                                            {post.privacy === 'public' ? <Eye size={14} /> : <EyeOff size={14} />}
+                                            <span style={styles.privacyBadge}>{post.privacy}</span>
+                                        </div>
+                                        {post.isEdited && (
+                                            <div style={styles.metaItem}>
+                                                <span style={{ color: '#f56565' }}>Edited</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div style={getResponsiveStyles(styles.statsRow, {
+                                        flexDirection: isMobile ? 'row' : 'row',
+                                        justifyContent: 'space-between',
+                                        flexWrap: 'wrap',
+                                        gap: isMobile ? '10px' : '0'
+                                    })}>
+                                        <div style={styles.statItem}>
+                                            <Heart size={16} />
+                                            {post.likeCount || 0} likes
+                                        </div>
+                                        <div style={styles.statItem}>
+                                            <MessageCircle size={16} />
+                                            {post.commentCount || 0} comments
+                                        </div>
+                                        <div style={styles.statItem}>
+                                            <Share2 size={16} />
+                                            {post.shareCount || 0} shares
+                                        </div>
+                                    </div>
+
+                                    <div style={getResponsiveStyles(styles.actions, {
+                                        justifyContent: isMobile ? 'center' : 'flex-end'
+                                    })}>
+                                        <button
+                                            style={getResponsiveStyles(styles.deleteButton, {
+                                                padding: isMobile ? '8px 16px' : '10px 20px',
+                                                fontSize: isMobile ? '0.8rem' : '0.9rem'
+                                            })}
+                                            onClick={() => setShowDeleteModal({
+                                                id: post.id,
+                                                username: post.author?.username || 'unknown',
+                                                authorName: post.author ? `${post.author.firstName} ${post.author.lastName}` : 'Unknown User'
+                                            })}
+                                            disabled={deleteLoading[post.id]}
+                                            onMouseEnter={(e) => {
+                                                if (!isMobile) {
+                                                    Object.assign(e.target.style, styles.deleteButtonHover);
+                                                }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                if (!isMobile) {
+                                                    Object.assign(e.target.style, styles.deleteButton);
+                                                }
+                                            }}
+                                        >
+                                            <Trash2 size={16} />
+                                            Delete Post
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                  </div>
                 )}
 
-                <div style={getResponsiveStyles(styles.metaInfo, {
-                  flexDirection: isMobile ? 'column' : 'row',
-                  gap: isMobile ? '8px' : '15px',
-                  alignItems: 'flex-start'
-                })}>
-                  <div style={styles.metaItem}>
-                    <Calendar size={14} />
-                    {new Date(post.createdAt).toLocaleDateString()}
-                  </div>
-                  <div style={styles.metaItem}>
-                    {post.privacy === 'public' ? <Eye size={14} /> : <EyeOff size={14} />}
-                    <span style={styles.privacyBadge}>{post.privacy}</span>
-                  </div>
-                  {post.isEdited && (
-                    <div style={styles.metaItem}>
-                      <span style={{ color: '#f56565' }}>Edited</span>
+                {/* Delete Confirmation Modal - MOVED OUTSIDE THE LOOP */}
+                {showDeleteModal && (
+                    <div style={styles.modalOverlay}>
+                        <div style={styles.modal}>
+                            <h3 style={styles.deleteModalTitle}>Delete Post</h3>
+                            <p style={styles.deleteModalText}>
+                                Are you sure you want to delete this post by "{showDeleteModal.authorName}" (@{showDeleteModal.username})? This action cannot be undone.
+                            </p>
+                            
+                            <div style={styles.modalActions}>
+                                <button
+                                    onClick={() => setShowDeleteModal(null)}
+                                    style={styles.cancelButton}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.backgroundColor = '#edf2f7';
+                                        e.target.style.borderColor = '#cbd5e0';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.backgroundColor = '#f7fafc';
+                                        e.target.style.borderColor = '#e2e8f0';
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => handleDeletePost(showDeleteModal.id)}
+                                    style={styles.confirmDeleteButton}
+                                    disabled={deleteLoading[showDeleteModal.id]}
+                                    onMouseEnter={(e) => {
+                                        if (!deleteLoading[showDeleteModal.id]) {
+                                            e.target.style.backgroundColor = '#c53030';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (!deleteLoading[showDeleteModal.id]) {
+                                            e.target.style.backgroundColor = '#e53e3e';
+                                        }
+                                    }}
+                                >
+                                    {deleteLoading[showDeleteModal.id] ? 'Deleting...' : 'Delete'}
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                  )}
-                </div>
-
-                <div style={getResponsiveStyles(styles.statsRow, {
-                  flexDirection: isMobile ? 'row' : 'row',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: isMobile ? '10px' : '0'
-                })}>
-                  <div style={styles.statItem}>
-                    <Heart size={16} />
-                    {post.likeCount || 0} likes
-                  </div>
-                  <div style={styles.statItem}>
-                    <MessageCircle size={16} />
-                    {post.commentCount || 0} comments
-                  </div>
-                  <div style={styles.statItem}>
-                    <Share2 size={16} />
-                    {post.shareCount || 0} shares
-                  </div>
-                </div>
-
-                <div style={getResponsiveStyles(styles.actions, {
-                  justifyContent: isMobile ? 'center' : 'flex-end'
-                })}>
-                  <button
-                    style={getResponsiveStyles(styles.deleteButton, {
-                      padding: isMobile ? '8px 16px' : '10px 20px',
-                      fontSize: isMobile ? '0.8rem' : '0.9rem'
-                    })}
-                    onClick={() => handleDeletePost(post.id)}
-                    disabled={deleteLoading[post.id]}
-                    onMouseEnter={(e) => {
-                      if (!isMobile) {
-                        Object.assign(e.target.style, styles.deleteButtonHover);
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isMobile) {
-                        Object.assign(e.target.style, styles.deleteButton);
-                      }
-                    }}
-                  >
-                    <Trash2 size={16} />
-                    {deleteLoading[post.id] ? 'Deleting...' : 'Delete Post'}
-                  </button>
-                </div>
-              </div>
-            )})}
-          </div>
-        )}
-      </div>
-    </div>
+                )}
+            </div>
+        </div>
   )
 }
 
