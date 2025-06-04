@@ -191,8 +191,8 @@ function EditProfile() {
 
   if (loading) {
     return (
-      <div className="edit-profile-container">
-        <div className="loading-spinner">Loading...</div>
+      <div className="edit-profile-container loading-spinner">
+        Loading<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
       </div>
     );
   }

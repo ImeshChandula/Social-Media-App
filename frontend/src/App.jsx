@@ -35,7 +35,13 @@ const App = () => {
     checkAuth();
   }, []);
 
-  if (checkingAuth) return <div className="loading-spinner">Loading...</div>;
+  if (checkingAuth) {
+    return (
+      <div className="loading-spinner">
+        Loading<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
+      </div>
+    )
+  }
 
   return (
     <div>

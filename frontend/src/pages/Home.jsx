@@ -64,7 +64,7 @@ const Home = () => {
       </div>
 
       {/* Rendered Component */}
-      <div className="bg-dark py-4 px-2 rounded">
+      <div className="py-4 px-2 rounded">
         {renderComponent()}
       </div>
     </div>

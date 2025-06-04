@@ -1,4 +1,3 @@
-// src/pages/EditPost.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
@@ -35,7 +34,11 @@ const EditPost = () => {
     }
   };
 
-  if (loading) return <div className="text-center mt-5">Loading post...</div>;
+  if (loading) {
+    return (
+      <div className="text-center mt-5">Loading post<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span></div>
+    )
+  }
 
   return (
     <div className="container mt-5 text-white">

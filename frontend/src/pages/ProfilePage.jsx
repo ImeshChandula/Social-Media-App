@@ -46,7 +46,7 @@ function ProfilePage() {
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       {loading ? (
-        <p className="text-white-50 loading-spinner">Loading...</p>
+        <p className="text-white-50 loading-spinner">Loading<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span></p>
       ) : error ? (
         <div className="alert alert-danger">{error}</div>
       ) : (
@@ -147,7 +147,7 @@ function ProfilePage() {
           </motion.div>
 
           <motion.div
-            className="mt-4 p-3 bg-dark rounded text-start text-white-50"
+            className="mt-4 p-3 rounded text-start text-white-50"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.5 }}
