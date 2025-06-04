@@ -296,8 +296,8 @@ const updateUserProfileImage = async (req, res) => {
         // remove password
         updatedUser.password = undefined;
         updatedUser._isPasswordModified = undefined;
-        user.resetOtp = undefined;
-        user.resetOtpExpiredAt = undefined;
+        updatedUser.resetOtp = undefined;
+        updatedUser.resetOtpExpiredAt = undefined;
 
         res.status(201).json({msg: "Profile picture updated successfully", updatedUser})
     } catch (error) {
@@ -337,8 +337,8 @@ const updateUserProfileCoverPhoto = async (req, res) => {
         // remove password
         updatedUser.password = undefined;
         updatedUser._isPasswordModified = undefined;
-        user.resetOtp = undefined;
-        user.resetOtpExpiredAt = undefined;
+        updatedUser.resetOtp = undefined;
+        updatedUser.resetOtpExpiredAt = undefined;
 
         res.status(201).json({msg: "Cover Photo updated successfully", updatedUser})
     } catch (error) {

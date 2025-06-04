@@ -32,7 +32,6 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
                     maxHeight: "300px",
                     maxWidth: "100%",
                     objectFit: "cover",
-                    border: "1px solid #444",
                 }}
             />
         ) : (
@@ -45,7 +44,6 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
                     maxHeight: "300px",
                     maxWidth: "100%",
                     objectFit: "cover",
-                    border: "1px solid #444",
                 }}
                 loading="lazy"
             />
@@ -55,7 +53,7 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
     return (
         <div className="card bg-white border-secondary text-white mb-4 shadow-sm rounded-4">
             {/* Header */}
-            <div className="card-header bg-white d-flex align-items-center justify-content-between p-3 rounded-top-4 border-bottom border-secondary">
+            <div className="card-header bg-white d-flex align-items-center justify-content-between p-3 rounded-top-4 border-bottom border-white-50">
                 <div className="d-flex align-items-center gap-3" onClick={handleNavigateToProfile}>
                     <img
                         src={post.author?.profilePicture}
@@ -93,7 +91,7 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
             </div>
 
             {/* Footer */}
-            <div className="card-footer bg-white d-flex justify-content-between text-black small rounded-bottom-4 border-top border-secondary">
+            <div className="card-footer bg-white d-flex justify-content-between text-black small rounded-bottom-4 border-top border-white-50">
                 <div className="d-flex align-items-center gap-1">
                     <PostLikeButton
                         postId={post._id || post.id}
