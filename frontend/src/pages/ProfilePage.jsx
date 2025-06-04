@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
 import { useNavigate } from "react-router-dom";
 import UserPosts from "../components/UserPosts";
+import EnhancedBioSection from "../components/EnhancedBioSection ";
+import EnhancedUserStats from "../components/EnhancedUserStats";
 
 function ProfilePage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const [showStoryModal, setShowStoryModal] = useState(false);
+  //const [showStoryModal, setShowStoryModal] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -126,58 +129,10 @@ function ProfilePage() {
           </motion.div>
 
           {/* Stats */}
-          <motion.div
-            className="row mt-3 text-white-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7, duration: 0.5 }}
-          >
-            <div className="col-4 col-md-2 offset-md-3">
-              <div><strong>{user?.friends?.length}</strong></div>
-              <div>Friends</div>
-            </div>
-            <div className="col-4 col-md-2">
-              <div><strong>{user?.photosCount || 0}</strong></div>
-              <div>Photos</div>
-            </div>
-            <div className="col-4 col-md-2">
-              <div><strong>{user?.videosCount || 0}</strong></div>
-              <div>Videos</div>
-            </div>
-          </motion.div>
+          <EnhancedUserStats user={user}/>
 
-          <motion.div
-            className="mt-4 p-3 rounded text-start text-white-50"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.5 }}
-          >
-            <h5 className="text-white mb-3">Bio</h5>
-
-            {user?.bio && (
-              <p className="mb-1">
-                <strong className="text-white">About:</strong> {user.bio}
-              </p>
-            )}
-
-            {user?.location && (
-              <p className="mb-1">
-                <strong className="text-white">Location:</strong> {user.location}
-              </p>
-            )}
-
-            {user?.birthday && (
-              <p className="mb-1">
-                <strong className="text-white">Birthday:</strong> {new Date(user.birthday).toLocaleDateString()}
-              </p>
-            )}
-
-            {user?.accountStatus && (
-              <p className="mb-0">
-                <strong className="text-white">Account Status:</strong> {user.accountStatus}
-              </p>
-            )}
-          </motion.div>
+          {/* bio section */}
+          <EnhancedBioSection user={user}/>
 
           {/* User Posts */}
           <div>
