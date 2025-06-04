@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
 import OtherUserPosts from "../components/OtherUserPosts";
+import EnhancedUserStats from "../components/EnhancedUserStats";
+import EnhancedBioSection from "../components/EnhancedBioSection ";
+
 
 const OtherUserProfiles = () => {
   const { id } = useParams();
@@ -92,34 +96,10 @@ const OtherUserProfiles = () => {
       </motion.div>
 
       {/* Stats */}
-      <motion.div className="row mt-4 text-white-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-        <div className="col-4 col-md-2 offset-md-3">
-          <div><strong>{user.friends?.length || 0}</strong></div>
-          <div>Friends</div>
-        </div>
-        <div className="col-4 col-md-2">
-          <div><strong>{user.photosCount || 0}</strong></div>
-          <div>Photos</div>
-        </div>
-        <div className="col-4 col-md-2">
-          <div><strong>{user.videosCount || 0}</strong></div>
-          <div>Videos</div>
-        </div>
-      </motion.div>
+      <EnhancedUserStats user={user}/>
 
       {/* Bio */}
-      <motion.div
-        className="mt-4 p-3 rounded text-start text-white-50"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-      >
-        <h5 className="text-white mb-3">Bio</h5>
-        {user.bio && <p><strong className="text-white">About:</strong> {user.bio}</p>}
-        {user.location && <p><strong className="text-white">Location:</strong> {user.location}</p>}
-        {user.birthday && <p><strong className="text-white">Birthday:</strong> {new Date(user.birthday).toLocaleDateString()}</p>}
-        {user.accountStatus && <p><strong className="text-white">Account Status:</strong> {user.accountStatus}</p>}
-      </motion.div>
+      <EnhancedBioSection user={user}/>
 
       {/* Posts */}
       <div>
