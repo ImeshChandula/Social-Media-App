@@ -5,9 +5,9 @@ import PostDropdown from "./PostDropdown";
 import PostLikeButton from "./PostLikeButton";
 
 const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
-
     const navigate = useNavigate();
 
+    const postId = post._id || post.id;
     const mediaArray = Array.isArray(post.media)
         ? post.media
         : post.media
@@ -22,13 +22,12 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
 
     const renderMedia = (url, idx) => {
         const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
-
         return isVideo ? (
             <video
                 key={idx}
                 src={url}
-                className="rounded"
                 controls
+                className="rounded"
                 style={{
                     maxHeight: "300px",
                     maxWidth: "100%",
@@ -77,8 +76,8 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
                 </div>
                 {isUserPost && (
                     <PostDropdown
-                        onUpdate={() => navigate(`/posts/edit/${post._id || post.id}`)}
-                        onDelete={{ postId: post._id || post.id, handler: onDeletePost }}
+                        postId={postId}
+                        onDelete={{ postId, handler: onDeletePost }}
                     />
                 )}
             </div>
@@ -86,7 +85,6 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
             {/* Content */}
             <div className="card-body bg-dark p-4 rounded-bottom-4">
                 <p className="text-white mb-3 text-start">{post.content}</p>
-
                 {mediaArray.length > 0 && (
                     <div className="d-flex flex-wrap gap-3 justify-content-center">
                         {mediaArray.map(renderMedia)}

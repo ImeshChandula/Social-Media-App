@@ -1,4 +1,3 @@
-// src/components/PostDropdown.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";

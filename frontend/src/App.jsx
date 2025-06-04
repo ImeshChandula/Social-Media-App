@@ -94,7 +94,7 @@ const App = () => {
           />
 
           <Route
-            path="/posts/edit/:id"
+            path="/edit-post/:id"
             element={isLoggedIn ? <EditPost /> : <Navigate to="/login" />}
           />
 
