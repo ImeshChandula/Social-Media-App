@@ -8,6 +8,7 @@ import { axiosInstance } from "./lib/axios";
 import EditProfile from "./components/EditProfile";
 import ResetPassword from "./routes/ResetPassword";
 import Dashboard from "./pages/Dashboard";
+import EditPost from "./components/EditPost";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -24,7 +25,7 @@ const App = () => {
           setIsLoggedIn(true);
           setAuthUser(res.data);
         };
-      // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars
       } catch (err) {
         setIsLoggedIn(false);
       } finally {
@@ -38,7 +39,7 @@ const App = () => {
 
   return (
     <div>
-      <Toaster 
+      <Toaster
         position="top-center"
         reverseOrder={false}
         gutter={8}
@@ -68,38 +69,43 @@ const App = () => {
         }}
       />
 
-    <Router>
-      <Routes>
+      <Router>
+        <Routes>
 
-        <Route
-          path="/login"
-          element={!isLoggedIn ? <Login setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" />}
-        />
+          <Route
+            path="/login"
+            element={!isLoggedIn ? <Login setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" />}
+          />
 
-        <Route
-          path="/register"
-          element={!isLoggedIn ? <Register setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" />}
-        /> 
+          <Route
+            path="/register"
+            element={!isLoggedIn ? <Register setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" />}
+          />
 
-        <Route
-          path="/edit-profile"
-          element={isLoggedIn ? <EditProfile /> : <Navigate to="/login" />}
-        />
+          <Route
+            path="/edit-profile"
+            element={isLoggedIn ? <EditProfile /> : <Navigate to="/login" />}
+          />
 
-        <Route path="/reset-password" element={<ResetPassword />} />
-        
-        <Route 
-          path="/dashboard/*" 
-          element={isLoggedIn && (authUser.role === "admin" || authUser.role === "super_admin") ? 
-            <Dashboard /> : <Navigate to="/login" />} 
-        />
+          <Route
+            path="/posts/edit/:id"
+            element={isLoggedIn ? <EditPost /> : <Navigate to="/login" />}
+          />
 
-        <Route
-          path="/*"
-          element={isLoggedIn ? <MainLayout /> : <Navigate to="/login" />}
-        />
-      </Routes>
-    </Router>
+          <Route path="/reset-password" element={<ResetPassword />} />
+
+          <Route
+            path="/dashboard/*"
+            element={isLoggedIn && (authUser.role === "admin" || authUser.role === "super_admin") ?
+              <Dashboard /> : <Navigate to="/login" />}
+          />
+
+          <Route
+            path="/*"
+            element={isLoggedIn ? <MainLayout /> : <Navigate to="/login" />}
+          />
+        </Routes>
+      </Router>
     </div>
   );
 };
