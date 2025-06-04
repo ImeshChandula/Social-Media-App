@@ -53,21 +53,21 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
     };
 
     return (
-        <div className="card bg-secondary bg-opacity-10 border-secondary text-white mb-4 shadow-sm rounded-4">
+        <div className="card bg-white border-secondary text-white mb-4 shadow-sm rounded-4">
             {/* Header */}
-            <div className="card-header bg-dark d-flex align-items-center justify-content-between p-3 rounded-top-4 border-bottom border-secondary">
+            <div className="card-header bg-white d-flex align-items-center justify-content-between p-3 rounded-top-4 border-bottom border-secondary">
                 <div className="d-flex align-items-center gap-3" onClick={handleNavigateToProfile}>
                     <img
                         src={post.author?.profilePicture}
                         alt="Profile"
-                        className="rounded-circle border border-secondary cursor-pointer"
+                        className="rounded-circle border border-primary border-3 cursor-pointer"
                         style={{ width: 50, height: 50, objectFit: "cover" }}
                     />
                     <div className="flex-grow-1 text-start">
-                        <h6 className="mb-0 fw-bold text-white cursor-pointer">
+                        <h6 className="mb-0 fw-bold text-black cursor-pointer">
                             {`${post.author?.firstName || ""} ${post.author?.lastName || ""}`}
                         </h6>
-                        <small className="text-white-50">
+                        <small className="text-dark">
                             {post.createdAt
                                 ? new Date(post.createdAt).toLocaleString()
                                 : ""}
@@ -83,8 +83,8 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
             </div>
 
             {/* Content */}
-            <div className="card-body bg-dark p-4 rounded-bottom-4">
-                <p className="text-white mb-3 text-start">{post.content}</p>
+            <div className="card-body bg-white p-4">
+                <p className="text-black mb-3 text-start">{post.content}</p>
                 {mediaArray.length > 0 && (
                     <div className="d-flex flex-wrap gap-3 justify-content-center">
                         {mediaArray.map(renderMedia)}
@@ -93,7 +93,7 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
             </div>
 
             {/* Footer */}
-            <div className="card-footer bg-dark d-flex justify-content-between text-white-50 small rounded-bottom-4 border-top border-secondary">
+            <div className="card-footer bg-white d-flex justify-content-between text-black small rounded-bottom-4 border-top border-secondary">
                 <div className="d-flex align-items-center gap-1">
                     <PostLikeButton
                         postId={post._id || post.id}

@@ -68,7 +68,7 @@ const PostLikeButton = ({ postId, initialIsLiked = false, initialLikeCount = 0, 
             className="btn btn-link text-danger d-flex align-items-center gap-1 p-0"
         >
             {isLiked ? <FaHeart size={18} /> : <FaRegHeart size={18} />}
-            <span className="text-white-50">{likeCount}</span>
+            <span className="text-black">{likeCount}</span>
         </button>
     );
 };
