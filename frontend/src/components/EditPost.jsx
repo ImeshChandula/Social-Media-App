@@ -24,7 +24,7 @@ const EditPost = () => {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await axiosInstance.get(`/posts/${postId}`);
+        const res = await axiosInstance.get(`posts/update/${postId}`);
         const { content, media, mediaType, tags, privacy, location } = res.data;
 
         setFormData({
@@ -38,7 +38,6 @@ const EditPost = () => {
         });
       } catch (error) {
         toast.error("Failed to load post.");
-        navigate("/profile");
       } finally {
         setLoading(false);
       }

@@ -9,6 +9,7 @@ import EditProfile from "./components/EditProfile";
 import ResetPassword from "./routes/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import EditPost from "./components/EditPost";
+import styles from "./styles/DashboardStyle";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -44,7 +45,7 @@ const App = () => {
   }
 
   return (
-    <div>
+    <div style={styles.backgroundColor}>
       <Toaster
         position="top-center"
         reverseOrder={false}
@@ -101,15 +102,16 @@ const App = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
 
           <Route
+            path="/*"
+            element={isLoggedIn ? <MainLayout /> : <Navigate to="/login" />}
+          />
+
+          <Route
             path="/dashboard/*"
             element={isLoggedIn && (authUser.role === "admin" || authUser.role === "super_admin") ?
               <Dashboard /> : <Navigate to="/login" />}
           />
 
-          <Route
-            path="/*"
-            element={isLoggedIn ? <MainLayout /> : <Navigate to="/login" />}
-          />
         </Routes>
       </Router>
     </div>
