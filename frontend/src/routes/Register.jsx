@@ -41,7 +41,7 @@ const Register = () => {
     };
 
     if (trimmedData.password.length < 6) {
-      alert('Password must be at least 6 characters.');
+      toast.error('Password must be at least 6 characters.');
       return;
     }
 
@@ -51,7 +51,6 @@ const Register = () => {
       if (res.data.success) {
         console.log('User registered:', res.data);
         toast.success(res.data.message);
-        alert('Registration successful!');
         navigate('/login');
       }
     } catch (err) {
@@ -59,7 +58,6 @@ const Register = () => {
         err.response?.data?.message || JSON.stringify(err.response?.data) || err.message;
         console.error('Registration failed:', errorMsg);
         toast.error(errorMsg);
-        alert(`Registration failed: ${errorMsg}`);
     }
   };
 

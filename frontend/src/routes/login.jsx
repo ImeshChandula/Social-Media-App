@@ -86,8 +86,6 @@ const Login = ({ setIsLoggedIn }) => {
             <a href="/reset-password" className="login-forgot">Forgot Password?</a>
           </div>
 
-          {error && <div className="login-error">{error}</div>}
-
           <button type="submit" className="login-button">Log In</button>
 
           {/*
