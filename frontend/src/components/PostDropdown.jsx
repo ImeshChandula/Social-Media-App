@@ -1,4 +1,3 @@
-// src/components/PostDropdown.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
@@ -25,13 +24,13 @@ const PostDropdown = ({ postId, onDelete }) => {
 
     return (
         <div className="position-relative" ref={dropdownRef}>
-            <button className="btn btn-dark" onClick={() => setShowDropdown((prev) => !prev)} type="button">
+            <button className="btn btn-outline-dark" onClick={() => setShowDropdown((prev) => !prev)} type="button">
                 <BsThreeDotsVertical size={24} />
             </button>
 
             {showDropdown && (
                 <ul
-                    className="dropdown-menu show bg-dark border border-secondary shadow rounded-3 p-0"
+                    className="dropdown-menu show bg-white border border-secondary shadow rounded-3 p-0"
                     style={{
                         position: "absolute",
                         top: "100%",
