@@ -10,10 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@lordicon/react": "^1.11.0",
     "axios": "^1.9.0",
     "axois": "^0.0.1-security",
     "bootstrap": "^5.3.6",
     "bootstrap-icons": "^1.13.1",
+    "font-awesome": "^4.7.0",
+    "font-awesome-animation": "^1.1.1",
     "framer-motion": "^12.9.2",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.511.0",

@@ -26,7 +26,11 @@ const OtherUserProfiles = () => {
     fetchUser();
   }, [id]);
 
-  if (loading) return <p className="text-white-50 text-center mt-5 loading-spinner">Loading user profile...</p>;
+  if (loading) {
+    return (
+      <p className="text-white-50 text-center mt-5 loading-spinner">Loading user profile<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span></p>
+    )
+  }
   if (error) return <div className="alert alert-danger mt-5">{error}</div>;
   if (!user) return <p className="text-white-50 text-center mt-5">User not found.</p>;
 
