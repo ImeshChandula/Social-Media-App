@@ -36,6 +36,7 @@ const EditPost = () => {
           privacy: privacy || 'public',
           location: location || '',
         });
+      // eslint-disable-next-line no-unused-vars
       } catch (error) {
         toast.error("Failed to load post.");
       } finally {
@@ -49,6 +50,7 @@ const EditPost = () => {
         URL.revokeObjectURL(formData.mediaPreview);
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
 
   const handleMediaUpload = (file) =>

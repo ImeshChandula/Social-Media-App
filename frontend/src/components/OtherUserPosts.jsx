@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import PostCard from "./PostCard";
 
+// eslint-disable-next-line no-unused-vars
 const OtherUserPosts = ({ userId, type = "all" }) => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);

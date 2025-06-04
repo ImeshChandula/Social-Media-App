@@ -13,6 +13,11 @@ const router = express.Router();
 // @access  Private
 router.post('/createPost', validatePost, authenticateUser, postController.createPost);
 
+// @route   GET /api/posts/getPostById/:id
+// @desc    Get posts by post id
+// @access  Private
+router.get('/getPostById/:id', authenticateUser, postController.getPostByPostId);
+
 // @route   GET /api/posts/me
 // @desc    Get all posts by the logged-in user (latest at top)
 // @access  Private

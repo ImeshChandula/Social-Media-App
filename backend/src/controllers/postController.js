@@ -118,6 +118,22 @@ const createPost = async (req, res) => {
     }
 };
 
+const getPostByPostId = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        
+        const post = await PostService.findById(postId);
+        if (!post) {
+            return res.status(404).json({ success: false, message: "Post not found" });
+        }
+
+        res.status(200).json({ success: true, message: "Post received successfully", post })
+    } catch (error) {
+        console.error('Error getting post by post id:', error.message);
+        res.status(500).json({ error: error.message, message: 'Server error' });
+    }
+};
+
 
 //@desc     Get all posts
 const getAllPosts = async (req, res) => {
@@ -587,6 +603,7 @@ const deletePostByPostId = async (req, res) => {
 module.exports = {
     createPost,
     getAllPosts,
+    getPostByPostId,
     getAllVideoPosts,
     getAllPhotoPosts,
     getAllPostsByUserId,
