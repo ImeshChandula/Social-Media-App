@@ -8,6 +8,7 @@ import {
     rejectFriendRequest,
     getAllFriends,
 } from "../lib/friendService";
+import toast from "react-hot-toast";
 
 // Connect to the socket server
 const socket = io("http://localhost:5000");
@@ -76,10 +77,10 @@ function Members() {
             await sendFriendRequest(id);
             socket.emit("friend_request_update", id);
             await loadAll();
-            alert("Friend request sent!");
+            toast.success("Friend request sent!");
         } catch (err) {
             console.error("Send failed:", err);
-            alert("Failed to send request.");
+            toast.error("Failed to send request.");
         }
     };
 
@@ -88,10 +89,10 @@ function Members() {
             await acceptFriendRequest(id);
             socket.emit("friend_request_update", id);
             await loadAll();
-            alert("Friend request accepted!");
+            toast.success("Friend request accepted!");
         } catch (err) {
             console.error("Accept failed:", err);
-            alert("Failed to accept request.");
+            toast.error("Failed to accept request.");
         }
     };
 
@@ -100,10 +101,10 @@ function Members() {
             await rejectFriendRequest(id);
             socket.emit("friend_request_update", id);
             await loadAll();
-            alert("Friend request rejected!");
+            toast.success("Friend request rejected!");
         } catch (err) {
             console.error("Reject failed:", err);
-            alert("Failed to reject request.");
+            toast.error("Failed to reject request.");
         }
     };
 

@@ -14,6 +14,8 @@ import CreatePost from "../components/CreatePost";
 import CreateStory from "../components/CreateStory";
 import Stories from "../components/Stories";
 import StoriesPopup from "../components/StoriesPopup";
+import VideoFeed from "../components/VideoFeed";
+
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -58,6 +60,7 @@ const MainLayout = () => {
               <Route path="/create-story" element={<CreateStory />} />
               <Route path="/stories" element={<Stories />} />
               <Route path="/stories/:id" element={<StoriesPopup />} />
+              <Route path="/videofeed" element={<VideoFeed/>} />
             </Routes>
           </div>
         </div>
