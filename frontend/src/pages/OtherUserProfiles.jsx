@@ -109,7 +109,7 @@ const OtherUserProfiles = () => {
 
       {/* Bio */}
       <motion.div
-        className="mt-4 p-3 bg-dark rounded text-start text-white-50"
+        className="mt-4 p-3 rounded text-start text-white-50"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
