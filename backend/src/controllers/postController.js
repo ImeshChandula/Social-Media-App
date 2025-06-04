@@ -186,6 +186,7 @@ const getAllPosts = async (req, res) => {
         });
         
         res.status(200).json({
+            success: true,
             count: populatedPosts.length, 
             message: "All posts retrieved successfully", 
             posts: populatedPosts
@@ -574,7 +575,7 @@ const deletePostByPostId = async (req, res) => {
             return res.status(500).json({ message: 'Failed to delete post' });
         }
 
-        res.status(200).json({ message: 'Post and all associated comments deleted successfully' });
+        res.status(200).json({success: true, message: 'Post and all associated comments deleted successfully' });
     } catch (error) {
         console.error('Delete post error:', error.message);
         res.status(500).json({ message: 'Server error' });

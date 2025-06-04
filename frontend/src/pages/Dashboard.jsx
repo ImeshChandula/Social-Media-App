@@ -5,6 +5,7 @@ import SidebarDashboard from "../components/SidebarDashboard";
 import Users from "../components/Users";
 import styles from "../styles/DashboardStyle";
 import DashboardHome from "../components/DashboardHome";
+import PostManagement from "../components/PostManagement";
 
 
 const Dashboard = () => {
@@ -50,8 +51,8 @@ const Dashboard = () => {
             <Routes>
                 {/* Default dashboard route */}
                 <Route path="/" element={<DashboardHome />} />
-                
                 <Route path="/users" element={<Users />} />
+                <Route path="/posts" element={<PostManagement />} />
             </Routes>
           </div>
         </div>

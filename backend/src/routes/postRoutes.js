@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticateUser } = require('../middleware/authMiddleware');
+const { authenticateUser, authorizeRoles } = require('../middleware/authMiddleware');
 const { validatePost } = require("../middleware/validator");
 const postController  = require('../controllers/postController');
 
@@ -22,6 +22,11 @@ router.get('/me', authenticateUser, postController.getAllPostsByUserId);
 // @desc    Get all posts by user ID (latest at top)
 // @access  Private
 router.get('/getAllPostsByUserId/:id', authenticateUser, postController.getAllPostsByUserId);
+
+// @route   GET /api/posts/allPosts
+// @desc    Get posts for admin dashboard
+// @access  Private
+router.get('/allPosts', authenticateUser, authorizeRoles("admin", "super_admin"), postController.getAllPosts);
 
 // @route   GET /api/posts/feed
 // @desc    Get posts for user's feed
