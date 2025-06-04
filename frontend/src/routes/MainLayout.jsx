@@ -15,6 +15,7 @@ import CreateStory from "../components/CreateStory";
 import Stories from "../components/Stories";
 import StoriesPopup from "../components/StoriesPopup";
 import VideoFeed from "../components/VideoFeed";
+import MemberControl from "../pages/MemberControl";
 
 
 const MainLayout = () => {
@@ -51,7 +52,8 @@ const MainLayout = () => {
           <div className="col flex-grow-1 py-3 px-4" style={{ overflowY: "auto" }}>
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/members" element={<Members />} />
+              {/*<Route path="/members" element={<Members />} />*/}
+              <Route path="/members" element={<MemberControl />} />
               <Route path="/videos" element={<Videos />} />
 
               <Route path="/profile" element={<ProfilePage />} />
