@@ -38,7 +38,7 @@ const Users = () => {
     }
 
     try {
-      const response = await axiosInstance.get(`/users/search?q=${encodeURIComponent(query)}&limit=10`);
+      const response = await axiosInstance.get(`/users/admin/search?q=${encodeURIComponent(query)}&limit=10`);
       setSearchResults(response.data.users);
       setShowSearchResults(true);
     } catch (error) {

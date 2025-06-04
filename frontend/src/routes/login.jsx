@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from 'react-hot-toast';
 import { FcGoogle } from "react-icons/fc";
 import { FaApple, FaEye, FaEyeSlash } from "react-icons/fa";
 import { axiosInstance } from "../lib/axios";
@@ -29,10 +30,12 @@ const Login = ({ setIsLoggedIn }) => {
 
       if (res.data?.user) {
         setIsLoggedIn(true);
+        toast.success(res.data.message || "Login Successful");
         navigate("/");
       }
     } catch (err) {
-      setError(err.response?.data?.msg || "Login failed. Please try again.");
+      setError(err.response?.data?.message || "Login failed. Please try again.");
+      toast.error(err.response?.data?.message);
     }
   };
 

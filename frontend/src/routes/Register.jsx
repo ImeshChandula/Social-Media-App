@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { axiosInstance } from '../lib/axios';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -47,14 +48,18 @@ const Register = () => {
     try {
       const res = await axiosInstance.post('/auth/register', trimmedData);
 
-      console.log('User registered:', res.data);
-      alert('Registration successful!');
-      navigate('/login');
+      if (res.data.success) {
+        console.log('User registered:', res.data);
+        toast.success(res.data.message);
+        alert('Registration successful!');
+        navigate('/login');
+      }
     } catch (err) {
       const errorMsg =
         err.response?.data?.message || JSON.stringify(err.response?.data) || err.message;
-      console.error('Registration failed:', errorMsg);
-      alert(`Registration failed: ${errorMsg}`);
+        console.error('Registration failed:', errorMsg);
+        toast.error(errorMsg);
+        alert(`Registration failed: ${errorMsg}`);
     }
   };
 

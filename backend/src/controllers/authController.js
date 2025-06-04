@@ -47,7 +47,7 @@ const registerUser = async (req, res) => {
         newUser.password = undefined;
         newUser._isPasswordModified = undefined;
 
-        res.status(201).json({ message: "User registered successfully", newUser });
+        res.status(201).json({success: true, message: "User registered successfully", newUser });
         console.log("User registered successfully.");
     } catch (error) {
         console.error(error.message);
@@ -62,13 +62,13 @@ const loginUser = async (req, res) => {
         const { email, password } = req.body;
 
         // check if user exists
-        const user = await UserService.findByEmail(email);
-        if (!user){
+        const existingUser = await UserService.findByEmail(email);
+        if (!existingUser){
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
         // validate password
-        const isMatch = await UserService.comparePassword(password, user.password);
+        const isMatch = await UserService.comparePassword(password, existingUser.password);
         if (!isMatch){
             return res.status(400).json({ message: 'Invalid credentials' });
         }
@@ -79,12 +79,12 @@ const loginUser = async (req, res) => {
             lastLogin : new Date().toISOString(),
         };
         
-        await UserService.updateById(user.id, updateData);
+        const user = await UserService.updateById(existingUser.id, updateData);
 
         // create JWT token
         const payload = {
             id: user.id,
-            username: user.firstName + ' ' + user.lastName || user.username,
+            username: user.username,
             role: user.role,
             accountStatus: user.accountStatus,
         };

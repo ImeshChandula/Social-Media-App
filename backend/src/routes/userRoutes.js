@@ -49,6 +49,10 @@ router.get('/getAllUsers', authenticateUser, authorizeRoles("super_admin"), user
 //@access  Private
 router.delete('/deleteUser/:id', authenticateUser, authorizeRoles("super_admin"), userController.deleteUser)
 
+//@route   GET /api/users/search?q=john&limit=10
+//@desc    Search user by username
+//@access  Private 
+router.get("/admin/search", authenticateUser, authorizeRoles("super_admin"), userController.searchUsersByUsername);
 
 
 
