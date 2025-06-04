@@ -186,7 +186,79 @@ const styles = {
       background: 'rgba(255, 255, 255, 0.1)',
       borderRadius: '20px',
       backdropFilter: 'blur(10px)'
-    }
+    },
+    modalOverlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1000,
+      backdropFilter: 'blur(4px)',
+    },
+
+    modal: {
+      backgroundColor: '#ffffff',
+      borderRadius: '16px',
+      padding: '30px',
+      maxWidth: '450px',
+      width: '90%',
+      boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+      border: '1px solid #e2e8f0',
+      animation: 'modalSlideIn 0.3s ease-out',
+    },
+
+    deleteModalTitle: {
+      fontSize: '1.5rem',
+      fontWeight: '600',
+      color: '#1a202c',
+      marginBottom: '16px',
+      textAlign: 'center',
+    },
+
+    deleteModalText: {
+      fontSize: '1rem',
+      color: '#4a5568',
+      lineHeight: '1.6',
+      marginBottom: '24px',
+      textAlign: 'center',
+    },
+
+    modalActions: {
+      display: 'flex',
+      gap: '12px',
+      justifyContent: 'center',
+    },
+
+    cancelButton: {
+      padding: '12px 24px',
+      fontSize: '0.9rem',
+      fontWeight: '500',
+      color: '#4a5568',
+      backgroundColor: '#f7fafc',
+      border: '1px solid #e2e8f0',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      minWidth: '100px',
+    },
+
+    confirmDeleteButton: {
+      padding: '12px 24px',
+      fontSize: '0.9rem',
+      fontWeight: '500',
+      color: '#ffffff',
+      backgroundColor: '#e53e3e',
+      border: 'none',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      minWidth: '100px',
+    },
 };
 
 export default styles;
