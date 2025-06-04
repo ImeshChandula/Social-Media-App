@@ -1,10 +1,13 @@
+// src/components/PostDropdown.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import { useNavigate } from "react-router-dom";
 import PostDeleteButton from "./PostDeleteButton";
 
-const PostDropdown = ({ onUpdate, onDelete }) => {
+const PostDropdown = ({ postId, onDelete }) => {
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -16,13 +19,13 @@ const PostDropdown = ({ onUpdate, onDelete }) => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    const handleUpdate = () => {
+        navigate(`/edit-post/${postId}`);
+    };
+
     return (
         <div className="position-relative" ref={dropdownRef}>
-            <button
-                className="btn btn-dark"
-                onClick={() => setShowDropdown((prev) => !prev)}
-                type="button"
-            >
+            <button className="btn btn-dark" onClick={() => setShowDropdown((prev) => !prev)} type="button">
                 <BsThreeDotsVertical size={24} />
             </button>
 
@@ -38,11 +41,7 @@ const PostDropdown = ({ onUpdate, onDelete }) => {
                     }}
                 >
                     <li>
-                        <button
-                            className="dropdown-item text-warning"
-                            onClick={onUpdate}
-                            type="button"
-                        >
+                        <button className="dropdown-item text-warning" onClick={handleUpdate} type="button">
                             Update
                         </button>
                     </li>
