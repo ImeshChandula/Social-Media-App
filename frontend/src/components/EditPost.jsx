@@ -24,7 +24,7 @@ const EditPost = () => {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await axiosInstance.get(`posts/update/${postId}`);
+        const res = await axiosInstance.get(`/posts/${postId}`);
         const { content, media, mediaType, tags, privacy, location } = res.data;
 
         setFormData({
