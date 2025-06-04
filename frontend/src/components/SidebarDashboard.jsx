@@ -4,6 +4,7 @@ import { axiosInstance } from "../lib/axios";
 import { FaFacebookF, FaBars, FaTimes, FaSignOutAlt } from "react-icons/fa";
 import { FaUsersGear } from "react-icons/fa6";
 import { IoMdArrowRoundBack } from "react-icons/io";
+import { BsFileEarmarkPostFill } from "react-icons/bs";
 import styles from "../styles/DashboardStyle";
 
 
@@ -13,6 +14,7 @@ const SidebarDashboard = ({ collapsed, setCollapsed }) => {
 
     const shortcuts = [
         { name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> },
+        { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
         { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
     ];
     
