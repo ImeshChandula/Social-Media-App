@@ -12,6 +12,11 @@ const router = express.Router();
 // @access  Private
 router.post("/friend-request/send/:id", authenticateUser, friendController.sendFriendRequest);
 
+// @desc    Cancel a friend request sent to another user
+// @route   POST /api/friends/friend-request/cancel/:id
+// @access  Private
+router.delete("/friend-request/cancel/:id", authenticateUser, friendController.cancelFriendRequest);
+
 // @desc    Accept a friend request
 // @route   POST /api/friends/friend-request/accept/:id
 // @access  Private

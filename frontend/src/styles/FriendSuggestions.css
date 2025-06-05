@@ -1,0 +1,243 @@
+.suggested-friends-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+        .header {
+          text-align: center;
+          margin-bottom: 3rem;
+        }
+
+        .header h2 {
+          font-size: 2.5rem;
+          font-weight: 700;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+          font-size: 1.1rem;
+          color: #6b7280;
+          margin: 0;
+        }
+
+        .loading-spinner, .error-message, .empty-state {
+          text-align: center;
+          padding: 4rem 2rem;
+        }
+
+        .spinner, .btn-spinner {
+          width: 40px;
+          height: 40px;
+          border: 4px solid #f3f4f6;
+          border-top: 4px solid #667eea;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 1rem;
+        }
+
+        .btn-spinner {
+          width: 16px;
+          height: 16px;
+          border-width: 2px;
+          margin: 0 8px 0 0;
+          display: inline-block;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        .error-message p {
+          font-size: 1.1rem;
+          color: #ef4444;
+          margin-bottom: 1rem;
+        }
+
+        .retry-btn {
+          background: #667eea;
+          color: white;
+          border: none;
+          padding: 0.75rem 1.5rem;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 1rem;
+          transition: background 0.3s ease;
+        }
+
+        .retry-btn:hover {
+          background: #5a67d8;
+        }
+
+        .empty-state .empty-icon {
+          font-size: 4rem;
+          margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+          font-size: 1.5rem;
+          color: #374151;
+          margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+          color: #6b7280;
+          font-size: 1rem;
+        }
+
+        .friends-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          gap: 2rem;
+          margin-top: 2rem;
+        }
+
+        .friend-card {
+          background: white;
+          border-radius: 16px;
+          padding: 2rem;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+          transition: all 0.3s ease;
+          border: 1px solid #f3f4f6;
+          text-align: center;
+        }
+
+        .friend-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .friend-avatar {
+          width: 80px;
+          height: 80px;
+          margin: 0 auto 1.5rem;
+          position: relative;
+        }
+
+        .friend-avatar img {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 4px solid #f3f4f6;
+        }
+
+        .avatar-placeholder {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 2rem;
+          font-weight: bold;
+          color: white;
+          border: 4px solid #f3f4f6;
+        }
+
+        .friend-info {
+          margin-bottom: 1.5rem;
+        }
+
+        .friend-name {
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #111827;
+          margin: 0 0 0.25rem 0;
+        }
+
+        .friend-username {
+          font-size: 0.9rem;
+          color: #6b7280;
+          margin: 0 0 0.5rem 0;
+        }
+
+        .friend-stats {
+          margin: 0;
+        }
+
+        .friends-count {
+          display: inline-flex;
+          align-items: center;
+          font-size: 0.875rem;
+          color: #4b5563;
+          background: #f3f4f6;
+          padding: 0.25rem 0.75rem;
+          border-radius: 12px;
+        }
+
+        .friend-actions {
+          margin-top: 1.5rem;
+        }
+
+        .add-friend-btn, .cancel-btn {
+          width: 100%;
+          padding: 0.75rem 1.5rem;
+          border: none;
+          border-radius: 12px;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .add-friend-btn {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+        }
+
+        .add-friend-btn:hover:not(:disabled) {
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .cancel-btn {
+          background: #fef2f2;
+          color: #dc2626;
+          border: 2px solid #fecaca;
+        }
+
+        .cancel-btn:hover:not(:disabled) {
+          background: #dc2626;
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+        }
+
+        .add-friend-btn:disabled, .cancel-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
+        }
+
+        @media (max-width: 768px) {
+          .suggested-friends-container {
+            padding: 1rem;
+          }
+
+          .header h2 {
+            font-size: 2rem;
+          }
+
+          .friends-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+          }
+
+          .friend-card {
+            padding: 1.5rem;
+          }
+        }
+      
