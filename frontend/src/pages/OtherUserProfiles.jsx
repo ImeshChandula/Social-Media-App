@@ -96,13 +96,13 @@ const OtherUserProfiles = () => {
       </motion.div>
 
       {/* Stats */}
-      <EnhancedUserStats user={user}/>
+      <EnhancedUserStats user={user} />
 
       {/* Bio */}
-      <EnhancedBioSection user={user}/>
+      <EnhancedBioSection user={user} />
 
       {/* Posts */}
-      <div>
+      <div className="mt-3">
         <OtherUserPosts userId={user._id || id} />
       </div>
     </motion.div>
