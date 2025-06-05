@@ -5,7 +5,7 @@ require('dotenv').config();
 //@desc    Register user
 const registerUser = async (req, res) => {
     try {
-        const { username, email, password, firstName, lastName, role } = req.body;
+        const { username, email, phone, password, firstName, lastName, role } = req.body;
 
         // check if user already exists
         let user = await UserService.findByEmail(email);
@@ -24,6 +24,7 @@ const registerUser = async (req, res) => {
         const userData = {
             username: lowercaseUsername,
             email,
+            phone,
             password,
             firstName,
             lastName,

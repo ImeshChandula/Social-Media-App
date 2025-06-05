@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { axiosInstance } from '../lib/axios';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import getCountryOptions from '../store/countryCodes'
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -10,11 +11,15 @@ const Register = () => {
     firstName: '',
     lastName: '',
     email: '',
+    countryCode: '',
+    phone: '',
     password: ''
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  const countryOptions = getCountryOptions();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,6 +41,7 @@ const Register = () => {
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
       email: formData.email.trim(),
+      phone: `${formData.countryCode.trim()}${formData.phone.trim()}`,
       password: formData.password.trim(),
       role: 'user'
     };
@@ -113,6 +119,33 @@ const Register = () => {
             required
             className="register-input"
           />
+
+          <div className="phone-input-group">
+            <select
+              name="countryCode"
+              value={formData.countryCode}
+              onChange={handleChange}
+              className="country-code-select"
+              required
+            >
+              {countryOptions.map((country) => (
+                <option key={country.iso2} value={country.dialCode}>
+                  {country.name} ({country.dialCode})
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="number"
+              name="phone"
+              placeholder="📞 Phone Number"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+              className="register-input"
+            />
+          </div>
+
 
           <div className="input-with-icon">
             <input

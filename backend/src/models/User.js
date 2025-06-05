@@ -7,6 +7,7 @@ class User {
 
     this.username = userData.username;
     this.email = userData.email;
+    this.phone = userData.phone;
     this.password = userData.password;
     this.firstName = userData.firstName;
     this.lastName = userData.lastName;
