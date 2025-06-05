@@ -40,7 +40,7 @@ const OtherUserProfiles = () => {
 
   return (
     <motion.div
-      className="container text-center mt-4"
+      className="container text-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}

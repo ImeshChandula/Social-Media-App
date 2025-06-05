@@ -18,6 +18,7 @@ import {
 } from "react-icons/fa";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { axiosInstance } from "../lib/axios";
+import NotificationPage from "../pages/Notifications";
 
 const navItems = [
   { name: "Home", path: "/", icon: <FaHome /> },
@@ -25,7 +26,7 @@ const navItems = [
   { name: "Videos", path: "/videos", icon: <FaVideo /> },
   //{ name: "Notifications", path: "/notifications", icon: <FaBell /> },
   { name: "Profile", path: "/profile", icon: <FaUserCircle /> },
-  { name: "Dashboard", path: "/dashboard", icon: <TbLayoutDashboardFilled />}
+  { name: "Dashboard", path: "/dashboard", icon: <TbLayoutDashboardFilled /> }
 ];
 
 const shortcuts = [
@@ -80,15 +81,15 @@ function Sidebar({ collapsed, setCollapsed }) {
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="d-flex d-md-none align-items-center justify-content-between bg-dark text-white px-3 py-2">
+      <div className="d-flex d-md-none align-items-center text-white py-2">
         <button
-          className="btn btn-outline-light"
+          className="btn text-light border-none fw-bold px-3"
           onClick={toggleSidebar}
           aria-label="Toggle sidebar"
         >
           {mobileVisible ? <FaTimes /> : <FaBars />}
         </button>
-        <span className="fw-bold">Facebook</span>
+        <span className="fw-bold text-start">Facebook</span>
       </div>
 
       {/* Overlay (for mobile) */}
@@ -102,9 +103,8 @@ function Sidebar({ collapsed, setCollapsed }) {
 
       {/* Sidebar */}
       <div
-        className={`bg-black text-white p-3 flex-column position-fixed top-0 ${
-          mobileVisible ? "d-flex" : "d-none"
-        } d-md-flex`}
+        className={`bg-black text-white p-3 flex-column position-fixed top-0 ${mobileVisible ? "d-flex" : "d-none"
+          } d-md-flex`}
         style={{
           width: sidebarWidth,
           height: "100vh",
@@ -137,8 +137,7 @@ function Sidebar({ collapsed, setCollapsed }) {
                 to={path}
                 onClick={closeMobileSidebar}
                 className={({ isActive }) =>
-                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${
-                    isActive ? "bg-dark text-white fw-bold" : "text-white"
+                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"
                   }`
                 }
                 style={{ fontSize: "1rem" }}
@@ -181,8 +180,7 @@ function Sidebar({ collapsed, setCollapsed }) {
                     to={path}
                     onClick={closeMobileSidebar}
                     className={({ isActive }) =>
-                      `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${
-                        isActive ? "bg-dark text-white fw-bold" : "text-white"
+                      `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"
                       }`
                     }
                     style={{ fontSize: "1rem" }}

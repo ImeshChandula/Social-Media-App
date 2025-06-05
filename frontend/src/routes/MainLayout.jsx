@@ -16,6 +16,7 @@ import Stories from "../components/Stories";
 import StoriesPopup from "../components/StoriesPopup";
 import VideoFeed from "../components/VideoFeed";
 import MemberControl from "../pages/MemberControl";
+import RegularUserPage from "../components/RegularUserPage";
 
 
 const MainLayout = () => {
@@ -24,7 +25,6 @@ const MainLayout = () => {
   return (
     <div className="container-fluid vh-100 overflow-hidden text-white" style={styles.backgroundColor}>
       <div className="row h-100">
-
         {/* Sidebar */}
         <div
           className="col-12 col-md-3 col-lg-2 p-0 bg-black"
@@ -35,9 +35,10 @@ const MainLayout = () => {
 
         {/* Main Content Area */}
         <div className="col d-flex flex-column" style={{ height: "100vh" }}>
-          <div className="top-nav-bar border-bottom border-secondary py-2 px-4 d-flex justify-content-between align-items-center d-none d-md-flex">
+
+          <div className="top-nav-bar border-bottom border-secondary py-2 px-4 d-none d-md-flex justify-content-between align-items-center">
             <div className="d-flex align-items-center gap-3">
-              <h5 className="mb-0" style={styles.title}>Facebook</h5>
+              <h5 className="mb-0 px-4" style={styles.title}>Facebook</h5>
             </div>
 
             <div className="d-flex align-items-center gap-3">
@@ -46,13 +47,17 @@ const MainLayout = () => {
           </div>
 
           {/* Main Content */}
-          <div className="col flex-grow-1 py-3 px-4" style={{ overflowY: "auto" }}>
+          <div className="col flex-grow-1 py-3 px-0 px-md-5 position-relative" style={{ overflowY: "auto" }}>
+            {/* NotificationPage - mobile only, positioned top-right */}
+            <div className="position-absolute top-0 end-0 me-3 mt-2 d-block d-md-none">
+              <NotificationPage />
+            </div>
+
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<RegularUserPage />} />
               {/*<Route path="/members" element={<Members />} />*/}
               <Route path="/members" element={<MemberControl />} />
               <Route path="/videos" element={<Videos />} />
-
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/profile/:id" element={<OtherUserProfiles />} />
               <Route path="/create-post" element={<CreatePost />} />
