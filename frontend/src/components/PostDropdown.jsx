@@ -45,7 +45,7 @@ const PostDropdown = ({ postId, onDelete }) => {
                         </button>
                     </li>
                     <li>
-                        <PostDeleteButton postId={onDelete?.postId} onDeleteSuccess={onDelete?.handler} />
+                        <PostDeleteButton postId={postId} onDeleteSuccess={onDelete?.handler} />
                     </li>
                 </ul>
             )}

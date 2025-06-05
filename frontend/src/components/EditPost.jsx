@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
@@ -6,8 +6,9 @@ import toast from "react-hot-toast";
 const EditPost = () => {
   const { postId } = useParams();
   const navigate = useNavigate();
+  const videoPreviewRef = useRef(null);
 
-  const initialState = {
+  const [formData, setFormData] = useState({
     content: '',
     media: null,
     mediaPreview: '',
@@ -15,68 +16,73 @@ const EditPost = () => {
     privacy: 'public',
     tags: '',
     location: '',
-  };
+  });
 
-  const [formData, setFormData] = useState(initialState);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await axiosInstance.get(`/posts/${postId}`);
-        const { content, media, mediaType, tags, privacy, location } = res.data;
+        const { data } = await axiosInstance.get(`/posts/getPostById/${postId}`);
+        const { content, media, mediaType, tags, privacy, location } = data;
 
         setFormData({
-          content,
-          media: media || null,
+          content: content || '',
+          media: null, // Will use preview only for now
           mediaPreview: media || '',
           mediaType: mediaType || '',
           tags: tags?.join(', ') || '',
           privacy: privacy || 'public',
           location: location || '',
         });
-      // eslint-disable-next-line no-unused-vars
+
+        // Store original preview if it's a video
+        if (mediaType === 'video') {
+          videoPreviewRef.current = media;
+        }
       } catch (error) {
         toast.error("Failed to load post.");
       } finally {
         setLoading(false);
       }
     };
+
     fetchPost();
 
     return () => {
-      if (formData.mediaType === 'video' && formData.mediaPreview) {
-        URL.revokeObjectURL(formData.mediaPreview);
+      if (videoPreviewRef.current && typeof videoPreviewRef.current === "string") {
+        URL.revokeObjectURL(videoPreviewRef.current);
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
 
-  const handleMediaUpload = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  const handleMediaUpload = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 
   const handleChange = async (e) => {
     const { name, value, files } = e.target;
 
     if (name === 'media' && files?.[0]) {
       const file = files[0];
-      const base64 = await handleMediaUpload(file);
       const type = file.type.startsWith('video') ? 'video' : 'image';
+      const base64 = await handleMediaUpload(file);
 
-      if (formData.mediaType === 'video' && formData.mediaPreview) {
-        URL.revokeObjectURL(formData.mediaPreview);
+      if (videoPreviewRef.current && typeof videoPreviewRef.current === "string") {
+        URL.revokeObjectURL(videoPreviewRef.current);
       }
+
+      const objectURL = type === 'video' ? URL.createObjectURL(file) : base64;
+      if (type === 'video') videoPreviewRef.current = objectURL;
 
       setFormData((prev) => ({
         ...prev,
         media: base64,
-        mediaPreview: type === 'video' ? URL.createObjectURL(file) : base64,
+        mediaPreview: objectURL,
         mediaType: type,
       }));
     } else {
@@ -85,8 +91,9 @@ const EditPost = () => {
   };
 
   const handleRemoveMedia = () => {
-    if (formData.mediaType === 'video' && formData.mediaPreview) {
-      URL.revokeObjectURL(formData.mediaPreview);
+    if (videoPreviewRef.current && typeof videoPreviewRef.current === "string") {
+      URL.revokeObjectURL(videoPreviewRef.current);
+      videoPreviewRef.current = null;
     }
 
     setFormData((prev) => ({
@@ -100,40 +107,35 @@ const EditPost = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
 
-    if (!formData.content.trim() && !formData.media) {
-      return toast.error("Content or media is required.");
+    const { content, media, mediaPreview, mediaType, tags, privacy, location } = formData;
+
+    if (!content.trim() && !mediaPreview) {
+      return toast.error("Post must contain either content or media.");
     }
 
-    setUpdating(true);
-    try {
-      const payload = {
-        content: formData.content,
-        media: formData.media,
-        mediaType: formData.media ? formData.mediaType : 'text',
-        tags: formData.tags
-          .split(',')
-          .map((tag) => tag.trim())
-          .filter((tag) => tag.length > 0),
-        privacy: formData.privacy,
-        location: formData.location,
-      };
+    const payload = {
+      content: content.trim(),
+      media: media || null, // base64 if updated, otherwise null
+      mediaType: media ? mediaType : mediaPreview ? mediaType : 'text',
+      tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
+      privacy,
+      location: location.trim(),
+    };
 
-      const res = await axiosInstance.patch(`/posts/update/${postId}`, payload);
-      toast.success(res.data.message || "Post updated successfully!");
+    try {
+      setUpdating(true);
+      const { data } = await axiosInstance.patch(`/posts/update/${postId}`, payload);
+      toast.success(data.message || "Post updated successfully!");
       navigate("/");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Update failed.");
+      toast.error(error?.response?.data?.message || "Failed to update post.");
     } finally {
       setUpdating(false);
     }
   };
 
   if (loading) {
-    return (
-      <div className="text-center mt-5 text-white">
-        Loading post<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
-      </div>
-    );
+    return <div className="text-center mt-5 text-white">Loading post...</div>;
   }
 
   return (
@@ -146,7 +148,7 @@ const EditPost = () => {
             <div className="mb-3">
               <label className="form-label">Content</label>
               <textarea
-                className="form-control bg-dark text-white custom-placeholder"
+                className="form-control bg-dark text-white"
                 name="content"
                 rows="4"
                 value={formData.content}
@@ -157,16 +159,17 @@ const EditPost = () => {
             <div className="mb-3">
               <div className="d-flex justify-content-between align-items-center">
                 <label className="form-label mb-0">Edit Media</label>
-                {formData.media && (
+                {formData.mediaPreview && (
                   <button
                     type="button"
-                    className="btn btn-sm btn-outline-danger my-2"
+                    className="btn btn-sm btn-outline-danger"
                     onClick={handleRemoveMedia}
                   >
                     Remove
                   </button>
                 )}
               </div>
+
               <input
                 type="file"
                 className="form-control bg-dark text-white"
@@ -174,9 +177,9 @@ const EditPost = () => {
                 accept="image/*,video/*"
                 onChange={handleChange}
               />
+
               {formData.mediaPreview && formData.mediaType === 'video' && (
                 <div className="mt-3">
-                  <p className="text-white-50">Video Preview:</p>
                   <video
                     src={formData.mediaPreview}
                     controls
@@ -187,10 +190,9 @@ const EditPost = () => {
               )}
               {formData.mediaPreview && formData.mediaType === 'image' && (
                 <div className="mt-3">
-                  <p className="text-white-50">Image Preview:</p>
                   <img
                     src={formData.mediaPreview}
-                    alt="preview"
+                    alt="Media Preview"
                     className="w-100 rounded shadow"
                     style={{ maxHeight: '300px', objectFit: 'contain' }}
                   />
@@ -199,7 +201,7 @@ const EditPost = () => {
             </div>
 
             <div className="mb-3">
-              <label className="form-label">Tags (comma separated)</label>
+              <label className="form-label">Tags (comma-separated)</label>
               <input
                 type="text"
                 className="form-control bg-dark text-white"
@@ -240,7 +242,7 @@ const EditPost = () => {
                 className="btn btn-success w-100 fw-bold rounded-pill"
                 disabled={updating}
               >
-                {updating ? 'Updating...' : 'Update Post'}
+                {updating ? "Updating..." : "Update Post"}
               </button>
               <button
                 type="button"
