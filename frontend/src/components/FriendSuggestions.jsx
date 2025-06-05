@@ -15,7 +15,7 @@ const FriendSuggestions = () => {
       const response = await axiosInstance.get('/friends/allSuggestFriends');
       
       if (response.data.success) {
-        setSuggestedFriends(response.data.suggestedFriends || []);
+        setSuggestedFriends(response.data.data.suggestedFriends || []);
       } else {
         setSuggestedFriends([]);
         toast.error(response.data.message || 'Failed to fetch suggested friends');
