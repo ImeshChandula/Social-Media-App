@@ -86,7 +86,7 @@ const FriendSuggestions = () => {
   if (loading) {
     return (
       <div className="suggested-friends-container">
-        <div className="loading-spinner">
+        <div style={{textAlign: 'center'}}>
           <div className="spinner"></div>
           <p>Loading suggested friends...</p>
         </div>
