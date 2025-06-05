@@ -170,6 +170,23 @@ const UserService = {
         }
     },
 
+    // Get a user by phone
+    async findByPhone(phone) {
+        try {
+            const userRef = await userCollection.where('phone', '==', phone).get();
+            
+            if (userRef.empty){
+                return null;
+            }
+
+            const userDoc = userRef.docs[0];
+            return new User(userDoc.id, userDoc.data());
+        } catch (error) {
+            console.error('Error finding user by phone:', error);
+            throw error;
+        }
+    },
+
     // Update a user
     async updateById(id, updateData) {
         try {

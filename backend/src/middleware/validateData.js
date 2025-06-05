@@ -7,6 +7,7 @@ const validateUserData = (req, res, next) => {
     username: Joi.string().min(3).max(30).optional(),
     firstName: Joi.string().min(1).max(50).optional(),
     lastName: Joi.string().min(1).max(50).optional(),
+    phone: Joi.string().pattern(/^(?:\+?\d{9,15})$/).min(9).trim().optional(),
 
     // Profile fields
     profilePicture: Joi.string().uri().optional(), // assuming it's a URL

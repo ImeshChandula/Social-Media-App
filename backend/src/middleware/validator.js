@@ -6,7 +6,7 @@ const validateUser = (req, res, next) => {
     // Required fields
     username: Joi.string().required(),
     email: Joi.string().email().trim().required(),
-    phone: Joi.string().pattern(/^(?:\+?\d{9,15})$/).min(10).trim().required(),
+    phone: Joi.string().pattern(/^(?:\+?\d{9,15})$/).min(9).trim().required(),
     password: Joi.string().min(6).required(),
     firstName: Joi.string().trim().required(),
     lastName: Joi.string().trim().required(),

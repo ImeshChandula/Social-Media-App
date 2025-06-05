@@ -13,6 +13,11 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: "User already exists" });
         }
 
+        const checkPhone = await UserService.findByPhone(phone);
+        if (checkPhone) {
+            return res.status(400).json({ message: "Phone number already exists" });
+        }
+
         const lowercaseUsername = username.toLowerCase();
 
         // generate a num between 1-100
