@@ -126,7 +126,7 @@ const EditPost = () => {
       setUpdating(true);
       const { data } = await axiosInstance.patch(`/posts/update/${postId}`, payload);
       toast.success(data.message || "Post updated successfully!");
-      navigate("/");
+      navigate("/profile");
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to update post.");
     } finally {
@@ -135,7 +135,11 @@ const EditPost = () => {
   };
 
   if (loading) {
-    return <div className="text-center mt-5 text-white">Loading post...</div>;
+    return (
+      <div className="text-white text-center my-5 fs-5 loading-spinner">
+        Loading post<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
+      </div>
+    )
   }
 
   return (
