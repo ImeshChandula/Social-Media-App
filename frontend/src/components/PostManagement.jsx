@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { axiosInstance } from "../lib/axios";
 import { Trash2, Heart, MessageCircle, Share2, Calendar, User, MapPin, Tag, Video, Image, Eye, EyeOff } from 'lucide-react';
 import styles from '../styles/PostManagementStyles';
+import { useNavigate } from 'react-router-dom';
 
 const PostManagement = () => {
     const [posts, setPosts] = useState([]);
@@ -12,22 +13,24 @@ const PostManagement = () => {
     const [isMobile, setIsMobile] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(null);
 
+    const navigate = useNavigate()
+
     // Check if mobile screen
     useEffect(() => {
         const checkMobile = () => {
-        setIsMobile(window.innerWidth <= 768);
+            setIsMobile(window.innerWidth <= 768);
         };
-        
+
         checkMobile();
         window.addEventListener('resize', checkMobile);
-        
+
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
     // Apply responsive styles dynamically
     const getResponsiveStyles = (baseStyles, mobileStyles = {}) => {
         if (isMobile) {
-        return { ...baseStyles, ...mobileStyles };
+            return { ...baseStyles, ...mobileStyles };
         }
         return baseStyles;
     };
@@ -37,17 +40,17 @@ const PostManagement = () => {
         if (!media) {
             return [];
         }
-        
+
         // If it's already an array, return it after filtering empty values
         if (Array.isArray(media)) {
             return media.filter(url => url && typeof url === 'string' && url.trim().length > 0);
         }
-        
+
         // If it's a string, split by comma and filter out empty strings
         if (typeof media === 'string') {
             return media.split(',').map(url => url.trim()).filter(url => url.length > 0);
         }
-        
+
         // For any other type, return empty array
         return [];
     };
@@ -59,18 +62,18 @@ const PostManagement = () => {
 
     const fetchPosts = async () => {
         try {
-        setLoading(true);
-        
-        const response = await axiosInstance.get('/posts/allPosts');
+            setLoading(true);
 
-        if (response.data.success) {
-            //const data = await response.json();
-            setPosts(response.data.posts || []);
-        } else {
-            console.error('Failed to fetch posts');
-            toast.error('Failed to fetch posts');
-            setPosts([]);
-        }
+            const response = await axiosInstance.get('/posts/allPosts');
+
+            if (response.data.success) {
+                //const data = await response.json();
+                setPosts(response.data.posts || []);
+            } else {
+                console.error('Failed to fetch posts');
+                toast.error('Failed to fetch posts');
+                setPosts([]);
+            }
         } catch (error) {
             console.error('Error fetching posts:', error);
             toast.error(error.response.data?.message || 'Server error');
@@ -83,7 +86,7 @@ const PostManagement = () => {
     const handleDeletePost = async (id) => {
         try {
             setDeleteLoading(prev => ({ ...prev, [id]: true }));
-            
+
             const response = await axiosInstance.delete(`/posts/delete/${id}`);
 
             if (response.data.success) {
@@ -102,11 +105,11 @@ const PostManagement = () => {
         }
     };
 
-    
+    const handleNavigateToProfile = (userId) => {
+        navigate(`/profile/${userId}`);
+    };
 
-
-
-  return (
+    return (
         <div style={getResponsiveStyles(styles.contentWrapper, { padding: isMobile ? '15px' : '20px' })}>
             <div style={styles.container}>
                 <div style={styles.header}>
@@ -132,13 +135,13 @@ const PostManagement = () => {
                 ) : posts.length === 0 ? (
                     <div style={styles.noData}>No posts found</div>
                 ) : (
-                    <div style={getResponsiveStyles(styles.postsGrid, { 
+                    <div style={getResponsiveStyles(styles.postsGrid, {
                         gridTemplateColumns: '1fr',
                         gap: isMobile ? '20px' : '25px'
                     })}>
                         {posts.map((post) => {
                             const mediaUrls = parseMediaUrls(post.media);
-                            
+
                             return (
                                 <div
                                     key={post.id}
@@ -147,7 +150,7 @@ const PostManagement = () => {
                                             ...styles.postCard,
                                             ...(hoveredCard === post.id && !isMobile ? styles.postCardHover : {})
                                         },
-                                        { 
+                                        {
                                             padding: isMobile ? '20px' : '25px',
                                             borderRadius: isMobile ? '15px' : '20px'
                                         }
@@ -155,11 +158,14 @@ const PostManagement = () => {
                                     onMouseEnter={() => !isMobile && setHoveredCard(post.id)}
                                     onMouseLeave={() => !isMobile && setHoveredCard(null)}
                                 >
-                                    <div style={getResponsiveStyles(styles.authorSection, {
-                                        flexDirection: isMobile ? 'row' : 'row',
-                                        alignItems: 'center',
-                                        gap: '12px'
-                                    })}>
+                                    <div
+                                        onClick={() => handleNavigateToProfile(post.author?.id)}
+                                        style={getResponsiveStyles(styles.authorSection, {
+                                            flexDirection: isMobile ? 'row' : 'row',
+                                            alignItems: 'center',
+                                            gap: '12px'
+                                        })}
+                                        className='cursor-pointer'>
                                         <img
                                             src={post.author?.profilePicture || '/default-avatar.png'}
                                             alt={`${post.author?.firstName || 'User'} ${post.author?.lastName || ''}`}
@@ -182,7 +188,7 @@ const PostManagement = () => {
                                     </div>
 
                                     <div style={styles.postContent}>{post.content}</div>
-                                        
+
                                     {/* render media */}
                                     {mediaUrls.length > 0 && (
                                         <div style={styles.mediaContainer}>
@@ -341,7 +347,7 @@ const PostManagement = () => {
                             <p style={styles.deleteModalText}>
                                 Are you sure you want to delete this post by "{showDeleteModal.authorName}" (@{showDeleteModal.username})? This action cannot be undone.
                             </p>
-                            
+
                             <div style={styles.modalActions}>
                                 <button
                                     onClick={() => setShowDeleteModal(null)}
@@ -380,7 +386,7 @@ const PostManagement = () => {
                 )}
             </div>
         </div>
-  )
+    )
 }
 
 export default PostManagement

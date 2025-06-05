@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { axiosInstance } from "../lib/axios";
 import toast from 'react-hot-toast';
 import "../styles/FriendsList.css";
@@ -12,12 +13,14 @@ const Friends = () => {
   const [friendToRemove, setFriendToRemove] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const navigate = useNavigate()
+
   const fetchFriendsList = async () => {
     try {
       setLoading(true);
       setError(null);
       const response = await axiosInstance.get('/friends/allFriends');
-      
+
       if (response.data.success) {
         setFriends(response.data.data || []);
       } else {
@@ -45,9 +48,9 @@ const Friends = () => {
 
     try {
       setActionLoading(prev => ({ ...prev, [friendToRemove.id]: true }));
-      
+
       const response = await axiosInstance.delete(`/friends/removeFriend/${friendToRemove.id}`);
-      
+
       if (response.data.success) {
         // Remove the friend from the list
         setFriends(prev => prev.filter(friend => friend.id !== friendToRemove.id));
@@ -76,7 +79,7 @@ const Friends = () => {
     const searchLower = searchQuery.toLowerCase();
     const fullName = `${friend.firstName || ''} ${friend.lastName || ''}`.toLowerCase();
     const username = friend.username?.toLowerCase() || '';
-    
+
     return fullName.includes(searchLower) || username.includes(searchLower);
   });
 
@@ -110,13 +113,16 @@ const Friends = () => {
     );
   }
 
+  const handleNavigateToProfile = (friendId) => {
+    navigate(`/profile/${friendId}`);
+  };
 
   return (
     <div className="friends-list-container">
       <div className="header">
         <h2>My Friends</h2>
         <p className="subtitle">
-          {friends.length > 0 
+          {friends.length > 0
             ? `You have ${friends.length} friend${friends.length > 1 ? 's' : ''}`
             : 'No friends yet'
           }
@@ -135,7 +141,7 @@ const Friends = () => {
               className="search-input"
             />
             {searchQuery && (
-              <button 
+              <button
                 onClick={() => setSearchQuery('')}
                 className="clear-search"
               >
@@ -164,7 +170,10 @@ const Friends = () => {
             <div key={friend.id} className="friend-card">
               <div className="friend-avatar">
                 {friend.profilePicture ? (
-                  <img src={friend.profilePicture} alt={friend.username} />
+                  <img src={friend.profilePicture}
+                    alt={friend.username}
+                    onClick={() => handleNavigateToProfile(friend.id)}
+                    style={{ cursor: 'pointer' }} />
                 ) : (
                   <div className="avatar-placeholder">
                     {friend.firstName?.[0]?.toUpperCase() || friend.username?.[0]?.toUpperCase() || '?'}
@@ -172,15 +181,19 @@ const Friends = () => {
                 )}
                 <div className="online-status"></div>
               </div>
-              
+
               <div className="friend-info">
-                <h3 className="friend-name">
-                  {friend.firstName && friend.lastName 
+                <h3 className="friend-name"
+                  onClick={() => handleNavigateToProfile(friend.id)}
+                  style={{ cursor: 'pointer' }} >
+                  {friend.firstName && friend.lastName
                     ? `${friend.firstName} ${friend.lastName}`
                     : friend.username
                   }
                 </h3>
-                <p className="friend-username">@{friend.username}</p>
+                <p className="friend-username"
+                  onClick={() => handleNavigateToProfile(friend.id)}
+                  style={{ cursor: 'pointer' }} >@{friend.username}</p>
                 <p className="friend-stats">
                   <span className="friends-count">{friend.friendsCount || 0} friends</span>
                 </p>
@@ -230,7 +243,7 @@ const Friends = () => {
                 </div>
                 <div>
                   <p className="modal-friend-name">
-                    {friendToRemove?.firstName && friendToRemove?.lastName 
+                    {friendToRemove?.firstName && friendToRemove?.lastName
                       ? `${friendToRemove.firstName} ${friendToRemove.lastName}`
                       : friendToRemove?.username
                     }
@@ -239,19 +252,19 @@ const Friends = () => {
                 </div>
               </div>
               <p className="modal-message">
-                Are you sure you want to remove this person from your friends? 
+                Are you sure you want to remove this person from your friends?
                 This action cannot be undone.
               </p>
             </div>
             <div className="modal-actions">
-              <button 
+              <button
                 onClick={cancelRemoveFriend}
                 className="cancel-btn"
                 disabled={actionLoading[friendToRemove?.id]}
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={confirmRemoveFriend}
                 className="confirm-remove-btn"
                 disabled={actionLoading[friendToRemove?.id]}
