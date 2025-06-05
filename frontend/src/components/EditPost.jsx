@@ -29,7 +29,7 @@ const EditPost = () => {
 
         setFormData({
           content: content || '',
-          media: null, // Will use preview only for now
+          media: null,
           mediaPreview: media || '',
           mediaType: mediaType || '',
           tags: tags?.join(', ') || '',
@@ -37,7 +37,6 @@ const EditPost = () => {
           location: location || '',
         });
 
-        // Store original preview if it's a video
         if (mediaType === 'video') {
           videoPreviewRef.current = media;
         }
@@ -115,7 +114,7 @@ const EditPost = () => {
 
     const payload = {
       content: content.trim(),
-      media: media || null, // base64 if updated, otherwise null
+      media: media || null,
       mediaType: media ? mediaType : mediaPreview ? mediaType : 'text',
       tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
       privacy,
@@ -136,7 +135,7 @@ const EditPost = () => {
 
   if (loading) {
     return (
-      <div className="text-white text-center my-5 fs-5 loading-spinner">
+      <div className="text-white text-center my-5 fs-5 normal-loading-spinner">
         Loading post<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
       </div>
     )

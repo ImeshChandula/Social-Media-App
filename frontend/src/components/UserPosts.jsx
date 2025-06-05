@@ -45,7 +45,7 @@ const UserPosts = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center h-40">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-white loading-spinner">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-white normal-loading-spinner">
                     Loading<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
                 </div>
             </div>

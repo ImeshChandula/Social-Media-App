@@ -39,7 +39,7 @@ const Feed = () => {
 
     if (loading) {
         return (
-            <div className="text-white text-center my-5 fs-5 loading-spinner">
+            <div className="text-white text-center my-5 fs-5 normal-loading-spinner">
                 Loading Feeds<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
             </div>
         )

@@ -38,7 +38,7 @@ const App = () => {
 
   if (checkingAuth) {
     return (
-      <div className="loading-spinner">
+      <div className="normal-loading-spinner">
         Loading<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
       </div>
     )
