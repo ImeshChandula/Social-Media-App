@@ -118,6 +118,7 @@ const createPost = async (req, res) => {
     }
 };
 
+
 const getPostByPostId = async (req, res) => {
     try {
         const postId = req.params.id;
@@ -501,7 +502,7 @@ const updatePostByPostId = async (req, res) => {
                 const validatedMedia = validateAndProcessMedia(media, mediaType);
 
                 const imageUrl  = await uploadMedia(validatedMedia, mediaType);
-                postData.media = imageUrl;
+                updateData.media = imageUrl;
 
                 console.log(`${mediaType} uploaded successfully:`);
             } catch (error) {
