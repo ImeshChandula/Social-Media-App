@@ -24,6 +24,7 @@ const MainLayout = () => {
   return (
     <div className="container-fluid vh-100 overflow-hidden text-white" style={styles.backgroundColor}>
       <div className="row h-100">
+
         {/* Sidebar */}
         <div
           className="col-12 col-md-3 col-lg-2 p-0 bg-black"
@@ -34,17 +35,13 @@ const MainLayout = () => {
 
         {/* Main Content Area */}
         <div className="col d-flex flex-column" style={{ height: "100vh" }}>
-          {/* Top Navigation Bar */}
-          <div className="top-nav-bar border-bottom border-secondary py-2 px-4 d-flex justify-content-between align-items-center">
-            <div className="d-flex align-items-center">
-              {/* You can add breadcrumbs or page title here */}
-              <h5 className="mb-0" style={styles.title}>Social App</h5>
+          <div className="top-nav-bar border-bottom border-secondary py-2 px-4 d-flex justify-content-between align-items-center d-none d-md-flex">
+            <div className="d-flex align-items-center gap-3">
+              <h5 className="mb-0" style={styles.title}>Facebook</h5>
             </div>
 
-            {/* Right side - Notification Bell */}
             <div className="d-flex align-items-center gap-3">
               <NotificationPage />
-              {/* You can add more icons here like search, messages, etc. */}
             </div>
           </div>
 
@@ -62,7 +59,7 @@ const MainLayout = () => {
               <Route path="/create-story" element={<CreateStory />} />
               <Route path="/stories" element={<Stories />} />
               <Route path="/stories/:id" element={<StoriesPopup />} />
-              <Route path="/videofeed" element={<VideoFeed/>} />
+              <Route path="/videofeed" element={<VideoFeed />} />
             </Routes>
           </div>
         </div>
