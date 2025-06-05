@@ -7,6 +7,7 @@ import { axiosInstance } from "../lib/axios";
 
 const Login = ({ setIsLoggedIn }) => {
   const [formData, setFormData] = useState({ email: "", password: "", rememberMe: false });
+  // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);

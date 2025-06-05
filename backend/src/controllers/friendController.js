@@ -15,7 +15,7 @@ const sendFriendRequest = async (req, res) => {
       return res.status(404).json({ success: false, message: "Recipient not found" });
     }
     
-    const result = await FriendService.sendFriendRequest(senderId, recipient.email);
+    const result = await FriendService.sendFriendRequest(senderId, recipient.id);
     
     if (!result) {
       return res.status(400).json({ success: false, message: result.message });
@@ -42,7 +42,7 @@ const sendFriendRequest = async (req, res) => {
 const acceptFriendRequest = async (req, res) => {
   try {
     const requesterId = req.params.id;
-    const userId = req.user.id; // From auth middleware
+    const userId = req.user.id; 
     
     const result = await FriendService.acceptFriendRequest(userId, requesterId);
     
@@ -110,7 +110,7 @@ const getPendingFriendRequests = async (req, res) => {
 const removeFriend = async (req, res) => {
   try {
     const friendId = req.params.id;
-    const userId = req.user.id; // From auth middleware
+    const userId = req.user.id; 
     
     const result = await FriendService.removeFriend(userId, friendId);
     
@@ -149,74 +149,20 @@ const getFriendsList = async (req, res) => {
 // @route   GET /api/friends/allSuggestFriends
 const getAllSuggestFriends = async (req, res) => {
   try {
-        // Get current user ID from the request (assuming it's set by authentication middleware)
         const currentUserId = req.user.id;
         
-        if (!currentUserId) {
-            return res.status(401).json({
-                success: false,
-                message: 'User authentication required'
-            });
+        const result = await FriendService.getSuggestedFriends(currentUserId);
+    
+        if (!result.success) {
+          return res.status(400).json({ success: false, message: result.message });
         }
-
-        // Get current user to access their friends array
-        const currentUser = await UserService.findById(currentUserId);
-        
-        if (!currentUser) {
-            return res.status(404).json({
-                success: false,
-                message: 'Current user not found'
-            });
-        }
-
-        // Get all users from the database
-        const allUsers = await UserService.findAll();
-
-        // Filter out suggested friends:
-        // 1. Exclude current user
-        // 2. Exclude users who are already friends
-        // 3. Exclude users who have pending friend requests (optional)
-        const suggestedFriends = allUsers.filter(user => {
-            // Don't suggest the current user
-            if (user.id === currentUserId) {
-                return false;
-            }
-
-            // Don't suggest users who are already friends
-            if (currentUser.friends.includes(user.id)) {
-                return false;
-            }
-
-            // Optional: Don't suggest users who already have pending friend requests
-            if (currentUser.friendRequests.includes(user.id)) {
-                return false;
-            }
-
-            // Only suggest active users
-            if (user.accountStatus === 'inactive' || user.accountStatus == 'banned') {
-                return false;
-            }
-
-            return true;
-        });
-
-        // Remove sensitive information before sending response
-        const sanitizedSuggestedFriends = suggestedFriends.map(user => ({
-            id: user.id,
-            username: user.username,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            profilePicture: user.profilePicture,
-            friendsCount: user.friendsCount,
-            // Don't include password, resetOtp, etc.
-        }));
 
         return res.status(200).json({
             success: true,
             message: 'Suggested friends retrieved successfully',
             data: {
-                suggestedFriends: sanitizedSuggestedFriends,
-                count: sanitizedSuggestedFriends.length
+                suggestedFriends: result.suggestedFriends,
+                count: result.suggestedFriends.length
             }
         });
 
@@ -231,6 +177,27 @@ const getAllSuggestFriends = async (req, res) => {
 };
 
 
+// @desc    Cancel a friend request
+// @route   DELETE /api/friends/friend-request/cancel/:id
+const cancelFriendRequest = async (req, res) => {
+  try {
+    const recipientId = req.params.id;
+    const senderId = req.user.id; // From auth middleware
+    
+    const result = await FriendService.cancelFriendRequest(senderId, recipientId);
+    
+    if (!result.success) {
+      return res.status(400).json({ success: false, message: result.message });
+    }
+    
+    res.status(200).json({ success: true, message: result.message });
+  } catch (error) {
+    console.error('Error in cancelFriendRequest controller:', error);
+    res.status(500).json({ error: error.message, message: "Server error" });
+  }
+};
+
+
 
 module.exports = {
   sendFriendRequest,
@@ -239,5 +206,6 @@ module.exports = {
   getPendingFriendRequests,
   removeFriend,
   getFriendsList,
-  getAllSuggestFriends
+  getAllSuggestFriends,
+  cancelFriendRequest
 };
