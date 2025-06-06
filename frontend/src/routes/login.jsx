@@ -1,16 +1,31 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from 'react-hot-toast';
-import { FcGoogle } from "react-icons/fc";
-import { FaApple, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { axiosInstance } from "../lib/axios";
+import LoginStyle from "../styles/LoginStyle";
+import SocialButtons from "../components/SocialButtons";
 
 const Login = ({ setIsLoggedIn }) => {
   const [formData, setFormData] = useState({ email: "", password: "", rememberMe: false });
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState("");
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [hoveredButton, setHoveredButton] = useState(false);
+  const [hoveredEye, setHoveredEye] = useState(false);
+  const [hoveredForgot, setHoveredForgot] = useState(false);
+  const [hoveredSignup, setHoveredSignup] = useState(false);
+  const [focusedInputs, setFocusedInputs] = useState({});
+  
+  const navigate = useNavigate();
+
+  const handleFocus = (inputName) => {
+    setFocusedInputs(prev => ({ ...prev, [inputName]: true }));
+  };
+
+  const handleBlur = (inputName) => {
+    setFocusedInputs(prev => ({ ...prev, [inputName]: false }));
+  };
 
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
@@ -34,20 +49,19 @@ const Login = ({ setIsLoggedIn }) => {
         toast.success(res.data.message || "Login Successful");
         navigate("/");
       }
-    } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Please try again.");
-      toast.error(err.response?.data?.message);
+    } catch (error) {
+      setError(error.response?.data?.message || "Login failed. Please try again.");
+      toast.error(error.response?.data?.message);
     }
   };
-
   return (
-    <div className="login-page">
-      <div className="login-header">
-        <h1 className="login-title">facebook</h1>
-        <p className="login-subtitle">Connect with friends and the world around you.</p>
+    <div style={LoginStyle.page}>
+      <div style={LoginStyle.header}>
+        <h1 style={LoginStyle.title}>facebook</h1>
+        <p style={LoginStyle.subtitle}>Connect with friends and the world around you.</p>
       </div>
 
-      <div className="login-container">
+      <div style={LoginStyle.container}>
         <form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -55,62 +69,104 @@ const Login = ({ setIsLoggedIn }) => {
             placeholder="Email"
             value={formData.email}
             onChange={handleChange}
-            className="login-input"
+            onFocus={() => handleFocus('email')}
+            onBlur={() => handleBlur('email')}
+            style={{
+              ...LoginStyle.input,
+              ...(focusedInputs.email ? LoginStyle.inputFocus : {})
+            }}
             required
           />
 
-          <div className="input-with-icon">
+          <div style={LoginStyle.passwordGroup}>
             <input
               type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Password"
               value={formData.password}
               onChange={handleChange}
-              className="login-input-password"
+              onFocus={() => handleFocus('password')}
+              onBlur={() => handleBlur('password')}
+              style={{
+                ...LoginStyle.passwordInput,
+                ...(focusedInputs.password ? LoginStyle.inputFocus : {})
+              }}
               required
             />
-            <span className="hide-show-eye" onClick={togglePasswordVisibility}>
+            <span
+              style={{
+                ...LoginStyle.eyeIcon,
+                ...(hoveredEye ? LoginStyle.eyeIconHover : {})
+              }}
+              onClick={togglePasswordVisibility}
+              onMouseEnter={() => setHoveredEye(true)}
+              onMouseLeave={() => setHoveredEye(false)}
+            >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
 
-          <div className="login-options">
-            <label className="login-checkbox">
+          <div style={LoginStyle.options}>
+            <label style={LoginStyle.checkboxLabel}>
               <input
                 type="checkbox"
                 name="rememberMe"
                 checked={formData.rememberMe}
                 onChange={handleChange}
+                style={LoginStyle.checkbox}
               />
               <span>Remember me</span>
             </label>
-            <a href="/reset-password" className="login-forgot">Forgot Password?</a>
+            <a 
+              href="/reset-password" 
+              style={{
+                ...LoginStyle.forgotLink,
+                ...(hoveredForgot ? LoginStyle.forgotLinkHover : {})
+              }}
+              onMouseEnter={() => setHoveredForgot(true)}
+              onMouseLeave={() => setHoveredForgot(false)}
+            >
+              Forgot Password?
+            </a>
           </div>
 
-          <button type="submit" className="login-button">Log In</button>
+          <button 
+            type="submit" 
+            style={{
+              ...LoginStyle.button,
+              ...(hoveredButton ? LoginStyle.buttonHover : {})
+            }}
+            onMouseEnter={() => setHoveredButton(true)}
+            onMouseLeave={() => setHoveredButton(false)}
+          >
+            Log In
+          </button>
 
           {/*
-
-          <div className="login-divider">Or continue with</div>
-          <div className="login-social-buttons">
-            <button type="button" className="login-social-btn">
-              <span className="login-social-content">
-                <FcGoogle className="login-social-icon" /> Google
-              </span>
-            </button>
-            <button type="button" className="login-social-btn">
-              <span className="login-social-content">
-                <FaApple className="login-social-icon" /> Apple
-              </span>
-            </button>
+          <div style={LoginStyle.divider}>
+            <div style={LoginStyle.dividerLine}></div>
+            <span style={LoginStyle.dividerText}>Or continue with</span>
           </div>
-
           */}
+          
+          {/* Social buttons */}
+          {/*<SocialButtons />*/}
 
         </form>
 
-        <p className="login-signup">
-          Don't have an account? <a href="/register" className="login-signup-link">Sign up</a>
+        <p style={LoginStyle.signup}>
+          Don't have an account?{" "}
+          <a 
+            href="/register" 
+            style={{
+              ...LoginStyle.signupLink,
+              ...(hoveredSignup ? LoginStyle.signupLinkHover : {})
+            }}
+            onMouseEnter={() => setHoveredSignup(true)}
+            onMouseLeave={() => setHoveredSignup(false)}
+          >
+            Sign up
+          </a>
         </p>
       </div>
     </div>
