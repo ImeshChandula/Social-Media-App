@@ -1,45 +1,57 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 
+const detectMediaType = (media) => {
+  if (!media) return "";
+  // Basic detection based on file extension or base64 mime type
+  if (media.startsWith("data:")) {
+    if (media.includes("image")) return "image";
+    if (media.includes("video")) return "video";
+    if (media.includes("audio")) return "audio";
+  } else {
+    const lower = media.toLowerCase();
+    if (lower.match(/\.(jpeg|jpg|png|gif|bmp|webp|svg)$/)) return "image";
+    if (lower.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/)) return "video";
+    if (lower.match(/\.(mp3|wav|ogg|m4a|flac)$/)) return "audio";
+  }
+  return "";
+};
+
 const EditPost = () => {
-  const { postId } = useParams(); // postId from URL
+  const { postId } = useParams();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     content: "",
-    media: "",      // media URL or base64 string
-    mediaType: "",  // e.g. 'image', 'video', 'audio'
+    media: "",
+    mediaType: "",
     tags: "",
-    privacy: "public", // default value
+    privacy: "public",
     location: "",
   });
 
-  // For media preview if video/image
   const mediaPreviewRef = useRef(null);
 
-  // Fetch post data to prefill form
   useEffect(() => {
     const fetchPost = async () => {
       try {
         const response = await axiosInstance.get(`/posts/getPostById/${postId}`);
-
         if (response.data.success) {
           const post = response.data.post;
-
           setForm({
             content: post.content || "",
             media: post.media || "",
-            mediaType: post.mediaType || "",
+            mediaType: post.mediaType || detectMediaType(post.media || ""),
             tags: (post.tags || []).join(", "),
             privacy: post.privacy || "public",
             location: post.location || "",
           });
         } else {
           toast.error("Post not found");
+          navigate(-1);
         }
       } catch (error) {
         toast.error("Failed to fetch post data");
@@ -52,61 +64,54 @@ const EditPost = () => {
     fetchPost();
   }, [postId, navigate]);
 
-  // Handle input change
+  // Update media and detect mediaType automatically
+  const handleMediaChange = (e) => {
+    const media = e.target.value;
+    const detectedType = detectMediaType(media);
+    setForm((prev) => ({
+      ...prev,
+      media,
+      mediaType: detectedType,
+    }));
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle tags input change - split by comma for backend
   const handleTagsChange = (e) => {
     const { value } = e.target;
     setForm((prev) => ({ ...prev, tags: value }));
   };
 
-  // Handle media input change (for URL or base64 input)
-  const handleMediaChange = (e) => {
-    const { value } = e.target;
-    setForm((prev) => ({ ...prev, media: value }));
-  };
-
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Prepare tags array (split by comma, trim spaces)
     const tagsArray = form.tags
       ? form.tags.split(",").map((tag) => tag.trim()).filter(Boolean)
       : [];
 
-    // Prepare update payload
     const payload = {
       content: form.content,
-      media: form.media || undefined,  // send undefined if empty
-      mediaType: form.media ? form.mediaType : undefined, // require mediaType only if media exists
+      media: form.media || undefined,
+      mediaType: form.media ? form.mediaType : undefined,
       tags: tagsArray,
       privacy: form.privacy,
       location: form.location,
     };
 
     try {
-      await axiosInstance.patch(`/posts/update/${postId}`, payload, {
-        withCredentials: true,
-      });
-
+      await axiosInstance.patch(`/posts/update/${postId}`, payload);
       toast.success("Post updated successfully");
-      navigate(-1); // go back to previous page or feed
+      navigate(-1);
     } catch (error) {
       console.error("Update failed:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to update post"
-      );
+      toast.error(error.response?.data?.message || "Failed to update post");
     }
   };
 
-  if (loading) {
-    return <p>Loading post data...</p>;
-  }
+  if (loading) return <p>Loading post data...</p>;
 
   return (
     <div className="edit-post-container" style={{ maxWidth: 600, margin: "auto" }}>
@@ -138,7 +143,7 @@ const EditPost = () => {
           />
         </div>
 
-        {/* Media Preview */}
+        {/* Auto Media Preview */}
         {form.media && (
           <div style={{ margin: "10px 0" }}>
             {form.mediaType === "video" ? (
@@ -155,28 +160,18 @@ const EditPost = () => {
                 alt="media preview"
                 style={{ maxWidth: "100%" }}
               />
+            ) : form.mediaType === "audio" ? (
+              <audio
+                ref={mediaPreviewRef}
+                src={form.media}
+                controls
+                style={{ width: "100%" }}
+              />
             ) : (
-              <p>Media preview not available for type: {form.mediaType}</p>
+              <p>Media preview not available for this media type</p>
             )}
           </div>
         )}
-
-        {/* Media Type */}
-        <div>
-          <label>Media Type</label>
-          <select
-            name="mediaType"
-            value={form.mediaType}
-            onChange={handleChange}
-            disabled={!form.media} // disable if no media
-            required={!!form.media}
-          >
-            <option value="">Select media type</option>
-            <option value="image">Image</option>
-            <option value="video">Video</option>
-            <option value="audio">Audio</option>
-          </select>
-        </div>
 
         {/* Tags */}
         <div>
