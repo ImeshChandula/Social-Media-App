@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import EditPost from "./components/EditPost";
 import styles from "./styles/DashboardStyle";
 
+
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);

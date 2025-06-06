@@ -279,6 +279,7 @@ const getAllVideoPosts = async (req, res) => {
         });
         
         res.status(200).json({
+            success: true,
             count: populatedPosts.length, 
             message: "All Videos retrieved successfully", 
             posts: populatedPosts
