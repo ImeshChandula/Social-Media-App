@@ -7,16 +7,26 @@ const UserService = require('../services/userService');
  */
 const populateAuthor = async (data) => {
     const populateOne = async (category) => {
-        if (category?.author?.id) {
-            const user = await UserService.findById(category.author.id);
-            if (user) {
-                category.author = {
-                    id: user.id,
-                    email: user.email,
-                    username: `${user.firstName} ${user.lastName}`,
-                    profilePicture: user.profilePicture,
-                };
-            } else {
+        // Handle both string ID and object with ID
+        const authorId = typeof category.author === 'string' 
+            ? category.author 
+            : category?.author?.id;
+            
+        if (authorId) {
+            try {
+                const user = await UserService.findById(authorId);
+                if (user) {
+                    category.author = {
+                        id: user.id,
+                        email: user.email,
+                        username: `${user.firstName} ${user.lastName}`,
+                        profilePicture: user.profilePicture,
+                    };
+                } else {
+                    category.author = null;
+                }
+            } catch (error) {
+                console.error('Error fetching user:', error);
                 category.author = null;
             }
         }

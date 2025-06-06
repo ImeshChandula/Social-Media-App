@@ -28,7 +28,7 @@ class JobCategoryService {
             const jobRef = await this.collection.where('name', '==', name).get();
             
             if (jobRef.empty) {
-                return [];
+                return null;
             }
 
             const jobCategory = jobRef.docs.map(doc => new JobCategory(doc.id, doc.data()));

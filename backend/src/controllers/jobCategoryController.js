@@ -68,7 +68,9 @@ const createCategory = async (req, res) => {
         const categoryData = {
             name: name,
             description: description,
-            author: req.user.id,
+            author: {
+                id: req.user.id
+            },
         };
 
         const newCategory = await jobCategoryService.create(categoryData);
@@ -111,7 +113,8 @@ const updateCategory = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'Job category updated successfully'
+            message: 'Job category updated successfully',
+            data: updatedCategory
         });
     } catch (error) {
         res.status(500).json({

@@ -14,7 +14,7 @@ router.get('/active', authenticateUser, jobCategoryController.getAllActiveCatego
 router.post('/create', validateJobCategory, authenticateUser, authorizeRoles("admin", "super_admin"), jobCategoryController.createCategory);
 router.get('/getAll', authenticateUser, authorizeRoles("admin", "super_admin"), jobCategoryController.getAllCategories);
 router.patch('/update/:id', authenticateUser, authorizeRoles("admin", "super_admin"), jobCategoryController.updateCategory);
-router.get('/delete/:id', authenticateUser, authorizeRoles("admin", "super_admin"), jobCategoryController.deleteCategory);
+router.delete('/delete/:id', authenticateUser, authorizeRoles("admin", "super_admin"), jobCategoryController.deleteCategory);
 
 
 module.exports = router;

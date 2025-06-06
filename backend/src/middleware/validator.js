@@ -168,7 +168,7 @@ const validateStory = (req, res, next) => {
 const validateJobCategory = (req, res, next) => {
   const schema = Joi.object({
     name: Joi.string().required(),
-    description: Joi.string().optional(),
+    description: Joi.string().allow('').optional(),
     author: Joi.string().optional(),
     isActive: Joi.boolean().optional(),
     createdAt: Joi.date().optional(),

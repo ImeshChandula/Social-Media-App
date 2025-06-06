@@ -5,6 +5,7 @@ import { FaFacebookF, FaBars, FaTimes, FaSignOutAlt } from "react-icons/fa";
 import { FaUsersGear } from "react-icons/fa6";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import { BsFileEarmarkPostFill } from "react-icons/bs";
+import { SiJoplin } from "react-icons/si";
 import styles from "../styles/DashboardStyle";
 
 
@@ -15,6 +16,7 @@ const SidebarDashboard = ({ collapsed, setCollapsed }) => {
     const shortcuts = [
         { name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> },
         { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
+        { name: "Job Categories", path: "/dashboard/job-category", icon: <SiJoplin /> },
         { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
     ];
     
