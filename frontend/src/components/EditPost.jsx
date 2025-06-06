@@ -20,6 +20,7 @@ const EditPost = () => {
   const { postId } = useParams();
   const navigate = useNavigate();
 
+  const [isUpdating, setIsUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     content: "",
@@ -125,12 +126,12 @@ const EditPost = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsUpdating(true); // Disable the button
 
     const tagsArray = form.tags
       ? form.tags.split(",").map((tag) => tag.trim()).filter(Boolean)
       : [];
 
-    // Prepare payload
     const payload = {
       content: form.content,
       mediaType: form.mediaType || "text",
@@ -154,11 +155,11 @@ const EditPost = () => {
         payload.media = base64String;
       } catch (error) {
         toast.error("Failed to read media file");
+        setIsUpdating(false);
         return;
       }
     } else {
-      // No new file uploaded
-      payload.media = form.media; // existing media URL or empty string to remove media
+      payload.media = form.media;
     }
 
     try {
@@ -168,6 +169,7 @@ const EditPost = () => {
     } catch (error) {
       console.error("Update failed:", error);
       toast.error(error.response?.data?.message || "Failed to update post");
+      setIsUpdating(false);
     }
   };
 
@@ -185,6 +187,7 @@ const EditPost = () => {
       <div className="card shadow-sm border-0">
         <div className="card-body p-4">
           <h2 className="mb-4 text-black fw-bold text-center">Edit Post</h2>
+
           <form onSubmit={handleSubmit}>
             {/* Content */}
             <div className="mb-3">
@@ -301,9 +304,21 @@ const EditPost = () => {
 
             {/* Submit and Cancel */}
             <div className="d-flex justify-content-end">
-              <button type="submit" className="btn btn-primary me-2">
-                Update Post
+              <button
+                type="submit"
+                className="btn btn-primary me-2"
+                disabled={isUpdating}
+              >
+                {isUpdating ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
+                    Updating...
+                  </>
+                ) : (
+                  "Update Post"
+                )}
               </button>
+
               <button
                 type="button"
                 onClick={() => navigate(-1)}
