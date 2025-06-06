@@ -18,6 +18,7 @@ class User {
     this.bio = userData.bio || '';
     this.location = userData.location || '';
     this.birthday = userData.birthday || null;
+    this.jobCategory = userData.jobCategory || "None";
 
     this.friends = userData.friends || [];
     this.friendRequests = userData.friendRequests || [];
