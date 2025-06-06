@@ -9,12 +9,10 @@ const detectMediaType = (media) => {
   if (media.startsWith("data:")) {
     if (media.includes("image")) return "image";
     if (media.includes("video")) return "video";
-    if (media.includes("audio")) return "audio";
   } else {
     const lower = media.toLowerCase();
     if (lower.match(/\.(jpeg|jpg|png|gif|bmp|webp|svg)$/)) return "image";
     if (lower.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/)) return "video";
-    if (lower.match(/\.(mp3|wav|ogg|m4a|flac)$/)) return "audio";
   }
   return "";
 };
@@ -160,13 +158,6 @@ const EditPost = () => {
                 alt="media preview"
                 style={{ maxWidth: "100%" }}
               />
-            ) : form.mediaType === "audio" ? (
-              <audio
-                ref={mediaPreviewRef}
-                src={form.media}
-                controls
-                style={{ width: "100%" }}
-              />
             ) : (
               <p>Media preview not available for this media type</p>
             )}
@@ -214,10 +205,17 @@ const EditPost = () => {
           />
         </div>
 
-        {/* Submit */}
-        <button type="submit" style={{ marginTop: 10 }}>
-          Update Post
-        </button>
+        {/* Submit and Cancel */}
+        <div style={{ marginTop: 10 }}>
+          <button type="submit">Update Post</button>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            style={{ marginLeft: 10 }}
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   );
