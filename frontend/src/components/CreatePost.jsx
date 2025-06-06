@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { axiosInstance } from '../lib/axios';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const CreatePost = () => {
     const initialState = {
@@ -13,6 +14,7 @@ const CreatePost = () => {
         location: '',
     };
 
+    const navigate = useNavigate()
     const [formData, setFormData] = useState(initialState);
     const [loading, setLoading] = useState(false);
 
@@ -92,6 +94,7 @@ const CreatePost = () => {
             const res = await axiosInstance.post('/posts/createPost', payload);
             toast.success(res.data.message || 'Post created successfully!');
             setFormData(initialState);
+            navigate(-1)
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to create post.')
         } finally {
@@ -101,30 +104,31 @@ const CreatePost = () => {
 
     return (
         <div className="container mt-5" style={{ maxWidth: '720px' }}>
-            <div className="card shadow-lg border-secondary rounded-4 bg-dark text-white">
-                <div className="card-body p-4">
+            <div className="card shadow-lg rounded-4 border border-light">
+                <div className="card-body p-4 bg-white text-dark">
                     <h3 className="text-center mb-4">📝 Create a Post</h3>
 
                     <form onSubmit={handleSubmit}>
                         <div className="mb-3">
-                            <label className="form-label">Content</label>
+                            <label className="form-label fw-semibold">Content</label>
                             <textarea
-                                className="form-control bg-dark text-white custom-placeholder"
+                                className="form-control"
                                 name="content"
                                 rows="4"
                                 value={formData.content}
                                 onChange={handleChange}
                                 placeholder="What's on your mind?"
+                                style={{ resize: 'vertical' }}
                             />
                         </div>
 
                         <div className="mb-3">
                             <div className="d-flex justify-content-between align-items-center">
-                                <label className="form-label mb-0">Upload Media</label>
+                                <label className="form-label fw-semibold mb-0">Upload Media</label>
                                 {formData.media && (
                                     <button
                                         type="button"
-                                        className="btn btn-sm btn-outline-danger my-2"
+                                        className="btn btn-sm btn-outline-danger"
                                         onClick={handleRemoveMedia}
                                     >
                                         Remove
@@ -133,29 +137,29 @@ const CreatePost = () => {
                             </div>
                             <input
                                 type="file"
-                                className="form-control bg-dark text-white"
+                                className="form-control"
                                 name="media"
                                 accept="image/*,video/*"
                                 onChange={handleChange}
                             />
                             {formData.mediaPreview && formData.mediaType === 'video' && (
                                 <div className="mt-3">
-                                    <p className="text-white-50">Video Preview:</p>
+                                    <p className="text-muted small mb-1">Video Preview:</p>
                                     <video
                                         src={formData.mediaPreview}
                                         controls
-                                        className="w-100 rounded shadow"
+                                        className="w-100 rounded shadow-sm"
                                         style={{ maxHeight: '300px' }}
                                     />
                                 </div>
                             )}
                             {formData.mediaPreview && formData.mediaType === 'image' && (
                                 <div className="mt-3">
-                                    <p className="text-white-50">Image Preview:</p>
+                                    <p className="text-muted small mb-1">Image Preview:</p>
                                     <img
                                         src={formData.mediaPreview}
                                         alt="preview"
-                                        className="w-100 rounded shadow"
+                                        className="w-100 rounded shadow-sm"
                                         style={{ maxHeight: '300px', objectFit: 'contain' }}
                                     />
                                 </div>
@@ -163,10 +167,10 @@ const CreatePost = () => {
                         </div>
 
                         <div className="mb-3">
-                            <label className="form-label">Tags (comma separated)</label>
+                            <label className="form-label fw-semibold">Tags (comma separated)</label>
                             <input
                                 type="text"
-                                className="form-control bg-dark text-white custom-placeholder"
+                                className="form-control"
                                 name="tags"
                                 value={formData.tags}
                                 onChange={handleChange}
@@ -175,9 +179,9 @@ const CreatePost = () => {
                         </div>
 
                         <div className="mb-3">
-                            <label className="form-label">Privacy</label>
+                            <label className="form-label fw-semibold">Privacy</label>
                             <select
-                                className="form-select bg-dark text-white"
+                                className="form-select"
                                 name="privacy"
                                 value={formData.privacy}
                                 onChange={handleChange}
@@ -189,10 +193,10 @@ const CreatePost = () => {
                         </div>
 
                         <div className="mb-4">
-                            <label className="form-label">Location</label>
+                            <label className="form-label fw-semibold">Location</label>
                             <input
                                 type="text"
-                                className="form-control bg-dark text-white custom-placeholder"
+                                className="form-control"
                                 name="location"
                                 value={formData.location}
                                 onChange={handleChange}
