@@ -5,7 +5,6 @@ import { axiosInstance } from "../lib/axios";
 
 const detectMediaType = (media) => {
   if (!media) return "";
-  // Basic detection based on file extension or base64 mime type
   if (media.startsWith("data:")) {
     if (media.includes("image")) return "image";
     if (media.includes("video")) return "video";
@@ -24,14 +23,15 @@ const EditPost = () => {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     content: "",
-    media: "",
+    media: "", // media URL or base64 string or empty string
     mediaType: "",
     tags: "",
     privacy: "public",
     location: "",
   });
 
-  const mediaPreviewRef = useRef(null);
+  const [newMediaFile, setNewMediaFile] = useState(null); // holds File object if user uploads new media
+  const [mediaPreviewUrl, setMediaPreviewUrl] = useState(""); // URL or base64 for preview
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -47,6 +47,8 @@ const EditPost = () => {
             privacy: post.privacy || "public",
             location: post.location || "",
           });
+          setMediaPreviewUrl(post.media || "");
+          setNewMediaFile(null);
         } else {
           toast.error("Post not found");
           navigate(-1);
@@ -62,15 +64,53 @@ const EditPost = () => {
     fetchPost();
   }, [postId, navigate]);
 
-  // Update media and detect mediaType automatically
-  const handleMediaChange = (e) => {
-    const media = e.target.value;
-    const detectedType = detectMediaType(media);
+  // Cleanup object URLs when newMediaFile changes or component unmounts
+  useEffect(() => {
+    // If user uploaded a new file, create a preview URL
+    if (newMediaFile) {
+      const url = URL.createObjectURL(newMediaFile);
+      setMediaPreviewUrl(url);
+
+      // Cleanup
+      return () => URL.revokeObjectURL(url);
+    } else {
+      // If no new file, preview is the media string (URL or base64)
+      setMediaPreviewUrl(form.media);
+    }
+  }, [newMediaFile, form.media]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type (optional)
+    const validImageTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp", "image/svg+xml"];
+    const validVideoTypes = ["video/mp4", "video/webm", "video/ogg", "video/quicktime", "video/x-matroska", "video/avi"];
+
+    if (![...validImageTypes, ...validVideoTypes].includes(file.type)) {
+      toast.error("Unsupported media type. Please upload an image or video.");
+      return;
+    }
+
+    // Update form mediaType
+    const type = file.type.startsWith("image/") ? "image" : "video";
+
+    setNewMediaFile(file);
     setForm((prev) => ({
       ...prev,
-      media,
-      mediaType: detectedType,
+      media: "", // Clear media URL since user uploaded new file
+      mediaType: type,
     }));
+  };
+
+  const handleRemoveMedia = () => {
+    setNewMediaFile(null);
+    setForm((prev) => ({
+      ...prev,
+      media: "",
+      mediaType: "",
+    }));
+    setMediaPreviewUrl("");
   };
 
   const handleChange = (e) => {
@@ -90,14 +130,37 @@ const EditPost = () => {
       ? form.tags.split(",").map((tag) => tag.trim()).filter(Boolean)
       : [];
 
+    // Prepare payload
     const payload = {
       content: form.content,
-      media: form.media || undefined,
-      mediaType: form.media ? form.mediaType : undefined,
+      mediaType: form.mediaType || "text",
       tags: tagsArray,
       privacy: form.privacy,
       location: form.location,
     };
+
+    // If user uploaded a new file, convert to base64 or send file directly (depending on your backend)
+    if (newMediaFile) {
+      // Example: convert to base64 string for submission
+      const toBase64 = (file) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (error) => reject(error);
+        });
+
+      try {
+        const base64String = await toBase64(newMediaFile);
+        payload.media = base64String;
+      } catch (error) {
+        toast.error("Failed to read media file");
+        return;
+      }
+    } else {
+      // No new file uploaded
+      payload.media = form.media; // existing media URL or empty string to remove media
+    }
 
     try {
       await axiosInstance.patch(`/posts/update/${postId}`, payload);
@@ -109,114 +172,150 @@ const EditPost = () => {
     }
   };
 
-  if (loading) return <p>Loading post data...</p>;
+  if (loading)
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: "60vh" }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
 
   return (
-    <div className="edit-post-container" style={{ maxWidth: 600, margin: "auto" }}>
-      <h2>Edit Post</h2>
-      <form onSubmit={handleSubmit}>
-        {/* Content */}
-        <div>
-          <label>Content</label>
-          <textarea
-            name="content"
-            value={form.content}
-            onChange={handleChange}
-            placeholder="Write something..."
-            rows={4}
-            style={{ width: "100%" }}
-          />
-        </div>
-
-        {/* Media URL or Base64 */}
-        <div>
-          <label>Media URL or Base64 Data</label>
-          <input
-            type="text"
-            name="media"
-            value={form.media}
-            onChange={handleMediaChange}
-            placeholder="Paste media URL or base64 string"
-            style={{ width: "100%" }}
-          />
-        </div>
-
-        {/* Auto Media Preview */}
-        {form.media && (
-          <div style={{ margin: "10px 0" }}>
-            {form.mediaType === "video" ? (
-              <video
-                ref={mediaPreviewRef}
-                src={form.media}
-                controls
-                style={{ maxWidth: "100%" }}
+    <div className="container my-4" style={{ maxWidth: 650 }}>
+      <div className="card shadow-sm border-0">
+        <div className="card-body p-4">
+          <h2 className="mb-4 text-black fw-bold text-center">Edit Post</h2>
+          <form onSubmit={handleSubmit}>
+            {/* Content */}
+            <div className="mb-3">
+              <label htmlFor="content" className="form-label fw-semibold">
+                Content
+              </label>
+              <textarea
+                id="content"
+                name="content"
+                className="form-control"
+                value={form.content}
+                onChange={handleChange}
+                placeholder="Write something..."
+                rows={4}
               />
-            ) : form.mediaType === "image" ? (
-              <img
-                ref={mediaPreviewRef}
-                src={form.media}
-                alt="media preview"
-                style={{ maxWidth: "100%" }}
+            </div>
+
+            {/* Media Upload */}
+            <div className="mb-3">
+              <label htmlFor="mediaFile" className="form-label fw-semibold">
+                Upload Image or Video
+              </label>
+              <input
+                id="mediaFile"
+                type="file"
+                accept="image/*,video/*"
+                className="form-control"
+                onChange={handleFileChange}
               />
-            ) : (
-              <p>Media preview not available for this media type</p>
+              {(mediaPreviewUrl || mediaPreviewUrl === "") && (
+                <button
+                  type="button"
+                  onClick={handleRemoveMedia}
+                  className="btn btn-sm btn-outline-danger mt-2"
+                >
+                  Remove Media
+                </button>
+              )}
+            </div>
+
+            {/* Media Preview */}
+            {mediaPreviewUrl && (
+              <div className="mb-3">
+                {form.mediaType === "video" ? (
+                  <video
+                    src={mediaPreviewUrl}
+                    controls
+                    className="img-fluid rounded"
+                    style={{ maxHeight: 320 }}
+                  />
+                ) : form.mediaType === "image" ? (
+                  <img
+                    src={mediaPreviewUrl}
+                    alt="media preview"
+                    className="img-fluid rounded"
+                    style={{ maxHeight: 320 }}
+                  />
+                ) : (
+                  <p className="text-muted fst-italic">Media preview not available for this media type</p>
+                )}
+              </div>
             )}
-          </div>
-        )}
 
-        {/* Tags */}
-        <div>
-          <label>Tags (comma separated)</label>
-          <input
-            type="text"
-            name="tags"
-            value={form.tags}
-            onChange={handleTagsChange}
-            placeholder="e.g. nature, travel, fun"
-            style={{ width: "100%" }}
-          />
-        </div>
+            {/* Tags */}
+            <div className="mb-3">
+              <label htmlFor="tags" className="form-label fw-semibold">
+                Tags (comma separated)
+              </label>
+              <input
+                id="tags"
+                type="text"
+                name="tags"
+                className="form-control"
+                value={form.tags}
+                onChange={handleTagsChange}
+                placeholder="e.g. nature, travel, fun"
+              />
+            </div>
 
-        {/* Privacy */}
-        <div>
-          <label>Privacy</label>
-          <select
-            name="privacy"
-            value={form.privacy}
-            onChange={handleChange}
-            required
-          >
-            <option value="public">Public</option>
-            <option value="friends">Friends</option>
-            <option value="private">Only Me</option>
-          </select>
-        </div>
+            {/* Privacy */}
+            <div className="mb-3">
+              <label htmlFor="privacy" className="form-label fw-semibold">
+                Privacy
+              </label>
+              <select
+                id="privacy"
+                name="privacy"
+                className="form-select"
+                value={form.privacy}
+                onChange={handleChange}
+                required
+              >
+                <option value="public">Public</option>
+                <option value="friends">Friends</option>
+                <option value="private">Only Me</option>
+              </select>
+            </div>
 
-        {/* Location */}
-        <div>
-          <label>Location</label>
-          <input
-            type="text"
-            name="location"
-            value={form.location}
-            onChange={handleChange}
-            placeholder="Add a location"
-            style={{ width: "100%" }}
-          />
-        </div>
+            {/* Location */}
+            <div className="mb-4">
+              <label htmlFor="location" className="form-label fw-semibold">
+                Location
+              </label>
+              <input
+                id="location"
+                type="text"
+                name="location"
+                className="form-control"
+                value={form.location}
+                onChange={handleChange}
+                placeholder="Add a location"
+              />
+            </div>
 
-        {/* Submit and Cancel */}
-        <div style={{ marginTop: 10 }}>
-          <button type="submit">Update Post</button>
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            style={{ marginLeft: 10 }}
-          >
-            Cancel
-          </button>
+            {/* Submit and Cancel */}
+            <div className="d-flex justify-content-end">
+              <button type="submit" className="btn btn-primary me-2">
+                Update Post
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="btn btn-outline-secondary"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   );
 };
