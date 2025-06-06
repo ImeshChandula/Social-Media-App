@@ -15,7 +15,8 @@ const validateUserData = (req, res, next) => {
     bio: Joi.string().allow('').optional(),
     location: Joi.string().allow('').optional(),
     birthday: Joi.date().iso().allow(null).optional(),
-
+    jobCategory: Joi.string().optional(),
+    
     friends: Joi.array().items(Joi.string()).optional(),
     friendRequests: Joi.array().items(Joi.string()).optional(),
 

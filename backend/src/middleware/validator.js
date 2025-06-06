@@ -17,6 +17,7 @@ const validateUser = (req, res, next) => {
     bio: Joi.string().allow('').optional(),
     location: Joi.string().allow('').optional(),
     birthday: Joi.date().iso().allow(null).optional(),
+    jobCategory: Joi.string().optional(),
 
     friends: Joi.array().items(Joi.string()).optional(),
     friendRequests: Joi.array().items(Joi.string()).optional(),
@@ -163,5 +164,24 @@ const validateStory = (req, res, next) => {
 
 
 
+// Validate comment creation
+const validateJobCategory = (req, res, next) => {
+  const schema = Joi.object({
+    name: Joi.string().required(),
+    description: Joi.string().optional(),
+    author: Joi.string().optional(),
+    isActive: Joi.boolean().optional(),
+    createdAt: Joi.date().optional(),
+    updatedAt: Joi.date().optional(),
+  });
 
-module.exports = {validateUser, validatePost, validateComment, validateStory};
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  next();
+};
+
+
+
+module.exports = {validateUser, validatePost, validateComment, validateStory, validateJobCategory };
