@@ -141,7 +141,6 @@ const EditPost = () => {
 
     // If user uploaded a new file, convert to base64 or send file directly (depending on your backend)
     if (newMediaFile) {
-      // Example: convert to base64 string for submission
       const toBase64 = (file) =>
         new Promise((resolve, reject) => {
           const reader = new FileReader();
