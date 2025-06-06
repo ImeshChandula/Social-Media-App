@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { axiosInstance } from "../lib/axios";
 import toast from 'react-hot-toast';
 import "../styles/FriendRequests.css";
+import { useNavigate } from 'react-router-dom';
 
 const FriendRequests = () => {
   const [friendRequests, setFriendRequests] = useState([]);
@@ -9,12 +10,14 @@ const FriendRequests = () => {
   const [actionLoading, setActionLoading] = useState({});
   const [error, setError] = useState(null);
 
+  const navigate = useNavigate()
+
   const fetchFriendRequests = async () => {
     try {
       setLoading(true);
       setError(null);
       const response = await axiosInstance.get('/friends/friend-requests/getAll');
-      
+
       if (response.data.success) {
         setFriendRequests(response.data.data || []);
       } else {
@@ -35,9 +38,9 @@ const FriendRequests = () => {
   const acceptFriendRequest = async (userId) => {
     try {
       setActionLoading(prev => ({ ...prev, [`accept_${userId}`]: true }));
-      
+
       const response = await axiosInstance.post(`/friends/friend-request/accept/${userId}`);
-      
+
       if (response.data.success) {
         // Remove the accepted request from the list
         setFriendRequests(prev => prev.filter(request => request.id !== userId));
@@ -57,9 +60,9 @@ const FriendRequests = () => {
   const rejectFriendRequest = async (userId) => {
     try {
       setActionLoading(prev => ({ ...prev, [`reject_${userId}`]: true }));
-      
+
       const response = await axiosInstance.post(`/friends/friend-request/reject/${userId}`);
-      
+
       if (response.data.success) {
         // Remove the rejected request from the list
         setFriendRequests(prev => prev.filter(request => request.id !== userId));
@@ -83,7 +86,7 @@ const FriendRequests = () => {
   if (loading) {
     return (
       <div className="friend-requests-container">
-        <div style={{textAlign: 'center'}}>
+        <div style={{ textAlign: 'center' }}>
           <div className="spinner"></div>
           <p>Loading friend requests...</p>
         </div>
@@ -106,13 +109,17 @@ const FriendRequests = () => {
     );
   }
 
+  const handleNavigateToProfile = (friendId) => {
+    navigate(`/profile/${friendId}`);
+  };
+
 
   return (
     <div className="friend-requests-container">
       <div className="header">
         <h2>Friend Requests</h2>
         <p className="subtitle">
-          {friendRequests.length > 0 
+          {friendRequests.length > 0
             ? `You have ${friendRequests.length} pending request${friendRequests.length > 1 ? 's' : ''}`
             : 'No pending requests'
           }
@@ -131,22 +138,37 @@ const FriendRequests = () => {
             <div key={request.id} className="request-card">
               <div className="request-avatar">
                 {request.profilePicture ? (
-                  <img src={request.profilePicture} alt={request.username} />
+                  <img
+                    src={request.profilePicture}
+                    alt={request.username}
+                    onClick={() => handleNavigateToProfile(request.id)}
+                    style={{ cursor: 'pointer' }}
+                  />
                 ) : (
                   <div className="avatar-placeholder">
                     {request.firstName?.[0]?.toUpperCase() || request.username?.[0]?.toUpperCase() || '?'}
                   </div>
                 )}
               </div>
-              
+
               <div className="request-info">
-                <h3 className="request-name">
-                  {request.firstName && request.lastName 
+                <h3
+                  className="request-name"
+                  onClick={() => handleNavigateToProfile(request.id)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {request.firstName && request.lastName
                     ? `${request.firstName} ${request.lastName}`
                     : request.username
                   }
                 </h3>
-                <p className="request-username">@{request.username}</p>
+                <p
+                  className="request-username"
+                  onClick={() => handleNavigateToProfile(request.id)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  @{request.username}
+                </p>
                 <p className="request-stats">
                   <span className="friends-count">{request.friendsCount || 0} friends</span>
                 </p>
@@ -170,7 +192,7 @@ const FriendRequests = () => {
                     </>
                   )}
                 </button>
-                
+
                 <button
                   onClick={() => rejectFriendRequest(request.id)}
                   disabled={actionLoading[`accept_${request.id}`] || actionLoading[`reject_${request.id}`]}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { axiosInstance } from "../lib/axios";
 import toast from 'react-hot-toast';
 import "../styles/FriendSuggestions.css";
+import { useNavigate } from 'react-router-dom';
 
 const FriendSuggestions = () => {
   const [suggestedFriends, setSuggestedFriends] = useState([]);
@@ -9,11 +10,13 @@ const FriendSuggestions = () => {
   const [actionLoading, setActionLoading] = useState({});
   const [error, setError] = useState(null);
 
+  const navigate = useNavigate()
+
   const fetchSuggestedFriends = async () => {
     try {
       setLoading(true);
       const response = await axiosInstance.get('/friends/allSuggestFriends');
-      
+
       if (response.data.success) {
         setSuggestedFriends(response.data.data.suggestedFriends || []);
       } else {
@@ -34,19 +37,19 @@ const FriendSuggestions = () => {
   const sendFriendRequest = async (userId) => {
     try {
       setActionLoading(prev => ({ ...prev, [userId]: true }));
-      
+
       const response = await axiosInstance.post(`/friends/friend-request/send/${userId}`);
-      
+
       if (response.data.success) {
         // Update the friend request status locally
-        setSuggestedFriends(prev => 
-          prev.map(friend => 
-            friend.id === userId 
+        setSuggestedFriends(prev =>
+          prev.map(friend =>
+            friend.id === userId
               ? { ...friend, friendRequestSent: true }
               : friend
           )
         );
-      } 
+      }
     } catch (err) {
       toast.error(err.message || 'Failed to send friend request');
       console.error('Error sending friend request:', err);
@@ -58,14 +61,14 @@ const FriendSuggestions = () => {
   const cancelFriendRequest = async (userId) => {
     try {
       setActionLoading(prev => ({ ...prev, [userId]: true }));
-      
+
       const response = await axiosInstance.delete(`/friends/friend-request/cancel/${userId}`);
-      
+
       if (response.data.success) {
         // Update the friend request status locally
-        setSuggestedFriends(prev => 
-          prev.map(friend => 
-            friend.id === userId 
+        setSuggestedFriends(prev =>
+          prev.map(friend =>
+            friend.id === userId
               ? { ...friend, friendRequestSent: false }
               : friend
           )
@@ -83,10 +86,14 @@ const FriendSuggestions = () => {
     fetchSuggestedFriends();
   }, []);
 
+  const handleNavigateToProfile = (friendId) => {
+    navigate(`/profile/${friendId}`);
+  };
+
   if (loading) {
     return (
       <div className="suggested-friends-container">
-        <div style={{textAlign: 'center'}}>
+        <div style={{ textAlign: 'center' }}>
           <div className="spinner"></div>
           <p>Loading suggested friends...</p>
         </div>
@@ -128,22 +135,29 @@ const FriendSuggestions = () => {
             <div key={friend.id} className="friend-card">
               <div className="friend-avatar">
                 {friend.profilePicture ? (
-                  <img src={friend.profilePicture} alt={friend.username} />
+                  <img src={friend.profilePicture}
+                    alt={friend.username}
+                    onClick={() => handleNavigateToProfile(friend.id)}
+                    style={{ cursor: 'pointer' }} />
                 ) : (
                   <div className="avatar-placeholder">
                     {friend.firstName?.[0]?.toUpperCase() || friend.username?.[0]?.toUpperCase() || '?'}
                   </div>
                 )}
               </div>
-              
+
               <div className="friend-info">
-                <h3 className="friend-name">
-                  {friend.firstName && friend.lastName 
+                <h3 className="friend-name"
+                  onClick={() => handleNavigateToProfile(friend.id)}
+                  style={{ cursor: 'pointer' }}>
+                  {friend.firstName && friend.lastName
                     ? `${friend.firstName} ${friend.lastName}`
                     : friend.username
                   }
                 </h3>
-                <p className="friend-username">@{friend.username}</p>
+                <p className="friend-username"
+                  onClick={() => handleNavigateToProfile(friend.id)}
+                  style={{ cursor: 'pointer' }}>@{friend.username}</p>
                 <p className="friend-stats">
                   <span className="friends-count">{friend.friendsCount} friends</span>
                 </p>

@@ -4,6 +4,7 @@ import { axiosInstance } from "../lib/axios";
 import styles from '../styles/UsersStyles';
 import toast from 'react-hot-toast';
 import "../styles/UserStyles.css";
+import { useNavigate } from 'react-router-dom';
 
 
 const Users = () => {
@@ -14,6 +15,8 @@ const Users = () => {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(null);
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchAllUsers();
@@ -49,7 +52,7 @@ const Users = () => {
   const updateUserRole = async (id, newRole) => {
     try {
       const res = await axiosInstance.patch(`/users/updateProfile/${id}`, { role: newRole });
-      
+
       if (res.data.success) {
         toast.success("Role update successful");
         fetchAllUsers(); // Refresh the list
@@ -81,7 +84,7 @@ const Users = () => {
   const updateAccountStatus = async (id, newStatus) => {
     try {
       const res = await axiosInstance.patch(`/users/updateProfile/${id}`, { accountStatus: newStatus });
-      
+
       if (res.data.success) {
         toast.success("Status update successful");
         fetchAllUsers(); // Refresh the list
@@ -102,7 +105,7 @@ const Users = () => {
   const deleteUser = async (id) => {
     try {
       const res = await axiosInstance.delete(`/users/deleteUser/${id}`);
-      
+
       if (res.data.success) {
         toast.success('User deleted successfully');
         fetchAllUsers(); // Refresh the list
@@ -151,6 +154,7 @@ const Users = () => {
                 src={user.profilePicture || "https://avatar.iran.liara.run/public/1.png"}
                 alt={user.username}
                 style={styles.avatar}
+                onClick={() => handleNavigateToProfile(user.id)}
               />
               <div style={styles.roleIconContainer}>
                 {getRoleIcon(user.role)}
@@ -158,14 +162,14 @@ const Users = () => {
             </div>
             <div style={styles.userDetails}>
               <div style={styles.nameContainer}>
-                <h3 style={styles.userName}>{user.firstName} {user.lastName}</h3>
+                <h3 style={styles.userName} onClick={() => handleNavigateToProfile(user.id)} >{user.firstName} {user.lastName}</h3>
                 {getStatusIcon(user.accountStatus)}
               </div>
-              <p style={styles.username}>@{user.username}</p>
-              <p style={styles.email}>{user.email}</p>
+              <p style={styles.username} onClick={() => handleNavigateToProfile(user.id)}>@{user.username}</p>
+              <p style={styles.email} onClick={() => handleNavigateToProfile(user.id)}>{user.email}</p>
             </div>
           </div>
-          
+
           {!isSearchResult && (
             <div style={styles.actionButtons}>
               <button
@@ -228,6 +232,11 @@ const Users = () => {
       </div>
     </div>
   );
+
+  const handleNavigateToProfile = (userId) => {
+    navigate(`/profile/${userId}`);
+  };
+
 
   return (
     <div style={styles.container}>
@@ -305,7 +314,7 @@ const Users = () => {
           <div style={styles.modalOverlay}>
             <div style={styles.modal}>
               <h3 style={styles.modalTitle}>Edit User: {editingUser.username}</h3>
-              
+
               <div style={styles.modalContent}>
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Role</label>
@@ -354,7 +363,7 @@ const Users = () => {
               <p style={styles.deleteModalText}>
                 Are you sure you want to delete user "{showDeleteModal.username}"? This action cannot be undone.
               </p>
-              
+
               <div style={styles.modalActions}>
                 <button
                   onClick={() => setShowDeleteModal(null)}
