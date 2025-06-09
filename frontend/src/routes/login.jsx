@@ -45,9 +45,6 @@ const Login = () => {
 
       const res = await login(loggingData);
 
-      if (res && res.user) {
-        window.location.reload();
-      }
     } catch (error) {
       setError(error.response?.data?.message || "Login failed. Please try again.");
       toast.error(error.response?.data?.message);
