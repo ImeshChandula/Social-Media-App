@@ -129,7 +129,7 @@ function ProfilePage() {
           </motion.div>
 
           {/* Stats */}
-          <EnhancedUserStats user={user}/>
+          <EnhancedUserStats user={user} isOwnProfile={true} />
 
           {/* bio section */}
           <EnhancedBioSection user={user}/>

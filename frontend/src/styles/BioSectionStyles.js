@@ -1,4 +1,11 @@
 const styles = {
+
+  toggleHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '0.75rem 0',
+    borderRadius: '0.5rem'
+  },
   container: {
     marginTop: '1rem',
     padding: '1rem',
