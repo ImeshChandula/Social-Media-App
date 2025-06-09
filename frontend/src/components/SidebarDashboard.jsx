@@ -7,7 +7,7 @@ import { IoMdArrowRoundBack } from "react-icons/io";
 import { BsFileEarmarkPostFill } from "react-icons/bs";
 import { SiJoplin } from "react-icons/si";
 import styles from "../styles/DashboardStyle";
-import useAuthStore from "./store/authStore";
+import useAuthStore from "../store/authStore";
 
 const SidebarDashboard = ({ collapsed, setCollapsed }) => {
     const [mobileVisible, setMobileVisible] = useState(false);
