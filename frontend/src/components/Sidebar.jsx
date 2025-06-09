@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import {
   FaHome,
   FaUsers,
@@ -17,14 +17,12 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
-import { axiosInstance } from "../lib/axios";
-import NotificationPage from "../pages/Notifications";
+import useAuthStore from '../store/authStore';
 
 const navItems = [
   { name: "Home", path: "/", icon: <FaHome /> },
   { name: "Members", path: "/members", icon: <FaUsers /> },
   { name: "Videos", path: "/videos", icon: <FaVideo /> },
-  //{ name: "Notifications", path: "/notifications", icon: <FaBell /> },
   { name: "Profile", path: "/profile", icon: <FaUserCircle /> },
   { name: "Dashboard", path: "/dashboard", icon: <TbLayoutDashboardFilled /> }
 ];
@@ -38,7 +36,7 @@ const shortcuts = [
 
 function Sidebar({ collapsed, setCollapsed }) {
   const [mobileVisible, setMobileVisible] = useState(false);
-  const navigate = useNavigate();
+  
 
   const handleResize = () => {
     if (window.innerWidth >= 768) {
@@ -59,12 +57,10 @@ function Sidebar({ collapsed, setCollapsed }) {
     }
   };
 
+  const { logout } = useAuthStore();
   const handleLogout = async () => {
     try {
-      await axiosInstance.post("/auth/logout");
-      localStorage.removeItem("isLoggedIn");
-      navigate("/");
-      window.location.reload();
+      await logout();
     } catch (error) {
       console.error("Logout failed:", error);
     }
