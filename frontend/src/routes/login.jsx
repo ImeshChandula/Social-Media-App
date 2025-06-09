@@ -16,7 +16,7 @@ const Login = ({ setIsLoggedIn }) => {
   const [hoveredForgot, setHoveredForgot] = useState(false);
   const [hoveredSignup, setHoveredSignup] = useState(false);
   const [focusedInputs, setFocusedInputs] = useState({});
-  
+
   const navigate = useNavigate();
 
   const handleFocus = (inputName) => {
@@ -48,12 +48,14 @@ const Login = ({ setIsLoggedIn }) => {
         setIsLoggedIn(true);
         toast.success(res.data.message || "Login Successful");
         navigate("/");
+        window.location.reload();
       }
     } catch (error) {
       setError(error.response?.data?.message || "Login failed. Please try again.");
       toast.error(error.response?.data?.message);
     }
   };
+
   return (
     <div style={LoginStyle.page}>
       <div style={LoginStyle.header}>
@@ -117,8 +119,8 @@ const Login = ({ setIsLoggedIn }) => {
               />
               <span>Remember me</span>
             </label>
-            <a 
-              href="/reset-password" 
+            <a
+              href="/reset-password"
               style={{
                 ...LoginStyle.forgotLink,
                 ...(hoveredForgot ? LoginStyle.forgotLinkHover : {})
@@ -130,8 +132,8 @@ const Login = ({ setIsLoggedIn }) => {
             </a>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             style={{
               ...LoginStyle.button,
               ...(hoveredButton ? LoginStyle.buttonHover : {})
@@ -148,7 +150,7 @@ const Login = ({ setIsLoggedIn }) => {
             <span style={LoginStyle.dividerText}>Or continue with</span>
           </div>
           */}
-          
+
           {/* Social buttons */}
           {/*<SocialButtons />*/}
 
@@ -156,8 +158,8 @@ const Login = ({ setIsLoggedIn }) => {
 
         <p style={LoginStyle.signup}>
           Don't have an account?{" "}
-          <a 
-            href="/register" 
+          <a
+            href="/register"
             style={{
               ...LoginStyle.signupLink,
               ...(hoveredSignup ? LoginStyle.signupLinkHover : {})
