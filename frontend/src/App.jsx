@@ -76,16 +76,18 @@ const App = () => {
 
           <Route
             path="/edit-profile"
-            element={authUser ? <EditProfile /> : <Navigate to="/login" />}
+            element={authUser && authUser.accountStatus !== "banned" ? <EditProfile /> : <Navigate to="/login" />}
           />
 
-          <Route path="/edit-post/:postId" element={<EditPost />} />
+          <Route 
+            path="/edit-post/:postId" 
+            element={authUser && authUser.accountStatus !== "banned" ? <EditPost /> : <Navigate to="/login" />} />
 
           <Route path="/reset-password" element={<ResetPassword />} />
 
           <Route
             path="/*"
-            element={authUser ? <MainLayout /> : <Navigate to="/login" />}
+            element={authUser && authUser.accountStatus !== "banned" ? <MainLayout /> : <Navigate to="/login" />}
           />
 
           <Route

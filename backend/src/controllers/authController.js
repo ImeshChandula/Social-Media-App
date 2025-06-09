@@ -47,6 +47,7 @@ const registerUser = async (req, res) => {
             id: newUser.id,
             username: newUser.username,
             role: newUser.role,
+            accountStatus: newUser.accountStatus
         };
 
         generateToken(payload, res);
@@ -111,8 +112,6 @@ const loginUser = async (req, res) => {
 const checkCurrent = async (req, res) => {
   try {
     const user = req.user;
-    user.password = undefined;
-    user._isPasswordModified = undefined;
     
     res.status(200).json(user);
   } catch (error) {
