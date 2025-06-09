@@ -174,7 +174,7 @@ function EditProfile() {
       toast.success('Profile updated successfully!');
       setTimeout(() => {
         navigate(-1);
-        }, 5000
+        }, 3000
       );
     } catch (error) {
       console.error('Error updating profile:', error);
