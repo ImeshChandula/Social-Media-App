@@ -1,23 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
-import {
-  FaHome,
-  FaUsers,
-  FaVideo,
-  FaBell,
-  FaUserCircle,
-  FaSearch,
-  FaGamepad,
-  FaBasketballBall,
-  FaFilm,
-  FaShoppingBag,
-  FaFacebookF,
-  FaBars,
-  FaTimes,
-  FaSignOutAlt,
-} from "react-icons/fa";
+import { FaHome, FaUsers, FaVideo, FaUserCircle, FaSearch} from "react-icons/fa";
+import { FaGamepad, FaFacebookF, FaBars, FaTimes, FaSignOutAlt } from "react-icons/fa";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { MdContactSupport } from "react-icons/md";
+import { FaShoppingBag } from "react-icons/fa";
 import useAuthStore from '../store/authStore';
 
 
@@ -35,14 +22,13 @@ function Sidebar({ collapsed, setCollapsed }) {
     ...(authUser.role !== "user" ? [
       { name: "Dashboard", path: "/dashboard", icon: <TbLayoutDashboardFilled /> }
     ] : []),
-    { name: "Support", path: "/support", icon: <MdContactSupport /> },
   ];
 
   const shortcuts = [
-    { name: "Gaming", path: "/gaming", icon: <FaGamepad /> },
-    { name: "Sports", path: "/sports", icon: <FaBasketballBall /> },
-    { name: "Entertainment", path: "/entertainment", icon: <FaFilm /> },
-    { name: "Shopping", path: "/shopping", icon: <FaShoppingBag /> },
+    ...(authUser.accountStatus !== "active" ? [
+      { name: "Support", path: "/support", icon: <MdContactSupport /> }
+    ] : []),
+    { name: "Market Place", path: "/market", icon: <FaShoppingBag /> },
   ];
 
   const handleResize = () => {

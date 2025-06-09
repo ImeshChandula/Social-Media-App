@@ -11,6 +11,7 @@ import EditPost from "./components/EditPost";
 import styles from "./styles/DashboardStyle";
 import useAuthStore from "./store/authStore";
 import Support from "./routes/Support";
+import Request from "./routes/Request";
 
 const App = () => {
 
@@ -76,8 +77,8 @@ const App = () => {
           />
 
           <Route 
-            path="/support" 
-            element={authUser && authUser.accountStatus !== "active" ?<Support /> : <Navigate to="/" />} 
+            path="/request" 
+            element={<Request />}
           />
 
           <Route

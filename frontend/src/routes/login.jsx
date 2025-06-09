@@ -108,16 +108,17 @@ const Login = () => {
           </div>
 
           <div style={LoginStyle.options}>
-            <label style={LoginStyle.checkboxLabel}>
-              <input
-                type="checkbox"
-                name="rememberMe"
-                checked={formData.rememberMe}
-                onChange={handleChange}
-                style={LoginStyle.checkbox}
-              />
-              <span>Remember me</span>
-            </label>
+            <a
+              href="/request"
+              style={{
+                ...LoginStyle.forgotLink,
+                ...(hoveredForgot ? LoginStyle.forgotLinkHover : {})
+              }}
+              onMouseEnter={() => setHoveredForgot(true)}
+              onMouseLeave={() => setHoveredForgot(false)}
+            >
+              Support...!
+            </a>
             <a
               href="/reset-password"
               style={{
@@ -127,7 +128,7 @@ const Login = () => {
               onMouseEnter={() => setHoveredForgot(true)}
               onMouseLeave={() => setHoveredForgot(false)}
             >
-              Forgot Password?
+              Forgot Password ?
             </a>
           </div>
 

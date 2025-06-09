@@ -25,10 +25,17 @@ const checkAccountStatus = (req, res, next) => {
     return res.status(401).json({ success: false, message: "User not authenticated" });
   }
   
-  if (req.user.accountStatus !== 'active') {
+  if (req.user.accountStatus === 'inactive') {
     return res.status(403).json({ 
       success: false,
-      message: "Account is inactive or banned. Please contact support." 
+      message: "Your account is inactivated. Please contact support." 
+    });
+  }
+
+  if (req.user.accountStatus === 'banned') {
+    return res.status(403).json({ 
+      success: false,
+      message: "Your account is banned. Please contact support." 
     });
   }
   

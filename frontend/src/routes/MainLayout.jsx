@@ -17,7 +17,8 @@ import StoriesPopup from "../components/StoriesPopup";
 import VideoFeed from "../components/VideoFeed";
 import MemberControl from "../pages/MemberControl";
 import RegularUserPage from "../components/RegularUserPage";
-
+import MarketPlace from "../pages/MarketPlace";
+import Support from "./Support";
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -65,6 +66,8 @@ const MainLayout = () => {
               <Route path="/stories" element={<Stories />} />
               <Route path="/stories/:id" element={<StoriesPopup />} />
               <Route path="/videofeed" element={<VideoFeed />} />
+              <Route path="/market" element={<MarketPlace />} />
+              <Route path="/support" element={<Support />} />
             </Routes>
           </div>
         </div>

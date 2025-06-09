@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import PostCard from "./PostCard";
 
@@ -15,7 +16,7 @@ const UserPosts = () => {
                 setPosts(res.data.posts || res.data);
             } catch (err) {
                 console.error(err);
-                setError("Failed to fetch posts.");
+                setError(err.response?.data?.message || "Failed to fetch posts.");
             } finally {
                 setLoading(false);
             }

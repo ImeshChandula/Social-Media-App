@@ -102,8 +102,9 @@ const LoginStyle = {
 
   options: {
     display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    //justifyContent: 'space-between',
+    flexDirection: 'column',
+    alignItems: 'stretch',
     marginBottom: '25px',
     fontSize: '14px'
   },
