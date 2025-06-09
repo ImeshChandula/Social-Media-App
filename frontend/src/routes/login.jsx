@@ -15,6 +15,7 @@ const Login = () => {
   const [hoveredForgot, setHoveredForgot] = useState(false);
   const [hoveredSignup, setHoveredSignup] = useState(false);
   const [focusedInputs, setFocusedInputs] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const { login } = useAuthStore();
 
@@ -36,6 +37,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
     try {
       const loggingData = {
@@ -43,11 +45,13 @@ const Login = () => {
         password: formData.password
       };
 
-      const res = await login(loggingData);
+      await login(loggingData);
 
     } catch (error) {
       setError(error.response?.data?.message || "Login failed. Please try again.");
       toast.error(error.response?.data?.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -129,14 +133,29 @@ const Login = () => {
 
           <button
             type="submit"
+            disabled={isLoading}
             style={{
               ...LoginStyle.button,
-              ...(hoveredButton ? LoginStyle.buttonHover : {})
+              ...(hoveredButton ? LoginStyle.buttonHover : {}),
+              opacity: isLoading ? 0.6 : 1,
+              cursor: isLoading ? "not-allowed" : "pointer"
             }}
             onMouseEnter={() => setHoveredButton(true)}
             onMouseLeave={() => setHoveredButton(false)}
           >
-            Log In
+            {isLoading ? (
+              <div style={{
+                width: "20px",
+                height: "20px",
+                border: "2px solid #fff",
+                borderTop: "2px solid transparent",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
+                margin: "0 auto"
+              }} />
+            ) : (
+              "Log In"
+            )}
           </button>
 
           {/*
