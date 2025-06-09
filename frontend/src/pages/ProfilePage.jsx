@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import UserPosts from "../components/UserPosts";
 import EnhancedBioSection from "../components/EnhancedBioSection ";
 import EnhancedUserStats from "../components/EnhancedUserStats";
+import toast from "react-hot-toast";
 
 function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -21,7 +22,7 @@ function ProfilePage() {
         setUser(res.data.user || res.data);
       } catch (err) {
         console.error(err);
-        setError("Failed to load profile. Please login.");
+        toast.error("Failed to load profile. Please login.")
       } finally {
         setLoading(false);
       }
@@ -50,8 +51,6 @@ function ProfilePage() {
     >
       {loading ? (
         <p className="text-white-50 normal-loading-spinner">Loading<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span></p>
-      ) : error ? (
-        <div className="alert alert-danger">{error}</div>
       ) : (
         <>
           {/* Cover Photo */}
@@ -132,7 +131,7 @@ function ProfilePage() {
           <EnhancedUserStats user={user} isOwnProfile={true} />
 
           {/* bio section */}
-          <EnhancedBioSection user={user}/>
+          <EnhancedBioSection user={user} />
 
           {/* User Posts */}
           <div>
