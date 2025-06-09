@@ -19,9 +19,10 @@ const Feedstories = ({ type = "all" }) => {
         }
 
         const res = await axiosInstance.get(endpoint);
-        const storiesData = res.data.stories || res.data || [];
+         const storiesFromApi = res.data?.stories || res.data;
+        setStories(Array.isArray(storiesFromApi) ? storiesFromApi : []);
 
-        setStories(storiesData);
+        
       } catch (err) {
         setError(err.response?.data?.msg || err.message || "Failed to fetch stories");
       } finally {
