@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import toast from 'react-hot-toast';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { axiosInstance } from "../lib/axios";
 import LoginStyle from "../styles/LoginStyle";
 import SocialButtons from "../components/SocialButtons";
+import useAuthStore from "../store/authStore";
 
-const Login = ({ setIsLoggedIn }) => {
+const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "", rememberMe: false });
   // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState("");
@@ -17,7 +16,7 @@ const Login = ({ setIsLoggedIn }) => {
   const [hoveredSignup, setHoveredSignup] = useState(false);
   const [focusedInputs, setFocusedInputs] = useState({});
 
-  const navigate = useNavigate();
+  const { login } = useAuthStore();
 
   const handleFocus = (inputName) => {
     setFocusedInputs(prev => ({ ...prev, [inputName]: true }));
@@ -39,15 +38,14 @@ const Login = ({ setIsLoggedIn }) => {
     setError("");
 
     try {
-      const res = await axiosInstance.post("/auth/login", {
-        email: formData.email,
-        password: formData.password,
-      });
+      const loggingData = {
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password
+      };
 
-      if (res.data?.user) {
-        setIsLoggedIn(true);
-        toast.success(res.data.message || "Login Successful");
-        navigate("/");
+      const res = await login(loggingData);
+
+      if (res && res.user) {
         window.location.reload();
       }
     } catch (error) {

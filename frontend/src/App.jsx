@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
 import Login from "./routes/login";
@@ -12,7 +12,6 @@ import styles from "./styles/DashboardStyle";
 import useAuthStore from "./store/authStore";
 
 const App = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Auth user
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
@@ -21,11 +20,6 @@ const App = () => {
     checkAuth();
   }, [checkAuth]);
 
-  // debug
-  console.log({ authUser });
-  if (authUser) {
-    setIsLoggedIn(true);
-  }
 
   if (isCheckingAuth && !authUser) {
     return (
@@ -72,17 +66,17 @@ const App = () => {
 
           <Route
             path="/login"
-            element={!isLoggedIn ? <Login setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" />}
+            element={!authUser ? <Login /> : <Navigate to="/" />}
           />
 
           <Route
             path="/register"
-            element={!isLoggedIn ? <Register setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" />}
+            element={!authUser ? <Register /> : <Navigate to="/" />}
           />
 
           <Route
             path="/edit-profile"
-            element={isLoggedIn ? <EditProfile /> : <Navigate to="/login" />}
+            element={authUser ? <EditProfile /> : <Navigate to="/login" />}
           />
 
           <Route path="/edit-post/:postId" element={<EditPost />} />
@@ -91,12 +85,12 @@ const App = () => {
 
           <Route
             path="/*"
-            element={isLoggedIn ? <MainLayout /> : <Navigate to="/login" />}
+            element={authUser ? <MainLayout /> : <Navigate to="/login" />}
           />
 
           <Route
             path="/dashboard/*"
-            element={isLoggedIn && (authUser.role === "admin" || authUser.role === "super_admin") ?
+            element={authUser && (authUser.role === "admin" || authUser.role === "super_admin") ?
               <Dashboard /> : <Navigate to="/login" />}
           />
 
