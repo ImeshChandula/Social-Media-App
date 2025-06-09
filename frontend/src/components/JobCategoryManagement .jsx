@@ -95,34 +95,6 @@ const JobCategoryManagement  = () => {
         }
     };
 
-    const toggleStatus = async (category) => {
-        try {
-            setLoading(true);
-
-            const response = category.isActive
-            ? await jobCategoryService.deactivateCategory(category.id)
-            : await jobCategoryService.activateCategory(category.id);
-            
-            if (response.success) {
-                toast.success(`Category ${category.isActive ? 'deactivated' : 'activated'} successfully`);
-                fetchCategories(); // Refresh the list
-            } else {
-                toast.error(`Failed to update category status`);
-            }
-        } catch (error) {
-            console.error('Error updating category status:', error);
-            
-            const message = 
-                error?.response?.data?.message || 
-                error?.message || 
-                'Something went wrong while updating category status';
-            
-            toast.error(message);
-        } finally {
-            // setLoading(false);
-        }
-    };
-
     const filteredCategories = categories.filter(category => {
         const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             category.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -240,15 +212,7 @@ const JobCategoryManagement  = () => {
                       >
                         Edit
                       </button>
-                      <button
-                        onClick={() => toggleStatus(category)}
-                        style={{
-                          ...styles.actionButton('#f6ad55'),
-                          background: 'rgba(246, 173, 85, 0.1)'
-                        }}
-                      >
-                        {category.isActive ? 'Deactivate' : 'Activate'}
-                      </button>
+                      
                       <button
                         onClick={() => handleDelete(category.id)}
                         style={{
@@ -330,18 +294,7 @@ const JobCategoryManagement  = () => {
                         >
                           Edit
                         </button>
-                        <button
-                          onClick={() => toggleStatus(category)}
-                          style={styles.actionButton('#f6ad55')}
-                          onMouseEnter={(e) => {
-                            e.target.style.background = 'rgba(246, 173, 85, 0.1)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.background = 'none';
-                          }}
-                        >
-                          {category.isActive ? 'Deactivate' : 'Activate'}
-                        </button>
+                        
                         <button
                           onClick={() => handleDelete(category.id)}
                           style={styles.actionButton('#f56565')}
