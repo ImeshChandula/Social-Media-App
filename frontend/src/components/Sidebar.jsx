@@ -19,24 +19,29 @@ import {
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import useAuthStore from '../store/authStore';
 
-const navItems = [
-  { name: "Home", path: "/", icon: <FaHome /> },
-  { name: "Members", path: "/members", icon: <FaUsers /> },
-  { name: "Videos", path: "/videos", icon: <FaVideo /> },
-  { name: "Profile", path: "/profile", icon: <FaUserCircle /> },
-  { name: "Dashboard", path: "/dashboard", icon: <TbLayoutDashboardFilled /> }
-];
 
-const shortcuts = [
-  { name: "Gaming", path: "/gaming", icon: <FaGamepad /> },
-  { name: "Sports", path: "/sports", icon: <FaBasketballBall /> },
-  { name: "Entertainment", path: "/entertainment", icon: <FaFilm /> },
-  { name: "Shopping", path: "/shopping", icon: <FaShoppingBag /> },
-];
 
 function Sidebar({ collapsed, setCollapsed }) {
   const [mobileVisible, setMobileVisible] = useState(false);
   
+  const { authUser, logout } = useAuthStore();
+
+  const navItems = [
+    { name: "Home", path: "/", icon: <FaHome /> },
+    { name: "Members", path: "/members", icon: <FaUsers /> },
+    { name: "Videos", path: "/videos", icon: <FaVideo /> },
+    { name: "Profile", path: "/profile", icon: <FaUserCircle /> },
+    ...(authUser.role !== "user" ? [
+      { name: "Dashboard", path: "/dashboard", icon: <TbLayoutDashboardFilled /> }
+    ] : []),
+  ];
+
+  const shortcuts = [
+    { name: "Gaming", path: "/gaming", icon: <FaGamepad /> },
+    { name: "Sports", path: "/sports", icon: <FaBasketballBall /> },
+    { name: "Entertainment", path: "/entertainment", icon: <FaFilm /> },
+    { name: "Shopping", path: "/shopping", icon: <FaShoppingBag /> },
+  ];
 
   const handleResize = () => {
     if (window.innerWidth >= 768) {
@@ -57,7 +62,6 @@ function Sidebar({ collapsed, setCollapsed }) {
     }
   };
 
-  const { logout } = useAuthStore();
   const handleLogout = async () => {
     try {
       await logout();
