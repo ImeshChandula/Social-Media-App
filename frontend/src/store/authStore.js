@@ -81,28 +81,6 @@ const useAuthStore = create((set) => ({
         }
     },
 
-    editProfile: async (userId, userData) => {
-        set({ isUpdating: true });
-
-        try {
-            const res = await axiosInstance.patch(`/users/updateProfile/${userId}`, userData);
-
-            if (res.data && res.data.user) {
-                set({ authUser: res.data.user});
-                toast.success(res.data.message);
-                return res.data;
-            } else {
-                throw new Error("Invalid response from server");
-            }
-        } catch (error) {
-            const errorMessage = error.response?.data?.message || 
-                               "Failed to update account. Please try again.";
-            toast.error(errorMessage);
-            throw error;
-        } finally {
-            set({ isUpdating: false });
-        }
-    },
 
 }));
 
