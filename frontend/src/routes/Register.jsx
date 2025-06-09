@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { axiosInstance } from '../lib/axios';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import getCountryOptions from '../store/countryCodes';
 import RegisterStyle from '../styles/RegisterStyle';
+import useAuthStore from '../store/authStore';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -22,8 +21,8 @@ const Register = () => {
   const [hoveredEye, setHoveredEye] = useState(false);
   const [focusedInputs, setFocusedInputs] = useState({});
 
-  const navigate = useNavigate();
   const countryOptions = getCountryOptions();
+  const { register } = useAuthStore();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -64,16 +63,7 @@ const Register = () => {
     }
 
     try {
-      const res = await axiosInstance.post('/auth/register', trimmedData);
-
-      if (res.data.success) {
-        console.log('User registered:', res.data);
-        toast.success(res.data.message);
-        navigate('/login');
-      } else {
-        console.log("Error: ", res.data.message);
-        toast.error(res.data.message);
-      }
+      await register(trimmedData);
     } catch (err) {
       const errorMsg =
         err.response?.data?.message || JSON.stringify(err.response?.data) || err.message;
