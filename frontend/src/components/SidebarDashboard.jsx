@@ -7,14 +7,17 @@ import { IoMdArrowRoundBack } from "react-icons/io";
 import { BsFileEarmarkPostFill } from "react-icons/bs";
 import { SiJoplin } from "react-icons/si";
 import styles from "../styles/DashboardStyle";
-
+import useAuthStore from "./store/authStore";
 
 const SidebarDashboard = ({ collapsed, setCollapsed }) => {
     const [mobileVisible, setMobileVisible] = useState(false);
     const navigate = useNavigate();
+    const { authUser } = useAuthStore();
 
     const shortcuts = [
-        { name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> },
+        ...(authUser.role === "super_admin" ? [
+          { name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> }
+        ] : []),
         { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
         { name: "Job Categories", path: "/dashboard/job-category", icon: <SiJoplin /> },
         { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },

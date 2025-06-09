@@ -4,40 +4,30 @@ import { Toaster } from 'react-hot-toast';
 import Login from "./routes/login";
 import Register from "./routes/Register"
 import MainLayout from "./routes/MainLayout";
-import { axiosInstance } from "./lib/axios";
 import EditProfile from "./components/EditProfile";
 import ResetPassword from "./routes/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import EditPost from "./components/EditPost";
 import styles from "./styles/DashboardStyle";
-
+import useAuthStore from "./store/authStore";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
 
   // Auth user
-  const [authUser, setAuthUser] = useState(null);
+  const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await axiosInstance.get("/auth/checkCurrent");
-        if (res.data) {
-          setIsLoggedIn(true);
-          setAuthUser(res.data);
-        };
-        // eslint-disable-next-line no-unused-vars
-      } catch (err) {
-        setIsLoggedIn(false);
-      } finally {
-        setCheckingAuth(false);
-      }
-    };
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
-  if (checkingAuth) {
+  // debug
+  console.log({ authUser });
+  if (authUser) {
+    setIsLoggedIn(true);
+  }
+
+  if (isCheckingAuth && !authUser) {
     return (
       <div className="normal-loading-spinner">
         Loading<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
