@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { axiosInstance } from "../lib/axios";
+import { NavLink } from "react-router-dom";
 import { FaFacebookF, FaBars, FaTimes, FaSignOutAlt } from "react-icons/fa";
 import { FaUsersGear } from "react-icons/fa6";
 import { IoMdArrowRoundBack } from "react-icons/io";
@@ -11,8 +10,7 @@ import useAuthStore from "../store/authStore";
 
 const SidebarDashboard = ({ collapsed, setCollapsed }) => {
     const [mobileVisible, setMobileVisible] = useState(false);
-    const navigate = useNavigate();
-    const { authUser } = useAuthStore();
+    const { authUser, logout } = useAuthStore();
 
     const shortcuts = [
         ...(authUser.role === "super_admin" ? [
@@ -44,10 +42,7 @@ const SidebarDashboard = ({ collapsed, setCollapsed }) => {
 
     const handleLogout = async () => {
         try {
-            await axiosInstance.post("/auth/logout");
-            localStorage.removeItem("isLoggedIn");
-            navigate("/");
-            window.location.reload();
+            await logout();
         } catch (error) {
             console.error("Logout failed:", error);
         }
