@@ -7,6 +7,7 @@ const useAuthStore = create((set) => ({
     isCheckingAuth: true,
     isLoggingIn: false,
     isSigningUp: false,
+    isUpdating: false,
 
     checkAuth: async() => {
         try {
@@ -55,7 +56,7 @@ const useAuthStore = create((set) => ({
             if (res.data && res.data.newUser && res.data.success) {
                 set({ authUser: res.data.newUser})
                 toast.success(res.data.message);
-                return res.data
+                return res.data;
             } else {
                 throw new Error("Invalid response from server");
             }
@@ -64,6 +65,8 @@ const useAuthStore = create((set) => ({
                                "Failed to create account. Please try again.";
             toast.error(errorMessage);
             throw error;
+        } finally {
+            set({ isSigningUp: false });
         }
     },
 
@@ -75,6 +78,29 @@ const useAuthStore = create((set) => ({
             toast.success("Logged out Successfully");
         } catch (error) {
             toast.error(error.response.data.message);
+        }
+    },
+
+    editProfile: async (userId, userData) => {
+        set({ isUpdating: true });
+
+        try {
+            const res = await axiosInstance.patch(`/users/updateProfile/${userId}`, userData);
+
+            if (res.data && res.data.user) {
+                set({ authUser: res.data.user});
+                toast.success(res.data.message);
+                return res.data;
+            } else {
+                throw new Error("Invalid response from server");
+            }
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || 
+                               "Failed to update account. Please try again.";
+            toast.error(errorMessage);
+            throw error;
+        } finally {
+            set({ isUpdating: false });
         }
     },
 

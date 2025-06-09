@@ -24,7 +24,7 @@ const Feedstories = ({ type = "all" }) => {
 
         
       } catch (err) {
-        setError(err.response?.data?.msg || err.message || "Failed to fetch stories");
+        setError(err.response?.data?.message || err.message || "Failed to fetch stories");
       } finally {
         setLoading(false);
       }

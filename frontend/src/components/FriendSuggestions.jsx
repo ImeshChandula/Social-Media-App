@@ -24,8 +24,8 @@ const FriendSuggestions = () => {
         toast.error(response.data.message || 'Failed to fetch suggested friends');
       }
     } catch (err) {
-      setError(err.message || 'Failed to fetch suggested friends');
-      toast.error(err.message);
+      setError(err.response?.data?.message || err.message || 'Failed to fetch suggested friends');
+      toast.error(err.response?.data?.message || err.message);
       console.error('Error fetching suggested friends:', err);
       // Ensure we set an empty array on error
       setSuggestedFriends([]);
@@ -51,7 +51,7 @@ const FriendSuggestions = () => {
         );
       }
     } catch (err) {
-      toast.error(err.message || 'Failed to send friend request');
+      toast.error(err.response?.data?.message || err.message || 'Failed to send friend request');
       console.error('Error sending friend request:', err);
     } finally {
       setActionLoading(prev => ({ ...prev, [userId]: false }));
@@ -75,7 +75,7 @@ const FriendSuggestions = () => {
         );
       }
     } catch (err) {
-      toast.error(err.message || 'Failed to cancel friend request');
+      toast.error(err.response?.data?.message || err.message || 'Failed to cancel friend request');
       console.error('Error cancelling friend request:', err);
     } finally {
       setActionLoading(prev => ({ ...prev, [userId]: false }));

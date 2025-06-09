@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticateUser } = require('../middleware/authMiddleware');
+const { authenticateUser, checkAccountStatus } = require('../middleware/authMiddleware');
 const friendController = require('../controllers/friendController');
 
 const router = express.Router();
@@ -10,22 +10,22 @@ const router = express.Router();
 // @desc    Send a friend request to another user
 // @route   POST /api/friends/friend-request/send/:id
 // @access  Private
-router.post("/friend-request/send/:id", authenticateUser, friendController.sendFriendRequest);
+router.post("/friend-request/send/:id", authenticateUser, checkAccountStatus, friendController.sendFriendRequest);
 
 // @desc    Cancel a friend request sent to another user
 // @route   POST /api/friends/friend-request/cancel/:id
 // @access  Private
-router.delete("/friend-request/cancel/:id", authenticateUser, friendController.cancelFriendRequest);
+router.delete("/friend-request/cancel/:id", authenticateUser, checkAccountStatus, friendController.cancelFriendRequest);
 
 // @desc    Accept a friend request
 // @route   POST /api/friends/friend-request/accept/:id
 // @access  Private
-router.post("/friend-request/accept/:id", authenticateUser, friendController.acceptFriendRequest);
+router.post("/friend-request/accept/:id", authenticateUser, checkAccountStatus, friendController.acceptFriendRequest);
 
 // @desc    Reject a friend request
 // @route   POST /api/friends/friend-request/reject/:id
 // @access  Private
-router.post("/friend-request/reject/:id", authenticateUser, friendController.rejectFriendRequest);
+router.post("/friend-request/reject/:id", authenticateUser, checkAccountStatus, friendController.rejectFriendRequest);
 
 // @desc    Get all pending friend requests
 // @route   GET /api/friends/friend-requests/getAll
@@ -45,7 +45,7 @@ router.get('/allSuggestFriends', authenticateUser, friendController.getAllSugges
 // @desc    Remove a friend
 // @route   DELETE /api/friends/removeFriend/:id
 // @access  Private
-router.delete('/removeFriend/:id', authenticateUser, friendController.removeFriend);
+router.delete('/removeFriend/:id', authenticateUser, checkAccountStatus, friendController.removeFriend);
 
 
 module.exports = router;

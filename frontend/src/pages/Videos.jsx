@@ -24,7 +24,7 @@ const Videos = () => {
         
       } catch (err) {
         // Just show toast without setting error
-        toast.error(err.message || 'Failed to fetch videos');
+        toast.error(err.response?.data?.message || err.message || 'Failed to fetch videos');
         console.error('Error fetching videos:', err);
         setVideos([]);
       } finally {

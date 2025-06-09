@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticateUser } = require('../middleware/authMiddleware');
+const { authenticateUser, checkAccountStatus } = require('../middleware/authMiddleware');
 const likeController  = require('../controllers/likeController');
 
 const router = express.Router();
@@ -8,11 +8,11 @@ const router = express.Router();
 
 //@path     POST    /api/likes/toPost/:id
 //@desc     like post (like/unlike)
-router.post('/toPost/:id', authenticateUser, likeController.likeToAPostByPostId);
+router.post('/toPost/:id', authenticateUser, checkAccountStatus, likeController.likeToAPostByPostId);
 
 //@path     POST    /api/likes/toComment/:id
 //@desc     like comment (like/unlike)
-router.post('/toComment/:id', authenticateUser, likeController.likeToACommentByCommentId);
+router.post('/toComment/:id', authenticateUser, checkAccountStatus, likeController.likeToACommentByCommentId);
 
 //@path     GET    /api/likes/getAllLikedUsers/post/:id
 //@desc     Get all users who liked a post by post id

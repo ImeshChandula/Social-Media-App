@@ -2,6 +2,7 @@ const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const { performUserDeletion } = require('../services/userDeletionService');
 const {uploadImage} = require('../utils/uploadMedia');
+const { generateToken } = require("../utils/jwtToken");
 const ROLES = require("../enums/roles");
 const bcrypt = require('bcrypt');
 require('dotenv').config();
@@ -250,6 +251,14 @@ const updateUserProfile = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        const payload = {
+            id: updatedUser.id,
+            username: updatedUser.username,
+            role: updatedUser.role,
+            accountStatus: updatedUser.accountStatus
+        };
+
+        generateToken(payload, res);
         // remove password
         updatedUser.password = undefined;
         updatedUser._isPasswordModified = undefined;

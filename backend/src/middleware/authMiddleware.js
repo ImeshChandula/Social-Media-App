@@ -20,6 +20,20 @@ const authenticateUser = (req, res, next) => {
 };
 
 
+const checkAccountStatus = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: "User not authenticated" });
+  }
+  
+  if (req.user.accountStatus !== 'active') {
+    return res.status(403).json({ 
+      success: false,
+      message: "Account is inactive or banned. Please contact support." 
+    });
+  }
+  
+  next();
+};
 
 
 const authorizeRoles = (...allowedRoles) => {
@@ -31,4 +45,4 @@ const authorizeRoles = (...allowedRoles) => {
   };
 };
 
-module.exports = { authenticateUser, authorizeRoles };
+module.exports = { authenticateUser, authorizeRoles, checkAccountStatus };

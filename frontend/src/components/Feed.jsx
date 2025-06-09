@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import PostCard from "./PostCard";
+import toast from "react-hot-toast";
 
 const Feed = () => {
     const [posts, setPosts] = useState([]);
@@ -16,9 +17,15 @@ const Feed = () => {
                 const res = await axiosInstance.get("/posts/feed");
                 const postsData = res.data.posts || res.data || [];
 
-                setPosts(postsData);
+                if (res.data.success) {
+                    setPosts(postsData);
+                } else {
+                    setError(res.data.message);
+                    toast.error(res.data.message);
+                }
             } catch (err) {
-                setError(err.response?.data?.msg || err.message || "Failed to fetch posts");
+                setError(err.response?.data?.message || err.message || "Failed to fetch posts");
+                toast.error(err.response?.data?.message || err.message || "Failed to fetch posts");
             } finally {
                 setLoading(false);
             }

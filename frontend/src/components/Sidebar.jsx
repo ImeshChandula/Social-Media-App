@@ -17,6 +17,7 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
+import { MdContactSupport } from "react-icons/md";
 import useAuthStore from '../store/authStore';
 
 
@@ -34,6 +35,7 @@ function Sidebar({ collapsed, setCollapsed }) {
     ...(authUser.role !== "user" ? [
       { name: "Dashboard", path: "/dashboard", icon: <TbLayoutDashboardFilled /> }
     ] : []),
+    { name: "Support", path: "/support", icon: <MdContactSupport /> },
   ];
 
   const shortcuts = [

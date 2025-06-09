@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import EditPost from "./components/EditPost";
 import styles from "./styles/DashboardStyle";
 import useAuthStore from "./store/authStore";
+import Support from "./routes/Support";
 
 const App = () => {
 
@@ -74,6 +75,11 @@ const App = () => {
             element={!authUser ? <Register /> : <Navigate to="/" />}
           />
 
+          <Route 
+            path="/support" 
+            element={authUser && authUser.accountStatus !== "active" ?<Support /> : <Navigate to="/" />} 
+          />
+
           <Route
             path="/edit-profile"
             element={authUser && authUser.accountStatus !== "banned" ? <EditProfile /> : <Navigate to="/login" />}
@@ -92,7 +98,7 @@ const App = () => {
 
           <Route
             path="/dashboard/*"
-            element={authUser && (authUser.role === "admin" || authUser.role === "super_admin") ?
+            element={authUser && (authUser.role === "admin" || authUser.role === "super_admin") && authUser.accountStatus !== "banned" ?
               <Dashboard /> : <Navigate to="/login" />}
           />
 
