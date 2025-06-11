@@ -1,7 +1,8 @@
 import { useState } from 'react';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { MapPin, Calendar, User, Shield, Info } from 'lucide-react';
+import { MapPin, Calendar, User, Shield, Info, Briefcase } from 'lucide-react';
 import styles from '../styles/BioSectionStyles';
 
 const EnhancedBioSection = ({ user }) => {
@@ -48,6 +49,47 @@ const EnhancedBioSection = ({ user }) => {
                         <h6 style={styles.cardTitle}>Bio</h6>
                         <p style={styles.cardText}>{user.bio}</p>
                       </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {user?.jobCategory && (
+                <motion.div
+                  style={styles.fullColumn}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25, duration: 0.5 }}
+                >
+                  <div style={{ ...styles.infoCard, borderLeft: '4px solid #00d4aa' }}>
+                    <div style={styles.rowBetween}>
+                      <div style={styles.rowCenter}>
+                        <Briefcase size={18} color="white" style={styles.iconSpacing} />
+                        <div>
+                          <h6 style={styles.cardTitle}>Job Category</h6>
+                          <p style={styles.cardText}>
+                            {typeof user.jobCategory === 'object' 
+                              ? user.jobCategory.name 
+                              : user.jobCategory
+                            }
+                          </p>
+                          {typeof user.jobCategory === 'object' && user.jobCategory.description && (
+                            <p style={{ ...styles.cardText, fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>
+                              {user.jobCategory.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <span
+                        style={{
+                          ...styles.badge,
+                          backgroundColor: 'rgba(0, 212, 170, 0.2)',
+                          color: '#00d4aa',
+                          borderColor: '#00d4aa'
+                        }}
+                      >
+                        PROFESSIONAL
+                      </span>
                     </div>
                   </div>
                 </motion.div>

@@ -26,7 +26,7 @@ class User {
     this.resetOtp = userData.resetOtp || '';
     this.resetOtpExpiredAt = userData.resetOtpExpiredAt || new Date().toISOString();
 
-    this.isActive = userData.isActive || true;
+    this.isActive = userData.isActive !== undefined ? userData.isActive : true;
     this.lastLogin = userData.lastLogin || new Date().toISOString();
 
     this.role = userData.role || ROLES.USER;

@@ -10,7 +10,8 @@ function EditProfile() {
   const [updating, setUpdating] = useState(false);
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
   const [uploadingCoverPhoto, setUploadingCoverPhoto] = useState(false);
-  
+  const [jobCategories, setJobCategories] = useState([]);
+
   const [userData, setUserData] = useState({
     id: '',
     username: '',
@@ -22,7 +23,8 @@ function EditProfile() {
     location: '',
     birthday: '',
     accountStatus: 'active',
-    role: ''
+    role: '',
+    jobCategory: '',
   });
 
   const [formData, setFormData] = useState({
@@ -32,12 +34,17 @@ function EditProfile() {
     bio: '',
     location: '',
     birthday: '',
-    accountStatus: 'active'
+    accountStatus: 'active',
+    jobCategory: ''
   });
 
   // Fetch user data on component mount
   useEffect(() => {
-    fetchUserData();
+    const fetchData = async () => {
+      await fetchUserData();
+      await fetchJobCategories();
+    };
+    fetchData();
   }, []);
 
   const fetchUserData = async () => {
@@ -53,13 +60,26 @@ function EditProfile() {
             bio: data.user.bio || '',
             location: data.user.location || '',
             birthday: data.user.birthday ? data.user.birthday.split('T')[0] : '',
-            accountStatus: data.user.accountStatus || 'active'
+            accountStatus: data.user.accountStatus || 'active',
+            jobCategory: data.user.jobCategory || 'None'
         });
     } catch (error) {
       console.error('Error fetching user data:', error);
       toast.error("Failed to load user");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchJobCategories = async () => {
+    try {
+      const response = await axiosInstance.get('/jobCategories/active');
+      if (response.data.success) {
+        setJobCategories(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching job categories:', error);
+      toast.error("Failed to load job categories");
     }
   };
 
@@ -291,6 +311,23 @@ function EditProfile() {
                 onChange={handleInputChange}
                 required
               />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="jobCategory">Job category</label>
+              <select
+                id="jobCategory"
+                name="jobCategory"
+                value={formData.jobCategory}
+                onChange={handleInputChange}
+              >
+                <option value="None">Select a category</option>
+                {jobCategories.map((category) => (
+                  <option key={category.id} value={category.name}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group">
