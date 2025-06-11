@@ -1,8 +1,13 @@
 import React from 'react'
+import useAuthStore from '../store/authStore'
+import SupportHead from '../components/SupportHead'
 
 const Support = () => {
+  const { authUser } = useAuthStore();
   return (
-    <div>Support</div>
+    <div>
+      <SupportHead status={authUser.accountStatus} username={authUser.username}/>
+    </div>
   )
 }
 
