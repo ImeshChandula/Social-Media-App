@@ -47,9 +47,9 @@ const DashboardUserSummery = () => {
     <div className="user-summary">
       <h2>All Users ({summary.totalUsers})</h2>
       <div className="summary-grid">
-        <SummaryCard label="Super Admins" value={summary.roleSuperAdmins} color="#fd7e14" />
-        <SummaryCard label="Admins" value={summary.roleAdmins} color="#6610f2" />
-        <SummaryCard label="Users" value={summary.roleUsers} color="#36b9cc" />
+        <SummaryCard label="Role: Super Admin" value={summary.roleSuperAdmins} color="#fd7e14" />
+        <SummaryCard label="Role: Admin" value={summary.roleAdmins} color="#6610f2" />
+        <SummaryCard label="Role: User" value={summary.roleUsers} color="#36b9cc" />
         <SummaryCard label="Active Users" value={summary.activeUsers} color="#1cc88a" />
         <SummaryCard label="Inactive Users" value={summary.inactiveUsers} color="#f6c23e" />
         <SummaryCard label="Banned Users" value={summary.bannedUsers} color="#e74a3b" />
