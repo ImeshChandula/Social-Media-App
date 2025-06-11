@@ -94,7 +94,17 @@ const App = () => {
 
           <Route
             path="/support"
-            element={authUser ? <Support /> : <Navigate to="/login" />}
+            element={
+              authUser ? (
+                authUser.accountStatus !== "active" ? (
+                  <Support />
+                ) : (
+                  <Navigate to="/" />
+                )
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
           />
 
           <Route
@@ -108,7 +118,8 @@ const App = () => {
                 )
               ) : (
                 <Navigate to="/login" />
-              )}
+              )
+            }
           />
 
           <Route

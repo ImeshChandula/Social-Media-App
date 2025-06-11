@@ -1,11 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import styles from "../styles/DashboardStyle";
 
 import Sidebar from "../components/Sidebar";
 
-import Home from "../pages/Home";
-import Members from "../pages/Members";
 import Videos from "../pages/Videos";
 import NotificationPage from "../pages/Notifications";
 import ProfilePage from "../pages/ProfilePage";
@@ -18,10 +16,16 @@ import VideoFeed from "../components/VideoFeed";
 import MemberControl from "../pages/MemberControl";
 import RegularUserPage from "../components/RegularUserPage";
 import MarketPlace from "../pages/MarketPlace";
-
+import useAuthStore from "../store/authStore";
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
+
+  const { checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   return (
     <div className="container-fluid vh-100 overflow-hidden text-white" style={styles.backgroundColor}>

@@ -1,5 +1,6 @@
 .support-heading {
-  background: linear-gradient(135deg, var(--gradientFrom)20, var(--gradientTo)10);
+  /*background: linear-gradient(135deg, var(--gradientFrom)20, var(--gradientTo)10) !important;*/
+  background: linear-gradient(135deg, #667eea20, #764ba210) !important;
   /*background: linear-gradient(135deg, rgb(96, 100, 83) 0%, rgb(38, 41, 15) 100%) !important;*/
   border-radius: 24px;
   padding: 3rem 2rem;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { axiosInstance } from "../lib/axios";
+import useAuthStore from '../store/authStore'; 
 import '../styles/EditProfile.css';
 
 function EditProfile() {
@@ -38,6 +39,7 @@ function EditProfile() {
     jobCategory: ''
   });
 
+  const { checkAuth } = useAuthStore();
   // Fetch user data on component mount
   useEffect(() => {
     const fetchData = async () => {
@@ -196,6 +198,7 @@ function EditProfile() {
         navigate(-1);
         }, 3000
       );
+      checkAuth();
     } catch (error) {
       console.error('Error updating profile:', error);
       const errorMessage = error.response?.data?.message || 'Error updating profile';
