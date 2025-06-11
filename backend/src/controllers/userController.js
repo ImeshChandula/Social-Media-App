@@ -237,6 +237,11 @@ const updateUserProfile = async (req, res) => {
         if (req.body.role && req.user.role !== 'super_admin') {
             delete req.body.role;
         }
+
+        let isUpdatingTokenValue = false;
+        if (req.body.role || req.body.accountStatus) {
+            isUpdatingTokenValue = true;
+        }
         
         // Hash password if it's being updated
         if (req.body.password) {
@@ -251,14 +256,18 @@ const updateUserProfile = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const payload = {
-            id: updatedUser.id,
-            username: updatedUser.username,
-            role: updatedUser.role,
-            accountStatus: updatedUser.accountStatus
-        };
+        if (isUpdatingTokenValue) {
+            const payload = {
+                id: updatedUser.id,
+                username: updatedUser.username,
+                role: updatedUser.role,
+                accountStatus: updatedUser.accountStatus
+            };
 
-        generateToken(payload, res);
+            generateToken(payload, res);
+            console.log("New token created")
+        }
+        
         // remove password
         updatedUser.password = undefined;
         updatedUser._isPasswordModified = undefined;

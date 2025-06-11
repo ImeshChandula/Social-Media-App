@@ -111,7 +111,15 @@ const loginUser = async (req, res) => {
 // Get current user profile
 const checkCurrent = async (req, res) => {
   try {
-    const user = req.user;
+    //const existingUser = req.user.id;
+
+    const existingUser = await UserService.findById(req.user.id);
+    const user = {
+        id: existingUser.id,
+        username: existingUser.username,
+        role: existingUser.role,
+        accountStatus: existingUser.accountStatus
+    };
     
     res.status(200).json(user);
   } catch (error) {
