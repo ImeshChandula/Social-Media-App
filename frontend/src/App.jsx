@@ -93,8 +93,22 @@ const App = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
 
           <Route
+            path="/support"
+            element={authUser ? <Support /> : <Navigate to="/login" />}
+          />
+
+          <Route
             path="/*"
-            element={authUser && authUser.accountStatus !== "banned" ? <MainLayout /> : <Navigate to="/login" />}
+            element={
+              authUser ? (
+                authUser.accountStatus === "active" ? (
+                  <MainLayout />
+                ) : (
+                  <Navigate to="/support" />
+                )
+              ) : (
+                <Navigate to="/login" />
+              )}
           />
 
           <Route
