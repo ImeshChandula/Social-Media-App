@@ -41,14 +41,19 @@ const JobCategoryManagement  = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const formattedData = {
+            name: formData.name.trim(),
+            description: formData.description,
+        };
+
         try {
             if (editingCategory) {
-                const res = await jobCategoryService.updateCategory(editingCategory.id, formData);
+                const res = await jobCategoryService.updateCategory(editingCategory.id, formattedData);
                 if(res.success){
                     toast.success("Job role Updated successfully");
                 }
             } else {
-                const res = await jobCategoryService.createCategory(formData);
+                const res = await jobCategoryService.createCategory(formattedData);
                 if(res.success){
                     toast.success("Job role created successfully");
                 }

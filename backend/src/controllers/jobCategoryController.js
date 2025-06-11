@@ -12,14 +12,20 @@ const getAllActiveCategories = async (req, res) => {
             return res.status(200).json({ 
                 success: true,
                 message: "No Active Categories", 
-                data: categories 
+                data: [] 
             });
         }
+
+        // Return minimal data - just id and name
+        const simplifiedCategories = categories.map(category => ({
+            id: category.id,
+            name: category.name
+        }));
 
         res.status(200).json({ 
             success: true, 
             message: "Categories received", 
-            data: categories 
+            data: simplifiedCategories 
         })
     } catch (error) {
         res.status(500).json({

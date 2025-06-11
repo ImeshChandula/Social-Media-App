@@ -14,7 +14,7 @@ class Post {
         this.comments = postData.comments || [];
         this.shares = postData.shares || [];
 
-        this.isEdited = postData.isEdited !== undefined ? postData.isEdited : false;
+        this.isEdited = postData.isEdited || false;
         this.editHistory = postData.editHistory || [];
 
         this.createdAt = postData.createdAt || new Date().toISOString();

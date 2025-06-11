@@ -68,14 +68,24 @@ class JobCategoryService {
     // get all active
     async findAllActive() {
         try {
-            const jobRef = await this.collection.where('isActive', '==', true).orderBy('name').get();
+            const jobRef = await this.collection.get();
             
-            if (jobRef.empty) {
+            //console.log(`Query returned ${jobRef.docs.length} documents`);
+
+            const activeCategories = jobRef.docs
+                .map(doc => new JobCategory(doc.id, doc.data()))
+                .filter(category => {
+                    // Handle both boolean and string values
+                    const isActive = category.isActive === true || category.isActive === "true";
+                    //console.log(`Category: ${category.name}, isActive: ${category.isActive}, type: ${typeof category.isActive}, filtered: ${isActive}`);
+                    return isActive;
+                });
+
+            if (activeCategories.empty) {
                 return [];
             }
 
-            const jobCategory = jobRef.docs.map(doc => new JobCategory(doc.id, doc.data()));
-            return jobCategory
+            return activeCategories.sort((a, b) => a.name.localeCompare(b.name));
         } catch (error) {
             throw error;
         }
