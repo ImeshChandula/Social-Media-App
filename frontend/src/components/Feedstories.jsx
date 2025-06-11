@@ -7,6 +7,7 @@ const Feedstories = ({ type = "all" }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Fetch stories
   useEffect(() => {
     const fetchFeed = async () => {
       try {
@@ -19,10 +20,15 @@ const Feedstories = ({ type = "all" }) => {
         }
 
         const res = await axiosInstance.get(endpoint);
-         const storiesFromApi = res.data?.stories || res.data;
-        setStories(Array.isArray(storiesFromApi) ? storiesFromApi : []);
+        const storiesFromApi = res.data?.stories || res.data;
+        const storiesArray = Array.isArray(storiesFromApi) ? storiesFromApi : [];
+        setStories(storiesArray);
 
-        
+        // ✅ After setting stories, mark them as viewed
+        storiesArray.forEach((story) => {
+          markStoryAsViewed(story._id);
+        });
+
       } catch (err) {
         setError(err.response?.data?.message || err.message || "Failed to fetch stories");
       } finally {
@@ -32,6 +38,15 @@ const Feedstories = ({ type = "all" }) => {
 
     fetchFeed();
   }, [type]);
+
+  // Function to mark story as viewed
+  const markStoryAsViewed = async (storyId) => {
+    try {
+      await axiosInstance.put(`/stories/${storyId}/view`);
+    } catch (err) {
+      console.error(`Failed to mark story ${storyId} as viewed:`, err.message);
+    }
+  };
 
   const handleDelete = (storyId) => {
     setStories((prev) => prev.filter((story) => story._id !== storyId));
