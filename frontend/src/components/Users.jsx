@@ -5,6 +5,7 @@ import styles from '../styles/UsersStyles';
 import toast from 'react-hot-toast';
 import "../styles/UserStyles.css";
 import { useNavigate } from 'react-router-dom';
+import DashboardUserSummery from './DashboardUserSummery';
 
 
 const Users = () => {
@@ -294,7 +295,8 @@ const Users = () => {
 
         {/* All Users */}
         <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>All Users ({users.length})</h2>
+          {/*<h2 style={styles.sectionTitle}>All Users ({users.length})</h2>*/}
+          <DashboardUserSummery />
           {loading ? (
             <div style={styles.loadingContainer}>
               <div style={styles.spinner}></div>
