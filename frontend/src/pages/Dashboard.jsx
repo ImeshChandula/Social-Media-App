@@ -6,7 +6,7 @@ import Users from "../components/Users";
 import styles from "../styles/DashboardStyle";
 import DashboardHome from "../components/DashboardHome";
 import PostManagement from "../components/PostManagement";
-import JobCategoryManagement from "../components/JobCategoryManagement ";
+import JobCategoryManagement from "../components/JobCategoryManagement";
 
 
 const Dashboard = () => {
