@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { FaFacebookF, FaSignOutAlt, FaSearch } from "react-icons/fa";
+import { FaFacebookF, FaSignOutAlt, FaSearch, FaBell } from "react-icons/fa";
 import { FaUsersGear } from "react-icons/fa6";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import { BsFileEarmarkPostFill } from "react-icons/bs";
@@ -15,7 +15,7 @@ const SidebarDashboard = () => {
       : []),
     { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
     { name: "Job Categories", path: "/dashboard/job-category", icon: <SiJoplin /> },
-    { name: "Notification", path: "/dashboard/notifications", icon: <SiJoplin /> },
+    { name: "Notification", path: "/dashboard/notifications", icon: <FaBell /> },
     { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
   ];
 
@@ -104,9 +104,9 @@ const SidebarDashboard = () => {
       </div>
 
       {/* Horizontal Top Bar for Mobile */}
-      <div className="d-flex d-md-none flex-row align-items-center justify-content-between bg-black text-white px-3 py-2 w-100">
+      <div className="d-flex d-md-none flex-row align-items-center justify-content-between bg-black text-white px-3 pt-3 w-100">
         <FaFacebookF size={24} color="#1ecb73" />
-        <div className="flex-grow-1 mx-3" style={{ maxWidth: "250px" }}>
+        <div className="flex-grow-1" style={{ maxWidth: "150px" }}>
           <div className="d-flex align-items-center bg-secondary rounded px-2 py-1 w-100">
             <FaSearch className="text-white me-2" />
             <input
@@ -119,29 +119,44 @@ const SidebarDashboard = () => {
         </div>
       </div>
 
-      <div className="d-flex d-md-none bg-black text-white overflow-auto px-2 py-2 gap-3">
-        {shortcuts.map(({ name, path, icon }) => (
-          <NavLink
-            key={name}
-            to={path}
-            className={({ isActive }) =>
-              `btn btn-sm d-flex flex-column align-items-center justify-content-center text-white ${isActive ? "bg-dark fw-bold" : ""
-              }`
-            }
-            style={{ minWidth: "70px", fontSize: "0.8rem" }}
-          >
-            {icon}
-            <small>{name}</small>
-          </NavLink>
-        ))}
-        <button
-          onClick={handleLogout}
-          className="btn btn-sm d-flex flex-column align-items-center text-white"
-          style={{ minWidth: "70px", fontSize: "0.8rem" }}
+      <div className="d-flex d-md-none flex-column bg-black text-white px-2 pt-2">
+        {/* Scrollable Tabs */}
+        <div
+          className="d-flex gap-3 overflow-auto"
+          style={{ whiteSpace: "nowrap", scrollbarWidth: "none" }}
         >
-          <FaSignOutAlt />
-          <small>Logout</small>
-        </button>
+          {shortcuts.map(({ name, path, icon }) => (
+            <NavLink
+              key={name}
+              to={path}
+              className={({ isActive }) =>
+                `nav-link d-flex align-items-center gap-3 px-2 py-3 my-1 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"}`
+              }
+              style={{
+                minWidth: "70px",
+                fontSize: "1rem",
+                whiteSpace: "normal",
+                flex: "0 0 auto",
+              }}
+            >
+              {icon}
+              <small>{name}</small>
+            </NavLink>
+          ))}
+          <button
+            onClick={handleLogout}
+            className="nav-link d-flex align-items-center gap-3 px-2 py-3 my-1 rounded text-white bg-transparent border-0 w-100 text-start"
+            style={{
+              minWidth: "70px",
+              fontSize: "1rem",
+              whiteSpace: "normal",
+              flex: "0 0 auto",
+            }}
+          >
+            <FaSignOutAlt />
+            <small>Logout</small>
+          </button>
+        </div>
       </div>
     </div>
   );
