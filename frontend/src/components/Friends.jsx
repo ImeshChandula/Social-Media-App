@@ -90,10 +90,8 @@ const Friends = () => {
   if (loading) {
     return (
       <div className="friends-list-container">
-        <div className="loading-spinner">
           <div className="spinner"></div>
-          <p>Loading your friends...</p>
-        </div>
+          <p className='text-center'>Loading your friends...</p>
       </div>
     );
   }

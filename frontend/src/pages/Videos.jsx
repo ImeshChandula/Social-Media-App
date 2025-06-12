@@ -61,10 +61,14 @@ const Videos = () => {
     if (authorId) navigate(`/profile/${authorId}`);
   };
 
-  if (loading) return <p className="text-center mt-5">Loading videos...</p>;
+  if (loading) {
+    return (<div className="text-white text-center my-5 fs-5 normal-loading-spinner">
+      Loading Videos<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
+    </div>)
+  }
 
   return (
-    <div className="container mt-4">
+    <div className="container py-5 py-md-0 mt-4 mt-md-0">
       <h2 className="mb-4 text-center">Explore Videos</h2>
 
       {/* Category Filter */}
