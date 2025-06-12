@@ -4,7 +4,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { axiosInstance } from '../lib/axios';
 import toast from 'react-hot-toast';
 import '../styles/Videos.css';
-import PostLikeButton from '../components/PostLikeButton';
 
 const Videos = () => {
   const navigate = useNavigate();
@@ -34,12 +33,23 @@ const Videos = () => {
     fetchVideoPosts();
   }, []);
 
-  const handleLikeUpdate = (postId, isLiked, updatedLikeCount) => {
-    setVideos((prevVideos) =>
-      prevVideos.map((video) =>
-        video._id === postId ? { ...video, isLiked, likeCount: updatedLikeCount } : video
-      )
-    );
+  const handleLikeToggle = async (postId) => {
+    try {
+      const response = await axiosInstance.post(`/likes/toPost/${postId}`);
+      const updatedPost = response.data?.updatedPost;
+
+      if (updatedPost) {
+        setVideos((prevVideos) =>
+          prevVideos.map((video) =>
+            video._id === postId
+              ? { ...video, isLiked: updatedPost.isLiked, likeCount: updatedPost.likeCount }
+              : video
+          )
+        );
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to like post');
+    }
   };
 
   const filteredVideos =
@@ -129,12 +139,12 @@ const Videos = () => {
 
                 {/* Footer */}
                 <div className="card-footer d-flex justify-content-between align-items-center bg-white border-top">
-                  <PostLikeButton
-                    postId={post._id}
-                    initialIsLiked={post.isLiked}
-                    initialLikeCount={post.likeCount}
-                    onLikeUpdate={handleLikeUpdate}
-                  />
+                  <button
+                    className={`btn btn-sm ${post.isLiked ? 'btn-danger' : 'btn-outline-danger'}`}
+                    onClick={() => handleLikeToggle(post._id)}
+                  >
+                    ❤️ {post.likeCount || 0}
+                  </button>
                   <button className="btn btn-outline-secondary btn-sm">💬 Comment</button>
                   <button className="btn btn-outline-secondary btn-sm">🔗 Share</button>
                 </div>
