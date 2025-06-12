@@ -62,10 +62,13 @@ const getAllMails = async (req, res) => {
             return res.status(400).json({success: false, message: "Error in populate author"})
         }
 
+        const unreadCount = populatedMails.filter(mail => !mail.isRead).length;
+
         return res.status(200).json({ 
             success: true, 
             message: "All mails received successfully", 
-            count: populatedMails.length, 
+            totalCount: populatedMails.length, 
+            unreadCount: unreadCount,
             data: populatedMails
         });
     } catch (error) {
@@ -84,6 +87,10 @@ const markAsRead = async (req, res) => {
         const mail = await mailService.findById(mailId);
         if (!mail) {
             return res.status(404).json({success: false, message: "Mail not found"});
+        }
+
+        if (mail.isRead) {
+            return res.status(400).json({success: false, message: "Mail ia already read"});
         }
 
         const updateData = {

@@ -7,6 +7,7 @@ import styles from "../styles/DashboardStyle";
 import DashboardHome from "../components/DashboardHome";
 import PostManagement from "../components/PostManagement";
 import JobCategoryManagement from "../components/JobCategoryManagement ";
+import Mail from "./Mail";
 
 
 const Dashboard = () => {
@@ -55,6 +56,7 @@ const Dashboard = () => {
                 <Route path="/users" element={<Users />} />
                 <Route path="/posts" element={<PostManagement />} />
                 <Route path="/job-category" element={<JobCategoryManagement />} />
+                <Route path="/mails" element={<Mail />} />
             </Routes>
           </div>
         </div>

@@ -4,7 +4,8 @@ import { FaFacebookF, FaBars, FaTimes, FaSignOutAlt } from "react-icons/fa";
 import { FaUsersGear } from "react-icons/fa6";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import { BsFileEarmarkPostFill } from "react-icons/bs";
-import { SiJoplin } from "react-icons/si";
+import { TbCategoryFilled } from "react-icons/tb";
+import { FaFacebookMessenger } from "react-icons/fa6";
 import styles from "../styles/DashboardStyle";
 import useAuthStore from "../store/authStore";
 
@@ -17,7 +18,8 @@ const SidebarDashboard = ({ collapsed, setCollapsed }) => {
           { name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> }
         ] : []),
         { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
-        { name: "Job Categories", path: "/dashboard/job-category", icon: <SiJoplin /> },
+        { name: "Job Categories", path: "/dashboard/job-category", icon: <TbCategoryFilled /> },
+        { name: "Messages", path: "/dashboard/mails", icon: <FaFacebookMessenger /> },
         { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
     ];
     
