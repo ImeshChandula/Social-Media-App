@@ -2,28 +2,31 @@ import React from 'react';
 
 const VideoCard = ({ video }) => {
   return (
-    <div
-      className="position-relative rounded overflow-hidden"
-      style={{ minHeight: "220px", backgroundColor: "#000" }}
-    >
-      {video.mediaUrl ? (
+    <div className="card shadow-sm mb-4 border-0 rounded-4">
+      {video.media ? (
         <video
-          src={video.mediaUrl}
+          className="card-img-top rounded-top-4"
+          src={video.media}
           controls
-          style={{ width: "100%", height: "220px", objectFit: "cover" }}
+          style={{ height: '250px', objectFit: 'contain' }}
         />
       ) : (
-        <div className="text-white d-flex align-items-center justify-content-center" style={{ height: "220px" }}>
-          <p>No Video Available</p>
+        <div
+          className="d-flex align-items-center justify-content-center bg-dark text-white"
+          style={{ height: '220px' }}
+        >
+          <p className="mb-0">No Video Available</p>
         </div>
       )}
 
-      <div
-        className="text-dark p-3 rounded-bottom"
-        style={{ position: "absolute", bottom: "0", width: "100%", backgroundColor: "#d6d6d6" }}
-      >
-        <p className="mb-1 fw-bold">{video.title || 'Untitled Video'}</p>
-        <small>{video.views || 0} views • {video.time || 'Unknown time'}</small>
+      <div className="card-body bg-light rounded-bottom-4">
+        <p className="card-text text-black mb-1">{video.content || 'No Content'}</p>
+        <small className="text-muted d-block">
+          Posted by: {video.user?.username || 'Unknown'}
+        </small>
+        <small className="text-muted">
+          {new Date(video.createdAt).toLocaleDateString()}
+        </small>
       </div>
     </div>
   );

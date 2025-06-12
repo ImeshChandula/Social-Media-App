@@ -1,31 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { axiosInstance } from '../lib/axios';
-import VideoFeed from '../components/VideoFeed';
+import VideoCard from '../components/VideoCard';
 import toast from 'react-hot-toast';
 
 const Videos = () => {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
-  
 
   useEffect(() => {
-    const fetchVideoPosts  = async () => {
+    const fetchVideoPosts = async () => {
       try {
         const response = await axiosInstance.get('/posts/feed/videos');
-
-        if (response.data.success)  {
+        if (response.data.success) {
           setVideos(response.data.posts || []);
-        }else{
+        } else {
           setVideos([]);
           toast.error(response.data.message || 'Failed to fetch videos');
         }
-        
-        
       } catch (err) {
-        // Just show toast without setting error
         toast.error(err.response?.data?.message || err.message || 'Failed to fetch videos');
-        console.error('Error fetching videos:', err);
         setVideos([]);
       } finally {
         setLoading(false);
@@ -35,27 +29,31 @@ const Videos = () => {
     fetchVideoPosts();
   }, []);
 
-  if (loading) return <p>Loading videos...</p>;
-  
-  return(
-    <div>
-      {videos.map(videos => (
-        <div key={videos._id} className="video-item">
-          <h3>{videos.title}</h3>
-          <video controls width="100%">
-            <source src={videos.media} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-          
-          <p>{videos.description}</p>
-          <p>Posted by: {videos.user?.username || 'Unknown'}</p>
-          <p>Date: {new Date(videos.createdAt).toLocaleDateString()}</p> 
-        </div>
-      ))}
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '300px' }}>
+        <div className="spinner-border text-primary" role="status" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="container py-4">
+      <div className="row">
+        {videos.length > 0 ? (
+          videos.map(video => (
+            <div key={video._id} className="col-12 col-sm-6 col-lg-4">
+              <VideoCard video={video} />
+            </div>
+          ))
+        ) : (
+          <div className="col-12 text-center">
+            <p>No videos available.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
-
-
 
 export default Videos;
