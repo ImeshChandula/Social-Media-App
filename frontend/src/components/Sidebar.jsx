@@ -47,9 +47,6 @@ function Sidebar() {
 
   const shortcuts = [
     { name: "Contact us", path: "/contact", icon: <MdContactSupport /> },
-    ...(authUser.accountStatus !== "active"
-      ? [{ name: "Support", path: "/support", icon: <MdContactSupport /> }]
-      : []),
     { name: "Market Place", path: "/market", icon: <FaShoppingBag /> },
   ];
 
