@@ -113,11 +113,14 @@ function Sidebar() {
           {shortcuts.map(({ name, path, icon }) => (
             <li className="nav-item mb-2" key={name}>
               <NavLink
+                key={name}
                 to={path}
                 className={({ isActive }) =>
-                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"}`
+                  `d-flex align-items-center gap-2 py-1 px-2 rounded text-white ${isActive ? "bg-secondary fw-bold" : ""
+                  }`
                 }
-                style={{ fontSize: "1rem" }}
+                onClick={() => setShowMore(false)}
+                style={{ fontSize: "0.85rem", whiteSpace: "nowrap", textDecoration: "none" }}
               >
                 {icon} {name}
               </NavLink>
@@ -128,7 +131,7 @@ function Sidebar() {
 
       {/* Mobile Topbar */}
       <div
-        className="bg-black text-white d-flex d-md-none justify-content-around align-items-center fixed-top w-100 py-2"
+        className="mobile-topbar bg-black text-white d-flex d-md-none justify-content-around align-items-center fixed-top w-100 py-2"
         style={{ zIndex: 999 }}
       >
         {["Home", "Members", "Profile", "Notification"].map((label) => {
@@ -139,12 +142,13 @@ function Sidebar() {
               key={item.name}
               to={item.path}
               className={({ isActive }) =>
-                `text-white d-flex flex-column align-items-center py-2 px-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"}`
+                `text-white d-flex flex-column align-items-center py-2 px-1 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"
+                }`
               }
-              style={{ fontSize: "0.95rem" }}
+              style={{ fontSize: "1rem", textDecoration: "none" }}
             >
               {item.icon}
-              <small style={{ fontSize: "0.7rem" }}>{item.name}</small>
+              <small style={{ fontSize: "0.8rem" }}>{item.name}</small>
             </NavLink>
           );
         })}
@@ -174,7 +178,7 @@ function Sidebar() {
                       `d-flex align-items-center gap-2 py-1 px-2 rounded text-white ${isActive ? "bg-secondary fw-bold" : ""}`
                     }
                     onClick={() => setShowMore(false)}
-                    style={{ fontSize: "0.85rem", whiteSpace: "nowrap" }}
+                    style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
                   >
                     {icon} {name}
                   </NavLink>
@@ -190,7 +194,7 @@ function Sidebar() {
                     `d-flex align-items-center gap-2 py-1 px-2 rounded text-white ${isActive ? "bg-secondary fw-bold" : ""}`
                   }
                   onClick={() => setShowMore(false)}
-                  style={{ fontSize: "0.85rem", whiteSpace: "nowrap" }}
+                  style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration:"none" }}
                 >
                   {icon} {name}
                 </NavLink>
@@ -204,7 +208,7 @@ function Sidebar() {
                   setShowMore(false);
                 }}
                 className="d-flex align-items-center gap-2 py-1 px-2 text-white bg-transparent border-0 w-100 text-start"
-                style={{ fontSize: "0.85rem" }}
+                style={{ fontSize: "1rem", whiteSpace: "nowrap" }}
               >
                 <FaSignOutAlt /> Logout
               </button>
