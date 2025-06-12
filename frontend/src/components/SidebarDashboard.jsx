@@ -9,7 +9,16 @@ import useAuthStore from "../store/authStore";
 const SidebarDashboard = () => {
   const { authUser, logout } = useAuthStore();
 
-  const shortcuts = [
+  const shortcutsDesktop = [
+    ...(authUser.role === "super_admin"
+      ? [{ name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> }]
+      : []),
+    { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
+    { name: "Job Categories", path: "/dashboard/job-category", icon: <SiJoplin /> },
+    { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
+  ];
+
+  const shortcutsMobile = [
     ...(authUser.role === "super_admin"
       ? [{ name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> }]
       : []),
@@ -73,7 +82,7 @@ const SidebarDashboard = () => {
           Your Shortcuts
         </h6>
         <ul className="nav flex-column">
-          {shortcuts.map(({ name, path, icon }) => (
+          {shortcutsDesktop.map(({ name, path, icon }) => (
             <li className="nav-item mb-2" key={name}>
               <NavLink
                 to={path}
@@ -125,7 +134,7 @@ const SidebarDashboard = () => {
           className="d-flex gap-3 overflow-auto"
           style={{ whiteSpace: "nowrap", scrollbarWidth: "none" }}
         >
-          {shortcuts.map(({ name, path, icon }) => (
+          {shortcutsMobile.map(({ name, path, icon }) => (
             <NavLink
               key={name}
               to={path}
