@@ -1,17 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
-import { FaHome, FaUsers, FaVideo, FaUserCircle, FaSearch} from "react-icons/fa";
-import { FaGamepad, FaFacebookF, FaBars, FaTimes, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaUsers, FaVideo, FaUserCircle, FaBell, FaFacebookF, FaSearch, FaSignOutAlt } from "react-icons/fa";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { MdContactSupport } from "react-icons/md";
 import { FaShoppingBag } from "react-icons/fa";
-import useAuthStore from '../store/authStore';
+import useAuthStore from "../store/authStore";
 
-
-
-function Sidebar({ collapsed, setCollapsed }) {
-  const [mobileVisible, setMobileVisible] = useState(false);
-  
+function Sidebar() {
   const { authUser, logout } = useAuthStore();
 
   const navItems = [
@@ -19,6 +14,7 @@ function Sidebar({ collapsed, setCollapsed }) {
     { name: "Members", path: "/members", icon: <FaUsers /> },
     { name: "Videos", path: "/videos", icon: <FaVideo /> },
     { name: "Profile", path: "/profile", icon: <FaUserCircle /> },
+    { name: "Notification", path: "/notifications", icon: <FaBell />, className: "d-lg-none" },
     ...(authUser.role !== "user" ? [
       { name: "Dashboard", path: "/dashboard", icon: <TbLayoutDashboardFilled /> }
     ] : []),
@@ -31,25 +27,6 @@ function Sidebar({ collapsed, setCollapsed }) {
     { name: "Market Place", path: "/market", icon: <FaShoppingBag /> },
   ];
 
-  const handleResize = () => {
-    if (window.innerWidth >= 768) {
-      setMobileVisible(false);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const toggleSidebar = () => {
-    if (window.innerWidth < 768) {
-      setMobileVisible(!mobileVisible);
-    } else {
-      setCollapsed(!collapsed);
-    }
-  };
-
   const handleLogout = async () => {
     try {
       await logout();
@@ -58,131 +35,81 @@ function Sidebar({ collapsed, setCollapsed }) {
     }
   };
 
-  const closeMobileSidebar = () => {
-    if (window.innerWidth < 768) {
-      setMobileVisible(false);
-    }
-  };
-
-  const sidebarWidth = collapsed ? "80px" : "250px";
-
   return (
-    <>
-      {/* Mobile Top Bar */}
-      <div className="d-flex d-md-none align-items-center text-white py-2">
-        <button
-          className="btn text-light border-none fw-bold px-3"
-          onClick={toggleSidebar}
-          aria-label="Toggle sidebar"
-        >
-          {mobileVisible ? <FaTimes /> : <FaBars />}
-        </button>
-        <span className="fw-bold text-start">Facebook</span>
+    <div
+      className="bg-black text-white p-3 flex-column position-fixed top-0 d-flex"
+      style={{
+        width: "250px",
+        height: "100vh",
+        overflowY: "auto",
+        zIndex: 999,
+      }}
+    >
+      {/* Logo and Search */}
+      <div className="d-flex align-items-center mb-4">
+        <FaFacebookF size={28} color="#1ecb73" className="me-3" />
+        <div className="d-flex align-items-center bg-secondary rounded px-2 py-1 flex-grow-1">
+          <FaSearch className="text-white me-2" />
+          <input
+            type="text"
+            placeholder="Search Facebook"
+            className="form-control border-0 bg-transparent text-white p-0"
+            style={{ fontSize: "0.95rem" }}
+          />
+        </div>
       </div>
 
-      {/* Overlay (for mobile) */}
-      {mobileVisible && (
-        <div
-          className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
-          style={{ zIndex: 998 }}
-          onClick={closeMobileSidebar}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div
-        className={`bg-black text-white p-3 flex-column position-fixed top-0 ${mobileVisible ? "d-flex" : "d-none"
-          } d-md-flex`}
-        style={{
-          width: sidebarWidth,
-          height: "100vh",
-          overflowY: "auto",
-          zIndex: 999,
-          transition: "all 0.3s ease",
-        }}
-      >
-        {/* Logo and Search */}
-        <div className="d-flex align-items-center mb-4">
-          <FaFacebookF size={28} color="#1ecb73" className="me-3" />
-          {!collapsed && (
-            <div className="d-flex align-items-center bg-secondary rounded px-2 py-1 flex-grow-1">
-              <FaSearch className="text-white me-2" />
-              <input
-                type="text"
-                placeholder="Search Facebook"
-                className="form-control border-0 bg-transparent text-white p-0"
-                style={{ fontSize: "0.95rem" }}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Nav Links */}
-        <ul className="nav flex-column mb-4">
-          {navItems.map(({ name, path, icon }) => (
-            <li className="nav-item mb-2" key={name}>
-              <NavLink
-                to={path}
-                onClick={closeMobileSidebar}
-                className={({ isActive }) =>
-                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"
-                  }`
-                }
-                style={{ fontSize: "1rem" }}
-              >
-                {icon}
-                {!collapsed && name}
-              </NavLink>
-            </li>
-          ))}
-
-          {/* Logout */}
-          <li className="nav-item mb-2">
-            <button
-              className="nav-link d-flex align-items-center gap-3 px-2 py-2 rounded text-white bg-transparent border-0 w-100 text-start"
-              onClick={() => {
-                closeMobileSidebar();
-                handleLogout();
-              }}
+      {/* Nav Links */}
+      <ul className="nav flex-column mb-4">
+        {navItems.map(({ name, path, icon, className = "" }) => (
+          <li className={`nav-item mb-2 ${className}`} key={name}>
+            <NavLink
+              to={path}
+              className={({ isActive }) =>
+                `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"}`
+              }
               style={{ fontSize: "1rem" }}
             >
-              <FaSignOutAlt />
-              {!collapsed && "Logout"}
-            </button>
+              {icon}
+              {name}
+            </NavLink>
           </li>
-        </ul>
+        ))}
 
-        {/* Shortcuts */}
-        {!collapsed && (
-          <>
-            <h6
-              className="text-uppercase px-2 text-white mb-3 border-bottom border-secondary"
-              style={{ fontSize: "0.9rem" }}
+        {/* Logout */}
+        <li className="nav-item mb-2">
+          <button
+            className="nav-link d-flex align-items-center gap-3 px-2 py-2 rounded text-white bg-transparent border-0 w-100 text-start"
+            onClick={handleLogout}
+            style={{ fontSize: "1rem" }}
+          >
+            <FaSignOutAlt />
+            Logout
+          </button>
+        </li>
+      </ul>
+
+      {/* Shortcuts */}
+      <h6 className="text-uppercase px-2 text-white mb-3 border-bottom border-secondary" style={{ fontSize: "0.9rem" }}>
+        Your Shortcuts
+      </h6>
+      <ul className="nav flex-column">
+        {shortcuts.map(({ name, path, icon }) => (
+          <li className="nav-item mb-2" key={name}>
+            <NavLink
+              to={path}
+              className={({ isActive }) =>
+                `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"}`
+              }
+              style={{ fontSize: "1rem" }}
             >
-              Your Shortcuts
-            </h6>
-            <ul className="nav flex-column">
-              {shortcuts.map(({ name, path, icon }) => (
-                <li className="nav-item mb-2" key={name}>
-                  <NavLink
-                    to={path}
-                    onClick={closeMobileSidebar}
-                    className={({ isActive }) =>
-                      `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"
-                      }`
-                    }
-                    style={{ fontSize: "1rem" }}
-                  >
-                    {icon}
-                    {!collapsed && name}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </div>
-    </>
+              {icon}
+              {name}
+            </NavLink>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
