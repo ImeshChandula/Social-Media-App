@@ -44,13 +44,13 @@ function ProfilePage() {
 
   return (
     <motion.div
-      className="container text-center"
+      className="container text-center py-5 py-md-0 mt-4 mt-md-0"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       {loading ? (
-        <p className="text-white-50 normal-loading-spinner">Loading<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span></p>
+        <p className="text-white-50 normal-loading-spinner my-5">Loading<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span></p>
       ) : (
         <>
           {/* Cover Photo */}

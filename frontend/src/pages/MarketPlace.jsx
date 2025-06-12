@@ -2,7 +2,9 @@ import React from 'react'
 
 const MarketPlace = () => {
   return (
-    <div>MarketPlace</div>
+    <div className='py-5 py-md-0 mt-4 mt-md-0'>
+      <h1>Market Place</h1>
+      </div>
   )
 }
 

@@ -128,7 +128,7 @@ function NotificationForMobile() {
   };
 
   return (
-    <div className="container-fluid mobile-notifications-wrapper">
+    <div className="container-fluid mobile-notifications-wrapper py-5 py-md-0 mt-4 mt-md-0">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h5 className="mb-0">Notifications</h5>
         {notificationCount > 0 && (

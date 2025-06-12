@@ -3,7 +3,7 @@ import ContactContent from '../components/ContactContent'
 
 const Contact = () => {
   return (
-    <div>
+    <div className='py-5 py-md-0 mt-4 mt-md-0'>
       <ContactContent />
     </div>
   )
