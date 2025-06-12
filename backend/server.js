@@ -55,7 +55,7 @@ app.use("/api/notifications", require("./src/routes/notificationRoutes"));
 app.use("/api/stories", require("./src/routes/storyRoutes"));
 app.use("/api/jobCategories", require("./src/routes/jobCategoryRoutes"));
 app.use("/api/dashboard", require("./src/routes/dashboardRoutes"));
-
+app.use("/api/support", require("./src/routes/supportRoutes"));
 
 
 //  route handler for the root path

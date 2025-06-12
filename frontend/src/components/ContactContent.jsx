@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { axiosInstance } from '../lib/axios';
+import toast from 'react-hot-toast';
 import '../styles/ContactContent.css';
 
 const ContactContent = () => {
@@ -18,17 +20,25 @@ const ContactContent = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
         
-        //try {} catch (error) {}
-        // Simulate form submission
-        setTimeout(() => {
-            alert('Message sent successfully!');
-            setFormData({ name: '', email: '', subject: '', message: '' });
-            setIsSubmitting(false);
-        }, 1500);
+        try {
+          const response = await axiosInstance.post('/support/sendMail', formData);
+          if (response.data.success) {
+            setTimeout(() => {
+              toast.success(response.data.message || 'Message sent successfully!');
+              setFormData({ name: '', email: '', subject: '', message: '' });
+            }, 1500);
+          }
+        } catch (error) {
+          console.error('Reactivation error:', error);
+          const errorMessage = error.response?.data?.message || 'Failed to sent message';
+          toast.error(errorMessage);
+        } finally {
+          setIsSubmitting(false);
+        }
     };
 
 

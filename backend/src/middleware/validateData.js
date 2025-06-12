@@ -36,5 +36,24 @@ const validateUserData = (req, res, next) => {
 };
 
 
+// Validate support mails
+const validateMails = (req, res, next) => {
+  const schema = Joi.object({
+    name: Joi.string().min(1).required(), 
+    email: Joi.string().email().required(),
+    subject: Joi.string().min(1).required(),
+    message: Joi.string().min(1).required(),
+    author: Joi.string().min(1).required(),
+    isRead: Joi.boolean().optional(),
+    createdAt: Joi.string().isoDate().optional()
+  });
 
-module.exports = {validateUserData};
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  next();
+};
+
+
+module.exports = {validateUserData, validateMails};

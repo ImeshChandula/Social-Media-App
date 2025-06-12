@@ -206,7 +206,7 @@
 .form-group label {
   display: block;
   font-weight: 600;
-  color: #2d3748;
+  color: #ffffff !important;
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
 }
@@ -216,12 +216,12 @@
 .form-group textarea {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #e2e8f0 !important;
   border-radius: 0.5rem;
   font-size: 1rem;
   transition: all 0.3s ease;
   font-family: inherit;
-  background: white;
+  background: #718096 !important;
 }
 
 .form-group input:focus,

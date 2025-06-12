@@ -54,6 +54,7 @@ const EditPost = () => {
           toast.error("Post not found");
           navigate(-1);
         }
+      // eslint-disable-next-line no-unused-vars
       } catch (err) {
         toast.error("Failed to fetch post");
         navigate(-1);
@@ -147,6 +148,7 @@ const EditPost = () => {
       try {
         const base64 = await toBase64(newMediaFile);
         payload.media = base64;
+      // eslint-disable-next-line no-unused-vars
       } catch (error) {
         toast.error("Failed to read file");
         setIsUpdating(false);
