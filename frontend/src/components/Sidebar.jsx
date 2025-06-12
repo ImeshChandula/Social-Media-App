@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import {
   FaHome,
@@ -19,6 +19,20 @@ import useAuthStore from "../store/authStore";
 function Sidebar() {
   const { authUser, logout } = useAuthStore();
   const [showMore, setShowMore] = useState(false);
+  const moreRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (moreRef.current && !moreRef.current.contains(e.target)) {
+        setShowMore(false);
+      }
+    };
+    if (showMore) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showMore]);
 
   const navItems = [
     { name: "Home", path: "/", icon: <FaHome /> },
@@ -51,12 +65,7 @@ function Sidebar() {
       {/* Desktop Sidebar */}
       <div
         className="bg-black text-white p-3 flex-column position-fixed top-0 start-0 d-none d-md-flex"
-        style={{
-          width: "250px",
-          height: "100vh",
-          overflowY: "auto",
-          zIndex: 999,
-        }}
+        style={{ width: "250px", height: "100vh", overflowY: "auto", zIndex: 999 }}
       >
         {/* Logo and Search */}
         <div className="d-flex align-items-center mb-4">
@@ -79,8 +88,7 @@ function Sidebar() {
               <NavLink
                 to={path}
                 className={({ isActive }) =>
-                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"
-                  }`
+                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"}`
                 }
                 style={{ fontSize: "1rem" }}
               >
@@ -109,8 +117,7 @@ function Sidebar() {
               <NavLink
                 to={path}
                 className={({ isActive }) =>
-                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"
-                  }`
+                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"}`
                 }
                 style={{ fontSize: "1rem" }}
               >
@@ -126,7 +133,6 @@ function Sidebar() {
         className="bg-black text-white d-flex d-md-none justify-content-around align-items-center fixed-top w-100 py-2"
         style={{ zIndex: 999 }}
       >
-        {/* Show only limited navs */}
         {["Home", "Members", "Profile", "Notification"].map((label) => {
           const item = navItems.find((i) => i.name === label);
           if (!item) return null;
@@ -135,8 +141,7 @@ function Sidebar() {
               key={item.name}
               to={item.path}
               className={({ isActive }) =>
-                `text-white d-flex flex-column align-items-center py-2 px-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"
-                }`
+                `text-white d-flex flex-column align-items-center py-2 px-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"}`
               }
               style={{ fontSize: "0.95rem" }}
             >
@@ -146,20 +151,21 @@ function Sidebar() {
           );
         })}
 
-        {/* More dropdown */}
-        <div className="position-relative">
+        {/* More Dropdown */}
+        <div className="position-relative" ref={moreRef}>
           <button
             className="bg-transparent border-0 text-white d-flex flex-column align-items-center"
-            onClick={() => setShowMore(!showMore)}
+            onClick={() => setShowMore((prev) => !prev)}
           >
             <FaEllipsisH />
             <small style={{ fontSize: "0.7rem" }}>More</small>
           </button>
           {showMore && (
             <div
-              className="position-absolute bg-dark text-white rounded shadow p-2"
-              style={{ top: "100%", right: 0, zIndex: 1000, minWidth: "140px" }}
+              className="position-absolute bg-black text-white rounded shadow p-2"
+              style={{ top: "100%", right: 0, zIndex: 1000, minWidth: "160px" }}
             >
+              {/* Extra NavItems */}
               {navItems
                 .filter((item) => !["Home", "Members", "Profile", "Notification"].includes(item.name))
                 .map(({ name, path, icon }) => (
@@ -167,8 +173,7 @@ function Sidebar() {
                     key={name}
                     to={path}
                     className={({ isActive }) =>
-                      `d-flex align-items-center gap-2 py-1 px-2 rounded text-white ${isActive ? "bg-secondary fw-bold" : ""
-                      }`
+                      `d-flex align-items-center gap-2 py-1 px-2 rounded text-white ${isActive ? "bg-secondary fw-bold" : ""}`
                     }
                     onClick={() => setShowMore(false)}
                     style={{ fontSize: "0.85rem", whiteSpace: "nowrap" }}
@@ -176,6 +181,25 @@ function Sidebar() {
                     {icon} {name}
                   </NavLink>
                 ))}
+
+              {/* Shortcuts */}
+              {shortcuts.length > 0 && <hr className="text-white my-2" />}
+              {shortcuts.map(({ name, path, icon }) => (
+                <NavLink
+                  key={name}
+                  to={path}
+                  className={({ isActive }) =>
+                    `d-flex align-items-center gap-2 py-1 px-2 rounded text-white ${isActive ? "bg-secondary fw-bold" : ""}`
+                  }
+                  onClick={() => setShowMore(false)}
+                  style={{ fontSize: "0.85rem", whiteSpace: "nowrap" }}
+                >
+                  {icon} {name}
+                </NavLink>
+              ))}
+
+              {/* Logout */}
+              <hr className="text-white my-2" />
               <button
                 onClick={() => {
                   handleLogout();
