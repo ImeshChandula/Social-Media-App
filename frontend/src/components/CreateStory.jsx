@@ -103,8 +103,8 @@ const CreateStory = () => {
 
     return (
         <div className="container mt-5" style={{ maxWidth: '720px' }}>
-            <div className="card shadow-lg border-secondary rounded-4 bg-dark text-white">
-                <div className="card-body p-4">
+            <div className="card shadow-lg rounded-4 border border-light">
+                <div className="card-body p-4 bg-white text-dark">
                     <h3 className="text-center mb-4">Add story </h3>
 
                     {message && (
@@ -117,7 +117,7 @@ const CreateStory = () => {
                         <div className="mb-3">
                             <label className="form-label">Content</label>
                             <textarea
-                                className="form-control bg-dark text-white custom-placeholder"
+                                className="form-control"
                                 name="content"
                                 rows="4"
                                 value={formData.content}
@@ -141,7 +141,7 @@ const CreateStory = () => {
                             </div>
                             <input
                                 type="file"
-                                className="form-control bg-dark text-white"
+                                className="form-control"
                                 name="media"
                                 accept="image/*,video/*"
                                 onChange={handleChange}
@@ -174,7 +174,7 @@ const CreateStory = () => {
                         <div className="mb-3">
                             <label className="form-label">Privacy</label>
                             <select
-                                className="form-select bg-dark text-white"
+                                className="form-select"
                                 name="privacy"
                                 value={formData.privacy}
                                 onChange={handleChange}

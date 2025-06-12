@@ -12,7 +12,6 @@ import CreatePost from "../components/CreatePost";
 import CreateStory from "../components/CreateStory";
 import Stories from "../components/Stories";
 import StoriesPopup from "../components/StoriesPopup";
-import VideoFeed from "../components/VideoFeed";
 import MemberControl from "../pages/MemberControl";
 import RegularUserPage from "../components/RegularUserPage";
 import MarketPlace from "../pages/MarketPlace";
@@ -69,7 +68,6 @@ const MainLayout = () => {
               <Route path="/create-story" element={<CreateStory />} />
               <Route path="/stories" element={<Stories />} />
               <Route path="/stories/:id" element={<StoriesPopup />} />
-              <Route path="/videofeed" element={<VideoFeed />} />
               <Route path="/market" element={<MarketPlace />} />
               
             </Routes>
