@@ -17,6 +17,7 @@ import MemberControl from "../pages/MemberControl";
 import RegularUserPage from "../components/RegularUserPage";
 import MarketPlace from "../pages/MarketPlace";
 import useAuthStore from "../store/authStore";
+import Contact from "./Contact";
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -71,7 +72,7 @@ const MainLayout = () => {
               <Route path="/stories/:id" element={<StoriesPopup />} />
               <Route path="/videofeed" element={<VideoFeed />} />
               <Route path="/market" element={<MarketPlace />} />
-              
+              <Route path="/contact" element={<Contact />} />
             </Routes>
           </div>
         </div>

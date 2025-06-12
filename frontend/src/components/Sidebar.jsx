@@ -25,9 +25,7 @@ function Sidebar({ collapsed, setCollapsed }) {
   ];
 
   const shortcuts = [
-    ...(authUser.accountStatus !== "active" ? [
-      { name: "Support", path: "/support", icon: <MdContactSupport /> }
-    ] : []),
+    { name: "Contact us", path: "/contact", icon: <MdContactSupport /> },
     { name: "Market Place", path: "/market", icon: <FaShoppingBag /> },
   ];
 
