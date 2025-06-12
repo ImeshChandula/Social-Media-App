@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   FaHome,
@@ -9,6 +9,7 @@ import {
   FaFacebookF,
   FaSearch,
   FaSignOutAlt,
+  FaEllipsisH,
 } from "react-icons/fa";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { MdContactSupport } from "react-icons/md";
@@ -17,6 +18,7 @@ import useAuthStore from "../store/authStore";
 
 function Sidebar() {
   const { authUser, logout } = useAuthStore();
+  const [showMore, setShowMore] = useState(false);
 
   const navItems = [
     { name: "Home", path: "/", icon: <FaHome /> },
@@ -77,13 +79,12 @@ function Sidebar() {
               <NavLink
                 to={path}
                 className={({ isActive }) =>
-                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${
-                    isActive ? "bg-dark text-white fw-bold" : "text-white"
+                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"
                   }`
                 }
                 style={{ fontSize: "1rem" }}
               >
-                {icon}{name}
+                {icon} {name}
               </NavLink>
             </li>
           ))}
@@ -93,7 +94,7 @@ function Sidebar() {
               onClick={handleLogout}
               style={{ fontSize: "1rem" }}
             >
-              <FaSignOutAlt />Logout
+              <FaSignOutAlt /> Logout
             </button>
           </li>
         </ul>
@@ -108,13 +109,12 @@ function Sidebar() {
               <NavLink
                 to={path}
                 className={({ isActive }) =>
-                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${
-                    isActive ? "bg-dark text-white fw-bold" : "text-white"
+                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"
                   }`
                 }
                 style={{ fontSize: "1rem" }}
               >
-                {icon}{name}
+                {icon} {name}
               </NavLink>
             </li>
           ))}
@@ -126,28 +126,69 @@ function Sidebar() {
         className="bg-black text-white d-flex d-md-none justify-content-around align-items-center fixed-top w-100 py-2"
         style={{ zIndex: 999 }}
       >
-        {navItems.map(({ name, path, icon }) => (
-          <NavLink
-            key={name}
-            to={path}
-            className={({ isActive }) =>
-              `text-white d-flex flex-column align-items-center px-2 ${
-                isActive ? "fw-bold text-success" : ""
-              }`
-            }
-            style={{ fontSize: "0.95rem" }}
+        {/* Show only limited navs */}
+        {["Home", "Members", "Profile", "Notification"].map((label) => {
+          const item = navItems.find((i) => i.name === label);
+          if (!item) return null;
+          return (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              className={({ isActive }) =>
+                `text-white d-flex flex-column align-items-center py-2 px-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"
+                }`
+              }
+              style={{ fontSize: "0.95rem" }}
+            >
+              {item.icon}
+              <small style={{ fontSize: "0.7rem" }}>{item.name}</small>
+            </NavLink>
+          );
+        })}
+
+        {/* More dropdown */}
+        <div className="position-relative">
+          <button
+            className="bg-transparent border-0 text-white d-flex flex-column align-items-center"
+            onClick={() => setShowMore(!showMore)}
           >
-            {icon}
-            <small style={{ fontSize: "0.7rem" }}>{name}</small>
-          </NavLink>
-        ))}
-        <button
-          onClick={handleLogout}
-          className="bg-transparent border-0 text-white d-flex flex-column align-items-center"
-        >
-          <FaSignOutAlt />
-          <small style={{ fontSize: "0.7rem" }}>Logout</small>
-        </button>
+            <FaEllipsisH />
+            <small style={{ fontSize: "0.7rem" }}>More</small>
+          </button>
+          {showMore && (
+            <div
+              className="position-absolute bg-dark text-white rounded shadow p-2"
+              style={{ top: "100%", right: 0, zIndex: 1000, minWidth: "140px" }}
+            >
+              {navItems
+                .filter((item) => !["Home", "Members", "Profile", "Notification"].includes(item.name))
+                .map(({ name, path, icon }) => (
+                  <NavLink
+                    key={name}
+                    to={path}
+                    className={({ isActive }) =>
+                      `d-flex align-items-center gap-2 py-1 px-2 rounded text-white ${isActive ? "bg-secondary fw-bold" : ""
+                      }`
+                    }
+                    onClick={() => setShowMore(false)}
+                    style={{ fontSize: "0.85rem", whiteSpace: "nowrap" }}
+                  >
+                    {icon} {name}
+                  </NavLink>
+                ))}
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setShowMore(false);
+                }}
+                className="d-flex align-items-center gap-2 py-1 px-2 text-white bg-transparent border-0 w-100 text-start"
+                style={{ fontSize: "0.85rem" }}
+              >
+                <FaSignOutAlt /> Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </>
   );
