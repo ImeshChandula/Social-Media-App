@@ -1,4 +1,3 @@
-// PostComment.jsx
 import React, { useState, useEffect } from "react";
 import { axiosInstance } from "../lib/axios";
 import "../styles/PostComment.css";
@@ -11,27 +10,23 @@ const PostComment = ({ postId }) => {
   const [replyText, setReplyText] = useState({});
   const [showReplies, setShowReplies] = useState({});
 
-  // Fetch comments from API
   const fetchComments = async () => {
     if (!postId) return;
     try {
       const res = await axiosInstance.get(`/comments/getComments/${postId}`);
-      console.log("Fetched comments data:", res.data);
-
-      // Adjust to your API response
-      const commentsData = res.data.comments || res.data || [];
-      setComments(commentsData);
+      setComments(res.data?.comments || []);
     } catch (err) {
       console.error("Error fetching comments", err);
       setComments([]);
     }
   };
 
-  // Add new comment
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
     try {
-      await axiosInstance.post(`/comments/addComment/${postId}`, { text: newComment });
+      await axiosInstance.post(`/comments/addComment/${postId}`, {
+        text: newComment,
+      });
       setNewComment("");
       fetchComments();
     } catch (err) {
@@ -39,7 +34,6 @@ const PostComment = ({ postId }) => {
     }
   };
 
-  // Delete comment
   const handleDeleteComment = async (commentId) => {
     try {
       await axiosInstance.delete(`/comments/delete/${commentId}`);
@@ -49,20 +43,20 @@ const PostComment = ({ postId }) => {
     }
   };
 
-  // Edit comment save
   const handleEditComment = async () => {
     if (!editCommentText.trim()) return;
     try {
-      await axiosInstance.patch(`/comments/update/${editCommentId}`, { text: editCommentText });
+      await axiosInstance.patch(`/comments/update/${editCommentId}`, {
+        text: editCommentText,
+      });
       setEditCommentId(null);
       setEditCommentText("");
       fetchComments();
     } catch (err) {
-      console.error("Error updating comment", err);
+      console.error("Error editing comment", err);
     }
   };
 
-  // Add reply to a comment
   const handleReply = async (commentId) => {
     const text = replyText[commentId];
     if (!text?.trim()) return;
@@ -71,11 +65,10 @@ const PostComment = ({ postId }) => {
       setReplyText((prev) => ({ ...prev, [commentId]: "" }));
       fetchComments();
     } catch (err) {
-      console.error("Error replying to comment", err);
+      console.error("Error replying", err);
     }
   };
 
-  // Toggle replies visibility
   const toggleReplies = (commentId) => {
     setShowReplies((prev) => ({ ...prev, [commentId]: !prev[commentId] }));
   };
@@ -104,87 +97,99 @@ const PostComment = ({ postId }) => {
       ) : (
         comments.map((comment) => (
           <div key={comment._id} className="mb-3 p-2 bg-white rounded shadow-sm">
-            <div className="d-flex justify-content-between align-items-center">
-              <div>
-                <strong>{comment.author?.firstName || "User"}</strong>:{" "}
-                {editCommentId === comment._id ? (
-                  <>
+            <div className="d-flex align-items-start">
+              <img
+                src={comment.author?.profilePicture || "/default-profile.png"}
+                alt="User"
+                className="me-2 rounded-circle"
+                style={{ width: "40px", height: "40px", objectFit: "cover" }}
+              />
+              <div className="flex-grow-1">
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <strong>
+                      {comment.author?.firstName || "User"} {comment.author?.lastName || ""}
+                    </strong>
+                    {editCommentId === comment._id ? (
+                      <>
+                        <input
+                          value={editCommentText}
+                          onChange={(e) => setEditCommentText(e.target.value)}
+                          className="form-control form-control-sm mt-1"
+                        />
+                        <div className="mt-2">
+                          <button className="btn btn-success btn-sm" onClick={handleEditComment}>Save</button>
+                          <button className="btn btn-secondary btn-sm ms-2" onClick={() => setEditCommentId(null)}>Cancel</button>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="mb-1">{comment.text}</p>
+                    )}
+                  </div>
+                  {editCommentId !== comment._id && (
+                    <div>
+                      <button
+                        className="btn btn-link btn-sm text-primary"
+                        onClick={() => {
+                          setEditCommentId(comment._id);
+                          setEditCommentText(comment.text);
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn btn-link btn-sm text-danger"
+                        onClick={() => handleDeleteComment(comment._id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-2 ms-4">
+                  <button
+                    className="btn btn-link btn-sm"
+                    onClick={() => toggleReplies(comment._id)}
+                  >
+                    {showReplies[comment._id] ? "Hide Replies" : "View Replies"}
+                  </button>
+
+                  {showReplies[comment._id] &&
+                    (comment.replies || []).map((reply) => (
+                      <div key={reply._id} className="d-flex align-items-start mt-2 ms-3">
+                        <img
+                          src={reply.author?.profilePicture || "/default-profile.png"}
+                          alt="User"
+                          className="me-2 rounded-circle"
+                          style={{ width: "30px", height: "30px", objectFit: "cover" }}
+                        />
+                        <div>
+                          <strong>
+                            {reply.author?.firstName || "User"} {reply.author?.lastName || ""}
+                          </strong>
+                          <p className="mb-1">{reply.text}</p>
+                        </div>
+                      </div>
+                    ))}
+
+                  <div className="mt-2">
                     <input
-                      value={editCommentText}
-                      onChange={(e) => setEditCommentText(e.target.value)}
-                      className="form-control form-control-sm d-inline-block w-75"
+                      value={replyText[comment._id] || ""}
+                      onChange={(e) =>
+                        setReplyText((prev) => ({ ...prev, [comment._id]: e.target.value }))
+                      }
+                      placeholder="Write a reply..."
+                      className="form-control form-control-sm"
                     />
                     <button
-                      className="btn btn-success btn-sm ms-2"
-                      onClick={handleEditComment}
+                      className="btn btn-outline-primary btn-sm mt-1"
+                      onClick={() => handleReply(comment._id)}
                     >
-                      Save
+                      Reply
                     </button>
-                    <button
-                      className="btn btn-secondary btn-sm ms-2"
-                      onClick={() => setEditCommentId(null)}
-                    >
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  comment.text
-                )}
-              </div>
-              {editCommentId !== comment._id && (
-                <div>
-                  <button
-                    className="btn btn-link btn-sm text-primary"
-                    onClick={() => {
-                      setEditCommentId(comment._id);
-                      setEditCommentText(comment.text);
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="btn btn-link btn-sm text-danger"
-                    onClick={() => handleDeleteComment(comment._id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="mt-2 ms-4">
-              <button
-                className="btn btn-link btn-sm"
-                onClick={() => toggleReplies(comment._id)}
-              >
-                {showReplies[comment._id] ? "Hide Replies" : "View Replies"}
-              </button>
-
-              {showReplies[comment._id] &&
-                comment.replies?.map((reply) => (
-                  <div key={reply._id} className="ms-3">
-                    <strong>{reply.author?.firstName || "User"}</strong>: {reply.text}
                   </div>
-                ))}
-
-              <div className="mt-2">
-                <input
-                  value={replyText[comment._id] || ""}
-                  onChange={(e) =>
-                    setReplyText((prev) => ({
-                      ...prev,
-                      [comment._id]: e.target.value,
-                    }))
-                  }
-                  placeholder="Write a reply..."
-                  className="form-control form-control-sm"
-                />
-                <button
-                  className="btn btn-outline-primary btn-sm mt-1"
-                  onClick={() => handleReply(comment._id)}
-                >
-                  Reply
-                </button>
+                </div>
               </div>
             </div>
           </div>
