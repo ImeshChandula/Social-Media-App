@@ -204,3 +204,44 @@ body,
         opacity: 0;
     }
 }
+
+/* Mobile Notifications */
+.mobile-notifications-wrapper {
+  padding: 1rem;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+.notifications-scroll-area {
+  padding-bottom: 60px; /* Space at the bottom */
+}
+
+.notification-card {
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notification-card.unread {
+  background-color: #ffffff;
+}
+
+.notif-icon {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  font-size: 1rem;
+}
+
+.unread-indicator {
+  width: 10px;
+  height: 10px;
+  background-color: #0d6efd;
+  border-radius: 50%;
+}
+
+.avatar-fallback {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
