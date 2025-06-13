@@ -1,9 +1,45 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaSearch, FaTimes } from "react-icons/fa";
+import { axiosInstance } from "../lib/axios";
+import { useNavigate } from "react-router-dom";
 
 function SearchPopup({ show, onClose }) {
     const popupRef = useRef(null);
+    const [query, setQuery] = useState("");
+    const [results, setResults] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!query.trim()) {
+            setResults([]);
+            return;
+        }
+
+        const delayDebounce = setTimeout(() => {
+            searchUsers(query);
+        }, 500);
+
+        return () => clearTimeout(delayDebounce);
+    }, [query]);
+
+    const searchUsers = async (searchText) => {
+        try {
+            setLoading(true);
+            const res = await axiosInstance.get(`/users/search?q=${encodeURIComponent(searchText)}&limit=10`);
+            setResults(res.data.users || []);
+        } catch (err) {
+            console.error("Search error:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUserClick = (id) => {
+        onClose();
+        navigate(`/profile/${id}`);
+    };
 
     return (
         <AnimatePresence>
@@ -42,12 +78,12 @@ function SearchPopup({ show, onClose }) {
                                 className="close-button"
                                 onClick={onClose}
                                 aria-label="Close"
-                                style={{ fontSize: "1.25rem", lineHeight: 1 }}
                             >
                                 <FaTimes />
                             </button>
                         </div>
-                        <div className="position-relative">
+
+                        <div className="position-relative mb-3">
                             <FaSearch
                                 style={{
                                     position: "absolute",
@@ -60,20 +96,53 @@ function SearchPopup({ show, onClose }) {
                             />
                             <input
                                 type="text"
-                                placeholder="Enter Username"
+                                placeholder="Enter username"
                                 className="form-control ps-5"
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
                                 autoFocus
                                 style={{
                                     borderRadius: "0.375rem",
                                     borderColor: "#ddd",
-                                    transition: "border-color 0.3s",
                                     fontSize: "1rem",
                                     height: "2.5rem",
                                 }}
-                                onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
-                                onBlur={(e) => (e.target.style.borderColor = "#ddd")}
                             />
                         </div>
+
+                        {loading &&
+                            <p className="text-black text-center fw-bold">
+                                Searching<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
+                            </p>
+                        }
+
+                        {!loading && results.length > 0 && (
+                            <ul className="list-group">
+                                {results.map((user) => (
+                                    <li
+                                        key={user.id}
+                                        className="list-group-item list-group-item-action d-flex align-items-center"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => handleUserClick(user.id)}
+                                    >
+                                        <img
+                                            src={user.profilePicture}
+                                            className="rounded-circle me-2 border border-primary border-2"
+                                            style={{ width: "40px", height: "40px", objectFit: "cover" }}
+                                        />
+                                        <div>
+                                            <div className="fw-bold text-black">{user.firstName} {user.lastName}</div>
+                                            <div className="text-muted">@{user.username}</div>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+
+                        {!loading && query && results.length === 0 && (
+                            <p className="text-muted mt-2">No users found for "{query}"</p>
+                        )}
+
                     </motion.div>
                 </motion.div>
             )}
