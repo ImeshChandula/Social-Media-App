@@ -36,7 +36,7 @@ function SearchPopup({ show, onClose }) {
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
           >
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="mb-0">Search Users By User Name</h5>
+              <h5 className="mb-0 text-black fw-bold">Search Users By Username</h5>
               <button
                 className="btn-close"
                 onClick={onClose}
