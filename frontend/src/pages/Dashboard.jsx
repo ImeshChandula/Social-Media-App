@@ -41,11 +41,7 @@ const Dashboard = () => {
                 <Route path="/posts" element={<PostManagement />} />
                 <Route path="/job-category" element={<JobCategoryManagement />} />
                 <Route path="/mails" element={<Mail />} />
-              <Route path="/" element={<DashboardHome />} />
-              <Route path="/users" element={<Users />} />
-              <Route path="/posts" element={<PostManagement />} />
-              <Route path="/job-category" element={<JobCategoryManagement />} />
-              <Route path="/notifications" element={<NotificationForMobile />} />
+                <Route path="/notifications" element={<NotificationForMobile />} />
             </Routes>
           </div>
         </div>

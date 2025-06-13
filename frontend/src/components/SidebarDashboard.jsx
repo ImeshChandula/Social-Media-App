@@ -5,14 +5,14 @@ import { IoMdArrowRoundBack } from "react-icons/io";
 import { BsFileEarmarkPostFill } from "react-icons/bs";
 import { TbCategoryFilled } from "react-icons/tb";
 import { FaFacebookMessenger } from "react-icons/fa6";
-import styles from "../styles/DashboardStyle";
+//import styles from "../styles/DashboardStyle";
 import { SiJoplin } from "react-icons/si";
 import useAuthStore from "../store/authStore";
 
 const SidebarDashboard = () => {
   const { authUser, logout } = useAuthStore();
 
-    const shortcuts = [
+    /*const shortcuts = [
         ...(authUser.role === "super_admin" ? [
           { name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> }
         ] : []),
@@ -39,13 +39,14 @@ const SidebarDashboard = () => {
         } else {
           setCollapsed(!collapsed);
         }
-    };
+    };*/
   const shortcutsDesktop = [
     ...(authUser.role === "super_admin"
       ? [{ name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> }]
       : []),
     { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
-    { name: "Job Categories", path: "/dashboard/job-category", icon: <SiJoplin /> },
+    { name: "Job Categories", path: "/dashboard/job-category", icon: <TbCategoryFilled /> },
+    { name: "Messages", path: "/dashboard/mails", icon: <FaFacebookMessenger /> },
     { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
   ];
 
@@ -54,7 +55,8 @@ const SidebarDashboard = () => {
       ? [{ name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> }]
       : []),
     { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
-    { name: "Job Categories", path: "/dashboard/job-category", icon: <SiJoplin /> },
+    { name: "Job Categories", path: "/dashboard/job-category", icon: <TbCategoryFilled /> },
+    { name: "Messages", path: "/dashboard/mails", icon: <FaFacebookMessenger /> },
     { name: "Notification", path: "/dashboard/notifications", icon: <FaBell /> },
     { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
   ];
