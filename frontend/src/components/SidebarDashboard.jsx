@@ -1,14 +1,17 @@
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
-import { FaFacebookF, FaSignOutAlt, FaSearch, FaBell } from "react-icons/fa";
+import { FaFacebookF, FaBars, FaTimes, FaSignOutAlt } from "react-icons/fa";
 import { FaUsersGear } from "react-icons/fa6";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import { BsFileEarmarkPostFill } from "react-icons/bs";
 import { TbCategoryFilled } from "react-icons/tb";
 import { FaFacebookMessenger } from "react-icons/fa6";
+import styles from "../styles/DashboardStyle";
 import useAuthStore from "../store/authStore";
 
-const SidebarDashboard = () => {
-  const { authUser, logout } = useAuthStore();
+const SidebarDashboard = ({ collapsed, setCollapsed }) => {
+    const [mobileVisible, setMobileVisible] = useState(false);
+    const { authUser, logout } = useAuthStore();
 
     const shortcuts = [
         ...(authUser.role === "super_admin" ? [
@@ -20,7 +23,6 @@ const SidebarDashboard = () => {
         { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
     ];
     
-    /*
     const handleResize = () => {
         if (window.innerWidth >= 768) {
           setMobileVisible(false);
@@ -38,150 +40,119 @@ const SidebarDashboard = () => {
         } else {
           setCollapsed(!collapsed);
         }
-    };*/
-  
+    };
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
+    };
+    
+    const closeMobileSidebar = () => {
+        if (window.innerWidth < 768) {
+          setMobileVisible(false);
+        }
+    };
+    
+    const sidebarWidth = collapsed ? "80px" : "250px";
+
 
   return (
-    <div>
-      {/* Horizontal Top Bar for Mobile */}
-      <div className="d-none d-md-none flex-row align-items-center justify-content-between bg-black text-white px-3 py-2 w-100">
-        <div className="d-flex align-items-center gap-2">
-          <FaFacebookF size={24} color="#1ecb73" />
-        </div>
-        <div className="d-flex align-items-center bg-secondary rounded px-2 py-1 flex-grow-1 mx-3">
-          <FaSearch className="text-white me-2" />
-          <input
-            type="text"
-            placeholder="Search"
-            className="form-control border-0 bg-transparent text-white p-0"
-            style={{ fontSize: "0.9rem" }}
-          />
-        </div>
-      </div>
-
-      {/* Vertical Sidebar for Desktop */}
-      <div
-        className="bg-black text-white p-3 d-none d-md-flex flex-column"
-        style={{
-          width: "100%",
-          height: "100vh",
-          overflowY: "auto",
-        }}
-      >
-        {/* Logo and Search */}
-        <div className="d-flex align-items-center mb-4">
-          <FaFacebookF size={28} color="#1ecb73" className="me-3" />
-          <div className="d-flex align-items-center bg-secondary rounded px-2 py-1 flex-grow-1">
-            <FaSearch className="text-white me-2" />
-            <input
-              type="text"
-              placeholder="Search Facebook"
-              className="form-control border-0 bg-transparent text-white p-0"
-              style={{ fontSize: "0.95rem" }}
-            />
-          </div>
-        </div>
-
-        {/* Shortcuts */}
-        <h6 className="text-uppercase px-2 text-white mb-3 border-bottom border-secondary" style={{ fontSize: "0.9rem" }}>
-          Your Shortcuts
-        </h6>
-        <ul className="nav flex-column">
-          {shortcuts.map(({ name, path, icon }) => (
-            <li className="nav-item mb-2" key={name}>
-              <NavLink
-                to={path}
-                className={({ isActive }) =>
-                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"
-                  }`
-                }
-                style={{ fontSize: "1rem" }}
-              >
-                {icon}
-                {name}
-              </NavLink>
-            </li>
-          ))}
-
-          {/* Logout */}
-          <li className="nav-item mb-2">
+    <>
+          {/* Mobile Top Bar */}
+          <div className="d-flex d-md-none align-items-center justify-content-between text-white px-3 py-2" style={styles.backgroundColor}>
             <button
-              className="nav-link d-flex align-items-center gap-3 px-2 py-2 rounded text-white bg-transparent border-0 w-100 text-start"
-              onClick={handleLogout}
-              style={{ fontSize: "1rem" }}
+              className="btn btn-outline-light"
+              onClick={toggleSidebar}
+              aria-label="Toggle sidebar"
             >
-              <FaSignOutAlt />
-              Logout
+              {mobileVisible ? <FaTimes /> : <FaBars />}
             </button>
-          </li>
-        </ul>
-      </div>
-
-      {/* Horizontal Top Bar for Mobile */}
-      <div className="d-flex d-md-none flex-row align-items-center justify-content-between bg-black text-white px-3 pt-3 w-100">
-        <FaFacebookF size={24} color="#1ecb73" />
-        <div className="flex-grow-1" style={{ maxWidth: "150px" }}>
-          <div className="d-flex align-items-center bg-secondary rounded px-2 py-1 w-100">
-            <FaSearch className="text-white me-2" />
-            <input
-              type="text"
-              placeholder="Search"
-              className="form-control border-0 bg-transparent text-white p-0"
-              style={{ fontSize: "0.9rem" }}
-            />
+            <span className="fw-bold">Facebook</span>
           </div>
-        </div>
-      </div>
-
-      <div className="d-flex d-md-none flex-column bg-black text-white px-2 pt-2">
-        {/* Scrollable Tabs */}
-        <div
-          className="d-flex gap-3 overflow-auto"
-          style={{ whiteSpace: "nowrap", scrollbarWidth: "none" }}
-        >
-          {shortcuts.map(({ name, path, icon }) => (
-            <NavLink
-              key={name}
-              to={path}
-              className={({ isActive }) =>
-                `nav-link d-flex align-items-center gap-3 px-2 py-3 my-1 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"}`
-              }
-              style={{
-                minWidth: "70px",
-                fontSize: "1rem",
-                whiteSpace: "normal",
-                flex: "0 0 auto",
-              }}
-            >
-              {icon}
-              <small>{name}</small>
-            </NavLink>
-          ))}
-          <button
-            onClick={handleLogout}
-            className="nav-link d-flex align-items-center gap-3 px-2 py-3 my-1 rounded text-white bg-transparent border-0 w-100 text-start"
+    
+          {/* Overlay (for mobile) */}
+          {mobileVisible && (
+            <div
+              className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
+              style={{ zIndex: 998 }}
+              onClick={closeMobileSidebar}
+            />
+          )}
+    
+          {/* Sidebar */}
+          <div
+            className={`bg-black text-white p-3 flex-column position-fixed top-0 ${
+              mobileVisible ? "d-flex" : "d-none"
+            } d-md-flex`}
             style={{
-              minWidth: "70px",
-              fontSize: "1rem",
-              whiteSpace: "normal",
-              flex: "0 0 auto",
+              width: sidebarWidth,
+              height: "100vh",
+              overflowY: "auto",
+              zIndex: 999,
+              transition: "all 0.3s ease",
             }}
           >
-            <FaSignOutAlt />
-            <small>Logout</small>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+            {/* Logo and Search */}
+            <div className="d-flex align-items-center mb-4">
+              <FaFacebookF size={28} color="#1ecb73" className="me-3" />
+              {!collapsed && (
+                <div className="d-flex align-items-center bg-secondary rounded px-2 py-1 flex-grow-1">
+                  <h5>Facebook</h5>
+                </div>
+              )}
+            </div>
+    
+    
+            {/* Shortcuts */}
+            {!collapsed && (
+              <>
+                <h6
+                  className="text-uppercase px-2 text-white mb-3 border-bottom border-secondary"
+                  style={{ fontSize: "0.9rem" }}
+                >
+                  Your Shortcuts
+                </h6>
+                <ul className="nav flex-column">
+                  {shortcuts.map(({ name, path, icon }) => (
+                    <li className="nav-item mb-2" key={name}>
+                      <NavLink
+                        to={path}
+                        onClick={closeMobileSidebar}
+                        className={({ isActive }) =>
+                          `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${
+                            isActive ? "bg-dark text-white fw-bold" : "text-white"
+                          }`
+                        }
+                        style={{ fontSize: "1rem" }}
+                      >
+                        {icon}
+                        {!collapsed && name}
+                      </NavLink>
+                    </li>
+                ))}
+                  {/* Logout */}
+                    <li className="nav-item mb-2">
+                        <button
+                        className="nav-link d-flex align-items-center gap-3 px-2 py-2 rounded text-white bg-transparent border-0 w-100 text-start"
+                        onClick={() => {
+                            closeMobileSidebar();
+                            handleLogout();
+                        }}
+                        style={{ fontSize: "1rem" }}
+                        >
+                        <FaSignOutAlt />
+                        {!collapsed && "Logout"}
+                        </button>
+                    </li>
+                </ul>
+              </>
+            )}
+          </div>
+        </>
+  )
+}
 
-export default SidebarDashboard;
+export default SidebarDashboard
