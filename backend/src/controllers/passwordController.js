@@ -1,5 +1,6 @@
 const UserService = require('../services/userService');
 const transporter = require('../config/nodemailer');
+const { PASSWORD_RESET_TEMPLATE } = require('../utils/emailTemplates');
 const bcrypt = require('bcrypt');
 
 
@@ -30,7 +31,7 @@ const requestOtp = async (req, res) => {
             from: process.env.SENDER_EMAIL,
             to: updateUser.email,
             subject: "Password Reset OTP",
-            text: `Your OTP for resetting password is: ${otp}. Use this OTP to reset your Password within 2 minutes 30 seconds from now.`
+            html: PASSWORD_RESET_TEMPLATE.replace("{{otp}}", otp).replace("{{email}}", updateUser.email).replace("{{time}}", "2 mins 30 seconds")
         };
 
         const mailResult = await transporter.sendMail(mailOptions);

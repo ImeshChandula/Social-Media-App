@@ -1,6 +1,7 @@
 const AppealService = require('../services/appealService');
 const UserService = require('../services/userService');
 const transporter = require('../config/nodemailer');
+const {BAN_APPEAL_TEMPLATE} = require('../utils/emailTemplates');
 
 const appealService = new AppealService();
 
@@ -37,26 +38,12 @@ const createAppeal = async (req, res) => {
         }
 
         const appeal = await appealService.create(appealData);
-        if (!appeal) {
-            return res.status(400).json({
-                success: false,
-                message: "Error creating appeal"
-            });
-        }
-
 
         const mailOptions = {
             from: process.env.SENDER_EMAIL,
             to: appeal.email,
             subject: "Ban Appeal response",
-            html: `
-                <h2>Ban Appeal Submitted Successfully</h2>
-                <p>Your ban appeal has been received and is being reviewed.</p>
-                <p><strong>Appeal Number:</strong> ${appeal.appealNumber}</p>
-                <p>You will receive an email notification once your appeal has been reviewed.</p>
-                <p>This typically takes 3-5 business days.</p>
-                <p>Thank you for your patience.</p>
-                `
+            html: BAN_APPEAL_TEMPLATE.replace("{{appealNumber}}", appeal.appealNumber)
         };
 
         const mailResult = await transporter.sendMail(mailOptions);

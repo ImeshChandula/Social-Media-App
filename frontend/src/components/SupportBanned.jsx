@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import useAuthStore from '../store/authStore'; 
 //import { axiosInstance } from "../lib/axios";
 import { AlertCircle, Send, User, Mail, MessageSquare, Calendar } from 'lucide-react';
 import '../styles/SupportBanned.css';
@@ -14,6 +15,7 @@ const SupportBanned = () => {
     contactMethod: 'email'
   });
   
+  const { logout } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
 
@@ -50,6 +52,14 @@ const SupportBanned = () => {
       toast.error(error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+        await logout();
+    } catch (error) {
+        console.error('Logout error:', error);
     }
   };
 
@@ -215,6 +225,16 @@ const SupportBanned = () => {
                 False information may result in permanent account suspension.
               </p>
             </div>
+
+            <button 
+              className="btn btn-secondary"
+              onClick={handleLogout}
+            >
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+              </svg>
+              Logout
+          </button>
           </div>
         )}
       </div>
