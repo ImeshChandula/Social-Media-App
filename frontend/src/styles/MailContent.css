@@ -470,6 +470,7 @@
 /* Responsive Design */
 @media (max-width: 1024px) {
   .mail-content {
+    max-width: 764px !important;
     padding: 1rem !important;
   }
 
@@ -574,7 +575,7 @@
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
   .mail-content {
-    background: #1a202c !important;
+    background: #1a202c ;
   }
 
   .mail-list-header,

@@ -6,6 +6,7 @@ import { IoMdArrowRoundBack } from "react-icons/io";
 import { BsFileEarmarkPostFill } from "react-icons/bs";
 import { TbCategoryFilled } from "react-icons/tb";
 import { FaFacebookMessenger } from "react-icons/fa6";
+import { IoTicketSharp } from "react-icons/io5";
 import styles from "../styles/DashboardStyle";
 import useAuthStore from "../store/authStore";
 
@@ -20,6 +21,7 @@ const SidebarDashboard = ({ collapsed, setCollapsed }) => {
         { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
         { name: "Job Categories", path: "/dashboard/job-category", icon: <TbCategoryFilled /> },
         { name: "Messages", path: "/dashboard/mails", icon: <FaFacebookMessenger /> },
+        { name: "Tickets", path: "/dashboard/tickets", icon: <IoTicketSharp /> },
         { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
     ];
     
