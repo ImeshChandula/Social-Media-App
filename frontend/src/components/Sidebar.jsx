@@ -120,7 +120,7 @@ function Sidebar() {
                   }`
                 }
                 onClick={() => setShowMore(false)}
-                style={{ fontSize: "0.85rem", whiteSpace: "nowrap", textDecoration: "none" }}
+                style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
               >
                 {icon} {name}
               </NavLink>
