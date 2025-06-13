@@ -124,7 +124,7 @@ const App = () => {
 
           <Route
             path="/dashboard/*"
-            element={authUser && (authUser.role === "admin" || authUser.role === "super_admin") && authUser.accountStatus !== "banned" ?
+            element={authUser && (authUser.role === "admin" || authUser.role === "super_admin") && authUser.accountStatus === "active" ?
               <Dashboard /> : <Navigate to="/login" />}
           />
 

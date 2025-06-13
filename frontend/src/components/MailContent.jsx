@@ -158,8 +158,8 @@ const MailContent = ({ searchTerm = '', currentFilter = 'all', refreshTrigger = 
     if (loading) {
         return (
         <div className="mail-content">
-            <div className="loading-container">
-            <div className="loading-spinner"></div>
+            <div className="mail-loading-container">
+            <div className="mail-loading-spinner"></div>
             <p>Loading mails...</p>
             </div>
         </div>
@@ -169,8 +169,8 @@ const MailContent = ({ searchTerm = '', currentFilter = 'all', refreshTrigger = 
     if (error) {
         return (
         <div className="mail-content">
-            <div className="error-container">
-            <div className="error-icon">⚠️</div>
+            <div className="mail-error-container">
+            <div className="mail-error-icon">⚠️</div>
             <h3>Error Loading Mails</h3>
             <p>{error}</p>
             <button onClick={fetchMails} className="retry-btn">
@@ -213,14 +213,14 @@ const MailContent = ({ searchTerm = '', currentFilter = 'all', refreshTrigger = 
         {/* Mail List Header */}
         <div className="mail-list-header">
             <div className="select-all-container">
-            <label className="checkbox-container">
+            <label className="mail-checkbox-container">
                 <input
                 type="checkbox"
                 checked={selectAll}
                 onChange={toggleSelectAll}
                 disabled={filteredMails.length === 0}
                 />
-                <span className="checkmark"></span>
+                <span className="mail-checkmark"></span>
             </label>
             <span className="select-all-label">
                 {filteredMails.length > 0 ? `Select All (${filteredMails.length})` : 'No mails'}
@@ -253,13 +253,13 @@ const MailContent = ({ searchTerm = '', currentFilter = 'all', refreshTrigger = 
                 className={`mail-item ${!mail.isRead ? 'unread' : ''} ${selectedMails.has(mail.id) ? 'selected' : ''}`}
                 >
                 <div className="mail-checkbox">
-                    <label className="checkbox-container">
+                    <label className="mail-checkbox-container">
                     <input
                         type="checkbox"
                         checked={selectedMails.has(mail.id)}
                         onChange={() => toggleMailSelection(mail.id)}
                     />
-                    <span className="checkmark"></span>
+                    <span className="mail-checkmark"></span>
                     </label>
                 </div>
 

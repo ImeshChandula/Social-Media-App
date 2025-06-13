@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import "../styles/UserStyles.css";
 import { useNavigate } from 'react-router-dom';
 import DashboardUserSummery from './DashboardUserSummery';
-
+import useAuthStore from "../store/authStore";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -18,6 +18,7 @@ const Users = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(null);
 
   const navigate = useNavigate()
+const { checkAuth } = useAuthStore();
 
   useEffect(() => {
     fetchAllUsers();
@@ -88,6 +89,7 @@ const Users = () => {
 
       if (res.data.success) {
         toast.success("Status update successful");
+        checkAuth();
         fetchAllUsers(); // Refresh the list
         setEditingUser(null);
       }
@@ -295,8 +297,8 @@ const Users = () => {
 
         {/* All Users */}
         <div style={styles.section}>
-          {/*<h2 style={styles.sectionTitle}>All Users ({users.length})</h2>*/}
-          <DashboardUserSummery />
+          {<h2 style={styles.sectionTitle}>All Users ({users.length})</h2>}
+          {/*<DashboardUserSummery />*/}
           {loading ? (
             <div style={styles.loadingContainer}>
               <div style={styles.spinner}></div>

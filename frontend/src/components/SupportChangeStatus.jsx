@@ -71,7 +71,7 @@ const SupportChangeStatus = () => {
           >
             {isReactivating ? (
               <>
-                <div className="loading-spinner"></div>
+                <div className="reactive-loading-spinner"></div>
                 Reactivating...
               </>
             ) : (
@@ -112,7 +112,7 @@ const SupportChangeStatus = () => {
               >
                 {isReactivating ? (
                   <>
-                    <div className="loading-spinner"></div>
+                    <div className="reactive-loading-spinner"></div>
                     Reactivating...
                   </>
                 ) : (

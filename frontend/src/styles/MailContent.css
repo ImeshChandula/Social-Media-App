@@ -9,7 +9,7 @@
 }
 
 /* Loading State */
-.loading-container {
+.mail-loading-container {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -18,7 +18,7 @@
   text-align: center !important;
 }
 
-.loading-spinner {
+.mail-loading-spinner {
   width: 40px !important;
   height: 40px !important;
   border: 4px solid #e2e8f0 !important;
@@ -34,7 +34,7 @@
 }
 
 /* Error State */
-.error-container {
+.mail-error-container {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -46,17 +46,17 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
 }
 
-.error-icon {
+.mail-error-icon {
   font-size: 3rem !important;
   margin-bottom: 1rem !important;
 }
 
-.error-container h3 {
+.mail-error-container h3 {
   color: #e53e3e !important;
   margin-bottom: 0.5rem !important;
 }
 
-.error-container p {
+.mail-error-container p {
   color: #718096 !important;
   margin-bottom: 1.5rem !important;
 }
@@ -201,7 +201,7 @@
 }
 
 /* Custom Checkbox */
-.checkbox-container {
+.mail-checkbox-container {
   margin-right: 20px;
   display: block !important;
   position: relative !important;
@@ -210,7 +210,7 @@
   user-select: none !important;
 }
 
-.checkbox-container input {
+.mail-checkbox-container input {
   position: absolute !important;
   opacity: 0 !important;
   cursor: pointer !important;
@@ -218,7 +218,7 @@
   width: 0 !important;
 }
 
-.checkmark {
+.mail-checkmark {
   position: absolute !important;
   top: 0 !important;
   left: 0 !important;
@@ -230,26 +230,26 @@
   transition: all 0.2s ease !important;
 }
 
-.checkbox-container:hover input ~ .checkmark {
+.mail-checkbox-container:hover input ~ .mail-checkmark {
   border-color: #667eea !important;
 }
 
-.checkbox-container input:checked ~ .checkmark {
+.mail-checkbox-container input:checked ~ .mail-checkmark {
   background-color: #667eea !important;
   border-color: #667eea !important;
 }
 
-.checkmark:after {
+.mail-checkmark:after {
   content: "" !important;
   position: absolute !important;
   display: none !important;
 }
 
-.checkbox-container input:checked ~ .checkmark:after {
+.mail-checkbox-container input:checked ~ .mail-checkmark:after {
   display: block !important;
 }
 
-.checkbox-container .checkmark:after {
+.mail-checkbox-container .mail-checkmark:after {
   left: 6px !important;
   top: 2px !important;
   width: 6px !important;
