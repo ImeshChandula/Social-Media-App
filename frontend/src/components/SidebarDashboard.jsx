@@ -5,14 +5,12 @@ import { IoMdArrowRoundBack } from "react-icons/io";
 import { BsFileEarmarkPostFill } from "react-icons/bs";
 import { TbCategoryFilled } from "react-icons/tb";
 import { FaFacebookMessenger } from "react-icons/fa6";
-//import styles from "../styles/DashboardStyle";
-import { SiJoplin } from "react-icons/si";
 import useAuthStore from "../store/authStore";
 
 const SidebarDashboard = () => {
   const { authUser, logout } = useAuthStore();
 
-    /*const shortcuts = [
+    const shortcuts = [
         ...(authUser.role === "super_admin" ? [
           { name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> }
         ] : []),
@@ -22,6 +20,7 @@ const SidebarDashboard = () => {
         { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
     ];
     
+    /*
     const handleResize = () => {
         if (window.innerWidth >= 768) {
           setMobileVisible(false);
@@ -40,26 +39,7 @@ const SidebarDashboard = () => {
           setCollapsed(!collapsed);
         }
     };*/
-  const shortcutsDesktop = [
-    ...(authUser.role === "super_admin"
-      ? [{ name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> }]
-      : []),
-    { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
-    { name: "Job Categories", path: "/dashboard/job-category", icon: <TbCategoryFilled /> },
-    { name: "Messages", path: "/dashboard/mails", icon: <FaFacebookMessenger /> },
-    { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
-  ];
-
-  const shortcutsMobile = [
-    ...(authUser.role === "super_admin"
-      ? [{ name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> }]
-      : []),
-    { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
-    { name: "Job Categories", path: "/dashboard/job-category", icon: <TbCategoryFilled /> },
-    { name: "Messages", path: "/dashboard/mails", icon: <FaFacebookMessenger /> },
-    { name: "Notification", path: "/dashboard/notifications", icon: <FaBell /> },
-    { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
-  ];
+  
 
   const handleLogout = async () => {
     try {
@@ -115,7 +95,7 @@ const SidebarDashboard = () => {
           Your Shortcuts
         </h6>
         <ul className="nav flex-column">
-          {shortcutsDesktop.map(({ name, path, icon }) => (
+          {shortcuts.map(({ name, path, icon }) => (
             <li className="nav-item mb-2" key={name}>
               <NavLink
                 to={path}
@@ -167,7 +147,7 @@ const SidebarDashboard = () => {
           className="d-flex gap-3 overflow-auto"
           style={{ whiteSpace: "nowrap", scrollbarWidth: "none" }}
         >
-          {shortcutsMobile.map(({ name, path, icon }) => (
+          {shortcuts.map(({ name, path, icon }) => (
             <NavLink
               key={name}
               to={path}
