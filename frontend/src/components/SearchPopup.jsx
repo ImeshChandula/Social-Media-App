@@ -1,21 +1,9 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaSearch, FaTimes } from "react-icons/fa";
 
 function SearchPopup({ show, onClose }) {
     const popupRef = useRef(null);
-
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (popupRef.current && !popupRef.current.contains(e.target)) {
-                onClose();
-            }
-        };
-        if (show) {
-            document.addEventListener("mousedown", handleClickOutside);
-        }
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [show, onClose]);
 
     return (
         <AnimatePresence>
@@ -71,7 +59,7 @@ function SearchPopup({ show, onClose }) {
                                     borderColor: "#ddd",
                                     transition: "border-color 0.3s",
                                 }}
-                                onFocus={(e) => (e.target.style.borderColor = "#3b82f6")} // blue border on focus
+                                onFocus={(e) => (e.target.style.borderColor = "#3b82f6")}
                                 onBlur={(e) => (e.target.style.borderColor = "#ddd")}
                             />
                         </div>
