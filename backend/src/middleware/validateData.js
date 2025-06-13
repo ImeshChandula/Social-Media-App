@@ -56,4 +56,25 @@ const validateMails = (req, res, next) => {
 };
 
 
-module.exports = {validateUserData, validateMails};
+// Validate support mails
+const validateAppeal = (req, res, next) => {
+  const schema = Joi.object({
+    username: Joi.string().min(3).max(30).required(),
+    email: Joi.string().email().required(),
+    
+    appealReason: Joi.string().min(10).max(1000).required(),
+    additionalInfo: Joi.string().allow('').max(2000).optional(),
+    
+    incidentDate: Joi.date().iso().allow(null),
+    contactMethod: Joi.string().valid('email', 'phone').default('email')
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  next();
+};
+
+
+module.exports = {validateUserData, validateMails, validateAppeal};
