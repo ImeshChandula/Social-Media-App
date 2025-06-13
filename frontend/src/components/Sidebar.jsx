@@ -15,13 +15,14 @@ import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { MdContactSupport } from "react-icons/md";
 import { FaShoppingBag } from "react-icons/fa";
 import useAuthStore from "../store/authStore";
+import SearchPopup from "./SearchPopup";
 
 function Sidebar() {
   const { authUser, logout } = useAuthStore();
   const [showMore, setShowMore] = useState(false);
+  const [showSearchPopup, setShowSearchPopup] = useState(false);
   const moreRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (moreRef.current && !moreRef.current.contains(e.target)) {
@@ -60,23 +61,24 @@ function Sidebar() {
 
   return (
     <>
+      {/* Search Popup */}
+      <SearchPopup show={showSearchPopup} onClose={() => setShowSearchPopup(false)} />
+
       {/* Desktop Sidebar */}
       <div
         className="bg-black text-white p-3 flex-column position-fixed top-0 start-0 d-none d-md-flex"
         style={{ width: "250px", height: "100vh", overflowY: "auto", zIndex: 999 }}
       >
         {/* Logo and Search */}
-        <div className="d-flex align-items-center mb-4">
+        <div className="d-flex align-items-center mb-4 justify-content-between">
           <FaFacebookF size={28} color="#1ecb73" className="me-3" />
-          <div className="d-flex align-items-center bg-secondary rounded px-2 py-1 flex-grow-1">
-            <FaSearch className="text-white me-2" />
-            <input
-              type="text"
-              placeholder="Search Facebook"
-              className="form-control border-0 bg-transparent text-white p-0"
-              style={{ fontSize: "0.95rem" }}
-            />
-          </div>
+          <button
+            className="nav-link d-flex align-items-center justify-content-center rounded-circle p-2"
+            onClick={() => setShowSearchPopup(true)}
+            title="Search"
+          >
+            <FaSearch className="text-white" size={19} />
+          </button>
         </div>
 
         {/* Nav Links */}
@@ -113,11 +115,9 @@ function Sidebar() {
           {shortcuts.map(({ name, path, icon }) => (
             <li className="nav-item mb-2" key={name}>
               <NavLink
-                key={name}
                 to={path}
                 className={({ isActive }) =>
-                  `d-flex align-items-center gap-2 py-1 px-2 rounded text-white ${isActive ? "bg-secondary fw-bold" : ""
-                  }`
+                  `d-flex align-items-center gap-2 py-1 px-2 rounded text-white ${isActive ? "bg-secondary fw-bold" : ""}`
                 }
                 onClick={() => setShowMore(false)}
                 style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
@@ -142,8 +142,7 @@ function Sidebar() {
               key={item.name}
               to={item.path}
               className={({ isActive }) =>
-                `text-white d-flex flex-column align-items-center py-2 px-1 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"
-                }`
+                `text-white d-flex flex-column align-items-center py-2 px-1 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"}`
               }
               style={{ fontSize: "1rem", textDecoration: "none" }}
             >
@@ -167,7 +166,6 @@ function Sidebar() {
               className="position-absolute bg-black text-white rounded shadow p-2"
               style={{ top: "100%", right: 0, zIndex: 1000, minWidth: "160px" }}
             >
-              {/* Extra NavItems */}
               {navItems
                 .filter((item) => !["Home", "Members", "Profile", "Notification"].includes(item.name))
                 .map(({ name, path, icon }) => (
@@ -184,7 +182,6 @@ function Sidebar() {
                   </NavLink>
                 ))}
 
-              {/* Shortcuts */}
               {shortcuts.length > 0 && <hr className="text-white my-2" />}
               {shortcuts.map(({ name, path, icon }) => (
                 <NavLink
@@ -194,13 +191,12 @@ function Sidebar() {
                     `d-flex align-items-center gap-2 py-1 px-2 rounded text-white ${isActive ? "bg-secondary fw-bold" : ""}`
                   }
                   onClick={() => setShowMore(false)}
-                  style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration:"none" }}
+                  style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
                 >
                   {icon} {name}
                 </NavLink>
               ))}
 
-              {/* Logout */}
               <hr className="text-white my-2" />
               <button
                 onClick={() => {
