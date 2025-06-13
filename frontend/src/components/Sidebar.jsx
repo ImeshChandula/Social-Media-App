@@ -131,44 +131,75 @@ function Sidebar() {
 
       {/* Mobile Topbar */}
       <div
-        className="mobile-topbar bg-black text-white d-flex d-md-none justify-content-around align-items-center fixed-top w-100 py-2"
+        className="mobile-topbar bg-black text-white d-flex d-md-none flex-column fixed-top w-100 py-2"
         style={{ zIndex: 999 }}
       >
-        {["Home", "Members", "Profile", "Notification"].map((label) => {
-          const item = navItems.find((i) => i.name === label);
-          if (!item) return null;
-          return (
-            <NavLink
-              key={item.name}
-              to={item.path}
-              className={({ isActive }) =>
-                `text-white d-flex flex-column align-items-center py-2 px-1 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"}`
-              }
-              style={{ fontSize: "1rem", textDecoration: "none" }}
-            >
-              {item.icon}
-              <small style={{ fontSize: "0.8rem" }}>{item.name}</small>
-            </NavLink>
-          );
-        })}
-
-        {/* More Dropdown */}
-        <div className="position-relative" ref={moreRef}>
+        {/* Logo and Search - New Section */}
+        <div className="d-flex justify-content-between align-items-center px-3 mb-2">
+          <FaFacebookF size={28} color="#1ecb73" />
           <button
-            className="bg-transparent border-0 text-white d-flex flex-column align-items-center"
-            onClick={() => setShowMore((prev) => !prev)}
+            className="bg-transparent border-0 text-white d-flex align-items-center justify-content-center p-2"
+            onClick={() => setShowSearchPopup(true)}
+            title="Search"
+            aria-label="Search"
           >
-            <FaEllipsisH />
-            <small style={{ fontSize: "0.7rem" }}>More</small>
+            <FaSearch size={20} />
           </button>
-          {showMore && (
-            <div
-              className="position-absolute bg-black text-white rounded shadow p-2"
-              style={{ top: "100%", right: 0, zIndex: 1000, minWidth: "160px" }}
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="d-flex justify-content-around px-2">
+          {["Home", "Members", "Profile", "Notification"].map((label) => {
+            const item = navItems.find((i) => i.name === label);
+            if (!item) return null;
+            return (
+              <NavLink
+                key={item.name}
+                to={item.path}
+                className={({ isActive }) =>
+                  `text-white d-flex flex-column align-items-center py-2 px-1 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"}`
+                }
+                style={{ fontSize: "1rem", textDecoration: "none" }}
+              >
+                {item.icon}
+                <small style={{ fontSize: "0.8rem" }}>{item.name}</small>
+              </NavLink>
+            );
+          })}
+
+          {/* More Dropdown */}
+          <div className="position-relative" ref={moreRef}>
+            <button
+              className="bg-transparent border-0 text-white d-flex flex-column align-items-center py-2 px-1"
+              onClick={() => setShowMore((prev) => !prev)}
+              style={{fontSize:"1rem"}}
             >
-              {navItems
-                .filter((item) => !["Home", "Members", "Profile", "Notification"].includes(item.name))
-                .map(({ name, path, icon }) => (
+              <FaEllipsisH />
+              <small style={{ fontSize: "0.8rem" }}>More</small>
+            </button>
+            {showMore && (
+              <div
+                className="position-absolute bg-black text-white rounded shadow p-2"
+                style={{ top: "100%", right: 0, zIndex: 1000, minWidth: "160px" }}
+              >
+                {navItems
+                  .filter((item) => !["Home", "Members", "Profile", "Notification"].includes(item.name))
+                  .map(({ name, path, icon }) => (
+                    <NavLink
+                      key={name}
+                      to={path}
+                      className={({ isActive }) =>
+                        `d-flex align-items-center gap-2 py-1 px-2 rounded text-white ${isActive ? "bg-secondary fw-bold" : ""}`
+                      }
+                      onClick={() => setShowMore(false)}
+                      style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
+                    >
+                      {icon} {name}
+                    </NavLink>
+                  ))}
+
+                {shortcuts.length > 0 && <hr className="text-white my-2" />}
+                {shortcuts.map(({ name, path, icon }) => (
                   <NavLink
                     key={name}
                     to={path}
@@ -182,34 +213,20 @@ function Sidebar() {
                   </NavLink>
                 ))}
 
-              {shortcuts.length > 0 && <hr className="text-white my-2" />}
-              {shortcuts.map(({ name, path, icon }) => (
-                <NavLink
-                  key={name}
-                  to={path}
-                  className={({ isActive }) =>
-                    `d-flex align-items-center gap-2 py-1 px-2 rounded text-white ${isActive ? "bg-secondary fw-bold" : ""}`
-                  }
-                  onClick={() => setShowMore(false)}
-                  style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
+                <hr className="text-white my-2" />
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setShowMore(false);
+                  }}
+                  className="d-flex align-items-center gap-2 py-1 px-2 text-white bg-transparent border-0 w-100 text-start"
+                  style={{ fontSize: "1rem", whiteSpace: "nowrap" }}
                 >
-                  {icon} {name}
-                </NavLink>
-              ))}
-
-              <hr className="text-white my-2" />
-              <button
-                onClick={() => {
-                  handleLogout();
-                  setShowMore(false);
-                }}
-                className="d-flex align-items-center gap-2 py-1 px-2 text-white bg-transparent border-0 w-100 text-start"
-                style={{ fontSize: "1rem", whiteSpace: "nowrap" }}
-              >
-                <FaSignOutAlt /> Logout
-              </button>
-            </div>
-          )}
+                  <FaSignOutAlt /> Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>

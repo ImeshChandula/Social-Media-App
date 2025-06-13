@@ -7,16 +7,18 @@ const MemberControl = () => {
   const [activeTab, setActiveTab] = useState('suggestions');
 
   return (
-    <div className=" py-5 py-md-0 mt-4 mt-md-0">
-      <div className="member-control-container">
-        <div className="member-control-header">
-          <h2 className="member-control-title">Friends</h2>
-          <TabNavigation
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-          />
+    <div className="py-5 py-md-0 mt-5 mt-md-0">
+      <div className="mt-1">
+        <div className="member-control-container">
+          <div className="member-control-header">
+            <h2 className="member-control-title">Friends</h2>
+            <TabNavigation
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+            />
+          </div>
+          <ContentRenderer activeTab={activeTab} />
         </div>
-        <ContentRenderer activeTab={activeTab} />
       </div>
     </div>
   )
