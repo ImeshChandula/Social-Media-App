@@ -5,10 +5,10 @@ import Users from "../components/Users";
 import styles from "../styles/DashboardStyle";
 import DashboardHome from "../components/DashboardHome";
 import PostManagement from "../components/PostManagement";
-import JobCategoryManagement from "../components/JobCategoryManagement ";
+import JobCategoryManagement from "../components/JobCategoryManagement";
 import Mail from "./Mail";
 
-import JobCategoryManagement from "../components/JobCategoryManagement";
+
 import NotificationForMobile from "./NotificationForMobile";
 
 const Dashboard = () => {
