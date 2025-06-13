@@ -117,7 +117,7 @@ const ContactContent = () => {
             <form className="contact-form" onSubmit={handleSubmit}>
               <h2 className="section-title">Send us a Message</h2>
               
-              <div className="form-group">
+              <div className="contact-form-group">
                 <label htmlFor="name">Full Name</label>
                 <input
                   type="text"
@@ -130,7 +130,7 @@ const ContactContent = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="contact-form-group">
                 <label htmlFor="email">Email Address</label>
                 <input
                   type="email"
@@ -143,7 +143,7 @@ const ContactContent = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="contact-form-group">
                 <label htmlFor="subject">Subject</label>
                 <select
                   id="subject"
@@ -161,7 +161,7 @@ const ContactContent = () => {
                 </select>
               </div>
 
-              <div className="form-group">
+              <div className="contact-form-group">
                 <label htmlFor="message">Message</label>
                 <textarea
                   id="message"

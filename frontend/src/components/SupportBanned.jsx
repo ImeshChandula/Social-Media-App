@@ -97,8 +97,8 @@ const SupportBanned = () => {
 
         {submitStatus !== 'success' && (
           <div className="ban-appeal-form">
-            <div className="form-group">
-              <label className="form-label">
+            <div className="ban-form-group">
+              <label className="ban-form-label">
                 <User size={16} />
                 User ID / Username
               </label>
@@ -107,14 +107,14 @@ const SupportBanned = () => {
                 name="userId"
                 value={formData.userId}
                 onChange={handleInputChange}
-                className="form-input"
+                className="ban-form-input"
                 placeholder="Enter your user ID or username"
                 required
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">
+            <div className="ban-form-group">
+              <label className="ban-form-label">
                 <Mail size={16} />
                 Email Address
               </label>
@@ -123,14 +123,14 @@ const SupportBanned = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="form-input"
+                className="ban-form-input"
                 placeholder="Enter your registered email"
                 required
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">
+            <div className="ban-form-group">
+              <label className="ban-form-label">
                 <Calendar size={16} />
                 Incident Date (if known)
               </label>
@@ -139,12 +139,12 @@ const SupportBanned = () => {
                 name="incidentDate"
                 value={formData.incidentDate}
                 onChange={handleInputChange}
-                className="form-input"
+                className="ban-form-input"
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">
+            <div className="ban-form-group">
+              <label className="ban-form-label">
                 <MessageSquare size={16} />
                 Reason for Appeal
               </label>
@@ -152,33 +152,33 @@ const SupportBanned = () => {
                 name="appealReason"
                 value={formData.appealReason}
                 onChange={handleInputChange}
-                className="form-textarea"
+                className="ban-form-textarea"
                 placeholder="Please explain why you believe your account was unfairly banned. Include specific details about the situation."
                 rows="4"
                 required
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">
+            <div className="ban-form-group">
+              <label className="ban-form-label">
                 Additional Information
               </label>
               <textarea
                 name="additionalInfo"
                 value={formData.additionalInfo}
                 onChange={handleInputChange}
-                className="form-textarea"
+                className="ban-form-textarea"
                 placeholder="Any additional context or evidence that might help your case (optional)"
                 rows="3"
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">
+            <div className="ban-form-group">
+              <label className="ban-form-label">
                 Preferred Contact Method
               </label>
-              <div className="radio-group">
-                <label className="radio-option">
+              <div className="ban-radio-group">
+                <label className="ban-radio-option">
                   <input
                     type="radio"
                     name="contactMethod"
@@ -186,10 +186,10 @@ const SupportBanned = () => {
                     checked={formData.contactMethod === 'email'}
                     onChange={handleInputChange}
                   />
-                  <span className="radio-custom"></span>
+                  <span className="ban-radio-custom"></span>
                   Email
                 </label>
-                <label className="radio-option">
+                <label className="ban-radio-option">
                   <input
                     type="radio"
                     name="contactMethod"
@@ -197,7 +197,7 @@ const SupportBanned = () => {
                     checked={formData.contactMethod === 'phone'}
                     onChange={handleInputChange}
                   />
-                  <span className="radio-custom"></span>
+                  <span className="ban-radio-custom"></span>
                   Phone
                 </label>
               </div>

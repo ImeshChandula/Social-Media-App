@@ -199,11 +199,11 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
-.form-group {
+.contact-form-group {
   margin-bottom: 1.5rem;
 }
 
-.form-group label {
+.contact-form-group label {
   display: block;
   font-weight: 600;
   color: #ffffff !important;
@@ -211,12 +211,12 @@
   font-size: 0.9rem;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+.contact-form-group input,
+.contact-form-group select,
+.contact-form-group textarea {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0 !important;
+  border: 1px solid #4f5050 !important;
   border-radius: 0.5rem;
   font-size: 1rem;
   transition: all 0.3s ease;
@@ -224,22 +224,22 @@
   background: #718096 !important;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.contact-form-group input:focus,
+.contact-form-group select:focus,
+.contact-form-group textarea:focus {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   transform: translateY(-2px);
 }
 
-.form-group textarea {
+.contact-form-group textarea {
   resize: vertical;
   min-height: 120px;
 }
 
-.form-group input::placeholder,
-.form-group textarea::placeholder {
+.contact-form-group input::placeholder,
+.contact-form-group textarea::placeholder {
   color: #a0aec0 !important;
 }
 
