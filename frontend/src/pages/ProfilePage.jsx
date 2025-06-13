@@ -44,7 +44,7 @@ function ProfilePage() {
 
   return (
     <motion.div
-      className="container text-center py-5 py-md-0 mt-4 mt-md-0"
+      className="container text-center py-5 py-md-0 mt-5 mt-md-0"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
@@ -54,7 +54,7 @@ function ProfilePage() {
       ) : (
         <>
           {/* Cover Photo */}
-          <div className="position-relative mb-5">
+          <div className="position-relative mb-5 pt-3 mt-1 mt-md-0">
             <motion.img
               src={user?.coverPhoto}
               alt="Cover"

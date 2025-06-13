@@ -43,7 +43,7 @@ const ContactContent = () => {
 
 
   return (
-    <div className="contact-container">
+    <div className="contact-container mt-5 mt-md-0">
       <div className="contact-hero">
         <div className="hero-content">
           <h1 className="hero-title">Get in Touch</h1>
