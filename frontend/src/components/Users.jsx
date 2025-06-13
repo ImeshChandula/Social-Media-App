@@ -171,7 +171,7 @@ const Users = () => {
             </div>
           </div>
 
-          {!isSearchResult && (
+          {/* action buttons */}
             <div style={styles.actionButtons}>
               <button
                 onClick={() => setEditingUser(user)}
@@ -186,7 +186,7 @@ const Users = () => {
                 <Trash2 style={{ width: '16px', height: '16px' }} />
               </button>
             </div>
-          )}
+          
         </div>
 
         <div style={styles.roleStatusContainer}>

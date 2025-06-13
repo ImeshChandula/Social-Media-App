@@ -239,7 +239,7 @@ const updateUserProfile = async (req, res) => {
         }
 
         let isUpdatingTokenValue = false;
-        if (req.body.role || req.body.accountStatus) {
+        if ((req.body.role || req.body.accountStatus) && currentUserId === userIdToUpdate) {
             isUpdatingTokenValue = true;
         }
         

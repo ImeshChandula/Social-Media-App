@@ -1,0 +1,393 @@
+/* BanAppeal.css */
+
+/* Container and Layout */
+.ban-appeal-container {
+  min-height: 100vh !important;
+  /*background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;*/
+  padding: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif !important;
+}
+
+.ban-appeal-wrapper {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+  padding: 40px !important;
+  width: 100% !important;
+  max-width: 600px !important;
+  animation: slideIn 0.6s ease-out !important;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0 ;
+    transform: translateY(30px) ;
+  }
+  to {
+    opacity: 1 ;
+    transform: translateY(0) ;
+  }
+}
+
+/* Header Section */
+.ban-appeal-header {
+  text-align: center !important;
+  margin-bottom: 32px !important;
+}
+
+.ban-appeal-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 80px !important;
+  height: 80px !important;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24) !important;
+  border-radius: 50% !important;
+  margin-bottom: 20px !important;
+  color: white !important;
+  animation: pulse 2s infinite !important;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1) !important;
+  }
+  50% {
+    transform: scale(1.05) !important;
+  }
+}
+
+.ban-appeal-title {
+  font-size: 32px !important;
+  font-weight: 700 !important;
+  color: #2d3748 !important;
+  margin: 0 0 8px 0 !important;
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.ban-appeal-subtitle {
+  font-size: 16px !important;
+  color: #718096 !important;
+  margin: 0 !important;
+  font-weight: 400 !important;
+}
+
+/* Form Styling */
+.ban-appeal-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 24px !important;
+}
+
+.form-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.form-label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  font-size: 14px !important;
+}
+
+.form-input, .form-textarea {
+  padding: 16px !important;
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  font-size: 16px !important;
+  transition: all 0.3s ease !important;
+  background: white !important;
+  color: #2d3748 !important;
+  outline: none !important;
+}
+
+.form-input:focus, .form-textarea:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+.form-textarea {
+  resize: vertical !important;
+  min-height: 100px !important;
+  font-family: inherit !important;
+}
+
+/* Radio Group Styling */
+.radio-group {
+  display: flex !important;
+  gap: 20px !important;
+  margin-top: 8px !important;
+}
+
+.radio-option {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  color: #4a5568 !important;
+  position: relative !important;
+}
+
+.radio-option input[type="radio"] {
+  position: absolute !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.radio-custom {
+  width: 20px !important;
+  height: 20px !important;
+  border: 2px solid #cbd5e0 !important;
+  border-radius: 50% !important;
+  position: relative !important;
+  transition: all 0.3s ease !important;
+}
+
+.radio-option input[type="radio"]:checked + .radio-custom {
+  border-color: #667eea !important;
+  background: #667eea !important;
+}
+
+.radio-option input[type="radio"]:checked + .radio-custom::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 8px !important;
+  height: 8px !important;
+  background: white !important;
+  border-radius: 50% !important;
+}
+
+/* Submit Button */
+.submit-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border: none !important;
+  padding: 16px 24px !important;
+  border-radius: 12px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  outline: none !important;
+}
+
+.submit-button:hover:not(.disabled):not(.loading) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3) !important;
+}
+
+.submit-button:active:not(.disabled):not(.loading) {
+  transform: translateY(0) !important;
+}
+
+.submit-button.disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  background: #cbd5e0 !important;
+}
+
+.submit-button.loading {
+  cursor: wait !important;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  width: 20px !important;
+  height: 20px !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  border-top: 2px solid white !important;
+  border-radius: 50% !important;
+  animation: spin 1s linear infinite !important;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg) !important; }
+  100% { transform: rotate(360deg) !important; }
+}
+
+/* Success/Error Messages */
+.success-message, .error-message {
+  text-align: center !important;
+  padding: 32px !important;
+  border-radius: 16px !important;
+  margin-bottom: 24px !important;
+  animation: slideIn 0.5s ease-out !important;
+}
+
+.success-message {
+  background: linear-gradient(135deg, #48bb78, #38a169) !important;
+  color: white !important;
+}
+
+.error-message {
+  background: linear-gradient(135deg, #f56565, #e53e3e) !important;
+  color: white !important;
+}
+
+.success-icon, .error-icon {
+  width: 60px !important;
+  height: 60px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto 16px !important;
+  font-size: 24px !important;
+  font-weight: bold !important;
+}
+
+.success-message h3, .error-message h3 {
+  margin: 0 0 12px 0 !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+}
+
+.success-message p, .error-message p {
+  margin: 0 !important;
+  font-size: 14px !important;
+  opacity: 0.9 !important;
+}
+
+/* Form Footer */
+.form-footer {
+  background: rgba(102, 126, 234, 0.05) !important;
+  padding: 16px !important;
+  border-radius: 12px !important;
+  border-left: 4px solid #667eea !important;
+}
+
+.form-footer p {
+  margin: 0 !important;
+  font-size: 13px !important;
+  color: #4a5568 !important;
+  line-height: 1.5 !important;
+}
+
+.form-footer strong {
+  color: #667eea !important;
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 768px) {
+  .ban-appeal-container {
+    padding: 16px !important;
+  }
+  
+  .ban-appeal-wrapper {
+    padding: 24px !important;
+    margin: 0 !important;
+    border-radius: 16px !important;
+  }
+  
+  .ban-appeal-title {
+    font-size: 24px !important;
+  }
+  
+  .ban-appeal-icon {
+    width: 60px !important;
+    height: 60px !important;
+  }
+  
+  .form-input, .form-textarea {
+    padding: 14px !important;
+    font-size: 16px !important;
+  }
+  
+  .submit-button {
+    padding: 14px 20px !important;
+    font-size: 15px !important;
+  }
+  
+  .radio-group {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .ban-appeal-wrapper {
+    padding: 20px !important;
+  }
+  
+  .ban-appeal-title {
+    font-size: 20px !important;
+  }
+  
+  .ban-appeal-subtitle {
+    font-size: 14px !important;
+  }
+  
+  .form-input, .form-textarea, .submit-button {
+    font-size: 14px !important;
+  }
+  
+  .success-message, .error-message {
+    padding: 24px !important;
+  }
+  
+  .success-icon, .error-icon {
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 20px !important;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .ban-appeal-wrapper {
+    background: rgba(26, 32, 44, 0.95) !important;
+    color: #e2e8f0 !important;
+  }
+  
+  .ban-appeal-title {
+    color: #e2e8f0 !important;
+  }
+  
+  .ban-appeal-subtitle {
+    color: #a0aec0 !important;
+  }
+  
+  .form-label {
+    color: #cbd5e0 !important;
+  }
+  
+  .form-input, .form-textarea {
+    background: rgba(45, 55, 72, 0.8) !important;
+    border-color: #4a5568 !important;
+    color: #e2e8f0 !important;
+  }
+  
+  .form-input::placeholder, .form-textarea::placeholder {
+    color: #a0aec0 !important;
+  }
+  
+  .form-footer {
+    background: rgba(102, 126, 234, 0.1) !important;
+  }
+  
+  .form-footer p {
+    color: #cbd5e0 !important;
+  }
+}
