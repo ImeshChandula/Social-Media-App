@@ -7,7 +7,7 @@ import PostLikeButton from "./PostLikeButton";
 import PostComment from "./PostComment";
 import { axiosInstance } from "../lib/axios";
 
-const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
+const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost, disableNavigation = false }) => {
   const navigate = useNavigate();
   const postId = post._id || post.id;
 
@@ -23,6 +23,7 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
   const [loadingLikes, setLoadingLikes] = useState(false);
 
   const handleNavigateToProfile = () => {
+    if (disableNavigation) return;
     if (post.author?.id) {
       navigate(`/profile/${post.author.id}`);
     }
@@ -83,7 +84,7 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
         <div
           className="d-flex align-items-center gap-3"
           onClick={handleNavigateToProfile}
-          style={{ cursor: "pointer" }}
+          style={{ cursor: disableNavigation ? "default" : "pointer" }}
         >
           <img
             src={post.author?.profilePicture}
@@ -135,7 +136,7 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
         <div
           className="d-flex align-items-center gap-1"
           onClick={() => setShowComments((prev) => !prev)}
-          style={{ cursor: "pointer", fontSize:"0.9rem" }}
+          style={{ cursor: "pointer", fontSize: "0.9rem" }}
         >
           <FaCommentAlt />
           <span>
@@ -143,9 +144,9 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
           </span>
         </div>
 
-        <div 
-        className="d-flex align-items-center gap-1"
-        style={{ cursor: "pointer", fontSize:"0.9rem" }}
+        <div
+          className="d-flex align-items-center gap-1"
+          style={{ cursor: "pointer", fontSize: "0.9rem" }}
         >
           <FaShare />
           <span>
