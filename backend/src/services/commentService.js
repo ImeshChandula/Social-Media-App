@@ -60,7 +60,9 @@ const CommentService = {
     // Save comment to database
     async create(commentData) {
         try { 
+            commentData.createdAt = new Date().toISOString();
             commentData.updatedAt = new Date().toISOString();
+
             const docRef = await commentsCollection.add(commentData);
             return new Comment(docRef.id, commentData);
         } catch (error) {

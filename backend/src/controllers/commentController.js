@@ -189,9 +189,6 @@ const addReply = async (req, res) => {
 const getCommentsByPostId  = async (req, res) => {
   try {
     const postId = req.params.id;
-    if (!postId) {
-      return res.status(400).json({ message: 'Post ID is required' });
-    }
 
     const post = await PostService.findById(postId);
     if (!post) {
@@ -200,7 +197,7 @@ const getCommentsByPostId  = async (req, res) => {
 
     const comments = await CommentService.findByPostId(postId);
     if (comments.length === 0) {
-      return res.status(200).json({msg: 'No comments found for this post', comments: [] });
+      return res.status(200).json({message: 'No comments found for this post', comments: [] });
     }
 
     // Collect all unique user IDs from comments and replies
