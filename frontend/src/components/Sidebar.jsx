@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   FaHome,
   FaUsers,
@@ -22,6 +22,8 @@ function Sidebar() {
   const [showMore, setShowMore] = useState(false);
   const [showSearchPopup, setShowSearchPopup] = useState(false);
   const moreRef = useRef(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -71,7 +73,12 @@ function Sidebar() {
       >
         {/* Logo and Search */}
         <div className="d-flex align-items-center mb-4 justify-content-between">
-          <FaFacebookF size={28} color="#1ecb73" className="me-3" />
+          <FaFacebookF
+            size={28}
+            color="#1ecb73"
+            className="me-3 cursor-pointer"
+            onClick={() => navigate("/")}
+          />
           <button
             className="nav-link d-flex align-items-center justify-content-center rounded-circle p-2"
             onClick={() => setShowSearchPopup(true)}
@@ -136,7 +143,7 @@ function Sidebar() {
       >
         {/* Logo and Search - New Section */}
         <div className="d-flex justify-content-between align-items-center px-3 mb-2">
-          <FaFacebookF size={28} color="#1ecb73" />
+          <FaFacebookF size={28} color="#1ecb73" className="cursor-pointer" onClick={() => navigate("/")} />
           <button
             className="bg-transparent border-0 text-white d-flex align-items-center justify-content-center p-2"
             onClick={() => setShowSearchPopup(true)}
@@ -172,7 +179,7 @@ function Sidebar() {
             <button
               className="bg-transparent border-0 text-white d-flex flex-column align-items-center py-2 px-1"
               onClick={() => setShowMore((prev) => !prev)}
-              style={{fontSize:"1rem"}}
+              style={{ fontSize: "1rem" }}
             >
               <FaEllipsisH />
               <small style={{ fontSize: "0.8rem" }}>More</small>

@@ -45,104 +45,76 @@ function SearchPopup({ show, onClose }) {
         <AnimatePresence>
             {show && (
                 <motion.div
-                    className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-start"
-                    style={{
-                        backgroundColor: "rgba(0,0,0,0.5)",
-                        backdropFilter: "blur(6px)",
-                        zIndex: 2000,
-                        paddingTop: "3rem",
-                        overflowY: "auto",
-                    }}
+                    className="search-popup-backdrop position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-start"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                 >
                     <motion.div
                         ref={popupRef}
-                        className="bg-white rounded shadow"
-                        style={{
-                            width: "90%",
-                            maxWidth: "480px",
-                            position: "relative",
-                            padding: "1.5rem",
-                            marginBottom: "1.5rem",
-                        }}
+                        className="search-popup-card shadow"
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.8, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 260, damping: 20 }}
                     >
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h5 className="mb-0 text-black fw-bold">Search Users</h5>
-                            <button
-                                className="close-button"
-                                onClick={onClose}
-                                aria-label="Close"
-                            >
+                        <div className="search-popup-header">
+                            <h5>Search Users</h5>
+                            <button className="search-popup-close" onClick={onClose} aria-label="Close">
                                 <FaTimes />
                             </button>
                         </div>
 
-                        <div className="position-relative mb-3">
-                            <FaSearch
-                                style={{
-                                    position: "absolute",
-                                    top: "50%",
-                                    left: "12px",
-                                    transform: "translateY(-50%)",
-                                    color: "#888",
-                                    pointerEvents: "none",
-                                }}
-                            />
+                        <div className="search-popup-input-wrapper">
+                            <FaSearch className="search-popup-icon" />
                             <input
                                 type="text"
                                 placeholder="Enter username"
-                                className="form-control ps-5"
+                                className="search-popup-input"
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 autoFocus
-                                style={{
-                                    borderRadius: "0.375rem",
-                                    borderColor: "#ddd",
-                                    fontSize: "1rem",
-                                    height: "2.5rem",
-                                }}
                             />
                         </div>
 
-                        {loading &&
-                            <p className="text-black text-center fw-bold">
+                        {loading && (
+                            <p className="text-center fw-bold text-white">
                                 Searching<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
                             </p>
-                        }
+                        )}
 
                         {!loading && results.length > 0 && (
-                            <ul className="list-group">
-                                {results.map((user) => (
-                                    <li
-                                        key={user.id}
-                                        className="list-group-item list-group-item-action d-flex align-items-center"
-                                        style={{ cursor: "pointer" }}
-                                        onClick={() => handleUserClick(user.id)}
-                                    >
-                                        <img
-                                            src={user.profilePicture}
-                                            className="rounded-circle me-2 border border-primary border-2"
-                                            style={{ width: "40px", height: "40px", objectFit: "cover" }}
-                                        />
-                                        <div>
-                                            <div className="fw-bold text-black">{user.firstName} {user.lastName}</div>
-                                            <div className="text-muted">@{user.username}</div>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
+                            <AnimatePresence>
+                                <ul className="list-unstyled search-popup-list">
+                                    {results.map((user, index) => (
+                                        <motion.li
+                                            key={user.id}
+                                            className="search-popup-item d-flex align-items-center p-2 cursor-pointer"
+                                            onClick={() => handleUserClick(user.id)}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: 20 }}
+                                            transition={{ delay: index * 0.05, duration: 0.3 }}
+                                            layout
+                                        >
+                                            <img
+                                                src={user.profilePicture}
+                                                className="rounded-circle me-3 border border-primary border-2"
+                                                style={{ width: "40px", height: "40px", objectFit: "cover" }}
+                                            />
+                                            <div>
+                                                <div className="fw-bold text-white">{user.firstName} {user.lastName}</div>
+                                                <div className="text-white-50">@{user.username}</div>
+                                            </div>
+                                        </motion.li>
+                                    ))}
+                                </ul>
+                            </AnimatePresence>
                         )}
 
                         {!loading && query && results.length === 0 && (
-                            <p className="text-muted mt-2">No users found for "{query}"</p>
+                            <p className="text-white-50 mt-2 text-center">No users found for "{query}"</p>
                         )}
-
                     </motion.div>
                 </motion.div>
             )}
