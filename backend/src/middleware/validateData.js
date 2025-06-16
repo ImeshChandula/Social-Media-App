@@ -80,7 +80,7 @@ const validateAppeal = (req, res, next) => {
 // Joi validation middleware for MarketPlace
 const validateMarketPlace = (req, res, next) => {
     const schema = Joi.object({
-        author: Joi.string().required(),
+        author: Joi.string().optional(),
         category: Joi.string().required(),
         title: Joi.string().min(3).max(200).required(),
         description: Joi.string().allow('').max(2000).optional(),
