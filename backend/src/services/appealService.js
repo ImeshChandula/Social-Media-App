@@ -1,5 +1,5 @@
 const { connectFirebase } = require('../config/firebase');
-const { APPEAL_STATUS, APPEAL_PRIORITY} = require('../enums/appeal');
+const { APPEAL_STATUS } = require('../enums/appeal');
 const Appeal = require('../models/Appeal');
 
 const { db } = connectFirebase();
@@ -33,19 +33,44 @@ class AppealService {
         }
     }
 
-    async hasPendingAppeals(userId) {
+    async hasPendingAppeals(email) {
         try {
             const querySnapshot = await this.collection
-                .where('userId', '==', userId)
+                .where('email', '==', email)
                 .where('status', 'in', [APPEAL_STATUS.PENDING, APPEAL_STATUS.UNDER_REVIEW])
                 .get();
-            
-            if (querySnapshot.empty) {
-                return null;
-            }
 
-            return new Appeal(querySnapshot.id, querySnapshot.data());
-        } catch (error) {}
+            console.log('Found appeals:', querySnapshot.size);
+
+            // Return true if any pending/under review appeals exist
+            return !querySnapshot.empty;
+        } catch (error) {
+            console.error('Error checking pending appeals:', error);
+            throw error;
+        }
+    }
+
+    async findAll() {
+        try {
+            const docRef = await this.collection.orderBy('createdAt', 'desc').get();
+
+            if (docRef.empty) {
+                return [];
+            }
+            const data = docRef.docs.map(doc => new Appeal(doc.id, doc.data()));
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async deleteById(id) {
+        try {
+            await this.collection.doc(id).delete();
+            return true;
+        } catch (error) {
+            throw error;
+        }
     }
 }
 
