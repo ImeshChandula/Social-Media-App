@@ -8,6 +8,7 @@ class Appeal {
         // User Information
         this.username = appealData.username;
         this.email = appealData.email;
+        this.author = appealData.author;
         
         // Appeal Details
         this.appealReason = appealData.appealReason;

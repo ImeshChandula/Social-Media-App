@@ -8,5 +8,7 @@ const router = express.Router();
 // http://localhost:5000/api/appeal
 
 router.post('/create', validateAppeal, authenticateUser, appealController.createAppeal);
+router.get('/getAll', authenticateUser, authorizeRoles("super_admin"), appealController.getAllAppeals);
+router.delete('/delete/:id', authenticateUser, authorizeRoles("super_admin"), appealController.deleteAppeal);
 
 module.exports = router;
