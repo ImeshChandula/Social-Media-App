@@ -10,10 +10,14 @@ function SearchPopup({ show, onClose }) {
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const [allResults, setAllResults] = useState([]); // stores full results
+    const [visibleCount, setVisibleCount] = useState(20); // default show 20
 
     useEffect(() => {
         if (!query.trim()) {
+            setAllResults([]);
             setResults([]);
+            setVisibleCount(20);
             return;
         }
 
@@ -27,13 +31,22 @@ function SearchPopup({ show, onClose }) {
     const searchUsers = async (searchText) => {
         try {
             setLoading(true);
-            const res = await axiosInstance.get(`/users/search?q=${encodeURIComponent(searchText)}`);
-            setResults(res.data.users || []);
+            const res = await axiosInstance.get(`/users/search?q=${encodeURIComponent(searchText)}&limit=100`);
+            const all = res.data.users || [];
+            setAllResults(all);
+            setResults(all.slice(0, 20)); // Show first 20
+            setVisibleCount(20);
         } catch (err) {
             console.error("Search error:", err);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleShowMore = () => {
+        const newCount = visibleCount + 20;
+        setResults(allResults.slice(0, newCount));
+        setVisibleCount(newCount);
     };
 
     const handleUserClick = (id) => {
@@ -101,7 +114,7 @@ function SearchPopup({ show, onClose }) {
                                                 initial={{ opacity: 0, x: -20 }}
                                                 animate={{ opacity: 1, x: 0 }}
                                                 exit={{ opacity: 0, x: 20 }}
-                                                transition={{ delay: index * 0.05, duration: 0.3 }}
+                                                transition={{ delay: index * 0.02, duration: 0.2 }}
                                                 layout
                                             >
                                                 <img
@@ -116,6 +129,18 @@ function SearchPopup({ show, onClose }) {
                                             </motion.li>
                                         ))}
                                     </ul>
+
+                                    {visibleCount < allResults.length && (
+                                        <div className="text-center mt-2">
+                                            <a
+                                                role="button"
+                                                className="show-more-link text-decoration-none text-white-50 cursor-pointer"
+                                                onClick={handleShowMore}
+                                            >
+                                                Show More
+                                            </a>
+                                        </div>
+                                    )}
                                 </div>
                             </AnimatePresence>
                         )}
