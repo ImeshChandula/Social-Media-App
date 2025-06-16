@@ -85,3 +85,100 @@
     margin-top: 10px;
     margin-left: 40px;
 }
+
+.fb-comment-container {
+    margin-top: 20px;
+    font-family: "Segoe UI", sans-serif;
+}
+
+.fb-comment-input-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.fb-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+}
+
+.fb-comment-input {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    outline: none;
+}
+
+.fb-send-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #1877f2;
+}
+
+.fb-comment-box {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.fb-comment-content {
+    margin-left: 10px;
+    flex: 1;
+}
+
+.fb-comment-bubble {
+    background: #f0f2f5;
+    padding: 10px 14px;
+    border-radius: 18px;
+    max-width: 90%;
+}
+
+.fb-comment-bubble strong {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.fb-comment-bubble p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.fb-comment-actions {
+    margin-top: 5px;
+    font-size: 12px;
+    color: #65676b;
+    display: flex;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.fb-reply-box {
+    display: flex;
+    align-items: flex-start;
+    margin-left: 50px;
+    margin-top: 10px;
+}
+
+.fb-avatar-small {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+
+.fb-reply-input {
+    margin-left: 50px;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.fb-reply-input input {
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+}
