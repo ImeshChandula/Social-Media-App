@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaSearch, FaTimes } from "react-icons/fa";
 import { axiosInstance } from "../lib/axios";
 import { useNavigate } from "react-router-dom";
+import '../styles/SearchPopup.css'
 
 function SearchPopup({ show, onClose }) {
     const popupRef = useRef(null);
@@ -10,10 +11,14 @@ function SearchPopup({ show, onClose }) {
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const [allResults, setAllResults] = useState([]);
+    const [visibleCount, setVisibleCount] = useState(20); // default show 20
 
     useEffect(() => {
         if (!query.trim()) {
+            setAllResults([]);
             setResults([]);
+            setVisibleCount(20);
             return;
         }
 
@@ -27,8 +32,11 @@ function SearchPopup({ show, onClose }) {
     const searchUsers = async (searchText) => {
         try {
             setLoading(true);
-            const res = await axiosInstance.get(`/users/search?q=${encodeURIComponent(searchText)}&limit=10`);
-            setResults(res.data.users || []);
+            const res = await axiosInstance.get(`/users/search?q=${encodeURIComponent(searchText)}&limit=100`);
+            const all = res.data.users || [];
+            setAllResults(all);
+            setResults(all.slice(0, 20)); // Show first 20
+            setVisibleCount(20);
         } catch (err) {
             console.error("Search error:", err);
         } finally {
@@ -36,9 +44,21 @@ function SearchPopup({ show, onClose }) {
         }
     };
 
+    const handleShowMore = () => {
+        const newCount = visibleCount + 20;
+        setResults(allResults.slice(0, newCount));
+        setVisibleCount(newCount);
+    };
+
     const handleUserClick = (id) => {
         onClose();
         navigate(`/profile/${id}`);
+    };
+
+    const handleClose = () => {
+        setQuery("");
+        setResults([]);
+        onClose();
     };
 
     return (
@@ -60,7 +80,7 @@ function SearchPopup({ show, onClose }) {
                     >
                         <div className="search-popup-header">
                             <h5>Search Users</h5>
-                            <button className="search-popup-close" onClick={onClose} aria-label="Close">
+                            <button className="search-popup-close" onClick={handleClose} aria-label="Close">
                                 <FaTimes />
                             </button>
                         </div>
@@ -85,36 +105,51 @@ function SearchPopup({ show, onClose }) {
 
                         {!loading && results.length > 0 && (
                             <AnimatePresence>
-                                <ul className="list-unstyled search-popup-list">
-                                    {results.map((user, index) => (
-                                        <motion.li
-                                            key={user.id}
-                                            className="search-popup-item d-flex align-items-center p-2 cursor-pointer"
-                                            onClick={() => handleUserClick(user.id)}
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            exit={{ opacity: 0, x: 20 }}
-                                            transition={{ delay: index * 0.05, duration: 0.3 }}
-                                            layout
-                                        >
-                                            <img
-                                                src={user.profilePicture}
-                                                className="rounded-circle me-3 border border-primary border-2"
-                                                style={{ width: "40px", height: "40px", objectFit: "cover" }}
-                                            />
-                                            <div>
-                                                <div className="fw-bold text-white">{user.firstName} {user.lastName}</div>
-                                                <div className="text-white-50">@{user.username}</div>
-                                            </div>
-                                        </motion.li>
-                                    ))}
-                                </ul>
+                                <div className="overflow-auto" style={{ maxHeight: "300px" }}>
+                                    <ul className="list-unstyled search-popup-list mb-0">
+                                        {results.map((user, index) => (
+                                            <motion.li
+                                                key={user.id}
+                                                className="search-popup-item d-flex align-items-center p-2 cursor-pointer"
+                                                onClick={() => handleUserClick(user.id)}
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, x: 20 }}
+                                                transition={{ delay: index * 0.02, duration: 0.2 }}
+                                                layout
+                                            >
+                                                <img
+                                                    src={user.profilePicture}
+                                                    className="rounded-circle me-3 border border-primary border-2"
+                                                    style={{ width: "40px", height: "40px", objectFit: "cover" }}
+                                                />
+                                                <div>
+                                                    <div className="fw-bold text-white">{user.firstName} {user.lastName}</div>
+                                                    <div className="text-white-50">@{user.username}</div>
+                                                </div>
+                                            </motion.li>
+                                        ))}
+                                    </ul>
+
+                                    {visibleCount < allResults.length && (
+                                        <div className="text-center mt-2">
+                                            <a
+                                                role="button"
+                                                className="show-more-link text-decoration-none text-white-50 cursor-pointer"
+                                                onClick={handleShowMore}
+                                            >
+                                                Show More
+                                            </a>
+                                        </div>
+                                    )}
+                                </div>
                             </AnimatePresence>
                         )}
 
                         {!loading && query && results.length === 0 && (
                             <p className="text-white-50 mt-2 text-center">No users found for "{query}"</p>
                         )}
+
                     </motion.div>
                 </motion.div>
             )}
