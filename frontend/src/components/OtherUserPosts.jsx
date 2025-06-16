@@ -51,12 +51,13 @@ const OtherUserPosts = ({ userId, type = "all" }) => {
     if (!posts.length) return <div className="text-white text-center my-5 fs-5">No posts found</div>;
 
     return (
-        <div className="container">
+        <div className="my-3">
             {posts.map((post, index) => (
                 <PostCard
                     key={post._id || post.id || index}
                     post={post}
                     isUserPost={false}
+                    disableNavigation={true}
                     onLikeUpdate={updatePostLike}
                 />
             ))}

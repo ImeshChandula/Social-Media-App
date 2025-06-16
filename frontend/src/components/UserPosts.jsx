@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
-// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import PostCard from "./PostCard";
 
@@ -57,7 +56,7 @@ const UserPosts = () => {
     if (posts.length === 0) return <p className="text-center text-white">No posts to show.</p>;
 
     return (
-        <div className="container my-3">
+        <div className="my-3">
             {posts.map((post, index) => (
                 <motion.div
                     key={post._id || index}
@@ -70,6 +69,7 @@ const UserPosts = () => {
                         isUserPost={true}
                         onLikeUpdate={handleLikeUpdate}
                         onDeletePost={handleDeletePost}
+                        disableNavigation={true}
                     />
                 </motion.div>
             ))}
