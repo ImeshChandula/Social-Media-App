@@ -31,9 +31,9 @@ const createAppeal = async (req, res) => {
             username, 
             email, 
             appealReason, 
-            additionalInfo, 
-            incidentDate, 
-            contactMethod, 
+            additionalInfo: additionalInfo || null, 
+            incidentDate: incidentDate || null, 
+            contactMethod: contactMethod || "email", 
             appealNumber: randomNumber,
         }
 

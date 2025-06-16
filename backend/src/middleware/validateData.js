@@ -63,7 +63,7 @@ const validateAppeal = (req, res, next) => {
     email: Joi.string().email().required(),
     
     appealReason: Joi.string().min(10).max(1000).required(),
-    additionalInfo: Joi.string().allow('').max(2000).optional(),
+    additionalInfo: Joi.string().allow('').allow(null).max(2000).optional(),
     
     incidentDate: Joi.date().iso().allow(null),
     contactMethod: Joi.string().valid('email', 'phone').default('email')

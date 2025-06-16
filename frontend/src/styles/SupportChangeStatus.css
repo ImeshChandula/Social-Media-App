@@ -4,7 +4,7 @@
   background: linear-gradient(135deg, #667eea20, #764ba210);
   border-radius: 20px;
   padding: 2.5rem;
-  margin: 2rem 0;
+  margin: 2rem;
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -237,7 +237,6 @@
   .reactivation-container {
     padding: 2rem 1.5rem;
     border-radius: 16px;
-    margin: 1.5rem 0;
   }
 
   .reactivation-icon {

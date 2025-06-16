@@ -175,7 +175,7 @@
 }
 
 /* Submit Button */
-.submit-button {
+.ban-submit-button {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
   color: white !important;
   border: none !important;
@@ -192,27 +192,27 @@
   outline: none !important;
 }
 
-.submit-button:hover:not(.disabled):not(.loading) {
+.ban-submit-button:hover:not(.disabled):not(.loading) {
   transform: translateY(-2px) !important;
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3) !important;
 }
 
-.submit-button:active:not(.disabled):not(.loading) {
+.ban-submit-button:active:not(.disabled):not(.loading) {
   transform: translateY(0) !important;
 }
 
-.submit-button.disabled {
+.ban-submit-button.disabled {
   opacity: 0.6 !important;
   cursor: not-allowed !important;
   background: #cbd5e0 !important;
 }
 
-.submit-button.loading {
+.ban-submit-button.loading {
   cursor: wait !important;
 }
 
 /* Loading Spinner */
-.loading-spinner {
+.ban-loading-spinner {
   width: 20px !important;
   height: 20px !important;
   border: 2px solid rgba(255, 255, 255, 0.3) !important;
@@ -227,7 +227,7 @@
 }
 
 /* Success/Error Messages */
-.success-message, .error-message {
+.ban-success-message, .ban-error-message {
   text-align: center !important;
   padding: 32px !important;
   border-radius: 16px !important;
@@ -235,17 +235,17 @@
   animation: slideIn 0.5s ease-out !important;
 }
 
-.success-message {
+.ban-success-message {
   background: linear-gradient(135deg, #48bb78, #38a169) !important;
   color: white !important;
 }
 
-.error-message {
+.ban-error-message {
   background: linear-gradient(135deg, #f56565, #e53e3e) !important;
   color: white !important;
 }
 
-.success-icon, .error-icon {
+.ban-success-icon, .ban-error-icon {
   width: 60px !important;
   height: 60px !important;
   border-radius: 50% !important;
@@ -258,13 +258,13 @@
   font-weight: bold !important;
 }
 
-.success-message h3, .error-message h3 {
+.ban-success-message h3, .ban-error-message h3 {
   margin: 0 0 12px 0 !important;
   font-size: 20px !important;
   font-weight: 600 !important;
 }
 
-.success-message p, .error-message p {
+.ban-success-message p, .ban-error-message p {
   margin: 0 !important;
   font-size: 14px !important;
   opacity: 0.9 !important;

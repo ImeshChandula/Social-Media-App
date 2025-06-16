@@ -11,7 +11,7 @@ class Appeal {
         
         // Appeal Details
         this.appealReason = appealData.appealReason;
-        this.additionalInfo = appealData.additionalInfo || '';
+        this.additionalInfo = appealData.additionalInfo || null;
         this.incidentDate = appealData.incidentDate || null;
         this.contactMethod = appealData.contactMethod || 'email';
         

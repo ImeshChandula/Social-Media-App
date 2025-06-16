@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore'; 
-//import { axiosInstance } from "../lib/axios";
+import { axiosInstance } from "../lib/axios";
 import { AlertCircle, Send, User, Mail, MessageSquare, Calendar } from 'lucide-react';
 import '../styles/SupportBanned.css';
 
 const SupportBanned = () => {
   const [formData, setFormData] = useState({
-    userId: '',
+    username: '',
     email: '',
     appealReason: '',
     incidentDate: '',
@@ -18,6 +18,7 @@ const SupportBanned = () => {
   const { logout } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [errMsg, setErrMsg] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -32,24 +33,28 @@ const SupportBanned = () => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Here you would integrate with your Firebase backend
+      if (formData.incidentDate === undefined) {
+        formData.incidentDate = null;
+      }
+      const res = await axiosInstance.post('/appeal/create', formData);
       console.log('Ban appeal submitted:', formData);
       
-      setSubmitStatus('success');
-      setFormData({
-        userId: '',
-        email: '',
-        appealReason: '',
-        incidentDate: '',
-        additionalInfo: '',
-        contactMethod: 'email'
-      });
+      if (res.data.success) {
+        setSubmitStatus('success');
+        toast.success(res.data.message);
+        setFormData({
+          username: '',
+          email: '',
+          appealReason: '',
+          incidentDate: '',
+          additionalInfo: '',
+          contactMethod: 'email'
+        });
+      }
     } catch (error) {
       setSubmitStatus('error');
-      toast.error(error);
+      setErrMsg(error.response.data?.message || "There was an error submitting your appeal. Please try again.");
+      toast.error(error.response.data?.message || "Server error");
     } finally {
       setIsSubmitting(false);
     }
@@ -63,7 +68,7 @@ const SupportBanned = () => {
     }
   };
 
-  const isFormValid = formData.userId && formData.email && formData.appealReason;
+  const isFormValid = formData.username && formData.email && formData.appealReason && formData.appealReason.length >= 10;
 
 
   return (
@@ -80,18 +85,18 @@ const SupportBanned = () => {
         </div>
 
         {submitStatus === 'success' && (
-          <div className="success-message">
-            <div className="success-icon">✓</div>
+          <div className="ban-success-message">
+            <div className="ban-success-icon">✓</div>
             <h3>Appeal Submitted Successfully!</h3>
             <p>Your ban appeal has been sent to our admin team. You'll receive a response within 3-5 business days.</p>
           </div>
         )}
 
         {submitStatus === 'error' && (
-          <div className="error-message">
-            <div className="error-icon">✗</div>
+          <div className="ban-error-message">
+            <div className="ban-error-icon">✗</div>
             <h3>Submission Failed</h3>
-            <p>There was an error submitting your appeal. Please try again.</p>
+            <p>{errMsg}</p>
           </div>
         )}
 
@@ -100,15 +105,15 @@ const SupportBanned = () => {
             <div className="ban-form-group">
               <label className="ban-form-label">
                 <User size={16} />
-                User ID / Username
+                Username
               </label>
               <input
                 type="text"
-                name="userId"
-                value={formData.userId}
+                name="username"
+                value={formData.username}
                 onChange={handleInputChange}
                 className="ban-form-input"
-                placeholder="Enter your user ID or username"
+                placeholder="Enter your username"
                 required
               />
             </div>
@@ -205,12 +210,12 @@ const SupportBanned = () => {
 
             <button
               type="button"
-              className={`submit-button ${!isFormValid ? 'disabled' : ''} ${isSubmitting ? 'loading' : ''}`}
+              className={`ban-submit-button ${!isFormValid ? 'disabled' : ''} ${isSubmitting ? 'loading' : ''}`}
               disabled={!isFormValid || isSubmitting}
               onClick={handleSubmit}
             >
               {isSubmitting ? (
-                <div className="loading-spinner"></div>
+                <div className="ban-loading-spinner"></div>
               ) : (
                 <>
                   <Send size={16} />
