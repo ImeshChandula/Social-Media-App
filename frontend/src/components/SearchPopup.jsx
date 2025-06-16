@@ -113,7 +113,7 @@ function SearchPopup({ show, onClose }) {
                         )}
 
                         {!loading && query && results.length === 0 && (
-                            <p className="text-muted mt-2">No users found for "{query}"</p>
+                            <p className="text-white-50 mt-2 text-center">No users found for "{query}"</p>
                         )}
                     </motion.div>
                 </motion.div>
