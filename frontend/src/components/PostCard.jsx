@@ -1,22 +1,23 @@
-// PostCard.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCommentAlt, FaShare } from "react-icons/fa";
+import { FaCommentAlt, FaShare, FaEye,FaChevronRight  } from "react-icons/fa";
+import LikesPopup from "./LikesPopup";
 import PostDropdown from "./PostDropdown";
 import PostLikeButton from "./PostLikeButton";
 import PostComment from "./PostComment";
 
 const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
   const navigate = useNavigate();
-
   const postId = post._id || post.id;
+
   const mediaArray = Array.isArray(post.media)
     ? post.media
     : post.media
-    ? [post.media]
-    : [];
+      ? [post.media]
+      : [];
 
   const [showComments, setShowComments] = useState(false);
+  const [showLikesPopup, setShowLikesPopup] = useState(false);
 
   const handleNavigateToProfile = () => {
     if (post.author?.id) {
@@ -58,7 +59,11 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
     <div className="card bg-white border-secondary text-black mb-4 shadow-sm rounded-4">
       {/* Header */}
       <div className="card-header bg-white d-flex align-items-center justify-content-between p-3 rounded-top-4 border-bottom border-white-50">
-        <div className="d-flex align-items-center gap-3" onClick={handleNavigateToProfile} style={{ cursor: "pointer" }}>
+        <div
+          className="d-flex align-items-center gap-3"
+          onClick={handleNavigateToProfile}
+          style={{ cursor: "pointer" }}
+        >
           <img
             src={post.author?.profilePicture}
             alt="Profile"
@@ -70,7 +75,9 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
               {`${post.author?.firstName || ""} ${post.author?.lastName || ""}`}
             </h6>
             <small className="text-dark">
-              {post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}
+              {post.createdAt
+                ? new Date(post.createdAt).toLocaleString()
+                : ""}
             </small>
           </div>
         </div>
@@ -94,24 +101,30 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
 
       {/* Footer */}
       <div className="card-footer bg-white d-flex justify-content-between text-black small rounded-bottom-4 border-top border-white-50">
-        <div className="d-flex align-items-center gap-1">
+        <div className="d-flex align-items-center gap-2">
           <PostLikeButton
             postId={postId}
             initialIsLiked={post.isLiked}
             initialLikeCount={post.likeCount}
             onLikeUpdate={onLikeUpdate}
           />
+          <FaChevronRight 
+            className="text-primary"
+            title="View Likes"
+            onClick={() => setShowLikesPopup(true)}
+            style={{ cursor: "pointer" }}
+          />
         </div>
+
         <div
-          className="d-flex align-items-center gap-1 cursor-pointer"
-          onClick={() => {
-            console.log("Toggling comments");
-            setShowComments((prev) => !prev);
-          }}
+          className="d-flex align-items-center gap-1"
+          onClick={() => setShowComments((prev) => !prev)}
+          style={{ cursor: "pointer" }}
         >
           <FaCommentAlt />
           <span>{post.comments?.length || 0} Comments</span>
         </div>
+
         <div className="d-flex align-items-center gap-1">
           <FaShare />
           <span>{post.shares?.length || 0} Shares</span>
@@ -119,6 +132,13 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
       </div>
 
       {showComments && <PostComment postId={postId} />}
+
+      {/* Likes Popup */}
+      <LikesPopup
+        show={showLikesPopup}
+        onClose={() => setShowLikesPopup(false)}
+        likes={post.likedBy || []}
+      />
     </div>
   );
 };
