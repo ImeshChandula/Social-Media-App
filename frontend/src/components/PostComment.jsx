@@ -106,8 +106,8 @@ const PostComment = ({ postId }) => {
           <div key={comment._id} className="mb-3 p-2 bg-white rounded shadow-sm">
             <div className="d-flex align-items-start">
               <img
-                src={comment.author?.profilePicture || "/default-profile.png"}
-                alt="User"
+                src={comment.user?.profilePicture}
+                alt="Profile"
                 className="me-2 rounded-circle"
                 style={{ width: "40px", height: "40px", objectFit: "cover" }}
               />
@@ -115,7 +115,7 @@ const PostComment = ({ postId }) => {
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
                     <strong>
-                      {comment.author?.firstName || "User"} {comment.author?.lastName || ""}
+                      {comment.user?.firstName || "User"} {comment.author?.lastName || ""}
                     </strong>
                     {editCommentId === comment._id ? (
                       <>
