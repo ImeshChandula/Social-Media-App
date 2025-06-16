@@ -1,8 +1,11 @@
 import React from "react";
 import { FaTimes } from "react-icons/fa";
 import { Modal, Spinner } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 const LikesPopup = ({ show, onClose, likes = [], loading = false }) => {
+    const navigate = useNavigate();
+
     return (
         <Modal
             show={show}
@@ -34,7 +37,7 @@ const LikesPopup = ({ show, onClose, likes = [], loading = false }) => {
                             <li
                                 key={idx}
                                 className="likes-popup-item d-flex align-items-center py-2 px-3 mb-2 rounded cursor-pointer"
-                                onClick={() => window.location.href = `/profile/${user.id}`}
+                                onClick={() => navigate(`/profile/${user.id}`)}
                             >
                                 <img
                                     src={user.profilePicture}
