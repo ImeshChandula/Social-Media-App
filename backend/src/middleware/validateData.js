@@ -77,4 +77,56 @@ const validateAppeal = (req, res, next) => {
 };
 
 
-module.exports = {validateUserData, validateMails, validateAppeal};
+// Joi validation middleware for MarketPlace
+const validateMarketPlace = (req, res, next) => {
+    const schema = Joi.object({
+        author: Joi.string().required(),
+        category: Joi.string().required(),
+        title: Joi.string().min(3).max(200).required(),
+        description: Joi.string().allow('').max(2000).optional(),
+        price: Joi.number().min(0).required(),
+        currency: Joi.string().length(3).uppercase().required(),
+        contactDetails: Joi.object({
+            phone: Joi.string().optional(),
+            email: Joi.string().email().optional(),
+            whatsapp: Joi.string().optional()
+        }).or('phone', 'email', 'whatsapp').required(),
+        location: Joi.object({
+            city: Joi.string().allow('').optional(),
+            state: Joi.string().allow('').optional(),
+            country: Joi.string().allow('').optional(),
+            postalCode: Joi.string().allow('').optional()
+        }).optional(),
+        conditionType: Joi.string().valid('new', 'like_new', 'good', 'fair', 'poor').default('new'),
+        images: Joi.alternatives().try(
+              Joi.string().uri(),                         // media link
+              Joi.string().pattern(/^data:.*;base64,.*/), // base64 image/video
+              Joi.array().items(
+                Joi.alternatives().try(
+                  Joi.string().uri(),                         // media URL in array
+                  Joi.string().pattern(/^data:.*;base64,.*/), // base64 in array
+                  Joi.object({                                // file object from multer
+                    path: Joi.string().required()
+                  })
+                )
+              ),
+              Joi.valid(null)
+            ).optional(),
+        quantity: Joi.number().integer().min(1).default(1),
+        isNegotiable: Joi.boolean().default(false),
+        isAvailable: Joi.boolean().default(true),
+        isAccept: Joi.boolean().default(false),
+        status: Joi.string().valid('active', 'sold', 'expired', 'removed', 'pending').default('active'),
+        expiresAt: Joi.date().allow(null).optional(),
+        tags: Joi.array().items(Joi.string().max(50)).max(20).optional()
+    });
+
+    const { error } = schema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+    }
+    next();
+};
+
+
+module.exports = {validateUserData, validateMails, validateAppeal, validateMarketPlace};
