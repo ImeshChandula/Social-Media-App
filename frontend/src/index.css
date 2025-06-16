@@ -284,6 +284,5 @@ body,
 .like-btn {
     border: none;
     background: transparent;
-    font-weight: bold;
-    font-size: 1rem;
+    font-size: 0.9rem;
 }

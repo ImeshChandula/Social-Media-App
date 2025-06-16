@@ -116,7 +116,7 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
       </div>
 
       {/* Footer */}
-      <div className="card-footer bg-white d-flex justify-content-between text-black small rounded-bottom-4 border-top border-white-50">
+      <div className="card-footer px-4 bg-white d-flex justify-content-between text-black small rounded-bottom-4 border-top border-white-50">
         <div className="d-flex align-items-center gap-1">
           <PostLikeButton
             postId={postId}
@@ -128,14 +128,14 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
             className="text-black"
             title="View Likes"
             onClick={handleOpenLikesPopup}
-            style={{ cursor: "pointer", fontSize: "1rem" }}
+            style={{ cursor: "pointer", fontSize: "0.9rem" }}
           />
         </div>
 
         <div
           className="d-flex align-items-center gap-1"
           onClick={() => setShowComments((prev) => !prev)}
-          style={{ cursor: "pointer" }}
+          style={{ cursor: "pointer", fontSize:"0.9rem" }}
         >
           <FaCommentAlt />
           <span>
@@ -143,7 +143,10 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
           </span>
         </div>
 
-        <div className="d-flex align-items-center gap-1">
+        <div 
+        className="d-flex align-items-center gap-1"
+        style={{ cursor: "pointer", fontSize:"0.9rem" }}
+        >
           <FaShare />
           <span>
             {post.shares?.length || 0}
