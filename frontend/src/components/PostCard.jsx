@@ -14,8 +14,8 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
   const mediaArray = Array.isArray(post.media)
     ? post.media
     : post.media
-    ? [post.media]
-    : [];
+      ? [post.media]
+      : [];
 
   const [showComments, setShowComments] = useState(false);
   const [showLikesPopup, setShowLikesPopup] = useState(false);
@@ -117,7 +117,7 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
 
       {/* Footer */}
       <div className="card-footer bg-white d-flex justify-content-between text-black small rounded-bottom-4 border-top border-white-50">
-        <div className="d-flex align-items-center gap-2">
+        <div className="d-flex align-items-center gap-1">
           <PostLikeButton
             postId={postId}
             initialIsLiked={post.isLiked}
@@ -125,10 +125,10 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
             onLikeUpdate={onLikeUpdate}
           />
           <FaChevronRight
-            className="text-primary"
+            className="text-black"
             title="View Likes"
             onClick={handleOpenLikesPopup}
-            style={{ cursor: "pointer" }}
+            style={{ cursor: "pointer", fontSize: "1rem" }}
           />
         </div>
 
@@ -138,12 +138,16 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost }) => {
           style={{ cursor: "pointer" }}
         >
           <FaCommentAlt />
-          <span>{post.comments?.length || 0} Comments</span>
+          <span>
+            {post.comments?.length || 0}
+          </span>
         </div>
 
         <div className="d-flex align-items-center gap-1">
           <FaShare />
-          <span>{post.shares?.length || 0} Shares</span>
+          <span>
+            {post.shares?.length || 0}
+          </span>
         </div>
       </div>
 

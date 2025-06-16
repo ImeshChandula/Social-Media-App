@@ -1,8 +1,8 @@
-import React, { useState, useEffect  } from "react";
+import React, { useState, useEffect } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { axiosInstance } from "../lib/axios";
 
-const PostLikeButton = ({ postId, initialIsLiked = false, initialLikeCount = 0, onLikeUpdate  }) => {
+const PostLikeButton = ({ postId, initialIsLiked = false, initialLikeCount = 0, onLikeUpdate }) => {
     const [isLiked, setIsLiked] = useState(initialIsLiked);
     const [likeCount, setLikeCount] = useState(initialLikeCount);
     const [loading, setLoading] = useState(false);
@@ -24,10 +24,10 @@ const PostLikeButton = ({ postId, initialIsLiked = false, initialLikeCount = 0, 
         // Optimistic update - update UI immediately
         const newIsLiked = !isLiked;
         const newLikeCount = newIsLiked ? likeCount + 1 : likeCount - 1;
-        
+
         setIsLiked(newIsLiked);
         setLikeCount(newLikeCount);
-        
+
         // Update parent component immediately
         if (onLikeUpdate) {
             onLikeUpdate(postId, newIsLiked, newLikeCount);
@@ -38,7 +38,7 @@ const PostLikeButton = ({ postId, initialIsLiked = false, initialLikeCount = 0, 
         try {
             const res = await axiosInstance.post(`/likes/toPost/${postId}`);
             const { isLiked: serverIsLiked, likeCount: serverLikeCount } = res.data.data;
-            
+
             // Update with server response (in case our optimistic update was wrong)
             setIsLiked(serverIsLiked);
             setLikeCount(serverLikeCount);
@@ -48,11 +48,11 @@ const PostLikeButton = ({ postId, initialIsLiked = false, initialLikeCount = 0, 
             }
         } catch (error) {
             console.error("Error toggling like:", error.response?.data || error.message);
-            
+
             // Revert optimistic update on error
             setIsLiked(currentIsLiked);
             setLikeCount(currentLikeCount);
-            
+
             if (onLikeUpdate) {
                 onLikeUpdate(postId, isLiked, likeCount);
             }
@@ -65,7 +65,7 @@ const PostLikeButton = ({ postId, initialIsLiked = false, initialLikeCount = 0, 
         <button
             onClick={toggleLike}
             disabled={loading}
-            className="btn btn-link text-danger d-flex align-items-center gap-1 p-0"
+            className="like-btn text-danger d-flex align-items-center gap-1 p-0"
         >
             {isLiked ? <FaHeart size={18} /> : <FaRegHeart size={18} />}
             <span className="text-black">{likeCount}</span>

@@ -263,3 +263,27 @@ body,
 .likes-popup-close:hover {
     color: #ff0000;
 }
+
+/* dropdown-btn */
+.dropdown-btn {
+    border: none;
+    background-color: transparent;
+    color: #000000;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.dropdown-btn:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+}
+
+/* Like Button */
+.like-btn {
+    border: none;
+    background: transparent;
+    font-weight: bold;
+    font-size: 1rem;
+}

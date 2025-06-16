@@ -24,7 +24,7 @@ const PostDropdown = ({ postId, onDelete }) => {
 
     return (
         <div className="position-relative" ref={dropdownRef}>
-            <button className="btn btn-outline-dark" onClick={() => setShowDropdown((prev) => !prev)} type="button">
+            <button className="dropdown-btn" onClick={() => setShowDropdown((prev) => !prev)} type="button">
                 <BsThreeDotsVertical size={24} />
             </button>
 
