@@ -227,7 +227,7 @@ const SupportBanned = () => {
             </div>
 
             <button 
-              className="btn btn-secondary"
+              className="ban-btn ban-btn-secondary"
               onClick={handleLogout}
             >
               <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">

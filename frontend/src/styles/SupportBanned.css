@@ -289,6 +289,61 @@
   color: #667eea !important;
 }
 
+.ban-btn {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.ban-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.ban-btn:hover::before {
+  left: 100%;
+}
+
+.ban-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ban-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.ban-btn-secondary {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
+}
+
+.ban-btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(231, 76, 60, 0.4);
+}
+
 /* Mobile Responsive Design */
 @media (max-width: 768px) {
   .ban-appeal-container {
@@ -324,6 +379,11 @@
     flex-direction: column !important;
     gap: 12px !important;
   }
+
+  .ban-btn {
+    width: 100%;
+    padding: 1rem 1.5rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -351,6 +411,11 @@
     width: 50px !important;
     height: 50px !important;
     font-size: 20px !important;
+  }
+
+  .ban-btn {
+    font-size: 0.95rem;
+    padding: 0.9rem 1.2rem;
   }
 }
 
