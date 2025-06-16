@@ -8,17 +8,14 @@ const LikesPopup = ({ show, onClose, likes = [], loading = false }) => {
             show={show}
             onHide={onClose}
             centered
-            contentClassName="bg-white rounded shadow likes-popup-card"
-            backdropClassName="bg-dark bg-opacity-50"
-            aria-labelledby="likes-popup-title"
         >
-            <div className="d-flex justify-content-between align-items-center border-bottom px-4 py-3">
-                <h5 id="likes-popup-title" className="mb-0 fw-bold text-primary">
+            <div className="d-flex justify-content-between align-items-center px-4 py-3 border-bottom">
+                <h5 className="mb-0 fw-bold text-black">
                     Liked by
                 </h5>
                 <button
                     type="button"
-                    className="btn btn-sm btn-outline-secondary p-1"
+                    className="likes-popup-close"
                     onClick={onClose}
                     aria-label="Close"
                 >
@@ -26,42 +23,33 @@ const LikesPopup = ({ show, onClose, likes = [], loading = false }) => {
                 </button>
             </div>
 
-            <div
-                className="likes-popup-body px-4 py-3"
-                style={{ maxHeight: "320px", overflowY: "auto" }}
-            >
+            <div className="p-2">
                 {loading ? (
-                    <div className="d-flex justify-content-center py-5">
-                        <Spinner animation="border" variant="primary" />
+                    <div className="d-flex justify-content-center py-4">
+                        <Spinner animation="border" variant="theme-primary" />
                     </div>
                 ) : likes.length > 0 ? (
-                    <ul className="list-unstyled mb-0">
+                    <ul className="mb-0 p-0">
                         {likes.map((user, idx) => (
                             <li
                                 key={idx}
-                                className="d-flex align-items-center py-2 px-3 mb-2 rounded hover-bg-light cursor-pointer"
-                                style={{ transition: "background-color 0.2s" }}
-                                onMouseEnter={e =>
-                                    (e.currentTarget.style.backgroundColor = "#f8f9fa")
-                                }
-                                onMouseLeave={e =>
-                                    (e.currentTarget.style.backgroundColor = "transparent")
-                                }
+                                className="likes-popup-item d-flex align-items-center py-2 px-3 mb-2 rounded cursor-pointer"
+                                onClick={() => window.location.href = `/profile/${user.id}`}
                             >
                                 <img
                                     src={user.profilePicture}
                                     alt={user.username}
-                                    className="rounded-circle border border-2 border-primary me-3"
+                                    className="rounded-circle border border-2 border-theme-primary me-3"
                                     style={{ width: 44, height: 44, objectFit: "cover" }}
                                 />
                                 <div>
-                                    <div className="fw-semibold text-dark">{user.username}</div>
+                                    <div className="fw-semibold text-black">{user.username}</div>
                                 </div>
                             </li>
                         ))}
                     </ul>
                 ) : (
-                    <p className="text-center text-muted mb-0">No likes yet.</p>
+                    <p className="text-center text-muted py-4">No likes yet.</p>
                 )}
             </div>
         </Modal>

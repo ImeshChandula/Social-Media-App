@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaSearch, FaTimes } from "react-icons/fa";
 import { axiosInstance } from "../lib/axios";
 import { useNavigate } from "react-router-dom";
+import '../styles/SearchPopup.css'
 
 function SearchPopup({ show, onClose }) {
     const popupRef = useRef(null);
@@ -10,7 +11,7 @@ function SearchPopup({ show, onClose }) {
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const [allResults, setAllResults] = useState([]); // stores full results
+    const [allResults, setAllResults] = useState([]);
     const [visibleCount, setVisibleCount] = useState(20); // default show 20
 
     useEffect(() => {
