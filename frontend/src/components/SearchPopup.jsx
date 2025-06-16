@@ -65,12 +65,12 @@ function SearchPopup({ show, onClose }) {
                             </button>
                         </div>
 
-                        <div className="position-relative mb-3">
+                        <div className="search-popup-input-wrapper">
                             <FaSearch className="search-popup-icon" />
                             <input
                                 type="text"
                                 placeholder="Enter username"
-                                className="form-control search-popup-input"
+                                className="search-popup-input"
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 autoFocus
@@ -89,7 +89,7 @@ function SearchPopup({ show, onClose }) {
                                     {results.map((user, index) => (
                                         <motion.li
                                             key={user.id}
-                                            className="search-popup-item d-flex align-items-center p-2"
+                                            className="search-popup-item d-flex align-items-center p-2 cursor-pointer"
                                             onClick={() => handleUserClick(user.id)}
                                             initial={{ opacity: 0, x: -20 }}
                                             animate={{ opacity: 1, x: 0 }}
@@ -104,7 +104,7 @@ function SearchPopup({ show, onClose }) {
                                             />
                                             <div>
                                                 <div className="fw-bold text-white">{user.firstName} {user.lastName}</div>
-                                                <div className="text-muted">@{user.username}</div>
+                                                <div className="text-white-50">@{user.username}</div>
                                             </div>
                                         </motion.li>
                                     ))}
