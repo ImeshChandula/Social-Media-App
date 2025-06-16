@@ -14,6 +14,9 @@ import {
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { MdContactSupport } from "react-icons/md";
 import { FaShoppingBag } from "react-icons/fa";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
 import useAuthStore from "../store/authStore";
 import SearchPopup from "./SearchPopup";
 
@@ -22,8 +25,9 @@ function Sidebar() {
   const [showMore, setShowMore] = useState(false);
   const [showSearchPopup, setShowSearchPopup] = useState(false);
   const moreRef = useRef(null);
-
   const navigate = useNavigate();
+
+  const MySwal = withReactContent(Swal);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -36,6 +40,37 @@ function Sidebar() {
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMore]);
+
+  const handleLogout = async () => {
+    const result = await MySwal.fire({
+      title: "Are you sure?",
+      text: "You will be logged out from your account.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Logout",
+      cancelButtonText: "Cancel",
+      background: "#1f2937",
+      color: "#f9fafb",
+      customClass: {
+        popup: "swal2-popup-custom",
+        title: "swal2-title-custom",
+        htmlContainer: "swal2-html-custom",
+        confirmButton: "swal2-confirm-custom",
+        cancelButton: "swal2-cancel-custom",
+      },
+      heightAuto: false,
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   const navItems = [
     { name: "Home", path: "/", icon: <FaHome /> },
@@ -52,14 +87,6 @@ function Sidebar() {
     { name: "Contact us", path: "/contact", icon: <MdContactSupport /> },
     { name: "Market Place", path: "/market", icon: <FaShoppingBag /> },
   ];
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
 
   return (
     <>
