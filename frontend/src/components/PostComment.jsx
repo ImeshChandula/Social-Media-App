@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { axiosInstance } from "../lib/axios";
+import { FaPaperPlane } from "react-icons/fa";
 import "../styles/PostComment.css";
 
 const PostComment = ({ postId }) => {
@@ -79,16 +80,22 @@ const PostComment = ({ postId }) => {
 
   return (
     <div className="p-3 border-top bg-light text-dark" style={{ maxHeight: "400px", overflowY: "auto" }}>
-      <div className="mb-3">
+      <div className="mb-3 d-flex align-items-center">
         <input
           type="text"
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
-          className="form-control"
+          className="form-control me-2"
           placeholder="Write a comment..."
+          onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
         />
-        <button className="btn btn-primary mt-2" onClick={handleAddComment}>
-          Post Comment
+        <button
+          className="bg-primary text-white border-0 d-flex align-items-center justify-content-center"
+          style={{ width: "40px", height: "40px", borderRadius: "50%" }}
+          onClick={handleAddComment}
+          title="Post"
+        >
+          <FaPaperPlane size={16} />
         </button>
       </div>
 
