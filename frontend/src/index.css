@@ -247,30 +247,106 @@ body,
     font-size: 1.1rem;
 }
 
-/* popup search bar close button */
-.close-button {
-    background-color: #ff4d4f;
-    border: none;
-    border-radius: 5px;
-    color: white;
-    width: 30px;
-    height: 30px;
+/* SearchPopup.css */
+
+.search-popup-backdrop {
+    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+    z-index: 2000;
+    padding-top: 3rem;
+    overflow-y: auto;
+}
+
+.search-popup-card {
+    background-color: #1e1e2f;
+    color: #f1f1f1;
+    width: 90%;
+    max-width: 480px;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.search-popup-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    cursor: pointer;
+    margin-bottom: 1rem;
+}
+
+.search-popup-header h5 {
+    margin: 0;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.search-popup-close {
     font-size: 1.25rem;
-    line-height: 1;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    background: none;
+    border: none;
+    color: #f1f1f1;
+    transition: color 0.3s ease;
 }
 
-.close-button:hover {
-    background-color: #d9363e;
-    transform: scale(1.1);
+.search-popup-close:hover {
+    color: #ff5c5c;
 }
 
-.close-button:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(255, 77, 79, 0.5);
+.search-popup-input {
+    height: 2.5rem;
+    font-size: 1rem;
+    background-color: #2c2c3e;
+    color: #f1f1f1;
+    border: 1px solid #444;
+    border-radius: 0.5rem;
+    padding-left: 2.5rem;
+}
+
+.search-popup-input::placeholder {
+    color: #aaa;
+}
+
+.search-popup-icon {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    color: #888;
+    pointer-events: none;
+}
+
+.search-popup-list {
+    margin-top: 1rem;
+}
+
+.search-popup-item {
+    background-color: #2b2b3d;
+    color: #f1f1f1;
+    border: none;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.search-popup-item:hover {
+    background-color: #3b3b5d;
+}
+
+.dot-flash {
+    animation: flash 1s infinite;
+}
+
+@keyframes flash {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
