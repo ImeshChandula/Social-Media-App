@@ -9,6 +9,7 @@ import PostManagement from "../components/PostManagement";
 import JobCategoryManagement from "../components/JobCategoryManagement";
 import Mail from "./Mail";
 import Tickets from "./Tickets";
+import ManageMarketplace from "./ManageMarketplace";
 
 
 const Dashboard = () => {
@@ -59,6 +60,7 @@ const Dashboard = () => {
                 <Route path="/job-category" element={<JobCategoryManagement />} />
                 <Route path="/mails" element={<Mail />} />
                 <Route path="/tickets" element={<Tickets />} />
+                <Route path="/manage-marketplace" element={<ManageMarketplace />} />
             </Routes>
           </div>
         </div>
