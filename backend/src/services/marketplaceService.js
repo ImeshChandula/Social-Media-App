@@ -39,6 +39,25 @@ class MarketPlaceService {
             if (docRef.empty) {
                 return [];
             }
+
+            const data = docRef.docs.map(doc => new MarketPlace(doc.id, doc.data()));
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async findAllByUserId(userId) {
+        try {
+            const docRef = await this.collection
+                .where('author', '==', userId)
+                .orderBy('createdAt', 'desc')
+                .get();
+
+            if (docRef.empty) {
+                return [];
+            } 
+
             const data = docRef.docs.map(doc => new MarketPlace(doc.id, doc.data()));
             return data;
         } catch (error) {

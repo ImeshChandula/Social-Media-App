@@ -69,7 +69,19 @@ const getAllActiveItems = async (req, res) => {
 };
 
 const getAllMyItems = async (req, res) => {
-	try {} catch (error) {}
+	try {
+        const myItems = await marketplaceService.findAllByUserId(req.user.id);
+        if (!myItems) {
+            return res.status(400).json({success: false, message: "Error in getting my items"});
+        }
+
+        const populatedMyItems = await populateAuthor(myItems);
+        if (!populatedMyItems) {
+            return res.status(400).json({success: false, message: "Error in populate author"});
+        }
+
+        return res.status(200).json({ success: true, message: "Items received successfully", count: populatedMyItems.length, data: populatedMyItems});
+    } catch (error) {}
 };
 
 const updateItem = async (req, res) => {
@@ -98,4 +110,4 @@ const deleteItem = async (req, res) => {
     }
 };
 
-module.exports = {createItem, getAllItems, deleteItem}
+module.exports = {createItem, getAllItems, getAllMyItems, deleteItem}

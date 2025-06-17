@@ -9,6 +9,7 @@ const router = express.Router();
 
 router.post('/createItem', validateMarketPlace, authenticateUser, marketplaceController.createItem);
 router.get('/getAllItems', authenticateUser, authorizeRoles("super_admin"), marketplaceController.getAllItems);
+router.get('/myItems', authenticateUser, marketplaceController.getAllMyItems);
 router.delete('/delete/:id', authenticateUser, marketplaceController.deleteItem);
 
 
