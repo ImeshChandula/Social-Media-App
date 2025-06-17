@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { axiosInstance } from "../lib/axios";
-import { FaPaperPlane, FaHeart, FaRegHeart, FaEdit, FaTrash, FaReply, FaImage } from "react-icons/fa";
+import {
+  FaPaperPlane,
+  FaHeart,
+  FaRegHeart,
+  FaEdit,
+  FaTrash,
+  FaReply,
+  FaImage,
+} from "react-icons/fa";
 import toast from "react-hot-toast";
 import "../styles/PostComment.css";
 
@@ -17,23 +25,26 @@ const PostComment = ({ postId }) => {
   const [user, setUser] = useState(null);
   const [likedComments, setLikedComments] = useState([]);
 
+  // Load current user
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const res = await axiosInstance.get("/users/myProfile");
         setUser(res.data.user || res.data);
       } catch {
-        toast.error("Login required to comment.");
+        toast.error("Login required.");
       }
     };
     fetchUser();
   }, []);
 
+  // Load comments
   const fetchComments = async () => {
     try {
       const res = await axiosInstance.get(`/comments/getComments/${postId}`);
-      setComments(res.data?.comments || []);
-      const liked = res.data?.comments?.filter(c => c.likes?.includes(user?.id)).map(c => c.id);
+      const fetched = res.data?.comments || [];
+      setComments(fetched);
+      const liked = fetched.filter((c) => c.likes?.includes(user?.id)).map((c) => c.id);
       setLikedComments(liked || []);
     } catch {
       toast.error("Error loading comments.");
@@ -44,7 +55,7 @@ const PostComment = ({ postId }) => {
     if (postId) fetchComments();
   }, [postId, user]);
 
-  const handleFileToBase64 = (file) =>
+  const fileToBase64 = (file) =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result);
@@ -52,35 +63,39 @@ const PostComment = ({ postId }) => {
       reader.readAsDataURL(file);
     });
 
+  // Add comment
   const handleAddComment = async () => {
     if (!newComment.trim() && !newMedia) return;
-
     let base64 = null;
-    if (newMedia) base64 = await handleFileToBase64(newMedia);
+    if (newMedia) base64 = await fileToBase64(newMedia);
 
     try {
-      await axiosInstance.post(`/comments/addComment/${postId}`, {
+      const res = await axiosInstance.post(`/comments/addComment/${postId}`, {
         text: newComment,
         media: base64,
       });
       setNewComment("");
       setNewMedia(null);
       fetchComments();
+      const commentId = res.data?.comment?.id;
+      if (commentId) {
+        setShowReplies((prev) => ({ ...prev, [commentId]: true }));
+      }
     } catch {
       toast.error("Failed to post comment.");
     }
   };
 
+  // Edit comment
   const handleEditComment = async () => {
     if (!editCommentText.trim() && !editMedia) return;
-
-    let media = null;
-    if (editMedia) media = await handleFileToBase64(editMedia);
+    let base64 = null;
+    if (editMedia) base64 = await fileToBase64(editMedia);
 
     try {
       await axiosInstance.patch(`/comments/update/${editCommentId}`, {
         text: editCommentText,
-        media,
+        media: base64,
       });
       setEditCommentId(null);
       setEditCommentText("");
@@ -91,6 +106,7 @@ const PostComment = ({ postId }) => {
     }
   };
 
+  // Delete comment
   const handleDeleteComment = async (commentId) => {
     try {
       await axiosInstance.delete(`/comments/delete/${commentId}`);
@@ -100,22 +116,25 @@ const PostComment = ({ postId }) => {
     }
   };
 
+  // Reply to comment
   const handleReply = async (commentId) => {
     const text = replyText[commentId];
-    const mediaFile = replyMedia[commentId];
-
-    if (!text?.trim() && !mediaFile) return;
-
+    const file = replyMedia[commentId];
+    if (!text?.trim() && !file) return;
     let media = null;
-    if (mediaFile) media = await handleFileToBase64(mediaFile);
+    if (file) media = await fileToBase64(file);
 
     try {
-      await axiosInstance.post(`/comments/reply/${commentId}`, { text, media });
+      await axiosInstance.post(`/comments/reply/${commentId}`, {
+        text,
+        media,
+      });
       setReplyText((prev) => ({ ...prev, [commentId]: "" }));
       setReplyMedia((prev) => ({ ...prev, [commentId]: null }));
+      setShowReplies((prev) => ({ ...prev, [commentId]: true }));
       fetchComments();
     } catch {
-      toast.error("Failed to reply.");
+      toast.error("Reply failed.");
     }
   };
 
@@ -127,7 +146,7 @@ const PostComment = ({ postId }) => {
     try {
       await axiosInstance.post(`/likes/toComment/${commentId}`);
       setLikedComments((prev) =>
-        prev.includes(commentId) ? prev.filter(id => id !== commentId) : [...prev, commentId]
+        prev.includes(commentId) ? prev.filter((id) => id !== commentId) : [...prev, commentId]
       );
       fetchComments();
     } catch {
@@ -137,6 +156,7 @@ const PostComment = ({ postId }) => {
 
   return (
     <div className="fb-comment-container">
+      {/* Input for new comment */}
       <div className="fb-comment-input-area">
         <img
           src={user?.profilePicture || "/default-profile.png"}
@@ -165,6 +185,7 @@ const PostComment = ({ postId }) => {
         </button>
       </div>
 
+      {/* Comment list */}
       {comments.map((comment) => {
         const commentId = comment.id;
         const isLiked = likedComments.includes(commentId);
@@ -223,6 +244,7 @@ const PostComment = ({ postId }) => {
                 )}
               </div>
 
+              {/* Replies */}
               {showReplies[commentId] && (
                 <>
                   {(comment.replies || []).map((reply) => (
@@ -236,25 +258,36 @@ const PostComment = ({ postId }) => {
                         <strong>{reply.user?.firstName}</strong>
                         <p>{reply.text}</p>
                         {reply.media && (
-                          <img src={reply.media} alt="reply" className="comment-media" />
+                          <img src={reply.media} alt="reply media" className="comment-media" />
                         )}
+                        <div className="reply-likes">
+                          <FaHeart size={12} color="red" /> {reply.likeCount || 0}
+                        </div>
                       </div>
                     </div>
                   ))}
 
+                  {/* Reply input */}
                   <div className="fb-reply-input">
                     <input
                       value={replyText[commentId] || ""}
-                      onChange={(e) => setReplyText((prev) => ({ ...prev, [commentId]: e.target.value }))}
+                      onChange={(e) =>
+                        setReplyText((prev) => ({ ...prev, [commentId]: e.target.value }))
+                      }
                       placeholder="Write a reply..."
                       className="form-control form-control-sm"
                     />
                     <input
                       type="file"
-                      onChange={(e) => setReplyMedia((prev) => ({ ...prev, [commentId]: e.target.files[0] }))}
+                      onChange={(e) =>
+                        setReplyMedia((prev) => ({ ...prev, [commentId]: e.target.files[0] }))
+                      }
                       className="form-control form-control-sm mt-1"
                     />
-                    <button className="btn btn-outline-primary btn-sm mt-1" onClick={() => handleReply(commentId)}>
+                    <button
+                      className="btn btn-outline-primary btn-sm mt-1"
+                      onClick={() => handleReply(commentId)}
+                    >
                       Reply
                     </button>
                   </div>

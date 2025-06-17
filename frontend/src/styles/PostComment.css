@@ -206,3 +206,14 @@
     margin-top: 6px;
     border-radius: 6px;
 }
+
+.comment-media {
+    max-width: 100%;
+    margin-top: 6px;
+    border-radius: 6px;
+}
+
+.fb-reply-box {
+    margin-left: 50px;
+    margin-top: 10px;
+}
