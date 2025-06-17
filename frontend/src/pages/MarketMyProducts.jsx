@@ -25,7 +25,7 @@ const MarketMyProducts = () => {
     if (error) return <div className="alert alert-danger m-4 text-center">Error: {error}</div>;
 
     return (
-        <div className="container mt-5">
+        <div className="container">
             <h2 className="mb-4 text-light">My Products</h2>
             <div className="row">
                 {myItems.length === 0 ? (

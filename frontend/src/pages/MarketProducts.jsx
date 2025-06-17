@@ -25,11 +25,11 @@ const MarketProducts = () => {
   if (error) return <div className="alert alert-danger mt-4 text-center">Error: {error}</div>;
 
   return (
-    <div className="mt-5">
+    <div className="container">
       <h2 className="mb-4 text-light">Marketplace Products</h2>
       <div className="row">
         {items.map((item) => (
-          <div className="col-md-4 mb-4" key={item.id}>
+          <div className="col-lg-4 col-md-6 mb-4" key={item.id}>
             <div className="marketplace-card card h-100">
               <div className="card-header d-flex align-items-center border-secondary bg-dark marketplace-header">
                 <img
