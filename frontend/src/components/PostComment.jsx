@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { axiosInstance } from "../lib/axios";
 import { FaPaperPlane } from "react-icons/fa";
 import "../styles/PostComment.css";
+import toast from "react-hot-toast";
 
 const PostComment = ({ postId }) => {
   const [comments, setComments] = useState([]);
@@ -10,6 +11,22 @@ const PostComment = ({ postId }) => {
   const [editCommentText, setEditCommentText] = useState("");
   const [replyText, setReplyText] = useState({});
   const [showReplies, setShowReplies] = useState({});
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axiosInstance.get("/users/myProfile");
+        setUser(res.data.user || res.data);
+      } catch (err) {
+        toast.error("Failed to load profile. Please login.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const fetchComments = async () => {
     if (!postId) return;
@@ -17,8 +34,8 @@ const PostComment = ({ postId }) => {
       const res = await axiosInstance.get(`/comments/getComments/${postId}`);
       setComments(res.data?.comments || []);
     } catch (err) {
-      console.error("Error fetching comments", err);
-      setComments([]);
+      toast.error("Error fetching comments");
+      console.error(err);
     }
   };
 
@@ -31,7 +48,8 @@ const PostComment = ({ postId }) => {
       setNewComment("");
       fetchComments();
     } catch (err) {
-      console.error("Error adding comment", err);
+      toast.error("Could not add comment");
+      console.error(err);
     }
   };
 
@@ -40,7 +58,8 @@ const PostComment = ({ postId }) => {
       await axiosInstance.delete(`/comments/delete/${commentId}`);
       fetchComments();
     } catch (err) {
-      console.error("Error deleting comment", err);
+      toast.error("Could not delete comment");
+      console.error(err);
     }
   };
 
@@ -54,19 +73,24 @@ const PostComment = ({ postId }) => {
       setEditCommentText("");
       fetchComments();
     } catch (err) {
-      console.error("Error editing comment", err);
+      toast.error("Could not edit comment");
+      console.error(err);
     }
   };
 
   const handleReply = async (commentId) => {
     const text = replyText[commentId];
-    if (!text?.trim()) return;
+    if (!commentId || !text?.trim()) {
+      toast.error("Reply is empty or comment ID missing");
+      return;
+    }
     try {
       await axiosInstance.post(`/comments/reply/${commentId}`, { text });
       setReplyText((prev) => ({ ...prev, [commentId]: "" }));
       fetchComments();
     } catch (err) {
-      console.error("Error replying", err);
+      toast.error("Could not post reply");
+      console.error(err);
     }
   };
 
@@ -79,128 +103,136 @@ const PostComment = ({ postId }) => {
   }, [postId]);
 
   return (
-    <div className="p-3 border-top bg-light text-dark" style={{ maxHeight: "400px", overflowY: "auto" }}>
-      <div className="mb-3 d-flex align-items-center">
+    <div className="fb-comment-container">
+      <div className="fb-comment-input-area">
+        <img
+          src={user?.profilePicture || "/default-profile.png"}
+          alt="Profile"
+          className="fb-avatar"
+        />
         <input
           type="text"
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
-          className="form-control me-2"
           placeholder="Write a comment..."
+          className="fb-comment-input"
           onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
         />
-        <button
-          className="bg-primary text-white border-0 d-flex align-items-center justify-content-center"
-          style={{ width: "40px", height: "40px", borderRadius: "50%" }}
-          onClick={handleAddComment}
-          title="Post"
-        >
+        <button className="fb-send-btn" onClick={handleAddComment}>
           <FaPaperPlane size={16} />
         </button>
       </div>
 
       {comments.length === 0 ? (
-        <p>No comments yet.</p>
+        <p className="text-muted mt-3">No comments yet.</p>
       ) : (
-        comments.map((comment) => (
-          <div key={comment._id} className="mb-3 p-2 bg-white rounded shadow-sm">
-            <div className="d-flex align-items-start">
+        comments.map((comment) => {
+          const commentId = comment._id;
+
+          return (
+            <div key={commentId} className="fb-comment-box">
               <img
-                src={comment.author?.profilePicture || "/default-profile.png"}
-                alt="User"
-                className="me-2 rounded-circle"
-                style={{ width: "40px", height: "40px", objectFit: "cover" }}
+                src={comment.user?.profilePicture || "/default-profile.png"}
+                alt="user"
+                className="fb-avatar"
               />
-              <div className="flex-grow-1">
-                <div className="d-flex justify-content-between align-items-start">
-                  <div>
-                    <strong>
-                      {comment.author?.firstName || "User"} {comment.author?.lastName || ""}
-                    </strong>
-                    {editCommentId === comment._id ? (
-                      <>
-                        <input
-                          value={editCommentText}
-                          onChange={(e) => setEditCommentText(e.target.value)}
-                          className="form-control form-control-sm mt-1"
-                        />
-                        <div className="mt-2">
-                          <button className="btn btn-success btn-sm" onClick={handleEditComment}>Save</button>
-                          <button className="btn btn-secondary btn-sm ms-2" onClick={() => setEditCommentId(null)}>Cancel</button>
-                        </div>
-                      </>
-                    ) : (
-                      <p className="mb-1">{comment.text}</p>
-                    )}
-                  </div>
-                  {editCommentId !== comment._id && (
-                    <div>
-                      <button
-                        className="btn btn-link btn-sm text-primary"
+              <div className="fb-comment-content">
+                <div className="fb-comment-bubble">
+                  <strong>
+                    {comment.user?.firstName || "User"} {comment.user?.lastName || ""}
+                  </strong>
+
+                  {editCommentId === commentId ? (
+                    <>
+                      <input
+                        value={editCommentText}
+                        onChange={(e) => setEditCommentText(e.target.value)}
+                        className="form-control form-control-sm mt-1"
+                      />
+                      <div className="mt-2">
+                        <button className="btn btn-success btn-sm" onClick={handleEditComment}>
+                          Save
+                        </button>
+                        <button
+                          className="btn btn-secondary btn-sm ms-2"
+                          onClick={() => {
+                            setEditCommentId(null);
+                            setEditCommentText("");
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <p>{comment.text}</p>
+                  )}
+                </div>
+
+                <div className="fb-comment-actions">
+                  {editCommentId !== commentId && (
+                    <>
+                      <span onClick={() => toggleReplies(commentId)}>Reply</span>
+                      <span
                         onClick={() => {
-                          setEditCommentId(comment._id);
+                          setEditCommentId(commentId);
                           setEditCommentText(comment.text);
                         }}
                       >
                         Edit
-                      </button>
-                      <button
-                        className="btn btn-link btn-sm text-danger"
-                        onClick={() => handleDeleteComment(comment._id)}
+                      </span>
+                      <span
+                        className="text-danger"
+                        onClick={() => handleDeleteComment(commentId)}
                       >
                         Delete
-                      </button>
-                    </div>
+                      </span>
+                    </>
                   )}
                 </div>
 
-                <div className="mt-2 ms-4">
-                  <button
-                    className="btn btn-link btn-sm"
-                    onClick={() => toggleReplies(comment._id)}
-                  >
-                    {showReplies[comment._id] ? "Hide Replies" : "View Replies"}
-                  </button>
-
-                  {showReplies[comment._id] &&
-                    (comment.replies || []).map((reply) => (
-                      <div key={reply._id} className="d-flex align-items-start mt-2 ms-3">
-                        <img
-                          src={reply.author?.profilePicture || "/default-profile.png"}
-                          alt="User"
-                          className="me-2 rounded-circle"
-                          style={{ width: "30px", height: "30px", objectFit: "cover" }}
-                        />
-                        <div>
-                          <strong>
-                            {reply.author?.firstName || "User"} {reply.author?.lastName || ""}
-                          </strong>
-                          <p className="mb-1">{reply.text}</p>
-                        </div>
+                {/* Replies */}
+                {showReplies[commentId] &&
+                  (comment.replies || []).map((reply) => (
+                    <div key={reply._id} className="fb-reply-box">
+                      <img
+                        src={reply.author?.profilePicture || "/default-profile.png"}
+                        alt="reply user"
+                        className="fb-avatar-small"
+                      />
+                      <div className="fb-comment-bubble">
+                        <strong>{reply.author?.firstName || "User"}</strong>
+                        <p>{reply.text}</p>
                       </div>
-                    ))}
+                    </div>
+                  ))}
 
-                  <div className="mt-2">
+                {/* Reply input */}
+                {showReplies[commentId] && (
+                  <div className="fb-reply-input">
                     <input
-                      value={replyText[comment._id] || ""}
+                      value={replyText[commentId] || ""}
                       onChange={(e) =>
-                        setReplyText((prev) => ({ ...prev, [comment._id]: e.target.value }))
+                        setReplyText((prev) => ({
+                          ...prev,
+                          [commentId]: e.target.value,
+                        }))
                       }
                       placeholder="Write a reply..."
                       className="form-control form-control-sm"
                     />
                     <button
                       className="btn btn-outline-primary btn-sm mt-1"
-                      onClick={() => handleReply(comment._id)}
+                      onClick={() => handleReply(commentId)}
                     >
                       Reply
                     </button>
                   </div>
-                </div>
+                )}
               </div>
             </div>
-          </div>
-        ))
+          );
+        })
       )}
     </div>
   );
