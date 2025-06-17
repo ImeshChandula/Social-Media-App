@@ -16,9 +16,6 @@ const PostComment = ({ postId }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [newMedia, setNewMedia] = useState(null);
-  const [editCommentId, setEditCommentId] = useState(null);
-  const [editCommentText, setEditCommentText] = useState("");
-  const [editMedia, setEditMedia] = useState(null);
   const [replyText, setReplyText] = useState({});
   const [replyMedia, setReplyMedia] = useState({});
   const [showReplies, setShowReplies] = useState({});
@@ -68,42 +65,55 @@ const PostComment = ({ postId }) => {
       toast.error("Please add text or media.");
       return;
     }
-    let base64 = null;
-    if (newMedia) base64 = await fileToBase64(newMedia);
+
+    const media = newMedia ? await fileToBase64(newMedia) : null;
 
     try {
       const res = await axiosInstance.post(`/comments/addComment/${postId}`, {
-        text: newComment,
-        media: base64,
+        text: newComment || "",
+        media,
       });
       setNewComment("");
       setNewMedia(null);
+      const newId = res.data?.comment?.id;
+      setShowReplies((prev) => ({ ...prev, [newId]: true }));
       fetchComments();
-      const commentId = res.data?.comment?.id;
-      if (commentId) {
-        setShowReplies((prev) => ({ ...prev, [commentId]: true }));
-      }
     } catch {
       toast.error("Failed to post comment.");
     }
   };
 
-  const handleEditComment = async () => {
-    if (!editCommentText.trim() && !editMedia) return;
-    let base64 = null;
-    if (editMedia) base64 = await fileToBase64(editMedia);
+  const handleReply = async (commentId) => {
+    const text = replyText[commentId];
+    const file = replyMedia[commentId];
+
+    if (!text?.trim() && !file) {
+      toast.error("Please add text or media to reply.");
+      return;
+    }
+
+    const media = file ? await fileToBase64(file) : null;
 
     try {
-      await axiosInstance.patch(`/comments/update/${editCommentId}`, {
-        text: editCommentText,
-        media: base64,
+      await axiosInstance.post(`/comments/reply/${commentId}`, {
+        text: text || "",
+        media,
       });
-      setEditCommentId(null);
-      setEditCommentText("");
-      setEditMedia(null);
+      setReplyText((prev) => ({ ...prev, [commentId]: "" }));
+      setReplyMedia((prev) => ({ ...prev, [commentId]: null }));
+      setShowReplies((prev) => ({ ...prev, [commentId]: true }));
       fetchComments();
     } catch {
-      toast.error("Failed to update comment.");
+      toast.error("Reply failed.");
+    }
+  };
+
+  const toggleLikeComment = async (commentId) => {
+    try {
+      await axiosInstance.post(`/likes/toComment/${commentId}`);
+      fetchComments();
+    } catch {
+      toast.error("Failed to like comment.");
     }
   };
 
@@ -116,46 +126,12 @@ const PostComment = ({ postId }) => {
     }
   };
 
-  const handleReply = async (commentId) => {
-    const text = replyText[commentId];
-    const file = replyMedia[commentId];
-    if (!text?.trim() && !file) {
-      toast.error("Please add text or media to reply.");
-      return;
-    }
-    let media = null;
-    if (file) media = await fileToBase64(file);
-
-    try {
-      await axiosInstance.post(`/comments/reply/${commentId}`, {
-        text,
-        media,
-      });
-      setReplyText((prev) => ({ ...prev, [commentId]: "" }));
-      setReplyMedia((prev) => ({ ...prev, [commentId]: null }));
-      setShowReplies((prev) => ({ ...prev, [commentId]: true }));
-      fetchComments();
-    } catch {
-      toast.error("Reply failed.");
-    }
-  };
-
   const toggleReplies = (commentId) => {
     setShowReplies((prev) => ({ ...prev, [commentId]: !prev[commentId] }));
   };
 
-  const toggleLikeComment = async (commentId) => {
-    try {
-      await axiosInstance.post(`/likes/toComment/${commentId}`);
-      fetchComments();
-    } catch {
-      toast.error("Failed to like comment.");
-    }
-  };
-
   return (
     <div className="fb-comment-container">
-      {/* Input */}
       <div className="fb-comment-input-area">
         <img
           src={user?.profilePicture || "/default-profile.png"}
@@ -168,7 +144,6 @@ const PostComment = ({ postId }) => {
           onChange={(e) => setNewComment(e.target.value)}
           placeholder="Write a comment..."
           className="fb-comment-input"
-          onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
         />
         <label>
           <FaImage />
@@ -184,11 +159,9 @@ const PostComment = ({ postId }) => {
         </button>
       </div>
 
-      {/* Comment List */}
       {comments.map((comment) => {
         const commentId = comment.id;
         const isLiked = likedComments.includes(commentId);
-
         return (
           <div key={commentId} className="fb-comment-box">
             <img
@@ -198,88 +171,60 @@ const PostComment = ({ postId }) => {
             />
             <div className="fb-comment-content">
               <div className="fb-comment-bubble">
-                <strong>
-                  {comment.user?.firstName} {comment.user?.lastName}
-                </strong>
-                {editCommentId === commentId ? (
-                  <>
-                    <textarea
-                      className="form-control mt-2"
-                      rows={2}
-                      value={editCommentText}
-                      onChange={(e) => setEditCommentText(e.target.value)}
-                    />
-                    <input type="file" onChange={(e) => setEditMedia(e.target.files[0])} />
-                    <button
-                      className="btn btn-success btn-sm mt-1"
-                      onClick={handleEditComment}
-                    >
-                      Save
-                    </button>
-                    <button
-                      className="btn btn-secondary btn-sm mt-1 ms-2"
-                      onClick={() => setEditCommentId(null)}
-                    >
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <p>{comment.text}</p>
-                    {comment.media && (
-                      <img src={comment.media} alt="comment media" className="comment-media" />
-                    )}
-                  </>
+                <strong>{comment.user?.firstName}</strong>
+                {comment.text && <p>{comment.text}</p>}
+                {comment.media && (
+                  <img
+                    src={comment.media}
+                    alt="comment media"
+                    className="comment-media"
+                  />
                 )}
               </div>
-
-              {/* Actions */}
               <div className="fb-comment-actions">
                 <span onClick={() => toggleLikeComment(commentId)}>
-                  {isLiked ? <FaHeart color="red" /> : <FaRegHeart />} {comment.likeCount}
+                  {isLiked ? <FaHeart color="red" /> : <FaRegHeart />}{" "}
+                  {comment.likeCount || 0}
                 </span>
                 <span onClick={() => toggleReplies(commentId)}>
                   <FaReply /> Reply
                 </span>
                 {user?.id === comment.user?.id && (
-                  <>
-                    <span
-                      onClick={() => {
-                        setEditCommentId(commentId);
-                        setEditCommentText(comment.text);
-                      }}
-                    >
-                      <FaEdit /> Edit
-                    </span>
-                    <span onClick={() => handleDeleteComment(commentId)}>
-                      <FaTrash /> Delete
-                    </span>
-                  </>
+                  <span onClick={() => handleDeleteComment(commentId)}>
+                    <FaTrash /> Delete
+                  </span>
                 )}
               </div>
 
-              {/* Replies */}
               {showReplies[commentId] && (
                 <>
                   {(comment.replies || []).map((reply) => (
                     <div key={reply.id} className="fb-reply-box">
                       <img
-                        src={reply.user?.profilePicture || "/default-profile.png"}
+                        src={
+                          reply.user?.profilePicture || "/default-profile.png"
+                        }
                         alt="reply user"
                         className="fb-avatar-small"
                       />
                       <div className="fb-comment-bubble">
                         <strong>{reply.user?.firstName}</strong>
-                        <p>{reply.text}</p>
+                        {reply.text && <p>{reply.text}</p>}
                         {reply.media && (
-                          <img src={reply.media} alt="reply media" className="comment-media" />
+                          <img
+                            src={reply.media}
+                            alt="reply media"
+                            className="comment-media"
+                          />
                         )}
                         <div className="reply-likes">
-                          <FaHeart size={12} color="red" /> {reply.likeCount || 0}
+                          <FaHeart size={12} color="red" />{" "}
+                          {reply.likeCount || 0}
                         </div>
                       </div>
                     </div>
                   ))}
+
                   <div className="fb-reply-input">
                     <input
                       value={replyText[commentId] || ""}
@@ -294,6 +239,7 @@ const PostComment = ({ postId }) => {
                     />
                     <input
                       type="file"
+                      accept="image/*"
                       onChange={(e) =>
                         setReplyMedia((prev) => ({
                           ...prev,
