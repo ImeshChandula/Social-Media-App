@@ -1,0 +1,37 @@
+/* Common marketplace card styles */
+.marketplace-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 10px;
+  background-color: #121212;
+  border: 1px solid #2c2c2c;
+  color: #ffffff;
+}
+
+.marketplace-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.marketplace-image {
+  height: 220px;
+  object-fit: contain;
+  background-color: #1e1e1e;
+  padding: 10px;
+  border-bottom: 1px solid #2c2c2c;
+}
+
+.marketplace-card-title {
+  color: #ffffff;
+}
+
+.marketplace-card-text {
+  color: #dcdcdc;
+}
+
+.marketplace-text-muted {
+  color: #999 !important;
+}
+
+.marketplace-header small {
+  color: #bbb;
+}

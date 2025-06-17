@@ -142,6 +142,7 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost, disabl
           <span>
             {post.comments?.length || 0}
           </span>
+          comments
         </div>
 
         <div
