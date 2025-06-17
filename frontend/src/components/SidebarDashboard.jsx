@@ -68,7 +68,7 @@ const SidebarDashboard = ({ collapsed, setCollapsed }) => {
           {/* Mobile Top Bar */}
           <div className="d-flex d-md-none align-items-center justify-content-between text-white px-3 py-2" style={styles.backgroundColor}>
             <button
-              className="btn btn-outline-light"
+              className="toggle-btn"
               onClick={toggleSidebar}
               aria-label="Toggle sidebar"
             >

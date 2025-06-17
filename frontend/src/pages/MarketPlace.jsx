@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import MarketMyProducts from './MarketMyProducts';
-import MarketProducts from './MarketProducts';
+import MarketMyProducts from '../components/MarketMyProducts';
+import MarketProducts from '../components/MarketProducts';
 import "../styles/Marketplace.css"
 
 const MarketPlace = () => {
@@ -19,7 +19,6 @@ const MarketPlace = () => {
 
   return (
     <div className="container-fluid px-2 px-md-4 pt-5 pt-md-0 mt-5 mt-md-0">
-      {/* Navigation Buttons */}
       <div className="dashboard-nav text-center my-3">
         <div className="d-flex flex-row justify-content-center gap-2">
           <button
