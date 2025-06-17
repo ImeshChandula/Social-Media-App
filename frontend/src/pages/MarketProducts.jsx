@@ -48,7 +48,7 @@ const MarketProducts = () => {
                   src={item.images[0]}
                   className="card-img-top"
                   alt={item.title}
-                  style={{ height: "250px", objectFit: "cover" }}
+                  style={{ height: "250px", objectFit: "contain" }}
                 />
               )}
 
