@@ -21,7 +21,7 @@ class MarketPlace {
             postalCode: data.location?.postalCode || ''
         };
         this.conditionType = data.conditionType || "new"; // 'new', 'like_new', 'good', 'fair', 'poor'
-        this.images = data.images || null;
+        this.images = data.images || [];
         this.quantity = data.quantity || 1;
 
         this.isNegotiable = data.isNegotiable !== undefined ? data.isNegotiable : false;

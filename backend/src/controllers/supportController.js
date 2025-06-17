@@ -59,7 +59,7 @@ const getAllMails = async (req, res) => {
 
         const populatedMails = await populateAuthor(mails);
         if (!populatedMails) {
-            return res.status(400).json({success: false, message: "Error in populate author"})
+            return res.status(400).json({success: false, message: "Error in populate author"});
         }
 
         const unreadCount = populatedMails.filter(mail => !mail.isRead).length;

@@ -8,6 +8,8 @@ const router = express.Router();
 // http://localhost:5000/api/marketplace
 
 router.post('/createItem', validateMarketPlace, authenticateUser, marketplaceController.createItem);
+router.get('/getAllItems', authenticateUser, authorizeRoles("super_admin"), marketplaceController.getAllItems);
+router.delete('/delete/:id', authenticateUser, marketplaceController.deleteItem);
 
- 
+
 module.exports = router;
