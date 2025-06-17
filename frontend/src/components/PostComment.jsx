@@ -127,7 +127,7 @@ const PostComment = ({ postId }) => {
         <p className="text-muted mt-3">No comments yet.</p>
       ) : (
         comments.map((comment) => {
-          const commentId = e.key;
+          const commentId = comment._id;
 
           return (
             <div key={commentId} className="fb-comment-box">
