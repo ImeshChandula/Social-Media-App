@@ -182,3 +182,27 @@
     font-size: 14px;
     border: 1px solid #ccc;
 }
+
+.fb-edit-box textarea {
+    width: 100%;
+    resize: none;
+    border-radius: 6px;
+    padding: 8px;
+}
+
+.fb-comment-actions span {
+    cursor: pointer;
+    margin-right: 10px;
+    font-size: 0.9rem;
+}
+
+.fb-comment-actions svg {
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+.comment-media {
+    max-width: 100%;
+    margin-top: 6px;
+    border-radius: 6px;
+}
