@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import MarketMyProducts from './MarketMyProducts';
 import MarketProducts from './MarketProducts';
+import "../styles/Marketplace.css"
 
 const MarketPlace = () => {
   const [activeComponent, setActiveComponent] = useState('UserManagement');
@@ -17,18 +18,18 @@ const MarketPlace = () => {
   };
 
   return (
-    <div className="container-fluid px-2 px-md-4">
+    <div className="container-fluid px-2 px-md-4 pt-5 pt-md-0 mt-5 mt-md-0">
       {/* Navigation Buttons */}
       <div className="dashboard-nav text-center my-3">
-        <div className="d-flex flex-column flex-md-row justify-content-center gap-2">
+        <div className="d-flex flex-row justify-content-center gap-2">
           <button
-            className={`btn text-white rounded-pill w-100 w-md-auto ${activeComponent === 'MarketProducts' ? 'btn-success' : 'btn-outline-success'}`}
+            className={`btn text-white rounded-pill w-50 w-md-auto ${activeComponent === 'MarketProducts' ? 'btn-success' : 'btn-outline-success'}`}
             onClick={() => setActiveComponent('MarketProducts')}
           >
             Products
           </button>
           <button
-            className={`btn text-white rounded-pill w-100 w-md-auto ${activeComponent === 'MarketMyProducts' ? 'btn-success' : 'btn-outline-success'}`}
+            className={`btn text-white rounded-pill w-50 w-md-auto ${activeComponent === 'MarketMyProducts' ? 'btn-success' : 'btn-outline-success'}`}
             onClick={() => setActiveComponent('MarketMyProducts')}
           >
             My Products

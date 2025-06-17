@@ -6,32 +6,32 @@ const MarketProducts = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchItems = async () => {
-    try {
-      const response = await axiosInstance.get("/marketplace/getAllItems");
-      setItems(response.data.data || []);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to fetch items.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const response = await axiosInstance.get("/marketplace/getAllItems");
+        setItems(response.data.data || []);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to fetch items.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchItems();
   }, []);
 
-  if (loading) return <div className="text-center mt-4">Loading products...</div>;
-  if (error) return <div className="text-danger text-center mt-4">Error: {error}</div>;
+  if (loading) return <div className="text-center mt-4 text-light">Loading products...</div>;
+  if (error) return <div className="alert alert-danger mt-4 text-center">Error: {error}</div>;
 
   return (
-    <div className="container mt-4">
-      <h2 className="mb-4">Marketplace Products</h2>
+    <div className="mt-5">
+      <h2 className="mb-4 text-light">Marketplace Products</h2>
       <div className="row">
         {items.map((item) => (
           <div className="col-md-4 mb-4" key={item.id}>
-            <div className="card h-100 shadow-sm">
-              <div className="card-header d-flex align-items-center">
+            <div className="marketplace-card card h-100">
+              <div className="card-header d-flex align-items-center border-secondary bg-dark marketplace-header">
                 <img
                   src={item.author?.profilePicture}
                   alt={item.author?.username}
@@ -40,26 +40,24 @@ const MarketProducts = () => {
                   height="40"
                   style={{ objectFit: "cover" }}
                 />
-                <small className="text-muted">{item.author?.username}</small>
+                <small>{item.author?.username}</small>
               </div>
 
-              {item.images && item.images.length > 0 && (
+              {item.images?.length > 0 && (
                 <img
                   src={item.images[0]}
-                  className="card-img-top"
                   alt={item.title}
-                  style={{ height: "250px", objectFit: "contain" }}
+                  className="marketplace-image card-img-top"
                 />
               )}
 
               <div className="card-body">
-                <h5 className="card-title">{item.title}</h5>
-                <p className="card-text">{item.description}</p>
+                <h5 className="marketplace-card-title card-title">{item.title}</h5>
+                <p className="marketplace-card-text card-text">{item.description}</p>
                 <p className="fw-bold">
                   {item.currency} {item.price}
                 </p>
               </div>
-
             </div>
           </div>
         ))}
