@@ -25,7 +25,6 @@ const PostComment = ({ postId }) => {
   const [user, setUser] = useState(null);
   const [likedComments, setLikedComments] = useState([]);
 
-  // Load current user
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -38,13 +37,14 @@ const PostComment = ({ postId }) => {
     fetchUser();
   }, []);
 
-  // Load comments
   const fetchComments = async () => {
     try {
       const res = await axiosInstance.get(`/comments/getComments/${postId}`);
       const fetched = res.data?.comments || [];
       setComments(fetched);
-      const liked = fetched.filter((c) => c.likes?.includes(user?.id)).map((c) => c.id);
+      const liked = fetched
+        .filter((c) => c.likes?.includes(user?.id))
+        .map((c) => c.id);
       setLikedComments(liked || []);
     } catch {
       toast.error("Error loading comments.");
@@ -63,9 +63,11 @@ const PostComment = ({ postId }) => {
       reader.readAsDataURL(file);
     });
 
-  // Add comment
   const handleAddComment = async () => {
-    if (!newComment.trim() && !newMedia) return;
+    if (!newComment.trim() && !newMedia) {
+      toast.error("Please add text or media.");
+      return;
+    }
     let base64 = null;
     if (newMedia) base64 = await fileToBase64(newMedia);
 
@@ -86,7 +88,6 @@ const PostComment = ({ postId }) => {
     }
   };
 
-  // Edit comment
   const handleEditComment = async () => {
     if (!editCommentText.trim() && !editMedia) return;
     let base64 = null;
@@ -106,7 +107,6 @@ const PostComment = ({ postId }) => {
     }
   };
 
-  // Delete comment
   const handleDeleteComment = async (commentId) => {
     try {
       await axiosInstance.delete(`/comments/delete/${commentId}`);
@@ -116,11 +116,13 @@ const PostComment = ({ postId }) => {
     }
   };
 
-  // Reply to comment
   const handleReply = async (commentId) => {
     const text = replyText[commentId];
     const file = replyMedia[commentId];
-    if (!text?.trim() && !file) return;
+    if (!text?.trim() && !file) {
+      toast.error("Please add text or media to reply.");
+      return;
+    }
     let media = null;
     if (file) media = await fileToBase64(file);
 
@@ -145,9 +147,6 @@ const PostComment = ({ postId }) => {
   const toggleLikeComment = async (commentId) => {
     try {
       await axiosInstance.post(`/likes/toComment/${commentId}`);
-      setLikedComments((prev) =>
-        prev.includes(commentId) ? prev.filter((id) => id !== commentId) : [...prev, commentId]
-      );
       fetchComments();
     } catch {
       toast.error("Failed to like comment.");
@@ -156,7 +155,7 @@ const PostComment = ({ postId }) => {
 
   return (
     <div className="fb-comment-container">
-      {/* Input for new comment */}
+      {/* Input */}
       <div className="fb-comment-input-area">
         <img
           src={user?.profilePicture || "/default-profile.png"}
@@ -185,7 +184,7 @@ const PostComment = ({ postId }) => {
         </button>
       </div>
 
-      {/* Comment list */}
+      {/* Comment List */}
       {comments.map((comment) => {
         const commentId = comment.id;
         const isLiked = likedComments.includes(commentId);
@@ -199,7 +198,9 @@ const PostComment = ({ postId }) => {
             />
             <div className="fb-comment-content">
               <div className="fb-comment-bubble">
-                <strong>{comment.user?.firstName} {comment.user?.lastName}</strong>
+                <strong>
+                  {comment.user?.firstName} {comment.user?.lastName}
+                </strong>
                 {editCommentId === commentId ? (
                   <>
                     <textarea
@@ -209,8 +210,18 @@ const PostComment = ({ postId }) => {
                       onChange={(e) => setEditCommentText(e.target.value)}
                     />
                     <input type="file" onChange={(e) => setEditMedia(e.target.files[0])} />
-                    <button className="btn btn-success btn-sm mt-1" onClick={handleEditComment}>Save</button>
-                    <button className="btn btn-secondary btn-sm mt-1 ms-2" onClick={() => setEditCommentId(null)}>Cancel</button>
+                    <button
+                      className="btn btn-success btn-sm mt-1"
+                      onClick={handleEditComment}
+                    >
+                      Save
+                    </button>
+                    <button
+                      className="btn btn-secondary btn-sm mt-1 ms-2"
+                      onClick={() => setEditCommentId(null)}
+                    >
+                      Cancel
+                    </button>
                   </>
                 ) : (
                   <>
@@ -222,6 +233,7 @@ const PostComment = ({ postId }) => {
                 )}
               </div>
 
+              {/* Actions */}
               <div className="fb-comment-actions">
                 <span onClick={() => toggleLikeComment(commentId)}>
                   {isLiked ? <FaHeart color="red" /> : <FaRegHeart />} {comment.likeCount}
@@ -231,10 +243,12 @@ const PostComment = ({ postId }) => {
                 </span>
                 {user?.id === comment.user?.id && (
                   <>
-                    <span onClick={() => {
-                      setEditCommentId(commentId);
-                      setEditCommentText(comment.text);
-                    }}>
+                    <span
+                      onClick={() => {
+                        setEditCommentId(commentId);
+                        setEditCommentText(comment.text);
+                      }}
+                    >
                       <FaEdit /> Edit
                     </span>
                     <span onClick={() => handleDeleteComment(commentId)}>
@@ -266,13 +280,14 @@ const PostComment = ({ postId }) => {
                       </div>
                     </div>
                   ))}
-
-                  {/* Reply input */}
                   <div className="fb-reply-input">
                     <input
                       value={replyText[commentId] || ""}
                       onChange={(e) =>
-                        setReplyText((prev) => ({ ...prev, [commentId]: e.target.value }))
+                        setReplyText((prev) => ({
+                          ...prev,
+                          [commentId]: e.target.value,
+                        }))
                       }
                       placeholder="Write a reply..."
                       className="form-control form-control-sm"
@@ -280,7 +295,10 @@ const PostComment = ({ postId }) => {
                     <input
                       type="file"
                       onChange={(e) =>
-                        setReplyMedia((prev) => ({ ...prev, [commentId]: e.target.files[0] }))
+                        setReplyMedia((prev) => ({
+                          ...prev,
+                          [commentId]: e.target.files[0],
+                        }))
                       }
                       className="form-control form-control-sm mt-1"
                     />
