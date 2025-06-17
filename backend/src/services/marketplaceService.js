@@ -65,6 +65,26 @@ class MarketPlaceService {
         }
     }
 
+    async findAllActive () {
+        try {
+            const docRef = await this.collection
+                .where('isAccept', '==', true)
+                .where('isAvailable', '==', true)
+                .orderBy('createdAt', 'desc')
+                .get();
+
+            console.log("Total docs found: " + docRef.size);
+            if (docRef.empty) {
+                return [];
+            }
+
+            const data = docRef.docs.map(doc => new MarketPlace(doc.id, doc.data()));
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async updateById(id, updateData) {
         try {
             updateData.updatedAt = new Date().toISOString();
@@ -84,6 +104,26 @@ class MarketPlaceService {
             return true;
         } catch (error) {
             throw error;
+        }
+    }
+
+    async debugCollection() {
+        try {
+            // Get ALL documents without any filters
+            const allDocs = await this.collection.get();
+            console.log("Total documents in collection:", allDocs.size);
+            
+            if (allDocs.size > 0) {
+                allDocs.docs.forEach(doc => {
+                    const data = doc.data();
+                    console.log(`Doc ID: ${doc.id}`);
+                    console.log(`isAccept: ${data.isAccept} (type: ${typeof data.isAccept})`);
+                    console.log(`isAvailable: ${data.isAvailable} (type: ${typeof data.isAvailable})`);
+                    console.log("---");
+                });
+            }
+        } catch (error) {
+            console.error("Error fetching all docs:", error);
         }
     }
 }

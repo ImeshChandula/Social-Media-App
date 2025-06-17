@@ -115,16 +115,28 @@ const validateMarketPlace = (req, res, next) => {
         quantity: Joi.number().integer().min(1).default(1),
         isNegotiable: Joi.boolean().default(false),
         isAvailable: Joi.boolean().default(true),
-        isAccept: Joi.boolean().default(false),
+        isAccept: Joi.boolean().default(true),
         status: Joi.string().valid('active', 'sold', 'expired', 'removed', 'pending').default('active'),
         expiresAt: Joi.date().allow(null).optional(),
         tags: Joi.array().items(Joi.string().max(50)).max(20).optional()
     });
 
-    const { error } = schema.validate(req.body);
+    // THE KEY CHANGE: Use the validated value with defaults applied
+    const { error, value } = schema.validate(req.body, {
+        allowUnknown: false,
+        stripUnknown: true,
+        abortEarly: false
+    });
+
     if (error) {
-        return res.status(400).json({ message: error.details[0].message });
+        return res.status(400).json({ 
+            success: false,
+            message: error.details[0].message 
+        });
     }
+
+    // Replace req.body with the validated value that includes defaults
+    req.body = value;
     next();
 };
 

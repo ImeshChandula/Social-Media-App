@@ -58,14 +58,28 @@ const getAllItems = async (req, res) => {
             return res.status(400).json({success: false, message: "Error in populate author"});
         }
 
-        return res.status(200).json({ success: true, message: "Items received successfully", count: populatedItems.length, data: populatedItems});
+        return res.status(200).json({ success: true, message: "All items received successfully", count: populatedItems.length, data: populatedItems});
     } catch (error) {
         return res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
 };
 
 const getAllActiveItems = async (req, res) => {
-	try {} catch (error) {}
+	try {
+        const activeItems = await marketplaceService.findAllActive();
+        if (!activeItems) {
+            return res.status(400).json({success: false, message: "Error in getting active items"});
+        }
+
+        const populatedActiveItems = await populateAuthor(activeItems);
+        if (!populatedActiveItems) {
+            return res.status(400).json({success: false, message: "Error in populate author"});
+        }
+
+        return res.status(200).json({ success: true, message: "Active items received successfully", count: populatedActiveItems.length, data: populatedActiveItems});
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
 };
 
 const getAllMyItems = async (req, res) => {
@@ -80,8 +94,10 @@ const getAllMyItems = async (req, res) => {
             return res.status(400).json({success: false, message: "Error in populate author"});
         }
 
-        return res.status(200).json({ success: true, message: "Items received successfully", count: populatedMyItems.length, data: populatedMyItems});
-    } catch (error) {}
+        return res.status(200).json({ success: true, message: "My items received successfully", count: populatedMyItems.length, data: populatedMyItems});
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
 };
 
 const updateItem = async (req, res) => {
@@ -110,4 +126,4 @@ const deleteItem = async (req, res) => {
     }
 };
 
-module.exports = {createItem, getAllItems, getAllMyItems, deleteItem}
+module.exports = {createItem, getAllItems, getAllMyItems, getAllActiveItems, deleteItem}
