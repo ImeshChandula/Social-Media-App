@@ -4,9 +4,9 @@ import "../styles/Marketplace.css";
 const MarketplaceCard = ({ item, showAuthor = true, showCategory = false, showAllDetails = false }) => {
     return (
         <div className="col-lg-4 col-md-6 col-sm-6 mb-4">
-            <div className="marketplace-card card h-100">
+            <div className="marketplace-card card h-100 border shadow-sm">
                 {showAuthor && item.author && (
-                    <div className="card-header d-flex align-items-center border-secondary bg-dark marketplace-header">
+                    <div className="card-header d-flex align-items-center bg-light border-bottom">
                         <img
                             src={item.author.profilePicture}
                             alt={item.author.username}
@@ -15,7 +15,7 @@ const MarketplaceCard = ({ item, showAuthor = true, showCategory = false, showAl
                             height="40"
                             style={{ objectFit: "cover" }}
                         />
-                        <small>{item.author.username}</small>
+                        <small className="text-muted">{item.author.username}</small>
                     </div>
                 )}
 
@@ -28,26 +28,44 @@ const MarketplaceCard = ({ item, showAuthor = true, showCategory = false, showAl
                 )}
 
                 <div className="card-body d-flex flex-column">
-                    <h5 className="marketplace-card-title card-title">{item.title}</h5>
+                    <h5 className="card-title fw-semibold text-dark">{item.title}</h5>
 
                     {showCategory && (
-                        <h6 className="text-white-50 card-subtitle mb-2">{item.category}</h6>
+                        <h6 className="card-subtitle mb-2 text-muted">{item.category}</h6>
                     )}
 
-                    <p className="marketplace-card-text card-text small flex-grow-1">
+                    <p className="card-text small flex-grow-1 text-secondary">
                         {item.description}
                     </p>
 
-                    <p className="fw-bold mt-auto">{item.currency} {item.price}</p>
+                    <p className="fw-bold text-primary mt-auto">{item.currency} {item.price}</p>
 
                     {showAllDetails && (
-                        <>
-                            <p className="fw-bold mt-1">Location: {item.location?.city}, {item.location?.state}, {item.location?.country}</p>
-                            <p className="fw-bold mt-1">Quantity: {item.quantity}</p>
-                            <p className="fw-bold mt-1">Condition: {item.conditionType}</p>
-                            <p className="fw-bold mt-1">Negotiable: {item.isNegotiable ? "Yes" : "No"}</p>
-                            <p className="fw-bold mt-1">Tags: {item.tags?.join(", ")}</p>
-                        </>
+                        <div className="mt-3 border-top pt-3">
+                            <h6 className="fw-semibold text-dark mb-3">Item Details</h6>
+                            <div className="row gy-2">
+                                <div className="col-md-6">
+                                    <p className="mb-1 fw-bold text-muted">Location</p>
+                                    <p className="mb-2">{item.location?.city}, {item.location?.state}, {item.location?.country}</p>
+                                </div>
+                                <div className="col-md-6">
+                                    <p className="mb-1 fw-bold text-muted">Quantity</p>
+                                    <p className="mb-2">{item.quantity}</p>
+                                </div>
+                                <div className="col-md-6">
+                                    <p className="mb-1 fw-bold text-muted">Condition</p>
+                                    <p className="mb-2">{item.conditionType}</p>
+                                </div>
+                                <div className="col-md-6">
+                                    <p className="mb-1 fw-bold text-muted">Negotiable</p>
+                                    <p className="mb-2">{item.isNegotiable ? "Yes" : "No"}</p>
+                                </div>
+                                <div className="col-12">
+                                    <p className="mb-1 fw-bold text-muted">Tags</p>
+                                    <p className="mb-0">{item.tags?.join(", ")}</p>
+                                </div>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
@@ -55,4 +73,4 @@ const MarketplaceCard = ({ item, showAuthor = true, showCategory = false, showAl
     );
 };
 
-export default MarketplaceCard
+export default MarketplaceCard;

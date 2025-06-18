@@ -1,39 +1,29 @@
 .marketplace-card {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border-radius: 12px;
-  background-color: #181818;
-  border: 1px solid #333;
-  color: #fff;
+  background-color: #ffffff;
+  color: #212529;
 }
 
 .marketplace-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .marketplace-image {
   height: 220px;
   object-fit: contain;
-  background-color: #1f1f1f;
+  background-color: #f8f9fa;
   padding: 12px;
-  border-bottom: 1px solid #2c2c2c;
+  border-bottom: 1px solid #dee2e6;
 }
 
 .marketplace-card-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #ffffff;
 }
 
 .marketplace-card-text {
   font-size: 0.9rem;
-  color: #ccc;
-}
-
-.marketplace-header small {
-  color: #bbb;
-}
-
-.marketplace-text-muted {
-  color: #888 !important;
+  color: #6c757d;
 }
