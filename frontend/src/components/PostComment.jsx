@@ -4,7 +4,6 @@ import {
   FaPaperPlane,
   FaHeart,
   FaRegHeart,
-  FaEdit,
   FaTrash,
   FaReply,
   FaImage,
@@ -49,7 +48,7 @@ const PostComment = ({ postId }) => {
   };
 
   useEffect(() => {
-    if (postId) fetchComments();
+    if (postId && user) fetchComments();
   }, [postId, user]);
 
   const fileToBase64 = (file) =>
@@ -66,7 +65,15 @@ const PostComment = ({ postId }) => {
       return;
     }
 
-    const media = newMedia ? await fileToBase64(newMedia) : null;
+    let media = null;
+    if (newMedia) {
+      try {
+        media = await fileToBase64(newMedia);
+      } catch {
+        toast.error("Failed to read media.");
+        return;
+      }
+    }
 
     try {
       const res = await axiosInstance.post(`/comments/addComment/${postId}`, {
@@ -84,21 +91,30 @@ const PostComment = ({ postId }) => {
   };
 
   const handleReply = async (commentId) => {
-    const text = replyText[commentId];
+    const text = replyText[commentId]?.trim();
     const file = replyMedia[commentId];
 
-    if (!text?.trim() && !file) {
+    if (!text && !file) {
       toast.error("Please add text or media to reply.");
       return;
     }
 
-    const media = file ? await fileToBase64(file) : null;
+    let media = null;
+    if (file) {
+      try {
+        media = await fileToBase64(file);
+      } catch {
+        toast.error("Failed to read reply media.");
+        return;
+      }
+    }
 
     try {
       await axiosInstance.post(`/comments/reply/${commentId}`, {
         text: text || "",
         media,
       });
+
       setReplyText((prev) => ({ ...prev, [commentId]: "" }));
       setReplyMedia((prev) => ({ ...prev, [commentId]: null }));
       setShowReplies((prev) => ({ ...prev, [commentId]: true }));
@@ -158,6 +174,17 @@ const PostComment = ({ postId }) => {
           <FaPaperPlane />
         </button>
       </div>
+
+      {newMedia && (
+        <div className="comment-preview">
+          <img
+            src={URL.createObjectURL(newMedia)}
+            alt="Preview"
+            className="comment-media"
+          />
+          <button onClick={() => setNewMedia(null)}>Remove</button>
+        </div>
+      )}
 
       {comments.map((comment) => {
         const commentId = comment.id;
@@ -248,6 +275,25 @@ const PostComment = ({ postId }) => {
                       }
                       className="form-control form-control-sm mt-1"
                     />
+                    {replyMedia[commentId] && (
+                      <div className="reply-preview">
+                        <img
+                          src={URL.createObjectURL(replyMedia[commentId])}
+                          alt="Reply Preview"
+                          className="comment-media"
+                        />
+                        <button
+                          onClick={() =>
+                            setReplyMedia((prev) => ({
+                              ...prev,
+                              [commentId]: null,
+                            }))
+                          }
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
                     <button
                       className="btn btn-outline-primary btn-sm mt-1"
                       onClick={() => handleReply(commentId)}
