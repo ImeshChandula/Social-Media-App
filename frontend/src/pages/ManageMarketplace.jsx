@@ -1,72 +1,34 @@
-import React, { useEffect, useState } from "react";
-import { axiosInstance } from "../lib/axios";
+import React, { useState } from 'react';
+import MarketplaceAllProduct from './MarketplaceAllProduct';
 
 const ManageMarketplace = () => {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [activeComponent, setActiveComponent] = useState('UserManagement');
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const response = await axiosInstance.get("/marketplace/getAllItems");
-        setItems(response.data.data || []);
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch items.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchItems();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="normal-loading-spinner">
-        Loading<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
-      </div>
-    )
-  }
-  if (error) return <div className="alert alert-danger mt-4 text-center">Error: {error}</div>;
+  const renderComponent = () => {
+    switch (activeComponent) {
+      case 'MarketplaceAllProduct':
+        return <MarketplaceAllProduct />;
+      default:
+        return <MarketplaceAllProduct />;
+    }
+  };
 
   return (
-    <div className="container">
-      <h2 className="mb-4 text-light">Manage Marketplace</h2>
-      <div className="row">
-        {items.map((item) => (
-          <div className="col-lg-4 col-md-6 mb-4" key={item.id}>
-            <div className="marketplace-card card h-100">
-              <div className="card-header d-flex align-items-center border-secondary bg-dark marketplace-header">
-                <img
-                  src={item.author?.profilePicture}
-                  alt={item.author?.username}
-                  className="rounded-circle me-2"
-                  width="40"
-                  height="40"
-                  style={{ objectFit: "cover" }}
-                />
-                <small>{item.author?.username}</small>
-              </div>
+    <div className="container-fluid px-2 px-md-4 pt-5 pt-md-0 mt-5 mt-md-0">
+      <div className="dashboard-nav text-center my-3">
+        <div className="d-flex flex-row justify-content-center gap-2">
+          <button
+            className={`btn text-white rounded-pill w-50 w-md-auto ${activeComponent === 'MarketplaceAllProduct' ? 'btn-success' : 'btn-outline-success'}`}
+            onClick={() => setActiveComponent('MarketplaceAllProduct')}
+          >
+            All Products
+          </button>
+        </div>
+      </div>
 
-              {item.images?.length > 0 && (
-                <img
-                  src={item.images[0]}
-                  alt={item.title}
-                  className="marketplace-image card-img-top"
-                />
-              )}
-
-              <div className="card-body">
-                <h5 className="marketplace-card-title card-title">{item.title}</h5>
-                <p className="marketplace-card-text card-text">{item.description}</p>
-                <p className="fw-bold">
-                  {item.currency} {item.price}
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* Rendered Component */}
+      <div className="py-4 px-2 rounded">
+        {renderComponent()}
       </div>
     </div>
   );

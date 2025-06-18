@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import MarketMyProducts from '../components/MarketMyProducts';
-import MarketProducts from '../components/MarketProducts';
+import MarketMyProducts from './MarketMyProducts';
+import MarketProducts from './MarketProducts';
 import "../styles/Marketplace.css"
 
 const MarketPlace = () => {

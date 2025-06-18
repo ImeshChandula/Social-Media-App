@@ -18,6 +18,7 @@ import MarketPlace from "../pages/MarketPlace";
 import useAuthStore from "../store/authStore";
 import Contact from "./Contact";
 import NotificationForMobile from "../pages/NotificationForMobile";
+import CreateMarketplaceItem from "../components/CreateMarketplaceItem";
 
 const MainLayout = () => {
   const { checkAuth } = useAuthStore();
@@ -60,6 +61,7 @@ const MainLayout = () => {
               <Route path="/market" element={<MarketPlace />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/notifications" element={<NotificationForMobile />} />
+              <Route path="/create-marketplace-item" element={<CreateMarketplaceItem />} />
             </Routes>
           </div>
         </div>
