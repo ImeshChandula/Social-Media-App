@@ -75,7 +75,7 @@ function EditProfile() {
 
   const fetchJobCategories = async () => {
     try {
-      const response = await axiosInstance.get('/jobCategories/active/job_role');
+      const response = await axiosInstance.get('/categories/active/job_role');
       if (response.data.success) {
         setJobCategories(response.data.data);
       }

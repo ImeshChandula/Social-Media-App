@@ -1,19 +1,19 @@
 const styles = {
     container: {
-      minHeight: '100vh',
+      //minHeight: '100vh',
       //background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      padding: '20px',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
+      //padding: '20px',
+      //fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
     },
     content: {
-      maxWidth: '1200px',
-      margin: '0 auto',
-      background: 'rgba(255, 255, 255, 0.95)',
-      borderRadius: '20px',
-      padding: '30px',
-      boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-      backdropFilter: 'blur(10px)',
-      border: '1px solid rgba(255, 255, 255, 0.2)'
+      //maxWidth: '1200px',
+      //margin: '0 auto',
+      //background: 'rgba(255, 255, 255, 0.95)',
+      //borderRadius: '20px',
+      //padding: '30px',
+      //boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+      //backdropFilter: 'blur(10px)',
+      //border: '1px solid rgba(255, 255, 255, 0.2)'
     },
     header: {
       display: 'flex',

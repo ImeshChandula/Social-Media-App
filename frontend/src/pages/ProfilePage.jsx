@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +11,7 @@ import toast from "react-hot-toast";
 function ProfilePage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  //const [error, setError] = useState("");
   const navigate = useNavigate();
   //const [showStoryModal, setShowStoryModal] = useState(false);
 

@@ -2,9 +2,8 @@ import { axiosInstance } from "../lib/axios";
 
 const CategoryService  = {
     
-    getActiveCategories: async () => {
+    getActiveCategories: async (field) => {
         try {
-            const field = "job_role";
             const response = await axiosInstance.get(`/categories/active/${field}`);
             return response.data;
         } catch (error) {
@@ -12,9 +11,8 @@ const CategoryService  = {
         }
     },
   
-    getAllCategories: async () => {
+    getAllCategories: async (field) => {
         try {
-            const field = "job_role";
             const response = await axiosInstance.get(`/categories/getAll/${field}`);
             return response.data;
         } catch (error) {
