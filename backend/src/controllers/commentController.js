@@ -2,7 +2,7 @@ const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const CommentService = require('../services/commentService');
 const notificationUtils = require('../utils/notificationUtils');
-const { uploadMedia } = require('../utils/uploadMedia');
+const { handleMediaUpload } = require('../utils/handleMediaUpload');
 
 
 //@desc     Add comment to post
@@ -28,12 +28,20 @@ const addComment = async(req, res) => {
 
         // upload media
         if (media) {
-            try {
-                const imageUrl = await uploadMedia(media);
-                commentData.media = imageUrl;
-            } catch (error) {
-                return res.status(400).json({ error: "Failed to upload media", message: error.message });
+            const mediaType = "image";
+
+            const result = await handleMediaUpload(media, mediaType);
+            if (!result.success) {
+                return res.status(result.code).json({
+                    success: false,
+                    error: result.error,
+                    message: result.message,
+                    ...(result.suggestion && { suggestion: result.suggestion }),
+                    ...(result.maxSize && { maxSize: result.maxSize })
+                });
             }
+
+            commentData.media = result.imageUrl;
         }
 
         const newComment = await CommentService.create(commentData);
@@ -319,12 +327,20 @@ const updateComment = async(req, res) => {
 
         if (text !== undefined) updateData.text = text;
         if (media !== undefined) {
-            try {
-                const imageUrl = await uploadMedia(media);
-                updateData.media = imageUrl;
-            } catch (error) {
-                return res.status(400).json({ error: "Failed to upload media", message: error.message });
+            const mediaType = "image";
+
+            const result = await handleMediaUpload(media, mediaType);
+            if (!result.success) {
+                return res.status(result.code).json({
+                    success: false,
+                    error: result.error,
+                    message: result.message,
+                    ...(result.suggestion && { suggestion: result.suggestion }),
+                    ...(result.maxSize && { maxSize: result.maxSize })
+                });
             }
+
+            updateData.media = result.imageUrl;
         };
 
         try {
