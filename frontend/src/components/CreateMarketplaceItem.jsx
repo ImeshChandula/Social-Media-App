@@ -149,7 +149,7 @@ const CreateMarketplaceItem = () => {
                 </div>
 
                 <div className="col-md-12">
-                    <label className="form-label">Upload Image:</label>
+                    <label className="text-black">Upload Image:</label>
                     <input type="file" accept="image/*" onChange={handleFileChange} className="form-control marketplace-input" />
                     {previewUrl && (
                         <div className="mt-3">
