@@ -29,7 +29,7 @@ const MarketProducts = () => {
       </div>
     )
   }
-  
+
   if (error) return <div className="alert alert-danger text-center mt-4">Error: {error}</div>;
 
   return (

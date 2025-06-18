@@ -37,7 +37,13 @@ const ManageMarketplace = () => {
       <h2 className="mb-4 text-light">Manage Marketplace</h2>
       <div className="row">
         {items.map(item => (
-          <MarketplaceCard key={item.id} item={item} showAuthor={true} showCategory={true} />
+          <MarketplaceCard
+            key={item.id}
+            item={item}
+            showAuthor={true}
+            showCategory={true}
+            showAllDetails={true}
+          />
         ))}
       </div>
     </div>
