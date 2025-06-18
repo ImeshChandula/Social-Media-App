@@ -1,10 +1,11 @@
 import { axiosInstance } from "../lib/axios";
 
-const jobCategoryService  = {
+const CategoryService  = {
     
     getActiveCategories: async () => {
         try {
-            const response = await axiosInstance.get('/jobCategories/active');
+            const field = "job_role";
+            const response = await axiosInstance.get(`/categories/active/${field}`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error;
@@ -13,7 +14,8 @@ const jobCategoryService  = {
   
     getAllCategories: async () => {
         try {
-            const response = await axiosInstance.get('/jobCategories/getAll');
+            const field = "job_role";
+            const response = await axiosInstance.get(`/categories/getAll/${field}`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error;
@@ -22,7 +24,7 @@ const jobCategoryService  = {
 
     createCategory: async (categoryData) => {
         try {
-            const response = await axiosInstance.post('/jobCategories/create', categoryData);
+            const response = await axiosInstance.post('/categories/create', categoryData);
             return response.data;
         } catch (error) {
             throw error.response?.data || error;
@@ -31,7 +33,7 @@ const jobCategoryService  = {
 
     updateCategory: async (id, categoryData) => {
         try {
-            const response = await axiosInstance.patch(`/jobCategories/update/${id}`, categoryData);
+            const response = await axiosInstance.patch(`/categories/update/${id}`, categoryData);
             return response.data;
         } catch (error) {
             throw error.response?.data || error;
@@ -40,7 +42,7 @@ const jobCategoryService  = {
 
     deleteCategory: async (id) => {
         try {
-            const response = await axiosInstance.delete(`/jobCategories/delete/${id}`);
+            const response = await axiosInstance.delete(`/categories/delete/${id}`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error;
@@ -49,7 +51,7 @@ const jobCategoryService  = {
 
     deactivateCategory: async (id) => {
         try {
-            const response = await axiosInstance.patch(`/jobCategories/update/${id}`, {
+            const response = await axiosInstance.patch(`/categories/update/${id}`, {
                 isActive: false
             });
             return response.data;
@@ -60,7 +62,7 @@ const jobCategoryService  = {
 
     activateCategory: async (id) => {
         try {
-            const response = await axiosInstance.patch(`/jobCategories/update/${id}`, {
+            const response = await axiosInstance.patch(`/categories/update/${id}`, {
                 isActive: true
             });
             return response.data;
@@ -70,4 +72,4 @@ const jobCategoryService  = {
     },
 }
 
-export default jobCategoryService ;
+export default CategoryService ;
