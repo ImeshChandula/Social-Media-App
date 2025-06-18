@@ -1,5 +1,4 @@
 import React from "react";
-import "../styles/Marketplace.css";
 
 const MarketplaceCard = ({ item, showAuthor = true, showCategory = false, showAllDetails = false, showContactDetails = false }) => {
     return (
