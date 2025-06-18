@@ -5,7 +5,7 @@ const { validateCategory } = require("../middleware/validator");
 
 const router = express.Router();
 
-// http://localhost:5000/api/jobCategories
+// http://localhost:5000/api/categories
 
 // Public routes
 router.get('/active/:fieldName', authenticateUser, jobCategoryController.getAllActiveCategories);

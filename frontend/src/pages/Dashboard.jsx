@@ -6,7 +6,7 @@ import Users from "../components/Users";
 import styles from "../styles/DashboardStyle";
 import DashboardHome from "../components/DashboardHome";
 import PostManagement from "../components/PostManagement";
-import JobCategoryManagement from "../components/JobCategoryManagement";
+import CategoryManagement from "../components/CategoryManagement";
 import Mail from "./Mail";
 import Tickets from "./Tickets";
 import ManageMarketplace from "./ManageMarketplace";
@@ -57,7 +57,7 @@ const Dashboard = () => {
                 <Route path="/" element={<DashboardHome />} />
                 <Route path="/users" element={<Users />} />
                 <Route path="/posts" element={<PostManagement />} />
-                <Route path="/job-category" element={<JobCategoryManagement />} />
+                <Route path="/job-category" element={<CategoryManagement />} />
                 <Route path="/mails" element={<Mail />} />
                 <Route path="/tickets" element={<Tickets />} />
                 <Route path="/manage-marketplace" element={<ManageMarketplace />} />

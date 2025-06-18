@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import jobCategoryService from '../services/jobCategoryService';
+import categoryService  from '../services/categoryService';
 import styles from '../styles/JobCategoryStyle';
 
 const JobCategoryManagement  = () => {
@@ -8,7 +8,7 @@ const JobCategoryManagement  = () => {
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
-    const [formData, setFormData] = useState({ name: '', description: '' });
+    const [formData, setFormData] = useState({ categoryFor: '', name: '', description: '' });
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
 
@@ -20,7 +20,7 @@ const JobCategoryManagement  = () => {
         try {
             setLoading(true);
 
-            const response = await jobCategoryService.getAllCategories();
+            const response = await categoryService.getAllCategories();
             if (response.success) {
                 setCategories(response.data);
             }
@@ -48,12 +48,12 @@ const JobCategoryManagement  = () => {
 
         try {
             if (editingCategory) {
-                const res = await jobCategoryService.updateCategory(editingCategory.id, formattedData);
+                const res = await categoryService.updateCategory(editingCategory.id, formattedData);
                 if(res.success){
                     toast.success("Job role Updated successfully");
                 }
             } else {
-                const res = await jobCategoryService.createCategory(formattedData);
+                const res = await categoryService.createCategory(formattedData);
                 if(res.success){
                     toast.success("Job role created successfully");
                 }
@@ -83,7 +83,7 @@ const JobCategoryManagement  = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this category?')) {
             try {
-                const res = await jobCategoryService.deleteCategory(id);
+                const res = await categoryService.deleteCategory(id);
                 if(res.success){
                     toast.success("Job role deleted successfully");
                 }
@@ -114,13 +114,13 @@ const JobCategoryManagement  = () => {
             let res;
             if (currentStatus) {
                 // If currently active, deactivate it
-                res = await jobCategoryService.deactivateCategory(id);
+                res = await categoryService.deactivateCategory(id);
                 if(res.success){
                     toast.success("Category deactivated successfully");
                 }
             } else {
                 // If currently inactive, activate it
-                res = await jobCategoryService.activateCategory(id);
+                res = await categoryService.activateCategory(id);
                 if(res.success){
                     toast.success("Category activated successfully");
                 }
