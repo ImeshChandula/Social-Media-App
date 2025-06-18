@@ -269,3 +269,54 @@
     align-items: center;
     gap: 4px;
 }
+
+.comment-preview,
+.reply-preview {
+    margin-top: 8px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.comment-preview img,
+.reply-preview img {
+    max-width: 100px;
+    border-radius: 4px;
+}
+
+.comment-preview button,
+.reply-preview button {
+    background: #ff5b5b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.comment-preview,
+.reply-preview {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.comment-preview img,
+.reply-preview img {
+    max-width: 100px;
+    border-radius: 4px;
+}
+
+.comment-preview button,
+.reply-preview button {
+    background: #ff5b5b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 6px;
+    cursor: pointer;
+    font-size: 12px;
+}

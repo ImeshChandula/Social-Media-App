@@ -111,11 +111,12 @@ const addComment = async(req, res) => {
 const addReply = async(req, res) => {
     try {
         const commentId = req.params.id;
-        const { text } = req.body;
+        const { text, media } = req.body;
 
-        if (!text) {
-            return res.status(400).json({ message: 'Reply text is required' });
+        if (!text && !media) {
+            return res.status(400).json({ message: 'Reply text or media is required' });
         }
+
 
         // Check if comment exists
         const comment = await CommentService.findById(commentId);
@@ -125,14 +126,30 @@ const addReply = async(req, res) => {
         }
 
         // Create reply object
-        const reply = {
-            id: Date.now().toString(), // Generate unique ID for the reply
-            user: req.user.id,
-            text,
-            createdAt: new Date().toISOString(),
-            likes: []
-        };
+        let mediaUrl = null;
+        if (media) {
+            const mediaType = "image";
+            const result = await handleMediaUpload(media, mediaType);
+            if (!result.success) {
+                return res.status(result.code).json({
+                    success: false,
+                    error: result.error,
+                    message: result.message,
+                    ...(result.suggestion && { suggestion: result.suggestion }),
+                    ...(result.maxSize && { maxSize: result.maxSize })
+                });
+            }
+            mediaUrl = result.imageUrl;
+        }
 
+        const reply = {
+            id: Date.now().toString(),
+            user: req.user.id,
+            text: text || "",
+            media: mediaUrl,
+            createdAt: new Date().toISOString(),
+            likes: [],
+        };
         // Get current replies array or create a new one
         const currentReplies = comment.replies || [];
 
