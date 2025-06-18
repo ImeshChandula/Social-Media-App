@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const initialState = {
     category: "",
@@ -28,10 +29,13 @@ const CreateMarketplaceItem = () => {
     const [formData, setFormData] = useState(initialState);
     const [images, setImages] = useState(null);
     const [previewUrl, setPreviewUrl] = useState("");
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
         if (name.includes("contactDetails.") || name.includes("location.")) {
             const [parent, key] = name.split(".");
             setFormData((prev) => ({
@@ -59,11 +63,8 @@ const CreateMarketplaceItem = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        const dataToSend = {
-            ...formData,
-            images,
-        };
+        setLoading(true);
+        const dataToSend = { ...formData, images };
 
         try {
             const res = await axiosInstance.post("/marketplace/createItem", dataToSend);
@@ -71,62 +72,77 @@ const CreateMarketplaceItem = () => {
             setFormData(initialState);
             setImages(null);
             setPreviewUrl("");
+            navigate(location?.state?.from || -1);
         } catch (err) {
             toast.error(err?.response?.data?.message || "Failed to create item");
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="marketplace-form container p-4 bg-light shadow-sm rounded">
-            <h2 className="text-center mb-4 fw-bold text-primary">Post a Marketplace Item</h2>
+        <form onSubmit={handleSubmit} className="marketplace-form container p-4 bg-white shadow rounded mt-4">
+            <h2 className="text-center mb-4 fw-bold text-primary">Create Marketplace Item</h2>
 
-            <div className="row g-3">
+            <div className="row g-4">
                 <div className="col-md-6">
-                    <input type="text" name="category" className="form-control marketplace-input" placeholder="Category" required onChange={handleChange} />
+                    <label className="text-black">Category</label>
+                    <input type="text" name="category" className="form-control" placeholder="E.g. Electronics, Furniture" required onChange={handleChange} />
                 </div>
 
                 <div className="col-md-6">
-                    <input type="text" name="title" className="form-control marketplace-input" placeholder="Title" required onChange={handleChange} />
+                    <label className="text-black">Title</label>
+                    <input type="text" name="title" className="form-control" placeholder="Enter item title" required onChange={handleChange} />
                 </div>
 
                 <div className="col-12">
-                    <textarea name="description" rows="3" className="form-control marketplace-input" placeholder="Description" onChange={handleChange}></textarea>
+                    <label className="text-black">Description</label>
+                    <textarea name="description" rows="4" className="form-control" placeholder="Enter a brief description" onChange={handleChange}></textarea>
                 </div>
 
                 <div className="col-md-6">
-                    <input type="number" name="price" className="form-control marketplace-input" placeholder="Price" required onChange={handleChange} />
+                    <label className="text-black">Price</label>
+                    <input type="number" name="price" className="form-control" placeholder="Enter item price" required onChange={handleChange} />
                 </div>
 
                 <div className="col-md-6">
-                    <input type="text" name="currency" className="form-control marketplace-input" defaultValue="USD" placeholder="Currency (e.g. USD)" onChange={handleChange} />
+                    <label className="text-black">Currency</label>
+                    <input type="text" name="currency" className="form-control" defaultValue="USD" placeholder="e.g., USD, EUR" onChange={handleChange} />
                 </div>
 
                 <div className="col-md-6">
-                    <input type="text" name="contactDetails.phone" className="form-control marketplace-input" placeholder="Phone" onChange={handleChange} />
+                    <label className="text-black">Phone</label>
+                    <input type="text" name="contactDetails.phone" className="form-control" placeholder="Enter phone number" onChange={handleChange} />
                 </div>
 
                 <div className="col-md-6">
-                    <input type="email" name="contactDetails.email" className="form-control marketplace-input" placeholder="Email" onChange={handleChange} />
+                    <label className="text-black">Email</label>
+                    <input type="email" name="contactDetails.email" className="form-control" placeholder="Enter contact email" onChange={handleChange} />
                 </div>
 
                 <div className="col-md-6">
-                    <input type="text" name="location.city" className="form-control marketplace-input" placeholder="City" onChange={handleChange} />
+                    <label className="text-black">City</label>
+                    <input type="text" name="location.city" className="form-control" placeholder="Enter city" onChange={handleChange} />
                 </div>
 
                 <div className="col-md-6">
-                    <input type="text" name="location.state" className="form-control marketplace-input" placeholder="State" onChange={handleChange} />
+                    <label className="text-black">State</label>
+                    <input type="text" name="location.state" className="form-control" placeholder="Enter state" onChange={handleChange} />
                 </div>
 
                 <div className="col-md-6">
-                    <input type="text" name="location.country" className="form-control marketplace-input" placeholder="Country" onChange={handleChange} />
+                    <label className="text-black">Country</label>
+                    <input type="text" name="location.country" className="form-control" placeholder="Enter country" onChange={handleChange} />
                 </div>
 
                 <div className="col-md-6">
-                    <input type="text" name="location.postalCode" className="form-control marketplace-input" placeholder="Postal Code" onChange={handleChange} />
+                    <label className="text-black">Postal Code</label>
+                    <input type="text" name="location.postalCode" className="form-control" placeholder="Enter postal code" onChange={handleChange} />
                 </div>
 
                 <div className="col-md-6">
-                    <select name="conditionType" className="form-select marketplace-input" onChange={handleChange}>
+                    <label className="text-black">Condition</label>
+                    <select name="conditionType" className="form-select" onChange={handleChange}>
                         <option value="new">New</option>
                         <option value="like_new">Like New</option>
                         <option value="good">Good</option>
@@ -136,30 +152,45 @@ const CreateMarketplaceItem = () => {
                 </div>
 
                 <div className="col-md-6">
-                    <input type="number" name="quantity" min="1" className="form-control marketplace-input" placeholder="Quantity" onChange={handleChange} />
+                    <label className="text-black">Quantity</label>
+                    <input type="number" name="quantity" min="1" className="form-control" placeholder="Enter quantity" onChange={handleChange} />
                 </div>
 
                 <div className="col-md-6 d-flex align-items-center">
                     <input type="checkbox" name="isNegotiable" className="form-check-input me-2" onChange={(e) => setFormData({ ...formData, isNegotiable: e.target.checked })} />
-                    <label className="form-check-label text-black">Negotiable</label>
+                    <label className="form-check-label text-dark">Price is Negotiable</label>
                 </div>
 
                 <div className="col-md-6">
-                    <input type="text" name="tags" className="form-control marketplace-input" placeholder="Tags (comma separated)" onChange={handleChange} />
+                    <label className="text-black">Tags</label>
+                    <input type="text" name="tags" className="form-control" placeholder="Comma-separated tags (e.g. iPhone, mobile)" onChange={handleChange} />
                 </div>
 
-                <div className="col-md-12">
-                    <label className="text-black">Upload Image:</label>
-                    <input type="file" accept="image/*" onChange={handleFileChange} className="form-control marketplace-input" />
+                <div className="col-12">
+                    <label className="text-black">Upload Image</label>
+                    <input type="file" accept="image/*" onChange={handleFileChange} className="form-control" />
                     {previewUrl && (
                         <div className="mt-3">
-                            <img src={previewUrl} alt="Preview" className="img-thumbnail w-100" style={{ maxWidth: "250px" }} />
+                            <img src={previewUrl} alt="Preview" className="img-thumbnail" style={{ maxWidth: "250px" }} />
                         </div>
                     )}
                 </div>
 
-                <div className="col-12 text-center mt-3">
-                    <button type="submit" className="btn btn-primary px-4 py-2">Submit Item</button>
+                <div className="col-12 text-center mt-4">
+                    <button
+                        type="submit"
+                        className="btn btn-primary px-4 py-2 fw-semibold"
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <>
+                                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Submitting...
+                            </>
+                        ) : (
+                            "Submit Item"
+                        )}
+                    </button>
                 </div>
             </div>
         </form>
