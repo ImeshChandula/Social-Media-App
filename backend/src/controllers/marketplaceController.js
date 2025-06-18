@@ -101,7 +101,55 @@ const getAllMyItems = async (req, res) => {
 };
 
 const updateItem = async (req, res) => {
-	try {} catch (error) {}
+	try {
+        const itemId = req.params.id;
+        const { images, ...rest } = req.body;
+
+        const item = await marketplaceService.findById(itemId);
+        if (!item) {
+            return res.status(404).json({ success: false, message: "Item not found"});
+        }
+
+        if (item.author !== req.user.id && (req.user.role !== "admin" || req.user.role !== "super_admin")) {
+            return res.status(403).json({ success: false, message: "Unauthorized: You can not update others items" });
+        }
+
+        if (req.body.isAccept && (req.user.role !== "admin" || req.user.role !== "super_admin")){
+            return res.status(403).json({ success: false, message: "Unauthorized: You can not update isAccept field" });
+        }
+
+        let updatedItem = await marketplaceService.updateById(itemId, rest);
+        if (!updatedItem) {
+            return res.status(400).json({ success: false, message: "Failed to update item data"});
+        }
+
+        const updateData = {};
+        if (images != undefined) {
+            const mediaType = "image";
+
+            const result = await handleMediaUpload(images, mediaType);
+            if (!result.success) {
+                return res.status(result.code).json({
+                    success: false,
+                    error: result.error,
+                    message: result.message,
+                    ...(result.suggestion && { suggestion: result.suggestion }),
+                    ...(result.maxSize && { maxSize: result.maxSize })
+                });
+            }
+
+            updateData.images = result.imageUrl;
+        }
+
+        updatedItem = await marketplaceService.updateById(itemId, updateData);
+        if (!updatedItem) {
+            return res.status(400).json({ success: false, message: "Failed to update item images"});
+        }
+
+        return res.status(200).json({ success: true, message: "Item updated successfully", data: updatedItem});
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
 };
 
 const deleteItem = async (req, res) => {
@@ -126,4 +174,4 @@ const deleteItem = async (req, res) => {
     }
 };
 
-module.exports = {createItem, getAllItems, getAllMyItems, getAllActiveItems, deleteItem}
+module.exports = {createItem, getAllItems, getAllMyItems, getAllActiveItems, updateItem, deleteItem}
