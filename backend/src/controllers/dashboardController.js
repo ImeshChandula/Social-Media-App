@@ -2,9 +2,9 @@ const ROLES = require("../enums/roles");
 const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const StoryService = require('../services/storyService');
-const JobCategoryService = require('../services/jobCategoryService');
+const CategoryService = require('../services/categoryService');
 
-const jobCategoryService = new JobCategoryService();
+const jobCategoryService = new CategoryService();
 
 const userSummery = async (req, res) => {
     try {

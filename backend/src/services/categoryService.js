@@ -1,11 +1,11 @@
 const { connectFirebase } = require('../config/firebase');
-const JobCategory = require('../models/JobCategory');
+const Category = require('../models/Category');
 
 const { db } = connectFirebase();
 
-class JobCategoryService {
+class CategoryService {
     constructor () {
-        this.collection = db.collection('jobCategories');
+        this.collection = db.collection('categories');
     }
 
     // find by id
@@ -16,23 +16,26 @@ class JobCategoryService {
                 return null;
             }
 
-            return new JobCategory(doc.id, doc.data());
+            return new Category(doc.id, doc.data());
         } catch (error) {
             throw error;
         }
     }
 
     // find by job name
-    async findByJobName(name) {
+    async findByNameAndField(name, field) {
         try {
-            const jobRef = await this.collection.where('name', '==', name).get();
+            const jobRef = await this.collection
+                .where('categoryFor', '==', field)
+                .where('name', '==', name)
+                .get();
             
             if (jobRef.empty) {
                 return null;
             }
 
-            const jobCategory = jobRef.docs.map(doc => new JobCategory(doc.id, doc.data()));
-            return jobCategory
+            const category = jobRef.docs.map(doc => new Category(doc.id, doc.data()));
+            return category
         } catch (error) {
             throw error;
         }
@@ -44,7 +47,7 @@ class JobCategoryService {
             categoryData.createdAt = new Date().toISOString();
 
             const docRef = await this.collection.add(categoryData);
-            return new JobCategory(docRef.id, categoryData);
+            return new Category(docRef.id, categoryData);
         } catch (error) {
             throw error;
         }
@@ -58,34 +61,45 @@ class JobCategoryService {
             if (jobRef.empty) {
                 return [];
             }
-            const jobCategories = jobRef.docs.map(doc => new JobCategory(doc.id, doc.data()));
-            return jobCategories;
+            const categories = jobRef.docs.map(doc => new Category(doc.id, doc.data()));
+            return categories;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async findAllByField(field) {
+        try {
+            const jobRef = await this.collection
+                .where('categoryFor', '==', field)
+                .orderBy('createdAt', 'desc')
+                .get();
+
+            if (jobRef.empty) {
+                return [];
+            }
+            const categories = jobRef.docs.map(doc => new Category(doc.id, doc.data()));
+            return categories;
         } catch (error) {
             throw error;
         }
     }
 
     // get all active
-    async findAllActive() {
+    async findAllActiveByField(field) {
         try {
-            const jobRef = await this.collection.get();
-            
-            //console.log(`Query returned ${jobRef.docs.length} documents`);
+            const jobRef = await this.collection
+            .where('categoryFor', '==', field)
+            .where('isActive', '==', true)
+            .orderBy('name')
+            .get();
 
-            const activeCategories = jobRef.docs
-                .map(doc => new JobCategory(doc.id, doc.data()))
-                .filter(category => {
-                    // Handle both boolean and string values
-                    const isActive = category.isActive === true || category.isActive === "true";
-                    //console.log(`Category: ${category.name}, isActive: ${category.isActive}, type: ${typeof category.isActive}, filtered: ${isActive}`);
-                    return isActive;
-                });
+        if (jobRef.empty) {
+            return [];
+        }
 
-            if (activeCategories.empty) {
-                return [];
-            }
-
-            return activeCategories.sort((a, b) => a.name.localeCompare(b.name));
+        const categories = jobRef.docs.map(doc => new Category(doc.id, doc.data()));
+        return categories;
         } catch (error) {
             throw error;
         }
@@ -116,4 +130,4 @@ class JobCategoryService {
     }
 }
 
-module.exports = JobCategoryService;
+module.exports = CategoryService;

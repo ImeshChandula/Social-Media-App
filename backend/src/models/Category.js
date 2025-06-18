@@ -1,6 +1,7 @@
-class JobCategory {
+class Category {
   constructor(id, categoryData) {
     this.id = id;
+    this.categoryFor = categoryData.categoryFor; // job_role, marketplace, other
     this.name = categoryData.name;
     this.description = categoryData.description || '';
     this.author = categoryData.author;
@@ -10,4 +11,4 @@ class JobCategory {
   }
 }
 
-module.exports = JobCategory;
+module.exports = Category;

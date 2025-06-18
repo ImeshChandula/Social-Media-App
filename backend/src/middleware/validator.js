@@ -165,8 +165,9 @@ const validateStory = (req, res, next) => {
 
 
 // Validate comment creation
-const validateJobCategory = (req, res, next) => {
+const validateCategory = (req, res, next) => {
   const schema = Joi.object({
+    categoryFor: Joi.string().valid('job_role', 'marketplace', 'other').required(),
     name: Joi.string().required(),
     description: Joi.string().allow('').optional(),
     author: Joi.string().optional(),
@@ -184,4 +185,4 @@ const validateJobCategory = (req, res, next) => {
 
 
 
-module.exports = {validateUser, validatePost, validateComment, validateStory, validateJobCategory };
+module.exports = {validateUser, validatePost, validateComment, validateStory, validateCategory };
