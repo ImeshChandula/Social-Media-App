@@ -33,7 +33,6 @@ const CreateMarketplaceItem = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         if (name.includes("contactDetails.") || name.includes("location.")) {
