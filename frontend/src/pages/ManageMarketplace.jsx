@@ -43,6 +43,7 @@ const ManageMarketplace = () => {
             showAuthor={true}
             showCategory={true}
             showAllDetails={true}
+            showContactDetails = {true}
           />
         ))}
       </div>

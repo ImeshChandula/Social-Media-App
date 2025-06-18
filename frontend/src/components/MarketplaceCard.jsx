@@ -1,7 +1,7 @@
 import React from "react";
 import "../styles/Marketplace.css";
 
-const MarketplaceCard = ({ item, showAuthor = true, showCategory = false, showAllDetails = false }) => {
+const MarketplaceCard = ({ item, showAuthor = true, showCategory = false, showAllDetails = false, showContactDetails = false }) => {
     return (
         <div className="col-lg-4 col-md-6 col-sm-6 mb-4">
             <div className="marketplace-card card h-100 border shadow-sm">
@@ -64,6 +64,30 @@ const MarketplaceCard = ({ item, showAuthor = true, showCategory = false, showAl
                                     <p className="mb-1 fw-bold text-muted">Tags</p>
                                     <p className="mb-0">{item.tags?.join(", ")}</p>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showContactDetails && (
+                        <div className="mt-3 border-top pt-3">
+                            <h6 className="fw-semibold text-dark mb-3">Contact Details</h6>
+                            <div className="row gy-2">
+                                {item.contactDetails?.phone && (
+                                    <div className="col-12">
+                                        <div className="d-flex flex-column">
+                                            <span className="text-muted small fw-bold">Phone</span>
+                                            <span className="text-dark">{item.contactDetails.phone}</span>
+                                        </div>
+                                    </div>
+                                )}
+                                {item.contactDetails?.email && (
+                                    <div className="col-12">
+                                        <div className="d-flex flex-column">
+                                            <span className="text-muted small fw-bold">Email</span>
+                                            <span className="text-dark">{item.contactDetails.email}</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
