@@ -22,7 +22,14 @@ const MarketMyProducts = () => {
         fetchItems();
     }, []);
 
-    if (loading) return <div className="normal-loading-spinner">Loading...</div>;
+    if (loading) {
+        return (
+            <div className="normal-loading-spinner">
+                Loading<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
+            </div>
+        )
+    }
+    
     if (error) return <div className="alert alert-danger m-4 text-center">Error: {error}</div>;
 
     return (
