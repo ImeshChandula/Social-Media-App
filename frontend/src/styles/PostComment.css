@@ -6,7 +6,7 @@
     background: #f0f2f5;
     border-radius: 8px;
     font-family: "Segoe UI", sans-serif;
-    max-height: 600px;
+    max-height: 400px;
     overflow-y: auto;
 }
 
@@ -71,7 +71,7 @@
 .fb-comment-box {
     display: flex;
     align-items: flex-start;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .fb-comment-content {
@@ -237,4 +237,32 @@
 
 .fb-upload-icon:hover {
     background: #e4e6eb;
+}
+
+.fb-comment-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    /* or set desired max-height */
+    position: relative;
+}
+
+.fb-comments-scroll {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    padding-bottom: 120px;
+    /* space for fixed input */
+}
+
+.fb-comment-input-fixed {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1px solid #ccc;
+    padding: 10px 15px;
+    box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.1);
+    z-index: 999;
 }
