@@ -41,13 +41,13 @@
     color: #475569;
 }
 
-.tab-button.active {
+.tab-button.tab-active {
     background: linear-gradient(135deg, #3b82f6, #1d4ed8);
     color: white;
     box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
 }
 
-.tab-button.active::after {
+.tab-button.tab-active::after {
     content: '';
     position: absolute;
     bottom: -2px;
