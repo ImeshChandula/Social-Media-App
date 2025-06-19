@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const { APPEAL_STATUS, APPEAL_PRIORITY } = require('../enums/appeal');
 
 // Validate user registration
 const validateUserData = (req, res, next) => {
@@ -61,21 +62,78 @@ const validateAppeal = (req, res, next) => {
   const schema = Joi.object({
     username: Joi.string().min(3).max(30).required(),
     email: Joi.string().email().required(),
+    author: Joi.string().optional(),
     
     appealReason: Joi.string().min(10).max(1000).required(),
-    additionalInfo: Joi.string().allow('').allow(null).max(2000).optional(),
+    additionalInfo: Joi.string().allow('').max(2000).default(null),
+    incidentDate: Joi.date().iso().allow('', null).default(null),
+    contactMethod: Joi.string().valid('email', 'phone').default('email'),
+
+    adminNotes: Joi.string().allow('').max(2000).default(''),
+    reviewedAt: Joi.date().iso().allow(null).default(null),
+    responseMessage: Joi.string().allow('').max(2000).default(''),
+
+    appealNumber: Joi.string().default(''),
     
-    incidentDate: Joi.date().iso().allow(null),
-    contactMethod: Joi.string().valid('email', 'phone').default('email')
+    communications: Joi.array().items(Joi.object()).default([]),
+
+    status: Joi.string().valid(...Object.values(APPEAL_STATUS)).default(APPEAL_STATUS.PENDING),
+    priority: Joi.string().valid(...Object.values(APPEAL_PRIORITY)).default(APPEAL_PRIORITY.MEDIUM),
+
   });
 
-  const { error } = schema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ message: error.details[0].message });
-  }
-  next();
+  const { error, value } = schema.validate(req.body, {
+        allowUnknown: false,
+        stripUnknown: true,
+        abortEarly: false
+    });
+
+    if (error) {
+        return res.status(400).json({ 
+            success: false,
+            message: error.details[0].message,
+            errors: error.details.map(detail => ({
+              field: detail.path.join('.'),
+              message: detail.message
+            }))
+        });
+    }
+
+    req.body = value;
+    next();
 };
 
+
+// Validate support mails
+const validateAppealUpdate = (req, res, next) => {
+  const schema = Joi.object({
+    status: Joi.string().valid(...Object.values(APPEAL_STATUS)).optional(),
+    priority: Joi.string().valid(...Object.values(APPEAL_PRIORITY)).optional(),
+    adminNotes: Joi.string().max(2000).allow('').optional(),
+    responseMessage: Joi.string().max(2000).allow('').optional(),
+    reviewedAt: Joi.date().iso().optional()
+  });
+
+  const { error, value } = schema.validate(req.body, {
+    allowUnknown: false,
+    stripUnknown: true,
+    abortEarly: false
+  });
+
+  if (error) {
+    return res.status(400).json({ 
+      success: false,
+      message: error.details[0].message,
+      errors: error.details.map(detail => ({
+        field: detail.path.join('.'),
+        message: detail.message
+      }))
+    });
+  }
+
+  req.body = value;
+  next();
+};
 
 // CREATE VALIDATOR - With defaults
 const validateMarketPlace = (req, res, next) => {
@@ -131,7 +189,11 @@ const validateMarketPlace = (req, res, next) => {
     if (error) {
         return res.status(400).json({ 
             success: false,
-            message: error.details[0].message 
+            message: error.details[0].message,
+            errors: error.details.map(detail => ({
+              field: detail.path.join('.'),
+              message: detail.message
+            }))
         });
     }
 
@@ -186,7 +248,11 @@ const validateMarketPlaceUpdate = (req, res, next) => {
     if (error) {
         return res.status(400).json({ 
             success: false,
-            message: error.details[0].message 
+            message: error.details[0].message,
+            errors: error.details.map(detail => ({
+              field: detail.path.join('.'),
+              message: detail.message
+            }))
         });
     }
 
@@ -195,4 +261,4 @@ const validateMarketPlaceUpdate = (req, res, next) => {
 };
 
 
-module.exports = {validateUserData, validateMails, validateAppeal, validateMarketPlace, validateMarketPlaceUpdate};
+module.exports = {validateUserData, validateMails, validateAppeal, validateAppealUpdate, validateMarketPlace, validateMarketPlaceUpdate};

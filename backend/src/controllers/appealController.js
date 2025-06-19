@@ -3,16 +3,19 @@ const UserService = require('../services/userService');
 const transporter = require('../config/nodemailer');
 const populateAuthor = require('../utils/populateAuthor');
 const {BAN_APPEAL_TEMPLATE} = require('../utils/emailTemplates');
-const { APPEAL_STATUS, APPEAL_PRIORITY } = require('../enums/appeal');
 
 const appealService = new AppealService();
 
 const createAppeal = async (req, res) => {
     try {
-        const {username, email, appealReason, additionalInfo, incidentDate, contactMethod} = req.body;
+        const { email } = req.body;
         const user = await UserService.findById(req.user.id);
 
-        if (req.body.email !== user.email) {
+        if (req.user.accountStatus !== "banned") {
+            return res.status(400).json({ success: false, message: "Your account is not banned"});
+        }
+
+        if (email !== user.email) {
             return res.status(400).json({
                 success: false,
                 message: "Your email does not match with your registered email"
@@ -27,22 +30,15 @@ const createAppeal = async (req, res) => {
             });
         }
 
-        const randomNumber = String(Math.floor(100000 + Math.random() * 900000));
-
         const appealData = {
             author: req.user.id,
-            username, 
-            email, 
-            appealReason, 
-            additionalInfo: additionalInfo || null, 
-            incidentDate: incidentDate || null, 
-            contactMethod: contactMethod || "email", 
-            appealNumber: randomNumber,
-            status: APPEAL_STATUS.PENDING,
-            priority: APPEAL_PRIORITY.MEDIUM
+            ...req.body
         }
 
         const appeal = await appealService.create(appealData);
+        if (!appeal) {
+            return res.status(400).json({ success: false, message: "Failed to create appeal"});
+        }
 
         const mailOptions = {
             from: process.env.SENDER_EMAIL,
@@ -58,7 +54,7 @@ const createAppeal = async (req, res) => {
 
         return res.status(201).json({ 
             success: true, 
-            message: "Ban Appeal created successfully",
+            message: "Ban Appeal created successfully. Response message was sent to your email.",
             data: appeal
         });
     } catch (error) {

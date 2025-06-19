@@ -22,7 +22,7 @@ class MarketPlace {
         this.tags = data.tags;
 
         this.createdAt = data.createdAt || new Date().toISOString();
-        this.updatedAt = new Date().toISOString();
+        this.updatedAt = data.updatedAt || new Date().toISOString();
     }
 }
 
