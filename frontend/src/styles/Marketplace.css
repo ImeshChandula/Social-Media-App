@@ -1,29 +1,56 @@
 .marketplace-card {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-radius: 12px;
+  border-radius: 16px;
+  overflow: hidden;
   background-color: #ffffff;
   color: #212529;
 }
 
 .marketplace-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-6px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
 }
 
 .marketplace-image {
-  height: 220px;
-  object-fit: contain;
-  background-color: #f8f9fa;
-  padding: 12px;
+  height: 240px;
+  object-fit: cover;
+  width: 100%;
   border-bottom: 1px solid #dee2e6;
 }
 
-.marketplace-card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
+.product-button-set {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 
-.marketplace-card-text {
-  font-size: 0.9rem;
-  color: #6c757d;
+.product-edit-btn,
+.product-delete-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.product-edit-btn {
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+.product-edit-btn:hover {
+  background-color: #0b5ed7;
+}
+
+.product-delete-btn {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.product-delete-btn:hover {
+  background-color: #bb2d3b;
+}
+
+.card-header .text-muted + .text-muted {
+  margin-left: 1rem;
 }

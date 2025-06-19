@@ -1,5 +1,5 @@
 import React from "react";
-import MarketplaceItemDropdown from "./MarketplaceItemDropdown";
+import MarketplaceItemButton from "./MarketplaceItemButton";
 
 const MarketplaceCard = ({
     item,
@@ -7,15 +7,14 @@ const MarketplaceCard = ({
     showCategory = false,
     showAllDetails = false,
     showContactDetails = false,
-    showStatus = true,
     showActions = false,
     onDelete = () => { },
 }) => {
     return (
-        <div className="col-lg-4 col-md-6 col-sm-6 mb-4">
-            <div className="marketplace-card card h-100 border shadow-sm">
+        <div className="col-lg-4 col-md-6 col-sm-12 mb-4">
+            <div className="marketplace-card card shadow-sm h-100">
                 {(showAuthor && item.author) || showActions ? (
-                    <div className="card-header d-flex justify-content-between align-items-center bg-light border-bottom">
+                    <div className="card-header d-flex justify-content-between align-items-center bg-light">
                         <div className="d-flex align-items-center">
                             {item.author && showAuthor && (
                                 <>
@@ -27,34 +26,34 @@ const MarketplaceCard = ({
                                         height="40"
                                         style={{ objectFit: "cover" }}
                                     />
-                                    <small className="text-muted">{item.author.username}</small>
+                                    <div>
+                                        <div className="text-dark fw-semibold">{item.author.username}</div>
+                                        <small className="text-muted">{new Date(item.createdAt).toLocaleDateString()}</small>
+                                    </div>
                                 </>
                             )}
                         </div>
-                        {showActions && (
-                            <MarketplaceItemDropdown itemId={item.id} onDelete={onDelete} />
-                        )}
+                        <span className={`badge text-capitalize px-3 py-1  ${item.status === 'active' ? 'bg-success' :
+                            item.status === 'expired' || item.status === 'removed' ? 'bg-danger' :
+                                item.status === 'pending' ? 'bg-warning text-dark' :
+                                    item.status === 'sold' ? 'bg-secondary' : 'bg-secondary'}`}>
+                            {item.status}
+                        </span>
                     </div>
                 ) : null}
 
                 {item.images?.length > 0 && (
-                    <img
-                        src={item.images[0]}
-                        alt={item.title}
-                        className="marketplace-image card-img-top"
-                    />
+                    <img src={item.images[0]} alt={item.title} className="marketplace-image" />
                 )}
 
                 <div className="card-body d-flex flex-column">
-                    <h5 className="card-title fw-semibold text-dark">{item.title}</h5>
+                    <h5 className="card-title fw-semibold">{item.title}</h5>
 
                     {showCategory && (
                         <h6 className="card-subtitle mb-2 text-muted">{item.category}</h6>
                     )}
 
-                    <p className="card-text small flex-grow-1 text-secondary">
-                        {item.description}
-                    </p>
+                    <p className="card-text text-secondary small flex-grow-1">{item.description}</p>
 
                     <p className="fw-bold text-primary mt-auto">{item.currency} {item.price}</p>
 
@@ -64,23 +63,23 @@ const MarketplaceCard = ({
                             <div className="row gy-2">
                                 <div className="col-md-6">
                                     <p className="mb-1 fw-bold text-muted">Location</p>
-                                    <p className="mb-2">{item.location?.city}, {item.location?.state}, {item.location?.country}</p>
+                                    <p>{item.location?.city}, {item.location?.state}, {item.location?.country}</p>
                                 </div>
                                 <div className="col-md-6">
                                     <p className="mb-1 fw-bold text-muted">Quantity</p>
-                                    <p className="mb-2">{item.quantity}</p>
+                                    <p>{item.quantity}</p>
                                 </div>
                                 <div className="col-md-6">
                                     <p className="mb-1 fw-bold text-muted">Condition</p>
-                                    <p className="mb-2">{item.conditionType}</p>
+                                    <p>{item.conditionType}</p>
                                 </div>
                                 <div className="col-md-6">
                                     <p className="mb-1 fw-bold text-muted">Negotiable</p>
-                                    <p className="mb-2">{item.isNegotiable ? "Yes" : "No"}</p>
+                                    <p>{item.isNegotiable ? "Yes" : "No"}</p>
                                 </div>
                                 <div className="col-12">
                                     <p className="mb-1 fw-bold text-muted">Tags</p>
-                                    <p className="mb-0">{item.tags?.join(", ")}</p>
+                                    <p>{item.tags?.join(", ")}</p>
                                 </div>
                             </div>
                         </div>
@@ -117,42 +116,15 @@ const MarketplaceCard = ({
                             </div>
                         </div>
                     )}
-
-                    {showStatus && (
-                        <div className="mt-3 border-top pt-3">
-                            <h6 className="fw-semibold text-dark mb-3">Publication Details</h6>
-                            <div className="d-flex flex-column gap-2">
-
-                                <div className="d-flex justify-content-between">
-                                    <span className="text-muted fw-bold">Status</span>
-                                    <span className={
-                                        `badge px-3 py-1 text-capitalize ${item.status === 'active' ? 'bg-success' :
-                                            item.status === 'expired' ? 'bg-danger' :
-                                                item.status === 'removed' ? 'bg-danger' :
-                                                    item.status === 'pending' ? 'bg-warning text-dark' :
-                                                        item.status === 'pending' ? 'bg-secondary' : 'bg-secondary'
-                                        }`
-                                    }>
-                                        {item.status}
-                                    </span>
-                                </div>
-
-                                <div className="d-flex justify-content-between">
-                                    <span className="text-muted fw-bold">Created</span>
-                                    <span className="text-dark">{new Date(item.createdAt).toLocaleDateString()}</span>
-                                </div>
-
-                                <div className="d-flex justify-content-between">
-                                    <span className="text-muted fw-bold">Expires</span>
-                                    <span className="text-dark">{new Date(item.expiresAt).toLocaleDateString()}</span>
-                                </div>
-
-                            </div>
-                        </div>
-                    )}
                 </div>
+
+                {showActions && (
+                    <div className="card-footer bg-white border-top">
+                        <MarketplaceItemButton itemId={item.id} onDelete={onDelete} />
+                    </div>
+                )}
             </div>
-        </div >
+        </div>
     );
 };
 
