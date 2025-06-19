@@ -16,13 +16,13 @@ const CategoryManagement = () => {
                 {showButtons && (
                     <div className="tab-buttons">
                         <button
-                            className={`tab-button ${activeTab === 'jobRole' ? 'active' : ''}`}
+                            className={`tab-button ${activeTab === 'jobRole' ? 'tab-active' : ''}`}
                             onClick={() => setActiveTab('jobRole')}
                         >
                             Job Roles
                         </button>
                         <button
-                            className={`tab-button ${activeTab === 'marketplace' ? 'active' : ''}`}
+                            className={`tab-button ${activeTab === 'marketplace' ? 'tab-active' : ''}`}
                             onClick={() => setActiveTab('marketplace')}
                         >
                             Marketplace
