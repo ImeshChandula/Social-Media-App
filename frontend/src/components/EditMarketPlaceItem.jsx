@@ -99,7 +99,7 @@ const EditMarketPlaceItem = () => {
             };
 
             // 🧹 Remove `isAccept` if it exists to avoid backend restriction
-            delete dataToSend.isAccept;
+            // delete dataToSend.isAccept;
 
             // 🧹 Handle image conversion
             if (formData.images) {
