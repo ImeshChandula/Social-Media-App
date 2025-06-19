@@ -28,6 +28,10 @@ const MarketMyProducts = () => {
         navigate("/create-marketplace-item");
     };
 
+    const handleDelete = (itemId) => {
+        setMyItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
+    };
+
     if (loading) {
         return (
             <div className="normal-loading-spinner">
@@ -55,7 +59,14 @@ const MarketMyProducts = () => {
                     <div className="col-12 text-center marketplace-text-muted">No items found.</div>
                 ) : (
                     myItems.map(item => (
-                        <MarketplaceCard key={item.id} item={item} showAuthor={false} showCategory={true} />
+                        <MarketplaceCard
+                            key={item.id}
+                            item={item}
+                            showAuthor={true}
+                            showCategory={true}
+                            showActions={true}
+                            onDelete={handleDelete}
+                        />
                     ))
                 )}
             </div>

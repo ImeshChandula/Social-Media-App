@@ -1,22 +1,41 @@
 import React from "react";
+import MarketplaceItemDropdown from "./MarketplaceItemDropdown";
 
-const MarketplaceCard = ({ item, showAuthor = true, showCategory = false, showAllDetails = false, showContactDetails = false, showStatus = true }) => {
+const MarketplaceCard = ({
+    item,
+    showAuthor = true,
+    showCategory = false,
+    showAllDetails = false,
+    showContactDetails = false,
+    showStatus = true,
+    showActions = false,
+    onDelete = () => { },
+}) => {
     return (
         <div className="col-lg-4 col-md-6 col-sm-6 mb-4">
             <div className="marketplace-card card h-100 border shadow-sm">
-                {showAuthor && item.author && (
-                    <div className="card-header d-flex align-items-center bg-light border-bottom">
-                        <img
-                            src={item.author.profilePicture}
-                            alt={item.author.username}
-                            className="rounded-circle me-2"
-                            width="40"
-                            height="40"
-                            style={{ objectFit: "cover" }}
-                        />
-                        <small className="text-muted">{item.author.username}</small>
+                {(showAuthor && item.author) || showActions ? (
+                    <div className="card-header d-flex justify-content-between align-items-center bg-light border-bottom">
+                        <div className="d-flex align-items-center">
+                            {item.author && showAuthor && (
+                                <>
+                                    <img
+                                        src={item.author.profilePicture}
+                                        alt={item.author.username}
+                                        className="rounded-circle me-2"
+                                        width="40"
+                                        height="40"
+                                        style={{ objectFit: "cover" }}
+                                    />
+                                    <small className="text-muted">{item.author.username}</small>
+                                </>
+                            )}
+                        </div>
+                        {showActions && (
+                            <MarketplaceItemDropdown itemId={item.id} onDelete={onDelete} />
+                        )}
                     </div>
-                )}
+                ) : null}
 
                 {item.images?.length > 0 && (
                     <img
