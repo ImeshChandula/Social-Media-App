@@ -1,6 +1,6 @@
 import React from "react";
 
-const MarketplaceCard = ({ item, showAuthor = true, showCategory = false, showAllDetails = false, showContactDetails = false }) => {
+const MarketplaceCard = ({ item, showAuthor = true, showCategory = false, showAllDetails = false, showContactDetails = false, showStatus = true }) => {
     return (
         <div className="col-lg-4 col-md-6 col-sm-6 mb-4">
             <div className="marketplace-card card h-100 border shadow-sm">
@@ -87,12 +87,53 @@ const MarketplaceCard = ({ item, showAuthor = true, showCategory = false, showAl
                                         </div>
                                     </div>
                                 )}
+                                {item.contactDetails?.whatsapp && (
+                                    <div className="col-12">
+                                        <div className="d-flex flex-column">
+                                            <span className="text-muted small fw-bold">Whatsapp</span>
+                                            <span className="text-dark">{item.contactDetails.whatsapp}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {showStatus && (
+                        <div className="mt-3 border-top pt-3">
+                            <h6 className="fw-semibold text-dark mb-3">Publication Details</h6>
+                            <div className="d-flex flex-column gap-2">
+
+                                <div className="d-flex justify-content-between">
+                                    <span className="text-muted fw-bold">Status</span>
+                                    <span className={
+                                        `badge px-3 py-1 text-capitalize ${item.status === 'active' ? 'bg-success' :
+                                            item.status === 'expired' ? 'bg-danger' :
+                                                item.status === 'removed' ? 'bg-danger' :
+                                                    item.status === 'pending' ? 'bg-warning text-dark' :
+                                                        item.status === 'pending' ? 'bg-secondary' : 'bg-secondary'
+                                        }`
+                                    }>
+                                        {item.status}
+                                    </span>
+                                </div>
+
+                                <div className="d-flex justify-content-between">
+                                    <span className="text-muted fw-bold">Created</span>
+                                    <span className="text-dark">{new Date(item.createdAt).toLocaleDateString()}</span>
+                                </div>
+
+                                <div className="d-flex justify-content-between">
+                                    <span className="text-muted fw-bold">Expires</span>
+                                    <span className="text-dark">{new Date(item.expiresAt).toLocaleDateString()}</span>
+                                </div>
+
                             </div>
                         </div>
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
