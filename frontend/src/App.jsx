@@ -12,6 +12,7 @@ import styles from "./styles/DashboardStyle";
 import useAuthStore from "./store/authStore";
 import Support from "./routes/Support";
 import Request from "./routes/Request";
+import EditMarketPlaceItem from "./components/EditMarketPlaceItem";
 
 const App = () => {
 
@@ -84,6 +85,11 @@ const App = () => {
           <Route
             path="/edit-profile"
             element={authUser && authUser.accountStatus !== "banned" ? <EditProfile /> : <Navigate to="/login" />}
+          />
+          
+          <Route
+            path="/edit-marketplace-item/:id"
+            element={authUser && authUser.accountStatus !== "banned" ? <EditMarketPlaceItem /> : <Navigate to="/login" />}
           />
 
           <Route 
