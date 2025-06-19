@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -33,6 +33,10 @@ const CreateMarketplaceItem = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const [categories, setCategories] = useState([]);
+    const [catLoading, setCatLoading] = useState(true);
+    const [catError, setCatError] = useState("");
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         if (name.includes("contactDetails.") || name.includes("location.")) {
@@ -60,6 +64,22 @@ const CreateMarketplaceItem = () => {
         setPreviewUrl(URL.createObjectURL(file));
     };
 
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await axiosInstance.get("/categories/active/marketplace");
+                setCategories(res.data.data);
+                setCatError("");
+            } catch (err) {
+                setCatError("Failed to load categories");
+            } finally {
+                setCatLoading(false);
+            }
+        };
+
+        fetchCategories();
+    }, []);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -86,7 +106,28 @@ const CreateMarketplaceItem = () => {
             <div className="row g-4">
                 <div className="col-md-6">
                     <label className="text-black">Category</label>
-                    <input type="text" name="category" className="form-control" placeholder="E.g. Electronics, Furniture" required onChange={handleChange} />
+                    {catLoading ? (
+                        <div className="form-control bg-light text-muted">Loading categories...</div>
+                    ) : catError ? (
+                        <div className="text-danger">{catError}</div>
+                    ) : categories.length === 0 ? (
+                        <div className="text-muted">No active categories available</div>
+                    ) : (
+                        <select
+                            name="category"
+                            className="form-select"
+                            value={formData.category}
+                            required
+                            onChange={handleChange}
+                        >
+                            <option value="">Select a category</option>
+                            {categories.map((cat) => (
+                                <option key={cat.id} value={cat.name}>
+                                    {cat.name}
+                                </option>
+                            ))}
+                        </select>
+                    )}
                 </div>
 
                 <div className="col-md-6">

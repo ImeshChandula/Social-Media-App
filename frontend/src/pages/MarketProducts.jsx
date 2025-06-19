@@ -37,7 +37,13 @@ const MarketProducts = () => {
       <h2 className="mb-4 text-light">Marketplace</h2>
       <div className="row">
         {items.map(item => (
-          <MarketplaceCard key={item.id} item={item} showAuthor={true} />
+          <MarketplaceCard
+            key={item.id}
+            item={item}
+            showCategory={true}
+            showAllDetails={true}
+            showContactDetails={true}
+          />
         ))}
       </div>
     </div>

@@ -62,8 +62,9 @@ const MarketMyProducts = () => {
                         <MarketplaceCard
                             key={item.id}
                             item={item}
-                            showAuthor={true}
                             showCategory={true}
+                            showAllDetails={true}
+                            showContactDetails={true}
                             showActions={true}
                             onDelete={handleDelete}
                         />

@@ -30,27 +30,43 @@ const EditMarketPlaceItem = () => {
 
     const [loading, setLoading] = useState(false);
 
+    const [categories, setCategories] = useState([]);
+    const [catLoading, setCatLoading] = useState(true);
+    const [catError, setCatError] = useState("");
+
+
     useEffect(() => {
-        const fetchItem = async () => {
+        const fetchData = async () => {
             try {
-                const res = await axiosInstance.get(`/marketplace/myItems`);
-                const item = res.data.data.find((itm) => itm.id === id);
+                const [itemRes, categoryRes] = await Promise.all([
+                    axiosInstance.get("/marketplace/myItems"),
+                    axiosInstance.get("/categories/active/marketplace"),
+                ]);
+
+                const item = itemRes.data.data.find((itm) => itm.id === id);
                 if (!item) {
                     toast.error("Item not found");
-                    return navigate('/marketplace');
+                    return navigate("/marketplace");
                 }
+
                 setFormData({
                     ...item,
-                    contactDetails: item.contactDetails || { phone: '', email: '' },
-                    location: item.location || { city: '', state: '', country: '', postalCode: '' },
+                    contactDetails: item.contactDetails || { phone: "", email: "" },
+                    location: item.location || { city: "", state: "", country: "", postalCode: "" },
                     images: null,
                 });
+
+                setCategories(categoryRes.data.data);
+                setCatError("");
             } catch (error) {
+                setCatError("Failed to load categories");
                 toast.error(error?.response?.data?.message || "Update failed");
+            } finally {
+                setCatLoading(false);
             }
         };
 
-        fetchItem();
+        fetchData();
     }, [id, navigate]);
 
     const handleChange = (e) => {
@@ -134,37 +150,67 @@ const EditMarketPlaceItem = () => {
         <div className="container py-4">
             <h2 className="mb-4">Edit Marketplace Item</h2>
             <form onSubmit={handleSubmit}>
+
                 <div className="form-group mb-3">
                     <label>Title</label>
                     <input type="text" name="title" className="form-control" value={formData.title} onChange={handleChange} required />
                 </div>
+
                 <div className="form-group mb-3">
                     <label>Category</label>
-                    <input type="text" name="category" className="form-control" value={formData.category} onChange={handleChange} required />
+                    {catLoading ? (
+                        <div className="form-control bg-light text-muted">Loading categories...</div>
+                    ) : catError ? (
+                        <div className="text-danger">{catError}</div>
+                    ) : categories.length === 0 ? (
+                        <div className="text-muted">No active categories found</div>
+                    ) : (
+                        <select
+                            name="category"
+                            className="form-select"
+                            value={formData.category}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="">Select a category</option>
+                            {categories.map((cat) => (
+                                <option key={cat.id} value={cat.name}>
+                                    {cat.name}
+                                </option>
+                            ))}
+                        </select>
+                    )}
                 </div>
+
                 <div className="form-group mb-3">
                     <label>Description</label>
                     <textarea name="description" className="form-control" value={formData.description} onChange={handleChange} />
                 </div>
+
                 <div className="form-group mb-3">
                     <label>Price</label>
                     <input type="number" name="price" className="form-control" value={formData.price} onChange={handleChange} required />
                 </div>
+
                 <div className="form-group mb-3">
                     <label>Phone</label>
                     <input type="text" name="contactDetails.phone" className="form-control" value={formData.contactDetails.phone} onChange={handleChange} />
                 </div>
+
                 <div className="form-group mb-3">
                     <label>Email</label>
                     <input type="email" name="contactDetails.email" className="form-control" value={formData.contactDetails.email} onChange={handleChange} />
                 </div>
+
                 <div className="form-group mb-3">
                     <label>Upload Images (optional)</label>
                     <input type="file" className="form-control" onChange={handleImageChange} multiple />
                 </div>
+
                 <button className="btn btn-success" type="submit" disabled={loading}>
                     {loading ? "Updating..." : "Update Item"}
                 </button>
+
             </form>
         </div>
     );
