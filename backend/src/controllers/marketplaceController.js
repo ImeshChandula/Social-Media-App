@@ -8,7 +8,7 @@ const createItem = async (req, res) => {
 	try {
         const { images, ...rest } = req.body;
 
-        if (!rest.category || !rest.title || !rest.price || !rest.contactDetails) {
+        if (!rest.category || !rest.title || !rest.price || !rest.currency || !rest.contactDetails) {
             return res.status(400).json({ success: false, message: "Missing required fields" });
         }
 
