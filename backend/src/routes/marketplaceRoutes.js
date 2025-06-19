@@ -1,5 +1,5 @@
 const express = require('express');
-const { validateMarketPlace } = require('../middleware/validateData');
+const { validateMarketPlace, validateMarketPlaceUpdate } = require('../middleware/validateData');
 const { authenticateUser, authorizeRoles } = require('../middleware/authMiddleware');
 const marketplaceController = require('../controllers/marketplaceController');
 
@@ -11,7 +11,7 @@ router.post('/createItem', validateMarketPlace, authenticateUser, marketplaceCon
 router.get('/getAllItems', authenticateUser, authorizeRoles("super_admin"), marketplaceController.getAllItems);
 router.get('/myItems', authenticateUser, marketplaceController.getAllMyItems);
 router.get('/activeItems', authenticateUser, marketplaceController.getAllActiveItems);
-router.patch('/update/:id', authenticateUser, marketplaceController.updateItem);
+router.patch('/update/:id', validateMarketPlaceUpdate, authenticateUser, marketplaceController.updateItem);
 router.delete('/delete/:id', authenticateUser, marketplaceController.deleteItem);
 
 

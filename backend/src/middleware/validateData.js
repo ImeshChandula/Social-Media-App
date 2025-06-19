@@ -77,13 +77,13 @@ const validateAppeal = (req, res, next) => {
 };
 
 
-// Joi validation middleware for MarketPlace
+// CREATE VALIDATOR - With defaults
 const validateMarketPlace = (req, res, next) => {
     const schema = Joi.object({
         author: Joi.string().optional(),
         category: Joi.string().required(),
         title: Joi.string().min(3).max(200).required(),
-        description: Joi.string().allow('').max(2000).optional(),
+        description: Joi.string().allow('').max(2000).default(''),
         price: Joi.number().min(0).required(),
         currency: Joi.string().length(3).uppercase().required(),
         contactDetails: Joi.object({
@@ -92,10 +92,10 @@ const validateMarketPlace = (req, res, next) => {
             whatsapp: Joi.string().optional()
         }).or('phone', 'email', 'whatsapp').required(),
         location: Joi.object({
-            city: Joi.string().allow('').optional(),
-            state: Joi.string().allow('').optional(),
-            country: Joi.string().allow('').optional(),
-            postalCode: Joi.string().allow('').optional()
+            city: Joi.string().allow('').default(''),
+            state: Joi.string().allow('').default(''),
+            country: Joi.string().allow('').default(''),
+            postalCode: Joi.string().allow('').default('')
         }).optional(),
         conditionType: Joi.string().valid('new', 'like_new', 'good', 'fair', 'poor').default('new'),
         images: Joi.alternatives().try(
@@ -117,8 +117,8 @@ const validateMarketPlace = (req, res, next) => {
         isAvailable: Joi.boolean().default(true),
         isAccept: Joi.boolean().default(true),
         status: Joi.string().valid('active', 'sold', 'expired', 'removed', 'pending').default('active'),
-        expiresAt: Joi.date().allow(null).optional(),
-        tags: Joi.array().items(Joi.string().max(50)).max(20).optional()
+        expiresAt: Joi.date().default(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()),
+        tags: Joi.array().items(Joi.string().max(50)).max(20).default([])
     });
 
     // THE KEY CHANGE: Use the validated value with defaults applied
@@ -141,4 +141,58 @@ const validateMarketPlace = (req, res, next) => {
 };
 
 
-module.exports = {validateUserData, validateMails, validateAppeal, validateMarketPlace};
+// UPDATE VALIDATOR - NO defaults, all fields optional
+const validateMarketPlaceUpdate = (req, res, next) => {
+    const schema = Joi.object({
+        category: Joi.string().optional(),
+        title: Joi.string().min(3).max(200).optional(),
+        description: Joi.string().allow('').max(2000).optional(),
+        price: Joi.number().min(0).optional(),
+        currency: Joi.string().length(3).uppercase().optional(),
+        contactDetails: Joi.object({
+            phone: Joi.string().allow('').optional(),
+            email: Joi.string().email().allow('').optional(),
+            whatsapp: Joi.string().allow('').optional()
+        }).optional(),
+        location: Joi.object({
+            city: Joi.string().allow('').optional(),
+            state: Joi.string().allow('').optional(),
+            country: Joi.string().allow('').optional(),
+            postalCode: Joi.string().allow('').optional()
+        }).optional(),
+        conditionType: Joi.string().valid('new', 'like_new', 'good', 'fair', 'poor').optional(),
+        images: Joi.alternatives().try(
+            Joi.string().uri(),
+            Joi.array().items(Joi.string().uri()),
+            Joi.valid(null)
+        ).optional(),
+        quantity: Joi.number().integer().min(1).optional(),
+        isNegotiable: Joi.boolean().optional(),
+        isAvailable: Joi.boolean().optional(),
+        isAccept: Joi.boolean().optional(),
+        status: Joi.string().valid('active', 'sold', 'expired', 'removed', 'pending').optional(),
+        expiresAt: Joi.date().optional(),
+        tags: Joi.array().items(Joi.string().max(50)).max(20).optional()
+    })
+    .min(1) // Require at least one field to update
+    .unknown(false);
+
+    const { error, value } = schema.validate(req.body, {
+        allowUnknown: false,
+        stripUnknown: true,
+        abortEarly: false
+    });
+
+    if (error) {
+        return res.status(400).json({ 
+            success: false,
+            message: error.details[0].message 
+        });
+    }
+
+    req.body = value;
+    next();
+};
+
+
+module.exports = {validateUserData, validateMails, validateAppeal, validateMarketPlace, validateMarketPlaceUpdate};
