@@ -24,7 +24,7 @@ const MarketplaceItemDropdown = ({ itemId, onDelete }) => {
 
     return (
         <div className="position-relative" ref={dropdownRef}>
-            <button className="btn btn-sm btn-light" onClick={() => setShowDropdown((prev) => !prev)} type="button">
+            <button className="dropdown-btn" onClick={() => setShowDropdown((prev) => !prev)} type="button">
                 <BsThreeDotsVertical size={20} />
             </button>
 

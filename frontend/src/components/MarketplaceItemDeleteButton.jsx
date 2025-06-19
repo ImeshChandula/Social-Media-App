@@ -19,23 +19,41 @@ const MarketplaceItemDeleteButton = ({ itemId, onDeleteSuccess }) => {
       cancelButtonText: "Cancel",
       background: "#1f2937",
       color: "#f9fafb",
+      customClass: {
+        popup: "swal2-popup-custom",
+        title: "swal2-title-custom",
+        htmlContainer: "swal2-html-custom",
+        confirmButton: "swal2-confirm-custom",
+        cancelButton: "swal2-cancel-custom",
+      },
       heightAuto: false,
     });
 
     if (!result.isConfirmed) return;
 
     try {
-      await axiosInstance.delete(`/marketplace/items/${itemId}`);
-      toast.success("Item deleted successfully!");
-      onDeleteSuccess?.(itemId);
+      const response = await axiosInstance.delete(`/marketplace/delete/${itemId}`);
+
+      if (response.data?.success) {
+        toast.success("Item deleted successfully!");
+        onDeleteSuccess?.(itemId);
+      } else {
+        toast.error(response.data?.message || "Failed to delete item.");
+      }
     } catch (error) {
       console.error("Delete failed:", error);
-      toast.error("Failed to delete item.");
+      const message =
+        error.response?.data?.message || "An error occurred while deleting the item.";
+      toast.error(message);
     }
   };
 
   return (
-    <button className="dropdown-item text-danger" onClick={handleDelete} type="button">
+    <button
+      className="dropdown-item text-danger"
+      onClick={handleDelete}
+      type="button"
+    >
       Delete
     </button>
   );
