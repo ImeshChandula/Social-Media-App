@@ -64,6 +64,19 @@ class AppealService {
         }
     }
 
+    async updateById(id, updateData) {
+        try {
+            updateData.updatedAt = new Date().toISOString();
+        
+            await this.collection.doc(id).update(updateData);
+        
+            const updatedRef = await this.findById(id);
+            return updatedRef;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async deleteById(id) {
         try {
             await this.collection.doc(id).delete();

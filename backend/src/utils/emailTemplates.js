@@ -119,4 +119,22 @@ const BAN_APPEAL_TEMPLATE = `
                 <p>Thank you for your patience.</p>
                 `
 
-module.exports = { PASSWORD_RESET_TEMPLATE, BAN_APPEAL_TEMPLATE };
+const BAN_APPEAL_REPLY_TEMPLATE = `
+                <h2>Review of your appeal</h2>
+                <p>Your ban appeal has been reviewed.</p>
+                <p><strong>Appeal Number:</strong> {{appealNumber}}</p>
+                <p>Your appeal is in under <strong>{{status}}</strong> state.</p>
+                <p>You will receive an email notification once your appeal has been approved or rejected.</p>
+                <p>This typically takes 3-5 business days.</p>
+                <p>Thank you for your patience.</p>
+                `
+
+const BAN_APPEAL_REPLY_TEMPLATE_FINAL = `
+                <h2>Review of your appeal</h2>
+                <p>Your ban appeal has been reviewed.</p>
+                <p><strong>Appeal Number:</strong> {{appealNumber}}</p>
+                <p>Your appeal was <strong>{{status}}</strong>.</p>
+                <p>Thank you for your patience.</p>
+                `
+
+module.exports = { PASSWORD_RESET_TEMPLATE, BAN_APPEAL_TEMPLATE, BAN_APPEAL_REPLY_TEMPLATE, BAN_APPEAL_REPLY_TEMPLATE_FINAL };

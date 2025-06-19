@@ -1,4 +1,3 @@
-const { APPEAL_STATUS, APPEAL_PRIORITY} = require('../enums/appeal');
 
 // Appeal class
 class Appeal {
@@ -35,14 +34,7 @@ class Appeal {
         this.updatedAt = appealData.updatedAt || new Date().toISOString();
     }
 
-    generateAppealNumber() {
-        if (!this.appealNumber) {
-            const timestamp = Date.now();
-            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-            this.appealNumber = `APP-${timestamp}-${random}`;
-        }
-        return this.appealNumber;
-    }
+
 }
 
 module.exports = Appeal;

@@ -2,13 +2,15 @@ const AppealService = require('../services/appealService');
 const UserService = require('../services/userService');
 const transporter = require('../config/nodemailer');
 const populateAuthor = require('../utils/populateAuthor');
-const {BAN_APPEAL_TEMPLATE} = require('../utils/emailTemplates');
+const {BAN_APPEAL_TEMPLATE, BAN_APPEAL_REPLY_TEMPLATE, BAN_APPEAL_REPLY_TEMPLATE_FINAL} = require('../utils/emailTemplates');
 
 const appealService = new AppealService();
 
+
+
 const createAppeal = async (req, res) => {
     try {
-        const { email } = req.body;
+        const { email, appealNumber, ...rest } = req.body;
         const user = await UserService.findById(req.user.id);
 
         if (req.user.accountStatus !== "banned") {
@@ -30,9 +32,14 @@ const createAppeal = async (req, res) => {
             });
         }
 
+        const timestamp = Date.now();
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+
         const appealData = {
+            email: email,
             author: req.user.id,
-            ...req.body
+            appealNumber: `APP-${timestamp}-${random}`,
+            ...rest
         }
 
         const appeal = await appealService.create(appealData);
@@ -109,5 +116,55 @@ const deleteAppeal = async (req, res) => {
 };
 
 
+const updateAppeal = async (req, res) => {
+	try {
+        const { adminNotes, responseMessage } = req.body;
+        const appealId = req.params.id;
 
-module.exports = {createAppeal, getAllAppeals, deleteAppeal};
+        if (!adminNotes || !responseMessage) {
+            return res.status(400).json({ success: false, message: "Required fields are missing"});
+        }
+
+        const appeal = await appealService.findById(appealId);
+        if (!appeal) {
+            return res.status(404).json({ success: false, message: "Appeal not found"});
+        }
+
+        const updateData = { 
+            reviewedAt: new Date().toISOString(),
+            ...req.body 
+        };
+
+        const updatedAppeal = await appealService.updateById(appealId, updateData);
+        if (!updatedAppeal) {
+            return res.status(400).json({ success: false, message: "Failed to update appeal"});
+        }
+
+        let emailTemplate;
+        const appealStatus = updatedAppeal.status;
+        if (appealStatus === "pending" || appealStatus === "under_review") {
+            emailTemplate = BAN_APPEAL_REPLY_TEMPLATE;
+        } else {
+            emailTemplate = BAN_APPEAL_REPLY_TEMPLATE_FINAL;
+        }
+
+        const mailOptions = {
+            from: process.env.SENDER_EMAIL,
+            to: updatedAppeal.email,
+            subject: "Ban Appeal response",
+            html: emailTemplate.replace("{{appealNumber}}", updatedAppeal.appealNumber).replace("{{status}}", updatedAppeal.status)
+        };
+
+        const mailResult = await transporter.sendMail(mailOptions);
+        if (!mailResult) {
+            return res.status(500).json({ success: false, message: "Failed to send mail"});
+        }
+
+        return res.status(200).json({ success: true, message: "Appeal updated successfully. Email response was sent to user's email.", data: updatedAppeal});
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
+};
+
+
+module.exports = {createAppeal, getAllAppeals, deleteAppeal, updateAppeal};

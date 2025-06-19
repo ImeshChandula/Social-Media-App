@@ -9,6 +9,7 @@ const APPEAL_STATUS = {
 
 // Ban Appeal Priority Levels
 const APPEAL_PRIORITY = {
+  HANDLED: 'handled',
   LOW: 'low',
   MEDIUM: 'medium',
   HIGH: 'high',
