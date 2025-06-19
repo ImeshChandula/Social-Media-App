@@ -94,7 +94,7 @@ const validateComment = (req, res, next) => {
   const schema = Joi.object({
     post: Joi.string().optional(),              // ID of the post the comment belongs to
     user: Joi.string().optional(),              // ID of the user making the comment
-    text: Joi.string().optional(),              // Text content of the comment
+    text: Joi.string().optional().allow(null, ''),              // Text content of the comment
     media: Joi.string().uri().allow(null, ''),  // Optional media (URL)
     //     likes: Joi.array().items(Joi.string()).optional(),     // Array of user IDs who liked
     replies: Joi.array().items(Joi.object()).optional(),   // Array of replies (optional objects)

@@ -23,11 +23,12 @@ const addComment = async(req, res) => {
         const commentData = {
             post: postId,
             user: req.user.id,
-            text: text,
         };
 
+        if (text !== undefined) commentData.text = text;
+
         // upload media
-        if (media) {
+        if (media !== undefined) {
             const mediaType = "image";
 
             const result = await handleMediaUpload(media, mediaType);
