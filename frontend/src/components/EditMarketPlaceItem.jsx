@@ -46,7 +46,7 @@ const EditMarketPlaceItem = () => {
                     images: null,
                 });
             } catch (error) {
-                toast.error("Failed to fetch item");
+                toast.error(error?.response?.data?.message || "Update failed");
             }
         };
 
@@ -119,9 +119,10 @@ const EditMarketPlaceItem = () => {
             }
 
             const res = await axiosInstance.patch(`/marketplace/update/${id}`, dataToSend);
-
-            toast.success("Item updated successfully");
-            navigate(-1);
+            if (res.data.success) {
+                toast.success(res.data.message || "Item updated successfully");
+                navigate(-1);
+            }
         } catch (error) {
             toast.error(error?.response?.data?.message || "Update failed");
         } finally {
