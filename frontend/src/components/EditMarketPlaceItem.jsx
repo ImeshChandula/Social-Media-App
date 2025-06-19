@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { axiosInstance } from '../lib/axios';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '../store/authStore';
 
 const EditMarketPlaceItem = () => {
     const { id } = useParams(); // URL param: /edit/:id
     const navigate = useNavigate();
+    const { authUser } = useAuthStore(); // ✅ get current logged-in user
 
     const [formData, setFormData] = useState({
         category: '',
@@ -95,8 +97,10 @@ const EditMarketPlaceItem = () => {
 
         try {
             const dataToSend = {
-                ...formData,
+                ...formData
             };
+
+            delete dataToSend.isAccept;
 
             if (formData.images) {
                 const base64Images = await Promise.all(
