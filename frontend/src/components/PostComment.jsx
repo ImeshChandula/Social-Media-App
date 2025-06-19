@@ -160,7 +160,7 @@ const PostComment = ({ postId }) => {
           className="fb-comment-input"
         />
         <label>
-          <FaImage />
+          <FaImage size="20" />
           <input
             type="file"
             accept="image/*"
