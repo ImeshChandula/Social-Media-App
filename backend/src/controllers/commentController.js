@@ -25,7 +25,11 @@ const addComment = async(req, res) => {
             user: req.user.id,
         };
 
-        if (text !== undefined) commentData.text = text;
+        if (text !== undefined) {
+            commentData.text = text;
+        } else {
+            commentData.text = '';
+        }
 
         // upload media
         if (media !== undefined) {
