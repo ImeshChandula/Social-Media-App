@@ -52,77 +52,75 @@ const PostComment = ({ postId }) => {
   }, [postId, user]);
 
   const fileToBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  new Promise((resolve, reject) => {
+    if (!file) return resolve(null);
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 
   const handleAddComment = async () => {
-    if (!newComment.trim() && !newMedia) {
-      toast.error("Please add text or media.");
+  if (!newComment.trim() && !newMedia) {
+    toast.error("Please add text or media.");
+    return;
+  }
+
+  let media = null;
+  if (newMedia) {
+    try {
+      media = await fileToBase64(newMedia);
+    } catch {
+      toast.error("Failed to read media.");
       return;
     }
+  }
 
-    let media = null;
-    if (newMedia) {
-      try {
-        media = await fileToBase64(newMedia);
-      } catch {
-        toast.error("Failed to read media.");
-        return;
-      }
-    }
+  try {
+    await axiosInstance.post(`/comments/addComment/${postId}`, {
+      text: newComment.trim(),
+      media,
+    });
+    setNewComment("");
+    setNewMedia(null);
+    fetchComments();
+  } catch (err) {
+    toast.error("Failed to post comment.");
+  }
+};
 
-    try {
-      const res = await axiosInstance.post(`/comments/addComment/${postId}`, {
-        text: newComment || "",
-        media,
-      });
-      setNewComment("");
-      setNewMedia(null);
-      const newId = res.data?.comment?.id;
-      setShowReplies((prev) => ({ ...prev, [newId]: true }));
-      fetchComments();
-    } catch {
-      toast.error("Failed to post comment.");
-    }
-  };
 
   const handleReply = async (commentId) => {
-    const text = replyText[commentId]?.trim();
-    const file = replyMedia[commentId];
+  const text = replyText[commentId]?.trim();
+  const file = replyMedia[commentId];
 
-    if (!text && !file) {
-      toast.error("Please add text or media to reply.");
+  if (!text && !file) {
+    toast.error("Please add text or media to reply.");
+    return;
+  }
+
+  let media = null;
+  if (file) {
+    try {
+      media = await fileToBase64(file);
+    } catch {
+      toast.error("Failed to read reply media.");
       return;
     }
+  }
 
-    let media = null;
-    if (file) {
-      try {
-        media = await fileToBase64(file);
-      } catch {
-        toast.error("Failed to read reply media.");
-        return;
-      }
-    }
-
-    try {
-      await axiosInstance.post(`/comments/reply/${commentId}`, {
-        text: text || "",
-        media,
-      });
-
-      setReplyText((prev) => ({ ...prev, [commentId]: "" }));
-      setReplyMedia((prev) => ({ ...prev, [commentId]: null }));
-      setShowReplies((prev) => ({ ...prev, [commentId]: true }));
-      fetchComments();
-    } catch {
-      toast.error("Reply failed.");
-    }
-  };
+  try {
+    await axiosInstance.post(`/comments/reply/${commentId}`, {
+      text: text || "",
+      media,
+    });
+    setReplyText((prev) => ({ ...prev, [commentId]: "" }));
+    setReplyMedia((prev) => ({ ...prev, [commentId]: null }));
+    fetchComments();
+  } catch {
+    toast.error("Reply failed.");
+  }
+};
 
   const toggleLikeComment = async (commentId) => {
     try {

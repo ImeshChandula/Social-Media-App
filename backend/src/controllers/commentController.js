@@ -23,7 +23,7 @@ const addComment = async(req, res) => {
         const commentData = {
             post: postId,
             user: req.user.id,
-            text: text,
+            text: text || "",
         };
 
         // upload media
