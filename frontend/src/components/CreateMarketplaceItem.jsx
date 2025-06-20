@@ -88,7 +88,14 @@ const CreateMarketplaceItem = () => {
         e.preventDefault();
         setLoading(true);
 
-        const dataToSend = { ...formData, images };
+        const dataToSend = {
+            ...formData,
+            images,
+        };
+
+        if (!formData.expiresAt) {
+            delete dataToSend.expiresAt;
+        }
 
         try {
             const res = await axiosInstance.post("/marketplace/createItem", dataToSend);
@@ -210,7 +217,14 @@ const CreateMarketplaceItem = () => {
 
                 <div className="col-md-6">
                     <label className="form-label">Expiration Date</label>
-                    <input type="date" name="expiresAt" className="form-control" value={formData.expiresAt} onChange={handleChange} />
+                    <input
+                        type="date"
+                        name="expiresAt"
+                        className="form-control"
+                        value={formData.expiresAt}
+                        onChange={handleChange}
+                        min={new Date().toISOString().split("T")[0]}
+                    />
                 </div>
 
                 {/* ────── Section: Media ────── */}
