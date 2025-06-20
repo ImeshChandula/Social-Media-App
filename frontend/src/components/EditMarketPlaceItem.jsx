@@ -19,12 +19,15 @@ const EditMarketPlaceItem = () => {
         status: 'active',
         expireDate: '',
         images: null,
+        isNegotiable: false,
     });
 
     const [loading, setLoading] = useState(false);
     const [categories, setCategories] = useState([]);
     const [catLoading, setCatLoading] = useState(true);
     const [catError, setCatError] = useState("");
+    const [previewImages, setPreviewImages] = useState([]);
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -50,7 +53,10 @@ const EditMarketPlaceItem = () => {
                     location: item.location || { city: "", state: "", country: "", postalCode: "" },
                     expireDate: item.expireDate ? item.expireDate.split('T')[0] : '',
                     images: null,
+                    isNegotiable: item.isNegotiable || false,
                 });
+
+                setPreviewImages(item.images || []);
 
                 setCategories(categoryRes.data.data);
                 setCatError("");
@@ -96,6 +102,9 @@ const EditMarketPlaceItem = () => {
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
         setFormData((prev) => ({ ...prev, images: files }));
+
+        const previews = files.map((file) => URL.createObjectURL(file));
+        setPreviewImages(previews);
     };
 
     const handleSubmit = async (e) => {
@@ -215,6 +224,21 @@ const EditMarketPlaceItem = () => {
                         <label className="form-label">Expiration Date</label>
                         <input type="date" name="expireDate" className="form-control" value={formData.expireDate} onChange={handleChange} />
                     </div>
+                    <div className="col-md-6 d-flex align-items-center gap-2 mt-3">
+                        <input
+                            type="checkbox"
+                            id="isNegotiable"
+                            name="isNegotiable"
+                            checked={formData.isNegotiable}
+                            onChange={() =>
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    isNegotiable: !prev.isNegotiable,
+                                }))
+                            }
+                        />
+                        <label htmlFor="isNegotiable" className="mb-0">Price Negotiable</label>
+                    </div>
 
                     {/* ────── Section: Contact Info ────── */}
                     <div className="section-title mt-4 mb-0">Contact Information</div>
@@ -250,6 +274,20 @@ const EditMarketPlaceItem = () => {
                     <div className="col-12">
                         <input type="file" className="form-control" onChange={handleImageChange} multiple />
                     </div>
+
+                    {previewImages.length > 0 && (
+                        <div className="col-12 mt-3 d-flex flex-wrap gap-3">
+                            {previewImages.map((src, idx) => (
+                                <img
+                                    key={idx}
+                                    src={src}
+                                    alt={`Preview ${idx}`}
+                                    className="rounded border"
+                                    style={{ width: '120px', height: '120px', objectFit: 'contain' }}
+                                />
+                            ))}
+                        </div>
+                    )}
 
                     {/* ────── Submit & Cancel Buttons ────── */}
                     <div className="col-12 text-center mt-4 d-flex justify-content-center gap-3">
