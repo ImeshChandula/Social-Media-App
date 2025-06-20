@@ -53,6 +53,14 @@ app.use("/api/friends", require("./src/routes/friendRoutes"));
 app.use("/api/likes", require("./src/routes/likeRoutes"));
 app.use("/api/notifications", require("./src/routes/notificationRoutes"));
 app.use("/api/stories", require("./src/routes/storyRoutes"));
+// // In server.js, replace line 55 temporarily with:
+// try {
+//     const storyRoutes = require("./src/routes/storyRoutes");
+//     console.log('storyRoutes loaded successfully:', typeof storyRoutes);
+//     app.use("/api/stories", storyRoutes);
+// } catch (error) {
+//     console.error('Error loading storyRoutes:', error.message);
+// }
 app.use("/api/jobCategories", require("./src/routes/jobCategoryRoutes"));
 
 

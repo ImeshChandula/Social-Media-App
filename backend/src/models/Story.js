@@ -25,20 +25,36 @@ class Story {
     this.updatedAt = new Date().toISOString();
   };
 
+      //Previous method to find stories by user ID
       // static methods
-    static async findById(id) {
-        try {
-            const doc = await storiesCollection.doc(id).get();
-            if (!doc.exists) {
-                return null;
-            }
+    // static async findById(id) {
+    //     try {
+    //         const doc = await storiesCollection.doc(id).get();
+    //         if (!doc.exists) {
+    //             return null;
+    //         }
 
-            return new Story(doc.id, doc.data());
-        } catch (error) {
-            throw error;
-        }
-    };
-  
+    //         return new Story(doc.id, doc.data());
+    //     } catch (error) {
+    //         throw error;
+    //     }
+    // };
+
+    //new one
+  // Find stories by user ID using a simple query
+    // Simple query - only requires single-field index on userId
+  static async findByUserIdSimple(userId) {
+    // Query only by userId, filter other conditions in application
+    const snapshot = await db.collection('stories')
+      .where('userId', '==', userId)
+      .orderBy('createdAt', 'desc')
+      .get();
+      
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  }
 
   // save story to database
   static async create(storyData) {
@@ -121,7 +137,7 @@ class Story {
     }
   }
 
-  /*
+  
   // Find story by ID
   static async findById(id) {
     try {
@@ -131,44 +147,67 @@ class Story {
         return null;
       }
       
-      return new Post(doc.id, doc.data());
+      return new Story(doc.id, doc.data());
     } catch (error) {
       throw error;
     }
   }
-    */
+    
   
   
-  
-  // Find stories by user ID
-  static async findByUserId(userId) {
-    try {
-      const now = new Date();
-      const snapshot = await storiesCollection
-        .where('userId', '==', userId)
-        .where('expiresAt', '>', now)
-        .where('isActive', '==', true)
-        .orderBy('expiresAt')
-        .get();
+  //Previous method to find stories by user ID
+  // // Find stories by user ID
+  // static async findByUserId(userId) {
+  //   try {
+  //     const now = new Date();
+  //     const snapshot = await storiesCollection
+  //       .where('userId', '==', userId)
+  //       .where('expiresAt', '>', now)
+  //       .where('isActive', '==', true)
+  //       .orderBy('expiresAt')
+  //       .get();
       
-      if (snapshot.empty) {
-        return [];
-      }
+  //     if (snapshot.empty) {
+  //       return [];
+  //     }
       
-      const stories = [];
+  //     const stories = [];
       
-      snapshot.forEach(doc => {
-        const storyData = doc.data();
-        const story = new Story(storyData);
-        story.id = doc.id;
-        stories.push(story);
-      });
+  //     snapshot.forEach(doc => {
+  //       const storyData = doc.data();
+  //       const story = new Story(storyData);
+  //       story.id = doc.id;
+  //       stories.push(story);
+  //     });
       
-      return stories;
-    } catch (error) {
-      throw error;
+  //     return stories;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
+
+  // new method to get friends' stories
+  // Simplified query - only uses userId IN filter
+    static async getFriendsStoriesSimple(friendIds) {
+        if (!friendIds || friendIds.length === 0) {
+            return [];
+        }
+
+        // Firestore IN query limit is 10 items
+        if (friendIds.length > 10) {
+            throw new Error('Friend IDs batch too large. Use batched approach.');
+        }
+
+        const snapshot = await db.collection('stories')
+            .where('userId', 'in', friendIds)
+            .orderBy('createdAt', 'desc')
+            .get();
+
+        return snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
     }
-  }
 
   // Find all stories by user ID
   static async findAllByUserId(id) {

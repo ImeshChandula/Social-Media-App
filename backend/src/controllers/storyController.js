@@ -78,54 +78,205 @@ const createStory = async(req, res) => {
 
 };
 
-/*
-// Get current user's stories (updated)
+
+// Get current user's active and non-expired stories
+// const getCurrentUserStories = async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+
+//     // Fetch the user
+//     const user = await UserService.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ message: 'User not found' });
+//     }
+
+//     // Fetch all stories by the user
+//     const allStories = await Story.findByUserId(userId);
+//     if (!allStories || allStories.length === 0) {
+//       return res.status(200).json({ message: 'No stories found for this user', stories: [] });
+//     }
+
+//     const now = new Date();
+
+//     // Filter out expired or inactive stories
+//     const activeStories = allStories.filter(story => {
+//       const expiresAt = new Date(story.expiresAt);
+//       return story.isActive && expiresAt > now;
+//     });
+
+//     // Construct minimal user info
+//     const userData = {
+//       id: user.id,
+//       firstName: user.firstName,
+//       lastName: user.lastName,
+//       username: user.username,
+//       profilePicture: user.profilePicture
+//     };
+
+//     // Populate each story with user info
+//     const populatedStories = activeStories.map(story => ({
+//       ...story,
+//       viewCount: story.viewCount,
+//       user: userData
+//     }));
+
+//     return res.status(200).json({
+//       count: populatedStories.length,
+//       message: 'User stories retrieved successfully',
+//       stories: populatedStories
+//     });
+
+//   } catch (error) {
+//     console.error('Error getting current user stories:', error.message);
+//     return res.status(500).json({ message: 'Server error' });
+//   }
+// };
+
+// Option A: Simplify the Firestore query and filter in application code
 const getCurrentUserStories = async (req, res) => {
   try {
     const userId = req.user.id;
     
-    const stories = await Story.findByUserId(userId);
-    if (!stories) {
-      return res.status(404).json({ message: 'No stories found for this user' });
-    }
-
-    // get user details
-    const user = await User.findById(userId);
+    // Fetch the user
+    const user = await UserService.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-
+    
+    // Simplified query - only filter by userId in Firestore
+    const allStories = await Story.findByUserIdSimple(userId);
+    
+    if (!allStories || allStories.length === 0) {
+      return res.status(200).json({ 
+        message: 'No stories found for this user', 
+        stories: [] 
+      });
+    }
+    
+    const now = new Date();
+    
+    // Filter in application code instead of database query
+    const activeStories = allStories.filter(story => {
+      const expiresAt = new Date(story.expiresAt);
+      return story.isActive && expiresAt > now;
+    });
+    
+    // Sort by creation date (newest first)
+    activeStories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    // Construct minimal user info
     const userData = {
       id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
       username: user.username,
       profilePicture: user.profilePicture
-    }
-
-    //populate the stories with user data
-    const populatedStories = stories.map(story => ({
+    };
+    
+    // Populate each story with user info
+    const populatedStories = activeStories.map(story => ({
       ...story,
       viewCount: story.viewCount,
       user: userData
     }));
-
-    res.status(200).json({
+    
+    return res.status(200).json({
       count: populatedStories.length,
-      message: "User stories retrieved successfully",
+      message: 'User stories retrieved successfully',
       stories: populatedStories
     });
-
+    
   } catch (error) {
-    console.error('Get stories error:', error.message);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error getting current user stories:', error.message);
+    return res.status(500).json({ message: 'Server error' });
   }
+};
+ 
 
-};*/
 
+// Previouse one version of getCurrentUserStories
+// // Get stories feed (current user + friends)
+// const getStoriesFeed = async(req, res) => {
+//     try {
+//         const userId = req.user.id;
 
-// Get stories feed (current user + friends)
-const getStoriesFeed = async(req, res) => {
+//         // Get user details
+//         const user = await UserService.findById(userId);
+//         if (!user) {
+//             return res.status(404).json({ message: 'User not found' });
+//         }
+
+//         // Get user's friends
+//         const friendIds = user.friends || [];
+
+//         // If user has no friends, return empty story feed
+//         if (friendIds.length === 0) {
+//             return res.status(200).json({ message: 'You have no friends to fetch stories from.', stories: [] });
+//         }
+
+//         // Get stories from friends only
+//         const stories = await Story.getFriendsStories(friendIds);
+
+//         if (!stories.length) {
+//             return res.status(200).json({ message: 'No stories found in your feed', stories: [] });
+//         }
+
+//         // Get unique user IDs from the stories
+//         const uniqueUserIds = [...new Set(stories.map(story => story.userId))];
+
+//         // Create a map to store user details
+//         const userMap = {};
+
+//         // Fetch user details for each unique user ID
+//         for (const id of uniqueUserIds) {
+//             try {
+//                 if (!id) continue;
+
+//                 const friend = await User.findById(id);
+//                 if (friend) {
+//                     userMap[id] = {
+//                         id: friend.id,
+//                         firstName: friend.firstName,
+//                         lastName: friend.lastName,
+//                         username: friend.username,
+//                         profilePicture: friend.profilePicture
+//                     };
+//                 }
+//             } catch (userError) {
+//                 console.error(`Error fetching user ${id}:`, userError.message);
+//             }
+//         }
+
+//         // Group stories by user
+//         const storiesByUser = stories.reduce((acc, story) => {
+//             const storyUserId = story.userId;
+//             if (!acc[storyUserId]) {
+//                 acc[storyUserId] = {
+//                     user: userMap[storyUserId] || { id: storyUserId },
+//                     stories: []
+//                 };
+//             }
+//             acc[storyUserId].stories.push(story);
+//             return acc;
+//         }, {});
+
+//         // Convert to array format for response
+//         const feedStories = Object.values(storiesByUser);
+
+//         res.status(200).json({
+//             message: 'Stories feed retrieved successfully',
+//             stories: feedStories
+//         });
+
+//     } catch (error) {
+//         console.error('Error fetching stories feed:', error);
+//         res.status(500).json({ message: 'Server error' });
+//     }
+// };
+
+//updated code for getStoriesFeed function
+// Optimized approach to reduce index requirements
+const getStoriesFeed = async (req, res) => {
     try {
         const userId = req.user.id;
 
@@ -140,18 +291,42 @@ const getStoriesFeed = async(req, res) => {
 
         // If user has no friends, return empty story feed
         if (friendIds.length === 0) {
-            return res.status(200).json({ message: 'You have no friends to fetch stories from.', stories: [] });
+            return res.status(200).json({ 
+                message: 'You have no friends to fetch stories from.', 
+                stories: [] 
+            });
         }
 
-        // Get stories from friends only
-        const stories = await Story.getFriendsStories(friendIds);
+        // OPTION A: Simplified query approach
+        // Get all stories from friends with minimal filtering in Firestore
+        const allFriendStories = await Story.getFriendsStoriesSimple(friendIds);
 
-        if (!stories.length) {
-            return res.status(200).json({ message: 'No stories found in your feed', stories: [] });
+        if (!allFriendStories.length) {
+            return res.status(200).json({ 
+                message: 'No stories found in your feed', 
+                stories: [] 
+            });
         }
+
+        // Filter active and non-expired stories in application code
+        const now = new Date();
+        const activeStories = allFriendStories.filter(story => {
+            const expiresAt = new Date(story.expiresAt);
+            return story.isActive && expiresAt > now;
+        });
+
+        if (!activeStories.length) {
+            return res.status(200).json({ 
+                message: 'No active stories found in your feed', 
+                stories: [] 
+            });
+        }
+
+        // Sort stories by creation date (newest first)
+        activeStories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         // Get unique user IDs from the stories
-        const uniqueUserIds = [...new Set(stories.map(story => story.userId))];
+        const uniqueUserIds = [...new Set(activeStories.map(story => story.userId))];
 
         // Create a map to store user details
         const userMap = {};
@@ -177,7 +352,7 @@ const getStoriesFeed = async(req, res) => {
         }
 
         // Group stories by user
-        const storiesByUser = stories.reduce((acc, story) => {
+        const storiesByUser = activeStories.reduce((acc, story) => {
             const storyUserId = story.userId;
             if (!acc[storyUserId]) {
                 acc[storyUserId] = {
@@ -448,7 +623,7 @@ const deleteStoryByStoryId = async(req, res) => {
 
 module.exports = {
     createStory, //done
-    //getCurrentUserStories,
+    getCurrentUserStories,
     getStoriesFeed, //done
     getStoryById, //done
     viewStory, //done
