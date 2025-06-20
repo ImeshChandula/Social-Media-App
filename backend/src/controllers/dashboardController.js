@@ -3,8 +3,10 @@ const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const StoryService = require('../services/storyService');
 const CategoryService = require('../services/categoryService');
+const AppealService = require('../services/appealService');
 
 const jobCategoryService = new CategoryService();
+const appealService = new AppealService();
 
 const userSummery = async (req, res) => {
     try {
@@ -48,8 +50,34 @@ const userSummery = async (req, res) => {
     }
 };
 
-const aaaa = async (req, res) => {
-    try {} catch (error) {}
+const appealSummery = async (req, res) => {
+    try {
+        const summaryData = {};
+
+        const total = await appealService.findAll();
+        const pending = await appealService.findAllByStatus("pending");
+        const underReview = await appealService.findAllByStatus("under_review");
+        const approved = await appealService.findAllByStatus("approved");
+        const rejected = await appealService.findAllByStatus("rejected");
+        const closed = await appealService.findAllByStatus("closed");
+        const urgent = await appealService.findAllByPriority("urgent");
+
+        if (!total || !pending || !underReview || !approved || !rejected || !closed || !urgent) {
+            return res.status(400).json({ success: false, message: "Failed to get data"});
+        }
+
+        summaryData.total = total.length;
+        summaryData.pending = pending.length;
+        summaryData.underReview = underReview.length;
+        summaryData.approved = approved.length;
+        summaryData.rejected = rejected.length;
+        summaryData.closed = closed.length;
+        summaryData.urgent = urgent.length;
+
+        return res.status(200).json({ success: true, message: "Appeal summary fetched successfully", data: summaryData});
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
 };
 
-module.exports = {userSummery};
+module.exports = {userSummery, appealSummery};
