@@ -4,7 +4,7 @@ import { axiosInstance } from '../lib/axios';
 import toast from 'react-hot-toast';
 
 const EditMarketPlaceItem = () => {
-    const { id } = useParams(); // URL param: /edit/:id
+    const { id } = useParams();
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -29,11 +29,9 @@ const EditMarketPlaceItem = () => {
     });
 
     const [loading, setLoading] = useState(false);
-
     const [categories, setCategories] = useState([]);
     const [catLoading, setCatLoading] = useState(true);
     const [catError, setCatError] = useState("");
-
 
     useEffect(() => {
         const fetchData = async () => {
@@ -110,14 +108,8 @@ const EditMarketPlaceItem = () => {
         setLoading(true);
 
         try {
-            const dataToSend = {
-                ...formData
-            };
+            const dataToSend = { ...formData };
 
-            // 🧹 Remove `isAccept` if it exists to avoid backend restriction
-            // delete dataToSend.isAccept;
-
-            // 🧹 Handle image conversion
             if (formData.images) {
                 const base64Images = await Promise.all(
                     formData.images.map((file) =>
@@ -150,7 +142,6 @@ const EditMarketPlaceItem = () => {
         <div className="container py-4">
             <h2 className="mb-4">Edit Marketplace Item</h2>
             <form onSubmit={handleSubmit}>
-
                 <div className="form-group mb-3">
                     <label>Title</label>
                     <input type="text" name="title" className="form-control" value={formData.title} onChange={handleChange} required />
@@ -193,6 +184,34 @@ const EditMarketPlaceItem = () => {
                 </div>
 
                 <div className="form-group mb-3">
+                    <label>Currency</label>
+                    <input type="text" name="currency" className="form-control" value={formData.currency} onChange={handleChange} required />
+                </div>
+
+                <div className="form-group mb-3">
+                    <label>Condition</label>
+                    <select name="conditionType" className="form-select" value={formData.conditionType} onChange={handleChange}>
+                        <option value="">Select condition</option>
+                        <option value="new">New</option>
+                        <option value="like_new">Like New</option>
+                        <option value="good">Good</option>
+                        <option value="fair">Fair</option>
+                        <option value="poor">Poor</option>
+                    </select>
+                </div>
+
+                <div className="form-group mb-3">
+                    <label>Status</label>
+                    <select name="status" className="form-select" value={formData.status} onChange={handleChange}>
+                        <option value="active">Active</option>
+                        <option value="sold">Sold</option>
+                        <option value="expired">Expired</option>
+                        <option value="removed">Removed</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+
+                <div className="form-group mb-3">
                     <label>Phone</label>
                     <input type="text" name="contactDetails.phone" className="form-control" value={formData.contactDetails.phone} onChange={handleChange} />
                 </div>
@@ -203,6 +222,26 @@ const EditMarketPlaceItem = () => {
                 </div>
 
                 <div className="form-group mb-3">
+                    <label>City</label>
+                    <input type="text" name="location.city" className="form-control" value={formData.location.city} onChange={handleChange} />
+                </div>
+
+                <div className="form-group mb-3">
+                    <label>State</label>
+                    <input type="text" name="location.state" className="form-control" value={formData.location.state} onChange={handleChange} />
+                </div>
+
+                <div className="form-group mb-3">
+                    <label>Country</label>
+                    <input type="text" name="location.country" className="form-control" value={formData.location.country} onChange={handleChange} />
+                </div>
+
+                <div className="form-group mb-3">
+                    <label>Postal Code</label>
+                    <input type="text" name="location.postalCode" className="form-control" value={formData.location.postalCode} onChange={handleChange} />
+                </div>
+
+                <div className="form-group mb-3">
                     <label>Upload Images (optional)</label>
                     <input type="file" className="form-control" onChange={handleImageChange} multiple />
                 </div>
@@ -210,7 +249,6 @@ const EditMarketPlaceItem = () => {
                 <button className="btn btn-success" type="submit" disabled={loading}>
                     {loading ? "Updating..." : "Update Item"}
                 </button>
-
             </form>
         </div>
     );
