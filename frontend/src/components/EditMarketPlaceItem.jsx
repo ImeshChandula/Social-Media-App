@@ -4,7 +4,7 @@ import { axiosInstance } from '../lib/axios';
 import toast from 'react-hot-toast';
 
 const EditMarketPlaceItem = () => {
-    const { id } = useParams(); // URL param: /edit/:id
+    const { id } = useParams();
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -13,26 +13,20 @@ const EditMarketPlaceItem = () => {
         description: '',
         price: '',
         currency: 'USD',
-        contactDetails: {
-            phone: '',
-            email: '',
-        },
-        location: {
-            city: '',
-            state: '',
-            country: '',
-            postalCode: '',
-        },
+        contactDetails: { phone: '', email: '', whatsapp: '' },
+        location: { city: '', state: '', country: '', postalCode: '' },
         conditionType: '',
         status: 'active',
+        expireDate: '',
         images: null,
+        isNegotiable: false,
     });
 
     const [loading, setLoading] = useState(false);
-
     const [categories, setCategories] = useState([]);
     const [catLoading, setCatLoading] = useState(true);
     const [catError, setCatError] = useState("");
+    const [previewImages, setPreviewImages] = useState([]);
 
 
     useEffect(() => {
@@ -46,15 +40,23 @@ const EditMarketPlaceItem = () => {
                 const item = itemRes.data.data.find((itm) => itm.id === id);
                 if (!item) {
                     toast.error("Item not found");
-                    return navigate("/marketplace");
+                    return navigate(-1);
                 }
 
                 setFormData({
                     ...item,
-                    contactDetails: item.contactDetails || { phone: "", email: "" },
+                    contactDetails: {
+                        phone: item.contactDetails?.phone || '',
+                        email: item.contactDetails?.email || '',
+                        whatsapp: item.contactDetails?.whatsapp || '',
+                    },
                     location: item.location || { city: "", state: "", country: "", postalCode: "" },
+                    expireDate: item.expireDate ? item.expireDate.split('T')[0] : '',
                     images: null,
+                    isNegotiable: item.isNegotiable || false,
                 });
+
+                setPreviewImages(item.images || []);
 
                 setCategories(categoryRes.data.data);
                 setCatError("");
@@ -99,10 +101,10 @@ const EditMarketPlaceItem = () => {
 
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
-        setFormData((prev) => ({
-            ...prev,
-            images: files,
-        }));
+        setFormData((prev) => ({ ...prev, images: files }));
+
+        const previews = files.map((file) => URL.createObjectURL(file));
+        setPreviewImages(previews);
     };
 
     const handleSubmit = async (e) => {
@@ -110,14 +112,14 @@ const EditMarketPlaceItem = () => {
         setLoading(true);
 
         try {
-            const dataToSend = {
-                ...formData
-            };
+            const dataToSend = { ...formData };
 
-            // 🧹 Remove `isAccept` if it exists to avoid backend restriction
-            // delete dataToSend.isAccept;
+            if (!formData.expireDate) {
+                const defaultExpire = new Date();
+                defaultExpire.setDate(defaultExpire.getDate() + 30);
+                dataToSend.expireDate = defaultExpire.toISOString().split("T")[0];
+            }
 
-            // 🧹 Handle image conversion
             if (formData.images) {
                 const base64Images = await Promise.all(
                     formData.images.map((file) =>
@@ -147,72 +149,165 @@ const EditMarketPlaceItem = () => {
     };
 
     return (
-        <div className="container py-4">
-            <h2 className="mb-4">Edit Marketplace Item</h2>
+        <div className="container p-4 bg-dark shadow rounded mt-4">
+            <h2 className="text-center mb-4 fw-bold text-primary">Edit Marketplace Item</h2>
+
             <form onSubmit={handleSubmit}>
+                <div className="row g-4">
 
-                <div className="form-group mb-3">
-                    <label>Title</label>
-                    <input type="text" name="title" className="form-control" value={formData.title} onChange={handleChange} required />
-                </div>
+                    {/* ────── Section: General Information ────── */}
+                    <div className="section-title mb-0">General Information</div>
 
-                <div className="form-group mb-3">
-                    <label>Category</label>
-                    {catLoading ? (
-                        <div className="form-control bg-light text-muted">Loading categories...</div>
-                    ) : catError ? (
-                        <div className="text-danger">{catError}</div>
-                    ) : categories.length === 0 ? (
-                        <div className="text-muted">No active categories found</div>
-                    ) : (
-                        <select
-                            name="category"
-                            className="form-select"
-                            value={formData.category}
-                            onChange={handleChange}
-                            required
-                        >
-                            <option value="">Select a category</option>
-                            {categories.map((cat) => (
-                                <option key={cat.id} value={cat.name}>
-                                    {cat.name}
-                                </option>
-                            ))}
+                    <div className="col-md-6">
+                        <label className="form-label">Title</label>
+                        <input type="text" name="title" className="form-control" value={formData.title} onChange={handleChange} required />
+                    </div>
+
+                    <div className="col-md-6">
+                        <label className="form-label">Category</label>
+                        {catLoading ? (
+                            <div className="form-control bg-light text-muted">Loading categories...</div>
+                        ) : catError ? (
+                            <div className="text-danger">{catError}</div>
+                        ) : (
+                            <select name="category" className="form-select" value={formData.category} onChange={handleChange} required>
+                                <option value="">Select a category</option>
+                                {categories.map((cat) => (
+                                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                ))}
+                            </select>
+                        )}
+                    </div>
+
+                    <div className="col-12">
+                        <label className="form-label">Description</label>
+                        <textarea name="description" rows="4" className="form-control" value={formData.description} onChange={handleChange}></textarea>
+                    </div>
+
+                    {/* ────── Section: Pricing & Status ────── */}
+                    <div className="section-title mt-4 mb-0">Pricing & Status</div>
+
+                    <div className="col-md-4">
+                        <label className="form-label">Price</label>
+                        <input type="number" name="price" className="form-control" value={formData.price} onChange={handleChange} required />
+                    </div>
+
+                    <div className="col-md-4">
+                        <label className="form-label">Currency</label>
+                        <input type="text" name="currency" className="form-control" value={formData.currency} onChange={handleChange} />
+                    </div>
+
+                    <div className="col-md-4">
+                        <label className="form-label">Condition</label>
+                        <select name="conditionType" className="form-select" value={formData.conditionType} onChange={handleChange}>
+                            <option value="">Select condition</option>
+                            <option value="new">New</option>
+                            <option value="like_new">Like New</option>
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                            <option value="poor">Poor</option>
                         </select>
+                    </div>
+
+                    <div className="col-md-6">
+                        <label className="form-label">Status</label>
+                        <select name="status" className="form-select" value={formData.status} onChange={handleChange}>
+                            <option value="active">Active</option>
+                            <option value="sold">Sold</option>
+                            <option value="expired">Expired</option>
+                            <option value="removed">Removed</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+
+                    <div className="col-md-6">
+                        <label className="form-label">Expiration Date</label>
+                        <input type="date" name="expireDate" className="form-control" value={formData.expireDate} onChange={handleChange} />
+                    </div>
+                    <div className="col-md-6 d-flex align-items-center gap-2 mt-3">
+                        <input
+                            type="checkbox"
+                            id="isNegotiable"
+                            name="isNegotiable"
+                            checked={formData.isNegotiable}
+                            onChange={() =>
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    isNegotiable: !prev.isNegotiable,
+                                }))
+                            }
+                        />
+                        <label htmlFor="isNegotiable" className="mb-0">Price Negotiable</label>
+                    </div>
+
+                    {/* ────── Section: Contact Info ────── */}
+                    <div className="section-title mt-4 mb-0">Contact Information</div>
+
+                    <div className="col-md-4">
+                        <label className="form-label">Phone</label>
+                        <input type="text" name="contactDetails.phone" className="form-control" value={formData.contactDetails.phone} onChange={handleChange} />
+                    </div>
+
+                    <div className="col-md-4">
+                        <label className="form-label">Email</label>
+                        <input type="email" name="contactDetails.email" className="form-control" value={formData.contactDetails.email} onChange={handleChange} />
+                    </div>
+
+                    <div className="col-md-4">
+                        <label className="form-label">WhatsApp</label>
+                        <input type="text" name="contactDetails.whatsapp" className="form-control" value={formData.contactDetails.whatsapp} onChange={handleChange} />
+                    </div>
+
+                    {/* ────── Section: Location ────── */}
+                    <div className="section-title mt-4 mb-0">Location</div>
+
+                    {["city", "state", "country", "postalCode"].map((field) => (
+                        <div className="col-md-6" key={field}>
+                            <label className="form-label text-capitalize">{field.replace(/([A-Z])/g, " $1")}</label>
+                            <input type="text" name={`location.${field}`} className="form-control" value={formData.location[field]} onChange={handleChange} />
+                        </div>
+                    ))}
+
+                    {/* ────── Section: Image Upload ────── */}
+                    <div className="section-title mt-4 mb-0">Upload Images</div>
+
+                    <div className="col-12">
+                        <input type="file" className="form-control" onChange={handleImageChange} multiple />
+                    </div>
+
+                    {previewImages.length > 0 && (
+                        <div className="col-12 mt-3 d-flex flex-wrap gap-3">
+                            {previewImages.map((src, idx) => (
+                                <img
+                                    key={idx}
+                                    src={src}
+                                    alt={`Preview ${idx}`}
+                                    className="rounded border"
+                                    style={{ width: '120px', height: '120px', objectFit: 'contain' }}
+                                />
+                            ))}
+                        </div>
                     )}
+
+                    {/* ────── Submit & Cancel Buttons ────── */}
+                    <div className="col-12 text-center mt-4 d-flex justify-content-center gap-3">
+                        <button className="btn btn-success px-4 py-2 fw-semibold" type="submit" disabled={loading}>
+                            {loading ? "Updating..." : "Update Item"}
+                        </button>
+
+                        <button
+                            type="button"
+                            className="btn btn-warning px-4 py-2 fw-semibold"
+                            onClick={() => navigate(-1)}
+                            disabled={loading}
+                        >
+                            Cancel
+                        </button>
+                    </div>
                 </div>
-
-                <div className="form-group mb-3">
-                    <label>Description</label>
-                    <textarea name="description" className="form-control" value={formData.description} onChange={handleChange} />
-                </div>
-
-                <div className="form-group mb-3">
-                    <label>Price</label>
-                    <input type="number" name="price" className="form-control" value={formData.price} onChange={handleChange} required />
-                </div>
-
-                <div className="form-group mb-3">
-                    <label>Phone</label>
-                    <input type="text" name="contactDetails.phone" className="form-control" value={formData.contactDetails.phone} onChange={handleChange} />
-                </div>
-
-                <div className="form-group mb-3">
-                    <label>Email</label>
-                    <input type="email" name="contactDetails.email" className="form-control" value={formData.contactDetails.email} onChange={handleChange} />
-                </div>
-
-                <div className="form-group mb-3">
-                    <label>Upload Images (optional)</label>
-                    <input type="file" className="form-control" onChange={handleImageChange} multiple />
-                </div>
-
-                <button className="btn btn-success" type="submit" disabled={loading}>
-                    {loading ? "Updating..." : "Update Item"}
-                </button>
-
             </form>
         </div>
+
     );
 };
 

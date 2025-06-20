@@ -20,12 +20,11 @@ const APPEAL_PRIORITY = {
 };
 
 const user = {
-  role: 'banned', // change to 'banned' to see Create button
+  role: '', // change to 'banned' to see Create button
 };
 
 const TicketsContent = () => {
   const [appeals, setAppeals] = useState([]);
-  const [stats, setStats] = useState({ pending: 0, reviewed: 0, urgent: 0 });
   const [editingAppeal, setEditingAppeal] = useState(null);
   const [creating, setCreating] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
@@ -52,18 +51,11 @@ const TicketsContent = () => {
       const res = await axiosInstance.get('/appeal/getAll');
       const data = res.data.data;
       setAppeals(data);
-      calculateStats(data);
     } catch (err) {
       console.error("Error fetching appeals", err);
     }
   };
 
-  const calculateStats = (data) => {
-    const pending = data.filter(a => a.status === 'pending').length;
-    const reviewed = data.filter(a => ['approved', 'rejected', 'closed'].includes(a.status)).length;
-    const urgent = data.filter(a => a.priority === 'urgent').length;
-    setStats({ pending, reviewed, urgent });
-  };
 
   const openEditModal = (appeal) => {
     setEditingAppeal(appeal);
@@ -123,7 +115,6 @@ const TicketsContent = () => {
   return (
     <div className="tickets-wrapper">
       
-
       {user.role === 'banned' && (
         <button className="edit-btn" onClick={() => setCreating(!creating)}>
           {creating ? 'Cancel New Appeal' : 'Create New Appeal'}
