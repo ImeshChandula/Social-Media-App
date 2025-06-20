@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { axiosInstance } from "../lib/axios";
-import TicketsHead from './TicketsHead';
 import '../styles/TicketsContent.css';
 
 const APPEAL_STATUS = {
@@ -20,7 +19,13 @@ const APPEAL_PRIORITY = {
 };
 
 const user = {
-  role: '', // change to 'banned' to see Create button
+  role: '', // change to 'banned' to show create appeal button
+};
+
+const formatDate = (isoString) => {
+  if (!isoString) return 'N/A';
+  const date = new Date(isoString);
+  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
 };
 
 const TicketsContent = () => {
@@ -49,13 +54,11 @@ const TicketsContent = () => {
   const fetchAppeals = async () => {
     try {
       const res = await axiosInstance.get('/appeal/getAll');
-      const data = res.data.data;
-      setAppeals(data);
+      setAppeals(res.data.data || []);
     } catch (err) {
       console.error("Error fetching appeals", err);
     }
   };
-
 
   const openEditModal = (appeal) => {
     setEditingAppeal(appeal);
@@ -95,6 +98,7 @@ const TicketsContent = () => {
       alert("Appeal submitted");
       setCreating(false);
       setNewAppeal({ appealReason: '', additionalInfo: '', contactMethod: 'email' });
+      fetchAppeals();
     } catch (err) {
       console.error("Create failed", err);
       alert("Failed to create appeal");
@@ -114,7 +118,8 @@ const TicketsContent = () => {
 
   return (
     <div className="tickets-wrapper">
-      
+     
+
       {user.role === 'banned' && (
         <button className="edit-btn" onClick={() => setCreating(!creating)}>
           {creating ? 'Cancel New Appeal' : 'Create New Appeal'}
@@ -156,26 +161,27 @@ const TicketsContent = () => {
               <th>Status</th>
               <th>Priority</th>
               <th>Reason</th>
+              <th>Created</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {appeals.length === 0 ? (
-              <tr><td colSpan="7">No appeals found.</td></tr>
+              <tr><td colSpan="8">No appeals found.</td></tr>
             ) : (
               appeals.map((appeal) => (
                 <tr key={appeal.id}>
                   <td>{appeal.appealNumber}</td>
-                  <td>{appeal.author?.username}</td>
-                  <td>{appeal.author?.email}</td>
+                  <td>{appeal.author?.username || 'Unknown'}</td>
+                  <td>{appeal.author?.email || 'N/A'}</td>
                   <td><span className={`badge status-${appeal.status}`}>{appeal.status}</span></td>
                   <td><span className={`badge priority-${appeal.priority}`}>{appeal.priority}</span></td>
                   <td>{appeal.appealReason}</td>
+                  <td>{formatDate(appeal.createdAt)}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <button className="edit-btn" onClick={() => openEditModal(appeal)}>Take Action</button>
                       <button className="cancel-btn small-btn" onClick={() => setDeleteId(appeal.id)}>Delete</button>
-
                     </div>
                   </td>
                 </tr>
