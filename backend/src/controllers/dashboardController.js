@@ -4,9 +4,11 @@ const PostService = require('../services/postService');
 const StoryService = require('../services/storyService');
 const CategoryService = require('../services/categoryService');
 const AppealService = require('../services/appealService');
+const MailService = require('../services/mailService');
 
 const jobCategoryService = new CategoryService();
 const appealService = new AppealService();
+const mailService = new MailService();
 
 const userSummery = async (req, res) => {
     try {
@@ -80,4 +82,24 @@ const appealSummery = async (req, res) => {
     }
 };
 
-module.exports = {userSummery, appealSummery};
+const messageSummary = async (req, res) => {
+	try {
+        const mails = await mailService.findAll();
+        if (!mails) {
+            return res.status(400).json({ success: false, message: "Failed to fetch messages"});
+        }
+
+        const unreadCount = mails.filter(mail => !mail.isRead).length;
+
+        const summaryData = {
+            total: mails.length,
+            unread: unreadCount
+        };
+
+        return res.status(200).json({ success: true, message: "Message summary fetched successfully", data: summaryData});
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
+};
+
+module.exports = {userSummery, appealSummery, messageSummary};
