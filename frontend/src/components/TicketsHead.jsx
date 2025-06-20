@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { axiosInstance } from "../lib/axios";
+import toast from 'react-hot-toast';
 import '../styles/TicketsHead.css';
 
 const TicketsHead = () => {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [appeals, setAppeals] = useState([]);
 
   useEffect(() => {
     fetchAppeals();
@@ -13,25 +13,25 @@ const TicketsHead = () => {
 
   const fetchAppeals = async () => {
     try {
-      const res = await axiosInstance.get('/appeal/getAll');
-      const data = res.data.data;
-      setAppeals(data);
-      calculateStats(data);
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching appeals", err);
+      setLoading(true);
+
+      const response = await axiosInstance.get('/dashboard/appealSummery');
+      if (response.data.success) {
+                setSummary(response.data.data);
+            }
+    } catch (error) {
+      const message =
+        error?.response?.data?.message || // Backend-sent message
+        error?.message ||                 // General JS error
+        'Something went wrong while fetching categories';
+
+      toast.error(message);
+    } finally {
       setLoading(false);
     }
   };
 
-  const calculateStats = (data) => {
-    const pending = data.filter(a => a.status === 'pending').length;
-    const reviewed = data.filter(a => ['approved', 'rejected', 'closed'].includes(a.status)).length;
-    const urgent = data.filter(a => a.priority === 'urgent').length;
-    const total = data.length;
 
-    setSummary({ pending, reviewed, urgent, total });
-  };
 
   if (loading) {
     return (
