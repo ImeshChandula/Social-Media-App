@@ -6,7 +6,7 @@ const CategoryService = require('../services/categoryService');
 const AppealService = require('../services/appealService');
 const MailService = require('../services/mailService');
 
-const jobCategoryService = new CategoryService();
+const categoryService = new CategoryService();
 const appealService = new AppealService();
 const mailService = new MailService();
 
@@ -102,4 +102,36 @@ const messageSummary = async (req, res) => {
     }
 };
 
-module.exports = {userSummery, appealSummery, messageSummary};
+const categorySummery = async (req, res) => {
+	try {
+        const jobCategories = await categoryService.findAllActiveByField("job_role");
+        const marketCategories = await categoryService.findAllActiveByField("marketplace");
+
+        if (!jobCategories || !marketCategories) {
+            return res.status(400).json({ success: false, message: "Failed to fetch categories"});
+        }
+
+        const simplifiedJobCategories = jobCategories.map(category => ({
+            id: category.id,
+            name: category.name
+        }));
+
+        const simplifiedMarketCategories = marketCategories.map(category => ({
+            id: category.id,
+            name: category.name
+        }));
+
+        return res.status(200).json({ 
+            success: true, 
+            message: "Categories received successfully", 
+            data: {
+                simplifiedJobCategories, 
+                simplifiedMarketCategories
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
+};
+
+module.exports = {userSummery, appealSummery, messageSummary, categorySummery};

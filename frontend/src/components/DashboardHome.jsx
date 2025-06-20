@@ -3,8 +3,8 @@ import styles from '../styles/DashboardHomeStyle';
 import "../styles/DashboardHome.css";
 import DashboardUserSummery from './DashboardUserSummery';
 import TicketsHead from './TicketsHead';
-import MailHead from './MailHead';
 import MessageHead from './MessageHead';
+import CategoryHead from './CategoryHead';
 
 
 const DashboardHome = () => {
@@ -17,6 +17,7 @@ const DashboardHome = () => {
 
       <TicketsHead />
       <MessageHead />
+      <CategoryHead />
       <DashboardUserSummery />
       
     </>

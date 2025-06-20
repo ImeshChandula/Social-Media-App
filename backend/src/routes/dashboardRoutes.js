@@ -9,5 +9,6 @@ const router = express.Router();
 router.get('/userSummery', authenticateUser, authorizeRoles("admin", "super_admin"), dashboardController.userSummery);
 router.get('/appealSummery', authenticateUser, authorizeRoles("admin", "super_admin"), dashboardController.appealSummery);
 router.get('/messageSummery', authenticateUser, authorizeRoles("admin", "super_admin"), dashboardController.messageSummary);
+router.get('/categorySummery', authenticateUser, authorizeRoles("admin", "super_admin"), dashboardController.categorySummery);
 
 module.exports = router;
