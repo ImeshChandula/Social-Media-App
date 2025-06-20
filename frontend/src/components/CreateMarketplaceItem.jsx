@@ -24,7 +24,7 @@ const initialState = {
     quantity: 1,
     isNegotiable: false,
     tags: [],
-    expiresAt: "", // ISO string or date string
+    expiresAt: "",
 };
 
 const CreateMarketplaceItem = () => {
@@ -110,10 +110,10 @@ const CreateMarketplaceItem = () => {
             <div className="row g-4">
 
                 {/* ────── Section: General Info ────── */}
-                <div className="section-title">General Information</div>
+                <div className="section-title mb-0">General Information</div>
 
                 <div className="col-md-6">
-                    <label className="form-label text-black">Category</label>
+                    <label className="form-label">Category</label>
                     {catLoading ? (
                         <div className="form-control bg-light text-muted">Loading categories...</div>
                     ) : catError ? (
@@ -129,58 +129,58 @@ const CreateMarketplaceItem = () => {
                 </div>
 
                 <div className="col-md-6">
-                    <label className="form-label text-black">Title</label>
+                    <label className="form-label">Title</label>
                     <input type="text" name="title" className="form-control" placeholder="Item title" required value={formData.title} onChange={handleChange} />
                 </div>
 
                 <div className="col-12">
-                    <label className="form-label text-black">Description</label>
+                    <label className="form-label">Description</label>
                     <textarea name="description" rows="4" className="form-control" placeholder="Item description" value={formData.description} onChange={handleChange}></textarea>
                 </div>
 
                 <div className="col-md-6">
-                    <label className="form-label text-black">Price</label>
+                    <label className="form-label">Price</label>
                     <input type="number" name="price" className="form-control" placeholder="Price" required value={formData.price} onChange={handleChange} />
                 </div>
 
                 <div className="col-md-6">
-                    <label className="form-label text-black">Currency</label>
+                    <label className="form-label">Currency</label>
                     <input type="text" name="currency" className="form-control" placeholder="USD, EUR..." value={formData.currency} onChange={handleChange} />
                 </div>
 
                 {/* ────── Section: Contact Details ────── */}
-                <div className="section-title mt-4">Contact Details</div>
+                <div className="section-title mt-4 mb-0">Contact Details</div>
 
                 <div className="col-md-4">
-                    <label className="form-label text-black">Phone</label>
+                    <label className="form-label">Phone</label>
                     <input type="text" name="contactDetails.phone" className="form-control" placeholder="Phone number" value={formData.contactDetails.phone} onChange={handleChange} />
                 </div>
 
                 <div className="col-md-4">
-                    <label className="form-label text-black">Email</label>
+                    <label className="form-label">Email</label>
                     <input type="email" name="contactDetails.email" className="form-control" placeholder="Email address" value={formData.contactDetails.email} onChange={handleChange} />
                 </div>
 
                 <div className="col-md-4">
-                    <label className="form-label text-black">WhatsApp</label>
+                    <label className="form-label">WhatsApp</label>
                     <input type="text" name="contactDetails.whatsapp" className="form-control" placeholder="WhatsApp number" value={formData.contactDetails.whatsapp} onChange={handleChange} />
                 </div>
 
                 {/* ────── Section: Location ────── */}
-                <div className="section-title mt-4">Location Details</div>
+                <div className="section-title mt-4 mb-0">Location Details</div>
 
                 {["city", "state", "country", "postalCode"].map((field) => (
                     <div className="col-md-6" key={field}>
-                        <label className="form-label text-black text-capitalize">{field.replace(/([A-Z])/g, " $1")}</label>
+                        <label className="form-label text-capitalize">{field.replace(/([A-Z])/g, " $1")}</label>
                         <input type="text" name={`location.${field}`} className="form-control" placeholder={`Enter ${field}`} value={formData.location[field]} onChange={handleChange} />
                     </div>
                 ))}
 
                 {/* ────── Section: Product Details ────── */}
-                <div className="section-title mt-4">Product Details</div>
+                <div className="section-title mt-4 mb-0">Product Details</div>
 
                 <div className="col-md-6">
-                    <label className="form-label text-black">Condition</label>
+                    <label className="form-label">Condition</label>
                     <select name="conditionType" className="form-select" value={formData.conditionType} onChange={handleChange}>
                         <option value="new">New</option>
                         <option value="like_new">Like New</option>
@@ -191,7 +191,7 @@ const CreateMarketplaceItem = () => {
                 </div>
 
                 <div className="col-md-6">
-                    <label className="form-label text-black">Quantity</label>
+                    <label className="form-label">Quantity</label>
                     <input type="number" name="quantity" min="1" className="form-control" value={formData.quantity} onChange={handleChange} />
                 </div>
 
@@ -201,32 +201,32 @@ const CreateMarketplaceItem = () => {
                 </div>
 
                 {/* ────── Section: Extra ────── */}
-                <div className="section-title mt-4">Extra Information</div>
+                <div className="section-title mt-4 mb-0 ">Extra Information</div>
 
                 <div className="col-md-6">
-                    <label className="form-label text-black">Tags</label>
+                    <label className="form-label">Tags</label>
                     <input type="text" name="tags" className="form-control" placeholder="Comma-separated tags" value={formData.tags.join(", ")} onChange={handleChange} />
                 </div>
 
                 <div className="col-md-6">
-                    <label className="form-label text-black">Expiration Date</label>
+                    <label className="form-label">Expiration Date</label>
                     <input type="date" name="expiresAt" className="form-control" value={formData.expiresAt} onChange={handleChange} />
                 </div>
 
                 {/* ────── Section: Media ────── */}
-                <div className="section-title mt-4">Upload Image</div>
+                <div className="section-title mt-4 mb-0 ">Upload Image</div>
 
                 <div className="col-12">
                     <input type="file" accept="image/*" onChange={handleFileChange} className="form-control" />
                     {previewUrl && (
                         <div className="mt-3">
-                            <img src={previewUrl} alt="Preview" className="img-thumbnail" style={{ maxWidth: "250px" }} />
+                            <img src={previewUrl} alt="Preview" className="border border-secondary rounded" style={{ maxWidth: "250px" }} />
                         </div>
                     )}
                 </div>
 
-                {/* ────── Submit Button ────── */}
-                <div className="col-12 text-center mt-4">
+                {/* ────── Submit & Cancel Button ────── */}
+                <div className="col-12 text-center mt-4 d-flex justify-content-center gap-3">
                     <button type="submit" className="btn btn-primary px-4 py-2 fw-semibold" disabled={loading}>
                         {loading ? (
                             <>
@@ -236,6 +236,15 @@ const CreateMarketplaceItem = () => {
                         ) : (
                             "Submit Item"
                         )}
+                    </button>
+
+                    <button
+                        type="button"
+                        className="btn btn-warning px-4 py-2 fw-semibold"
+                        onClick={() => navigate(-1)}
+                        disabled={loading}
+                    >
+                        Cancel
                     </button>
                 </div>
             </div>
