@@ -121,7 +121,7 @@ const updateAppeal = async (req, res) => {
         const { adminNotes, responseMessage } = req.body;
         const appealId = req.params.id;
 
-        if (!adminNotes || !responseMessage) {
+        if (!adminNotes.trim() || !responseMessage.trim()) {
             return res.status(400).json({ success: false, message: "Required fields are missing"});
         }
 
@@ -140,6 +140,28 @@ const updateAppeal = async (req, res) => {
             return res.status(400).json({ success: false, message: "Failed to update appeal"});
         }
 
+        // update user account status
+        let updatedUser = {};
+        let isUpdatedUserAccount = false;
+        const user = await UserService.findByEmail(updatedAppeal.email);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found. Updating user's account status failed"});
+        }
+        if (updatedAppeal.status === "approved") {
+            const existingUser = await UserService.updateById(user.id, {accountStatus: "active"});
+            if (!existingUser) {
+                return res.status(400).json({ success: false, message: "Updating user's account status failed"});
+            }
+            
+            isUpdatedUserAccount = true;
+            updatedUser.id = existingUser.id;
+            updatedUser.username= existingUser.username;
+            updatedUser.email= existingUser.email;
+            updatedUser.accountStatus= existingUser.accountStatus;
+            
+        }
+
+        // send email to user
         let emailTemplate;
         const appealStatus = updatedAppeal.status;
         if (appealStatus === "pending" || appealStatus === "under_review") {
@@ -160,7 +182,12 @@ const updateAppeal = async (req, res) => {
             return res.status(500).json({ success: false, message: "Failed to send mail"});
         }
 
-        return res.status(200).json({ success: true, message: "Appeal updated successfully. Email response was sent to user's email.", data: updatedAppeal});
+        let resultMessage = "Appeal updated successfully. Email response was sent to user's email.";
+        if (isUpdatedUserAccount) {
+            resultMessage = "Appeal updated successfully. Email response was sent to user's email. User's account activated successfully."
+        }
+
+        return res.status(200).json({ success: true,  message: resultMessage, data: updatedAppeal, user: updatedUser});
     } catch (error) {
         return res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
