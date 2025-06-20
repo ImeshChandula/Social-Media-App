@@ -1,8 +1,7 @@
 const UserService = require('../services/userService');
 const PostService = require('../services/postService');
-const {uploadMedia} = require('../utils/uploadMedia');
 const {deleteAllComments} = require('../services/userDeletionService');
-const {validateAndProcessMedia} = require('../middleware/mediaValidation');
+const { handleMediaUpload } = require('../utils/handleMediaUpload');
 const notificationUtils = require('../utils/notificationUtils');
 
 
@@ -21,75 +20,39 @@ const createPost = async (req, res) => {
         }
         
         const postData = {
-            author: req.user.id,
-            content,
             tags,
             mediaType,
             privacy,
             location
         };
 
-        // Only upload media if provided
-        if (media) {
-            try {
-                console.log(`Starting ${mediaType} upload...`);
-                
-                // Validate media before upload
-                const validatedMedia = validateAndProcessMedia(media, mediaType);
-
-                const imageUrl  = await uploadMedia(validatedMedia, mediaType);
-                postData.media = imageUrl;
-
-                console.log(`${mediaType} uploaded successfully:`);
-            } catch (error) {
-                console.error('Media upload failed:', error);
-
-                if (error.message.includes('timeout')) {
-                    return res.status(408).json({
-                        error: "Upload timeout", 
-                        message: "Your file is too large or upload is taking too long. Please try compressing the video or use a smaller file.",
-                        suggestion: "For videos over 25MB, consider compressing to reduce file size."
-                    });
-                } else if (error.message.includes('File size')) {
-                    return res.status(413).json({
-                        error: "File too large",
-                        message: error.message,
-                        maxSize: mediaType === 'video' ? '50MB' : '15MB'
-                    });
-                } else {
-                    return res.status(400).json({
-                        error: "Failed to upload media", 
-                        message: error.message
-                    });
-                }
-            }
-        }
-        
+        if (content !== undefined) postData.content = content;
 
         const newPost = await PostService.create(postData);
 
-        // get author details
-        const author = await UserService.findById(req.user.id);
-        
-        if (!author) {
-            return res.status(404).json({ message: 'Author not found' });
+        const updateData = { author: req.user.id, }
+        if (media) {
+            const result = await handleMediaUpload(media, mediaType);
+            if (!result.success) {
+                return res.status(result.code).json({
+                    success: false,
+                    error: result.error,
+                    message: result.message,
+                    ...(result.suggestion && { suggestion: result.suggestion }),
+                    ...(result.maxSize && { maxSize: result.maxSize })
+                });
+            }
+
+            updateData.media = result.imageUrl;
         }
         
-        const authorData = {
-            id: author.id,
-            firstName: author.firstName,
-            lastName: author.lastName,
-            username: author.username,
-            profilePicture: author.profilePicture
-        };
-
-        // combine post with author details
-        const populatedPost = {
-            ...newPost,
-            author: authorData
-        };
+        const populatedPost = await PostService.updateById(newPost.id, updateData);
+        if (!populatedPost) {
+            return res.status(400).json({ success: false, message: "Failed to create post"});
+        }
 
         // Send notifications to friends (only if post is public or friends can see it)
+        const author = await UserService.findById(req.user.id);
         const friendIds = author.friends || [];
         if (friendIds.length > 0 && (privacy === 'public' || privacy === 'friends')){
             try {
@@ -110,7 +73,7 @@ const createPost = async (req, res) => {
             }
         }
 
-        res.status(201).json({ message: "Post created successfully", populatedPost });
+        return res.status(201).json({ message: "Post created successfully", populatedPost });
         
     } catch (error) {
         console.error('Post creation error:', error.message);
@@ -496,38 +459,18 @@ const updatePostByPostId = async (req, res) => {
         if (privacy !== undefined) updateData.privacy = privacy;
         if (location !== undefined) updateData.location = location;
         if (media !== undefined) {
-            try {
-                console.log(`Starting ${mediaType} upload...`);
-                
-                // Validate media before upload
-                const validatedMedia = validateAndProcessMedia(media, mediaType);
-
-                const imageUrl  = await uploadMedia(validatedMedia, mediaType);
-                updateData.media = imageUrl;
-
-                console.log(`${mediaType} uploaded successfully:`);
-            } catch (error) {
-                console.error('Media upload failed:', error);
-
-                if (error.message.includes('timeout')) {
-                    return res.status(408).json({
-                        error: "Upload timeout", 
-                        message: "Your file is too large or upload is taking too long. Please try compressing the video or use a smaller file.",
-                        suggestion: "For videos over 25MB, consider compressing to reduce file size."
-                    });
-                } else if (error.message.includes('File size')) {
-                    return res.status(413).json({
-                        error: "File too large",
-                        message: error.message,
-                        maxSize: mediaType === 'video' ? '50MB' : '15MB'
-                    });
-                } else {
-                    return res.status(400).json({
-                        error: "Failed to upload media", 
-                        message: error.message
-                    });
-                }
+            const result = await handleMediaUpload(media, mediaType);
+            if (!result.success) {
+                return res.status(result.code).json({
+                    success: false,
+                    error: result.error,
+                    message: result.message,
+                    ...(result.suggestion && { suggestion: result.suggestion }),
+                    ...(result.maxSize && { maxSize: result.maxSize })
+                });
             }
+
+            updateData.media = result.imageUrl;
         }
         
         // Add edit history if content is changed

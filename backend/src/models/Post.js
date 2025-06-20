@@ -3,7 +3,7 @@ class Post {
     constructor(id, postData) {
         this.id = id;
         this.author = postData.author;
-        this.content = postData.content;
+        this.content = postData.content || '';
         this.media = postData.media || [];
         this.mediaType = postData.mediaType || '';
         this.tags = postData.tags || [];
