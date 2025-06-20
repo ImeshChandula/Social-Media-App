@@ -47,7 +47,7 @@ const TicketsHead = () => {
                 </svg>
               </div>
               <div className="tk-title-text">
-                <h1 className="tk-main-title">Appeal Management</h1>
+                <h1 className="tk-main-title">Appeal Center</h1>
                 <p className="tk-subtitle">Review and manage user ban appeals</p>
               </div>
             </div>
@@ -85,7 +85,7 @@ const TicketsHead = () => {
                         </svg>
                     </div>
                     <div class="tk-title-text">
-                        <h1 class="tk-main-title">Appeal Management</h1>
+                        <h1 class="tk-main-title">Appeal Center</h1>
                         <p class="tk-subtitle">Review and manage user ban appeals</p>
                     </div>
                 </div>
