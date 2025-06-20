@@ -16,6 +16,7 @@ const EditMarketPlaceItem = () => {
         contactDetails: {
             phone: '',
             email: '',
+            whatsapp: '',
         },
         location: {
             city: '',
@@ -25,6 +26,7 @@ const EditMarketPlaceItem = () => {
         },
         conditionType: '',
         status: 'active',
+        expireDate: '',
         images: null,
     });
 
@@ -44,13 +46,18 @@ const EditMarketPlaceItem = () => {
                 const item = itemRes.data.data.find((itm) => itm.id === id);
                 if (!item) {
                     toast.error("Item not found");
-                    return navigate("/marketplace");
+                    return navigate(-1);
                 }
 
                 setFormData({
                     ...item,
-                    contactDetails: item.contactDetails || { phone: "", email: "" },
+                    contactDetails: {
+                        phone: item.contactDetails?.phone || '',
+                        email: item.contactDetails?.email || '',
+                        whatsapp: item.contactDetails?.whatsapp || '',
+                    },
                     location: item.location || { city: "", state: "", country: "", postalCode: "" },
+                    expireDate: item.expireDate ? item.expireDate.split('T')[0] : '',
                     images: null,
                 });
 
@@ -110,6 +117,14 @@ const EditMarketPlaceItem = () => {
         try {
             const dataToSend = { ...formData };
 
+            // Set default expireDate if not provided
+            if (!formData.expireDate) {
+                const defaultExpire = new Date();
+                defaultExpire.setDate(defaultExpire.getDate() + 30);
+                dataToSend.expireDate = defaultExpire.toISOString().split("T")[0];
+            }
+
+            // Handle image encoding if present
             if (formData.images) {
                 const base64Images = await Promise.all(
                     formData.images.map((file) =>
@@ -142,6 +157,7 @@ const EditMarketPlaceItem = () => {
         <div className="container py-4">
             <h2 className="mb-4">Edit Marketplace Item</h2>
             <form onSubmit={handleSubmit}>
+                {/* Existing Fields */}
                 <div className="form-group mb-3">
                     <label>Title</label>
                     <input type="text" name="title" className="form-control" value={formData.title} onChange={handleChange} required />
@@ -211,6 +227,7 @@ const EditMarketPlaceItem = () => {
                     </select>
                 </div>
 
+                {/* New Fields */}
                 <div className="form-group mb-3">
                     <label>Phone</label>
                     <input type="text" name="contactDetails.phone" className="form-control" value={formData.contactDetails.phone} onChange={handleChange} />
@@ -219,6 +236,16 @@ const EditMarketPlaceItem = () => {
                 <div className="form-group mb-3">
                     <label>Email</label>
                     <input type="email" name="contactDetails.email" className="form-control" value={formData.contactDetails.email} onChange={handleChange} />
+                </div>
+
+                <div className="form-group mb-3">
+                    <label>WhatsApp Number</label>
+                    <input type="text" name="contactDetails.whatsapp" className="form-control" value={formData.contactDetails.whatsapp} onChange={handleChange} />
+                </div>
+
+                <div className="form-group mb-3">
+                    <label>Expire Date</label>
+                    <input type="date" name="expireDate" className="form-control" value={formData.expireDate} onChange={handleChange} />
                 </div>
 
                 <div className="form-group mb-3">
