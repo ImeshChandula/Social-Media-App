@@ -17,7 +17,6 @@ const EditMarketPlaceItem = () => {
         location: { city: '', state: '', country: '', postalCode: '' },
         conditionType: '',
         status: 'active',
-        expireDate: '',
         images: null,
         isNegotiable: false,
     });
@@ -27,7 +26,6 @@ const EditMarketPlaceItem = () => {
     const [catLoading, setCatLoading] = useState(true);
     const [catError, setCatError] = useState("");
     const [previewImages, setPreviewImages] = useState([]);
-
 
     useEffect(() => {
         const fetchData = async () => {
@@ -51,7 +49,6 @@ const EditMarketPlaceItem = () => {
                         whatsapp: item.contactDetails?.whatsapp || '',
                     },
                     location: item.location || { city: "", state: "", country: "", postalCode: "" },
-                    expireDate: item.expireDate ? item.expireDate.split('T')[0] : '',
                     images: null,
                     isNegotiable: item.isNegotiable || false,
                 });
@@ -112,13 +109,12 @@ const EditMarketPlaceItem = () => {
         setLoading(true);
 
         try {
-            const dataToSend = { ...formData };
+            const {
+                id, createdAt, updatedAt, author,
+                ...dataToSend
+            } = formData;
 
-            if (!formData.expireDate) {
-                const defaultExpire = new Date();
-                defaultExpire.setDate(defaultExpire.getDate() + 30);
-                dataToSend.expireDate = defaultExpire.toISOString().split("T")[0];
-            }
+            delete dataToSend.isAccept
 
             if (formData.images) {
                 const base64Images = await Promise.all(
@@ -220,10 +216,6 @@ const EditMarketPlaceItem = () => {
                         </select>
                     </div>
 
-                    <div className="col-md-6">
-                        <label className="form-label">Expiration Date</label>
-                        <input type="date" name="expireDate" className="form-control" value={formData.expireDate} onChange={handleChange} />
-                    </div>
                     <div className="col-md-6 d-flex align-items-center gap-2 mt-3">
                         <input
                             type="checkbox"
@@ -307,7 +299,6 @@ const EditMarketPlaceItem = () => {
                 </div>
             </form>
         </div>
-
     );
 };
 
