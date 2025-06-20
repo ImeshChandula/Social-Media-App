@@ -109,8 +109,8 @@ const validateAppealUpdate = (req, res, next) => {
   const schema = Joi.object({
     status: Joi.string().valid(...Object.values(APPEAL_STATUS)).optional(),
     priority: Joi.string().valid(...Object.values(APPEAL_PRIORITY)).optional(),
-    adminNotes: Joi.string().max(2000).allow('').optional(),
-    responseMessage: Joi.string().max(2000).allow('').optional(),
+    adminNotes: Joi.string().max(2000).required(),
+    responseMessage: Joi.string().max(2000).required(),
     reviewedAt: Joi.date().iso().optional()
   });
 
