@@ -1,8 +1,9 @@
 .user-summary {
-  max-width: 1100px;
-  margin: 30px auto;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  margin: 20px auto;
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border-radius: 10px;
 }
 
 .user-summary h2 {
