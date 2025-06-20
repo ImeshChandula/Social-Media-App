@@ -53,42 +53,56 @@ const PostComment = ({ postId }) => {
 
   const fileToBase64 = (file) =>
   new Promise((resolve, reject) => {
-    if (!file) return resolve(null);
     const reader = new FileReader();
     reader.onloadend = () => resolve(reader.result);
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 
+
   const handleAddComment = async () => {
-  if (!newComment.trim() && !newMedia) {
-    toast.error("Please add text or media.");
+  const trimmedText = newComment.trim();
+
+  if (!trimmedText && !newMedia) {
+    toast.error("Please add text or select an image.");
     return;
   }
 
-  let media = null;
+  let payload = {
+    text: trimmedText || ""
+  };
+
   if (newMedia) {
     try {
-      media = await fileToBase64(newMedia);
+      const base64Media = await fileToBase64(newMedia);
+
+      if (!base64Media.startsWith("data:image/")) {
+        toast.error("Only image files are allowed.");
+        return;
+      }
+
+      payload.media = base64Media;
+      
     } catch {
-      toast.error("Failed to read media.");
+      toast.error("Failed to read image file.");
       return;
     }
   }
 
   try {
-    await axiosInstance.post(`/comments/addComment/${postId}`, {
-      text: newComment.trim(),
-      media,
-    });
+    await axiosInstance.post(`/comments/addComment/${postId}`, payload);
+
+    
     setNewComment("");
     setNewMedia(null);
     fetchComments();
-  } catch (err) {
-    toast.error("Failed to post comment.");
+  } catch (error) {
+    const message =
+      error.response?.data?.message || "Failed to post comment.";
+    toast.error(message);
+    console.error("Add comment error:", error.response || error.message);
   }
 };
-
 
   const handleReply = async (commentId) => {
   const text = replyText[commentId]?.trim();
