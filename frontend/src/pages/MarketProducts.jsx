@@ -43,6 +43,7 @@ const MarketProducts = () => {
             showCategory={true}
             showAllDetails={true}
             showContactDetails={true}
+            showTags={false}
           />
         ))}
       </div>

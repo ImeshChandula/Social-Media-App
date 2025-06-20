@@ -8,6 +8,7 @@ const MarketplaceCard = ({
     showAllDetails = false,
     showContactDetails = false,
     showActions = false,
+    showTags = true,
     onDelete = () => { },
 }) => {
     return (
@@ -43,7 +44,36 @@ const MarketplaceCard = ({
                 ) : null}
 
                 {item.images?.length > 0 && (
-                    <img src={item.images[0]} alt={item.title} className="marketplace-image" />
+                    <div className="position-relative">
+                        <img
+                            src={item.images[0]}
+                            alt={item.title}
+                            className="marketplace-image w-100"
+                            style={{ objectFit: "contain", height: "200px" }}
+                        />
+                        {item.isNegotiable && (
+                            <span
+                                className="position-absolute d-flex align-items-center justify-content-center"
+                                style={{
+                                    bottom: "12px",
+                                    right: "12px",
+                                    backgroundColor: "rgb(255, 0, 0)",
+                                    color: "white",
+                                    padding: "6px 12px",
+                                    borderRadius: "20px",
+                                    fontSize: "0.85rem",
+                                    fontWeight: "600",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                                    userSelect: "none",
+                                    pointerEvents: "none",
+                                    letterSpacing: "0.05em",
+                                    textTransform: "uppercase",
+                                }}
+                            >
+                                Negotiable
+                            </span>
+                        )}
+                    </div>
                 )}
 
                 <div className="card-body d-flex flex-column">
@@ -73,14 +103,12 @@ const MarketplaceCard = ({
                                     <p className="mb-1 fw-bold text-muted">Condition</p>
                                     <p>{item.conditionType}</p>
                                 </div>
-                                <div className="col-md-6">
-                                    <p className="mb-1 fw-bold text-muted">Negotiable</p>
-                                    <p>{item.isNegotiable ? "Yes" : "No"}</p>
-                                </div>
-                                <div className="col-12">
-                                    <p className="mb-1 fw-bold text-muted">Tags</p>
-                                    <p>{item.tags?.join(", ")}</p>
-                                </div>
+                                {showTags && (
+                                    <div className="col-12">
+                                        <p className="mb-1 fw-bold text-muted">Tags</p>
+                                        <p>{item.tags?.join(", ")}</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
