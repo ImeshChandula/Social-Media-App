@@ -4,6 +4,7 @@ import "../styles/DashboardHome.css";
 import DashboardUserSummery from './DashboardUserSummery';
 import TicketsHead from './TicketsHead';
 import MailHead from './MailHead';
+import MessageHead from './MessageHead';
 
 
 const DashboardHome = () => {
@@ -15,6 +16,7 @@ const DashboardHome = () => {
       </div>
 
       <TicketsHead />
+      <MessageHead />
       <DashboardUserSummery />
       
     </>
