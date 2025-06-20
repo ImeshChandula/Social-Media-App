@@ -7,6 +7,7 @@ const styles = {
         boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
         textAlign: 'center',
         animation: 'fadeIn 0.6s ease-in-out',
+        marginBottom: '20px'
     },
     heading: {
         fontSize: '2rem',

@@ -1,11 +1,12 @@
 const express = require('express');
-const { authenticateUser, checkAccountStatus } = require('../middleware/authMiddleware');
+const { authenticateUser, authorizeRoles } = require('../middleware/authMiddleware');
 const dashboardController = require('../controllers/dashboardController');
 
 const router = express.Router();
 
 // http://localhost:5000/api/dashboard
 
-router.get('/userSummery', authenticateUser, checkAccountStatus, dashboardController.userSummery);
+router.get('/userSummery', authenticateUser, authorizeRoles("admin", "super_admin"), dashboardController.userSummery);
+router.get('/appealSummery', authenticateUser, authorizeRoles("admin", "super_admin"), dashboardController.appealSummery);
 
 module.exports = router;

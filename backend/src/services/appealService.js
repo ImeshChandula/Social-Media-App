@@ -64,6 +64,51 @@ class AppealService {
         }
     }
 
+    async findAllByStatus(status) {
+        try {
+            const docRef = await this.collection.where('status', '==', status).get();
+
+            if (docRef.empty) {
+                return [];
+            }
+            const data = docRef.docs.map(doc => new Appeal(doc.id, doc.data()));
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async findAllByPriority(priority) {
+        try {
+            const docRef = await this.collection.where('priority', '==', priority).get();
+
+            if (docRef.empty) {
+                return [];
+            }
+            const data = docRef.docs.map(doc => new Appeal(doc.id, doc.data()));
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async findAllUrgent(status, priority) {
+        try {
+            const docRef = await this.collection
+                .where('status', '==', status)
+                .where('priority', '==', priority)
+                .get();
+
+            if (docRef.empty) {
+                return [];
+            }
+            const data = docRef.docs.map(doc => new Appeal(doc.id, doc.data()));
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async updateById(id, updateData) {
         try {
             updateData.updatedAt = new Date().toISOString();
