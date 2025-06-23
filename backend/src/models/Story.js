@@ -152,6 +152,22 @@ class Story {
       throw error;
     }
   }
+
+  static async findByUserId(userId) {
+    try {
+      const doc = await storiesCollection
+        .where('userId', '==', userId)
+        .get();
+      
+      if (doc.empty) {
+        return [];
+      }
+      
+      return new Story(doc.id, doc.data());
+    } catch (error) {
+      throw error;
+    }
+  }
     
   
   

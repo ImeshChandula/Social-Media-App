@@ -138,7 +138,7 @@ const getCurrentUserStories = async (req, res) => {
     const userId = req.user.id;
     
     // Fetch the user
-    const user = await UserService.findById(userId);
+    const user = await Story.findByUserId(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
