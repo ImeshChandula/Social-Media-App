@@ -385,12 +385,15 @@ const getAllPostsByUserId = async (req, res) => {
 //@desc     Get all posts (feed)
 const getAllPostsInFeed = async (req, res) => {
     try {
-        const posts = await PostService.findForFeed();
+        const user = await UserService.findById(req.user.id);
+
+        const posts = await PostService.findForFeed(req.user.id, user.friends);
         if (!posts) {
             return res.status(400).json({ success: false, message: "Error finding posts for feed"});
         }
         
         const populatedPosts = await populateAuthor(posts);
+
         return res.status(200).json({ 
             success: true, 
             message: "Fetching posts for feed successfully.", 
@@ -399,7 +402,7 @@ const getAllPostsInFeed = async (req, res) => {
         });
     } catch (err) {
         console.error('Get feed error:', err.message);
-        res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 

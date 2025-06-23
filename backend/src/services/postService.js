@@ -109,16 +109,76 @@ const PostService = {
         }
     },
 
-    
     // Find posts for feed 
-    async findForFeed() {
+    async findForFeed(currentUserId, userFriends = [], limit = 50) {
         try {
-            const postRef = await postCollection
-                .where('privacy', 'in', ['public', 'friends'])
+            const posts = [];
+        
+            // 1. Get all public posts
+            const publicPostsRef = await postCollection
+                .where('privacy', '==', 'public')
                 .orderBy('createdAt', 'desc')
+                .limit(limit)
                 .get();
             
-            return postRef.docs.map(doc => new Post(doc.id, doc.data()));
+            console.log("public posts: " + publicPostsRef.size);
+
+            publicPostsRef.docs.forEach(doc => {
+                posts.push(new Post(doc.id, doc.data()));
+            });
+            
+            // 2. Get friends-only posts from user's friends
+            if (userFriends.length > 0) {
+                const friendsPostsRef = await postCollection
+                    .where('privacy', '==', 'friends')
+                    .orderBy('createdAt', 'desc')
+                    .limit(limit * 2)
+                    .get();
+
+                console.log("friends-only posts: " + friendsPostsRef.size);
+                
+                // Filter for friends' posts only (excluding current user)
+                let count = 0;
+                friendsPostsRef.docs.forEach(doc => {
+                    const postData = doc.data();
+                    
+                    if (userFriends.includes(postData.author) && postData.author !== currentUserId) {
+                        posts.push(new Post(doc.id, postData));
+                        count++;
+                    }
+                });
+                console.log("friends-only posts(for array): " + count);
+            }
+            
+            // 3. DEBUG: Try getting user's posts without orderBy first
+            const userFriendsPostsRef = await postCollection
+                    .where('author', '==', currentUserId)
+                    .where('privacy', '==', 'friends')
+                    .orderBy('createdAt', 'desc')
+                    .limit(limit)
+                    .get();
+            
+            console.log("user's own friends-only posts: " + userFriendsPostsRef.size);
+
+            let friendsCount = 0;
+            userFriendsPostsRef.docs.forEach(doc => {
+                posts.push(new Post(doc.id, doc.data()));
+                friendsCount++;
+            });
+
+            console.log("user's own friends-only posts(for array): " + friendsCount);
+            
+            
+            // 4. Sort all posts by creation date (newest first)
+            posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            // 5. Remove duplicates if any (though there shouldn't be any with this logic)
+            const uniquePosts = posts.filter((post, index, self) => 
+                index === self.findIndex(p => p.id === post.id)
+            );
+            
+            console.log("total posts after remove duplicates: " + uniquePosts.length);
+            return uniquePosts;
         } catch (error) {
             throw error;
         }
