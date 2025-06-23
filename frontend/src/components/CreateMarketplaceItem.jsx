@@ -65,8 +65,20 @@ const CreateMarketplaceItem = () => {
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        setImages(file);
-        setPreviewUrl(URL.createObjectURL(file));
+        if (!file) return;
+
+        // Optional: File type and size validation
+        if (!file.type.startsWith("image/")) {
+            toast.error("Only image files are allowed.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImages(reader.result);       // base64 string for backend
+            setPreviewUrl(reader.result);   // preview image in UI
+        };
+        reader.readAsDataURL(file); // Convert to base64
     };
 
     useEffect(() => {

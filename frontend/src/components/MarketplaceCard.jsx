@@ -47,7 +47,7 @@ const MarketplaceCard = ({
                 {item.images?.length > 0 && (
                     <div className="position-relative">
                         <img
-                            src={item.images[0]}
+                            src={item.images}
                             alt={item.title}
                             className="marketplace-image w-100"
                             style={{ objectFit: "contain", height: "200px" }}
@@ -89,29 +89,47 @@ const MarketplaceCard = ({
                     <p className="fw-bold text-primary mt-auto">{item.currency} {item.price}</p>
 
                     {showAllDetails && (
-                        <div className="mt-3 border-top pt-3">
-                            <h6 className="fw-semibold text-dark mb-3">Item Details</h6>
-                            <div className="row gy-2">
-                                <div className="col-md-6">
-                                    <p className="mb-1 fw-bold text-muted">Location</p>
-                                    <p>{item.location?.city}, {item.location?.state}, {item.location?.country}</p>
-                                </div>
-                                <div className="col-md-6">
-                                    <p className="mb-1 fw-bold text-muted">Quantity</p>
-                                    <p>{item.quantity}</p>
-                                </div>
-                                <div className="col-md-6">
-                                    <p className="mb-1 fw-bold text-muted">Condition</p>
-                                    <p>{item.conditionType}</p>
-                                </div>
-                                {showTags && (
-                                    <div className="col-12">
-                                        <p className="mb-1 fw-bold text-muted">Tags</p>
-                                        <p>{item.tags?.join(", ")}</p>
+                        (() => {
+                            const hasLocation = item.location?.city || item.location?.state || item.location?.country;
+                            const hasQuantity = item.quantity !== undefined && item.quantity !== null;
+                            const hasCondition = item.conditionType;
+                            const hasTags = showTags && item.tags && item.tags.length > 0;
+
+                            if (hasLocation || hasQuantity || hasCondition || hasTags) {
+                                return (
+                                    <div className="mt-3 border-top pt-3">
+                                        <h6 className="fw-semibold text-dark mb-3">Item Details</h6>
+                                        <div className="row gy-2">
+                                            {hasLocation && (
+                                                <div className="col-md-6">
+                                                    <p className="mb-1 fw-bold text-muted">Location</p>
+                                                    <p>{[item.location?.city, item.location?.state, item.location?.country].filter(Boolean).join(", ")}</p>
+                                                </div>
+                                            )}
+                                            {hasQuantity && (
+                                                <div className="col-md-6">
+                                                    <p className="mb-1 fw-bold text-muted">Quantity</p>
+                                                    <p>{item.quantity}</p>
+                                                </div>
+                                            )}
+                                            {hasCondition && (
+                                                <div className="col-md-6">
+                                                    <p className="mb-1 fw-bold text-muted">Condition</p>
+                                                    <p>{item.conditionType}</p>
+                                                </div>
+                                            )}
+                                            {hasTags && (
+                                                <div className="col-12">
+                                                    <p className="mb-1 fw-bold text-muted">Tags</p>
+                                                    <p>{item.tags.join(", ")}</p>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                )}
-                            </div>
-                        </div>
+                                );
+                            }
+                            return null;
+                        })()
                     )}
 
                     {showContactDetails && (
