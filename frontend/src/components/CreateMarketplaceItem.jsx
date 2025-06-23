@@ -67,7 +67,6 @@ const CreateMarketplaceItem = () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Optional: File type and size validation
         if (!file.type.startsWith("image/")) {
             toast.error("Only image files are allowed.");
             return;
@@ -248,9 +247,25 @@ const CreateMarketplaceItem = () => {
 
                 <div className="col-12">
                     <input type="file" accept="image/*" onChange={handleFileChange} className="form-control" />
+
                     {previewUrl && (
-                        <div className="mt-3">
-                            <img src={previewUrl} alt="Preview" className="border border-secondary rounded" style={{ maxWidth: "250px" }} />
+                        <div className="mt-3 d-flex flex-column align-items-start gap-2">
+                            <img
+                                src={previewUrl}
+                                alt="Preview"
+                                className="border border-secondary rounded"
+                                style={{ maxWidth: "250px" }}
+                            />
+                            <button
+                                type="button"
+                                className="btn btn-danger btn-sm"
+                                onClick={() => {
+                                    setImages(null);
+                                    setPreviewUrl("");
+                                }}
+                            >
+                                Remove Image
+                            </button>
                         </div>
                     )}
                 </div>

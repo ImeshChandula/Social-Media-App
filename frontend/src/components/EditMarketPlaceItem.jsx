@@ -270,13 +270,41 @@ const EditMarketPlaceItem = () => {
                     {previewImages.length > 0 && (
                         <div className="col-12 mt-3 d-flex flex-wrap gap-3">
                             {previewImages.map((src, idx) => (
-                                <img
-                                    key={idx}
-                                    src={src}
-                                    alt={`Preview ${idx}`}
-                                    className="rounded border"
-                                    style={{ width: '120px', height: '120px', objectFit: 'contain' }}
-                                />
+                                <div key={idx} className="position-relative" style={{ width: '120px', height: '120px' }}>
+                                    <img
+                                        src={src}
+                                        alt={`Preview ${idx}`}
+                                        className="rounded border w-100 h-100"
+                                        style={{ objectFit: 'contain' }}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="bg-danger text-white rounded-circle position-absolute"
+                                        onClick={() => {
+                                            setPreviewImages((prev) => prev.filter((_, i) => i !== idx));
+                                            if (formData.images && Array.isArray(formData.images)) {
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    images: prev.images.filter((_, i) => i !== idx),
+                                                }));
+                                            }
+                                        }}
+                                        style={{
+                                            top: '4px',
+                                            right: '4px',
+                                            zIndex: 10,
+                                            width: '28px',
+                                            height: '28px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            padding: 0,
+                                        }}
+                                        title="Remove Image"
+                                    >
+                                        <i className="bi bi-trash" style={{ fontSize: '16px' }}></i>
+                                    </button>
+                                </div>
                             ))}
                         </div>
                     )}
