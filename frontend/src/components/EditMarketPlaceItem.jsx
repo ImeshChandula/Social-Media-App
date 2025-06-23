@@ -53,7 +53,7 @@ const EditMarketPlaceItem = () => {
                     isNegotiable: item.isNegotiable || false,
                 });
 
-                setPreviewImages(item.images || []);
+                setPreviewImages(Array.isArray(item.images) ? item.images : [item.images]);
 
                 setCategories(categoryRes.data.data);
                 setCatError("");
@@ -101,7 +101,7 @@ const EditMarketPlaceItem = () => {
         setFormData((prev) => ({ ...prev, images: files }));
 
         const previews = files.map((file) => URL.createObjectURL(file));
-        setPreviewImages(previews);
+        setPreviewImages((prev) => [...prev.filter((img) => typeof img === "string"), ...previews]); // keep existing URLs
     };
 
     const handleSubmit = async (e) => {
