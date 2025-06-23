@@ -211,12 +211,16 @@ const CreateMarketplaceItem = () => {
                 <div className="section-title mt-4 mb-0 ">Extra Information</div>
 
                 <div className="col-md-6">
-                    <label className="form-label">Tags</label>
+                    <label className="form-label">
+                        Tags <small className="text-white-50">(optional)</small>
+                    </label>
                     <input type="text" name="tags" className="form-control" placeholder="Comma-separated tags" value={formData.tags.join(", ")} onChange={handleChange} />
                 </div>
 
                 <div className="col-md-6">
-                    <label className="form-label">Expiration Date</label>
+                    <label className="form-label">
+                        Expiration Date <small className="text-white-50">(optional, defaults to 30 days)</small>
+                    </label>
                     <input
                         type="date"
                         name="expiresAt"
