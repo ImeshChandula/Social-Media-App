@@ -3,7 +3,7 @@ const PostService = require('../services/postService');
 const {deleteAllComments} = require('../services/userDeletionService');
 const { handleMediaUpload } = require('../utils/handleMediaUpload');
 const notificationUtils = require('../utils/notificationUtils');
-
+const populateAuthor = require('../utils/populateAuthor');
 
 
 //@desc     create a post 
@@ -385,44 +385,18 @@ const getAllPostsByUserId = async (req, res) => {
 //@desc     Get all posts (feed)
 const getAllPostsInFeed = async (req, res) => {
     try {
-        const userId = req.user.id;
-        
-        // Get feed posts (in a real app, this would likely be posts from followed users)
-        const posts = await PostService.findForFeed(userId);
-        
-        if (!posts.length) {
-            return res.status(200).json([]);
+        const posts = await PostService.findForFeed();
+        if (!posts) {
+            return res.status(400).json({ success: false, message: "Error finding posts for feed"});
         }
         
-        // Get unique author IDs from posts
-        const authorIds = [...new Set(posts.map(post => post.author))];
-        
-        // Get author details for all posts
-        // In a production app, you'd want to batch this or use a more efficient approach
-        const authorsPromises = authorIds.map(authorId => UserService.findById(authorId));
-        const authors = await Promise.all(authorsPromises);
-        
-        // Create a map of author IDs to author data for quick lookup
-        const authorMap = authors.reduce((map, author) => {
-            if (author) {
-                map[author.id] = {
-                    id: author.id,
-                    firstName: author.firstName,
-                    lastName: author.lastName,
-                    username: author.username,
-                    profilePicture: author.profilePicture
-                };
-            }
-            return map;
-        }, {});
-        
-        // Populate posts with author data
-        const populatedPosts = posts.map(post => ({
-            ...post,
-            author: authorMap[post.author] || post.author // Fallback to ID if author not found
-        }));
-        
-        res.status(200).json({message: "Posts:", populatedPosts});
+        const populatedPosts = await populateAuthor(posts);
+        return res.status(200).json({ 
+            success: true, 
+            message: "Fetching posts for feed successfully.", 
+            count: populatedPosts.length,
+            posts: populatedPosts
+        });
     } catch (err) {
         console.error('Get feed error:', err.message);
         res.status(500).json({ message: 'Server error' });
