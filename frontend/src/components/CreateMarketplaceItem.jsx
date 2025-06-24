@@ -29,7 +29,6 @@ const initialState = {
 
 const CreateMarketplaceItem = () => {
     const [formData, setFormData] = useState(initialState);
-    const [images, setImages] = useState(null);
     const [previewUrl, setPreviewUrl] = useState("");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -38,6 +37,9 @@ const CreateMarketplaceItem = () => {
     const [categories, setCategories] = useState([]);
     const [catLoading, setCatLoading] = useState(true);
     const [catError, setCatError] = useState("");
+
+    const [images, setImages] = useState([]); // now an array
+    const [previewUrls, setPreviewUrls] = useState([]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -64,21 +66,34 @@ const CreateMarketplaceItem = () => {
     };
 
     const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        const files = Array.from(e.target.files);
+        const newImages = [];
+        const newPreviews = [];
 
-        // Optional: File type and size validation
-        if (!file.type.startsWith("image/")) {
-            toast.error("Only image files are allowed.");
-            return;
-        }
+        files.forEach((file) => {
+            if (!file.type.startsWith("image/")) {
+                toast.error(`Only image files are allowed: ${file.name}`);
+                return;
+            }
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setImages(reader.result);       // base64 string for backend
-            setPreviewUrl(reader.result);   // preview image in UI
-        };
-        reader.readAsDataURL(file); // Convert to base64
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                newImages.push(reader.result);
+                newPreviews.push(reader.result);
+
+                // Once all files are processed, update the state
+                if (newImages.length === files.length) {
+                    setImages((prev) => [...prev, ...newImages]);
+                    setPreviewUrls((prev) => [...prev, ...newPreviews]);
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const removeImage = (index) => {
+        setImages((prev) => prev.filter((_, i) => i !== index));
+        setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
     };
 
     useEffect(() => {
@@ -247,10 +262,39 @@ const CreateMarketplaceItem = () => {
                 <div className="section-title mt-4 mb-0 ">Upload Image</div>
 
                 <div className="col-12">
-                    <input type="file" accept="image/*" onChange={handleFileChange} className="form-control" />
-                    {previewUrl && (
-                        <div className="mt-3">
-                            <img src={previewUrl} alt="Preview" className="border border-secondary rounded" style={{ maxWidth: "250px" }} />
+                    <input type="file" accept="image/*" multiple onChange={handleFileChange} className="form-control" />
+
+                    {previewUrls.length > 0 && (
+                        <div className="mt-3 d-flex flex-wrap gap-3">
+                            {previewUrls.map((src, idx) => (
+                                <div key={idx} className="position-relative" style={{ width: '120px', height: '120px' }}>
+                                    <img
+                                        src={src}
+                                        alt={`Preview ${idx}`}
+                                        className="rounded border w-100 h-100"
+                                        style={{ objectFit: 'contain' }}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="bg-danger text-white rounded-circle position-absolute"
+                                        onClick={() => removeImage(idx)}
+                                        style={{
+                                            top: '4px',
+                                            right: '4px',
+                                            zIndex: 10,
+                                            width: '28px',
+                                            height: '28px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            padding: 0,
+                                        }}
+                                        title="Remove Image"
+                                    >
+                                        <i className="bi bi-trash" style={{ fontSize: '16px' }}></i>
+                                    </button>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>

@@ -1,0 +1,54 @@
+.mail-page-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+
+/* Header height set to 160px */
+
+.mail-header-fixed {
+    flex-shrink: 0;
+    height: 160px;
+    z-index: 10;
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+}
+
+
+/* Scrollable content below header */
+
+.mail-scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    height: calc(100vh - 160px);
+    /* Match header height */
+    padding: 1rem;
+    background: #f9f9f9;
+}
+
+
+/* 🌐 Responsive Design */
+
+@media (max-width: 768px) {
+    .mail-header-fixed {
+        height: 180px;
+        /* Adjusted height for stacked layout in mobile */
+    }
+    .mail-scrollable-content {
+        height: calc(100vh - 180px);
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .mail-header-fixed {
+        height: 380px;
+        /* Extra space for mobile layout (filters, search, etc.) */
+    }
+    .mail-scrollable-content {
+        height: calc(120vh - 200px);
+        padding: 0.5rem;
+    }
+}
