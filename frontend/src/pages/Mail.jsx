@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import MailHead from '../components/MailHead'
-import MailContent from '../components/MailContent'
+import MailHead from '../components/MailHead';
+import MailContent from '../components/MailContent';
+import '../styles/MailPage.css'; // make sure to import styles
 
 const Mail = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -9,46 +10,45 @@ const Mail = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Handle search from MailHead
   const handleSearch = useCallback((term) => {
     setSearchTerm(term);
   }, []);
 
-  // Handle filter change from MailHead
   const handleFilter = useCallback((filter) => {
     setCurrentFilter(filter);
   }, []);
 
-  // Handle refresh from MailHead
   const handleRefresh = useCallback(() => {
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   }, []);
 
-  // Handle mail count updates from MailContent
   const handleMailCountChange = useCallback((total, unread) => {
     setTotalMails(total);
     setUnreadCount(unread);
   }, []);
 
-
   return (
-    <div>
-        <MailHead 
-        totalMails={totalMails}
-        unreadCount={unreadCount}
-        currentFilter={currentFilter}
-        onRefresh={handleRefresh}
-        onSearch={handleSearch}
-        onFilter={handleFilter}
-      />
-      <MailContent 
-        searchTerm={searchTerm}
-        currentFilter={currentFilter}
-        refreshTrigger={refreshTrigger}
-        onMailCountChange={handleMailCountChange}
-      />
+    <div className="mail-page-wrapper">
+      <div className="mail-header-fixed">
+        <MailHead
+          totalMails={totalMails}
+          unreadCount={unreadCount}
+          currentFilter={currentFilter}
+          onRefresh={handleRefresh}
+          onSearch={handleSearch}
+          onFilter={handleFilter}
+        />
+      </div>
+      <div className="mail-scrollable-content">
+        <MailContent
+          searchTerm={searchTerm}
+          currentFilter={currentFilter}
+          refreshTrigger={refreshTrigger}
+          onMailCountChange={handleMailCountChange}
+        />
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default Mail
+export default Mail;

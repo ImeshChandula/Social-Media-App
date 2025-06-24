@@ -1,0 +1,25 @@
+.mail-page-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    /* take full screen */
+    overflow: hidden;
+}
+
+.mail-header-fixed {
+    flex-shrink: 0;
+    height: 160px;
+    /* ✅ Match this to actual height of MailHead */
+    z-index: 10;
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+}
+
+.mail-scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    height: calc(100vh - 120px);
+    /* ✅ Subtract header height */
+    padding: 1rem;
+    background: #f9f9f9;
+}
