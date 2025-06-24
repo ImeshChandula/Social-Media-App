@@ -3,7 +3,6 @@ const PostService = require('../services/postService');
 const {deleteAllComments} = require('../services/userDeletionService');
 const { handleMediaUpload } = require('../utils/handleMediaUpload');
 const notificationUtils = require('../utils/notificationUtils');
-const populateAuthor = require('../utils/populateAuthor');
 
 
 //@desc     create a post 
@@ -382,31 +381,6 @@ const getAllPostsByUserId = async (req, res) => {
 };
 
 
-//@desc     Get all posts (feed)
-const getAllPostsInFeed = async (req, res) => {
-    try {
-        const user = await UserService.findById(req.user.id);
-
-        const posts = await PostService.findForFeed(req.user.id, user.friends);
-        if (!posts) {
-            return res.status(400).json({ success: false, message: "Error finding posts for feed"});
-        }
-        
-        const populatedPosts = await populateAuthor(posts);
-
-        return res.status(200).json({ 
-            success: true, 
-            message: "Fetching posts for feed successfully.", 
-            count: populatedPosts.length,
-            posts: populatedPosts
-        });
-    } catch (err) {
-        console.error('Get feed error:', err.message);
-        return res.status(500).json({ success: false, message: 'Server error' });
-    }
-};
-
-
 //@desc     Update post by post id
 const updatePostByPostId = async (req, res) => {
     try {
@@ -529,7 +503,6 @@ module.exports = {
     getAllVideoPosts,
     getAllPhotoPosts,
     getAllPostsByUserId,
-    getAllPostsInFeed,
     updatePostByPostId,
     deletePostByPostId
 };

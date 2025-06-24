@@ -2,6 +2,7 @@ const express = require('express');
 const { authenticateUser, authorizeRoles, checkAccountStatus } = require('../middleware/authMiddleware');
 const { validatePost } = require("../middleware/validator");
 const postController  = require('../controllers/postController');
+const feedController  = require('../controllers/feedController');
 
 const router = express.Router();
 
@@ -36,7 +37,7 @@ router.get('/allPosts', authenticateUser, checkAccountStatus, authorizeRoles("ad
 // @route   GET /api/posts/feed
 // @desc    Get posts for user's feed
 // @access  Private
-router.get('/feed', authenticateUser, checkAccountStatus, postController.getAllPostsInFeed);
+router.get('/feed', authenticateUser, checkAccountStatus, feedController.getAllPostsInFeed);
 
 // @route   GET /api/posts/feed/videos
 // @desc    Get video posts for user's feed
