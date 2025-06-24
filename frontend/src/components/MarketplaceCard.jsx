@@ -30,6 +30,7 @@ const MarketplaceCard = ({
                                     <div>
                                         <div className="text-dark fw-semibold">{item.author.username}</div>
                                         <small className="text-muted">{new Date(item.createdAt).toLocaleDateString()}</small>
+                                        <br />
                                         <small className="text-muted">{new Date(item.expiresAt).toLocaleDateString()}</small>
                                     </div>
                                 </>
@@ -59,14 +60,25 @@ const MarketplaceCard = ({
                                     </div>
                                 ))}
                             </div>
+
                             {item.images.length > 1 && (
                                 <>
-                                    <button className="carousel-control-prev" type="button" data-bs-target={`#carousel-${item.id}`} data-bs-slide="prev">
-                                        <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <button
+                                        className="carousel-control-prev"
+                                        type="button"
+                                        data-bs-target={`#carousel-${item.id}`}
+                                        data-bs-slide="prev"
+                                    >
+                                        <span className="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
                                         <span className="visually-hidden">Previous</span>
                                     </button>
-                                    <button className="carousel-control-next" type="button" data-bs-target={`#carousel-${item.id}`} data-bs-slide="next">
-                                        <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <button
+                                        className="carousel-control-next"
+                                        type="button"
+                                        data-bs-target={`#carousel-${item.id}`}
+                                        data-bs-slide="next"
+                                    >
+                                        <span className="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
                                         <span className="visually-hidden">Next</span>
                                     </button>
                                 </>
