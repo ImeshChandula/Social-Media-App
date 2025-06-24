@@ -29,7 +29,7 @@ const MarketplaceCard = ({
 
     return (
         <div className="col-lg-4 col-md-6 col-sm-12 mb-4">
-            <div className="marketplace-card card shadow-sm h-100">
+            <div className={`marketplace-card card shadow-sm h-100 ${["expired", "removed"].includes(item.status) ? "border-danger border-2" : ""}`}>
                 {(showAuthor && item.author) || showActions ? (
                     <div className="card-header d-flex justify-content-between align-items-center bg-light">
                         <div className="d-flex align-items-center">
@@ -44,16 +44,10 @@ const MarketplaceCard = ({
                                         style={{ objectFit: "cover" }}
                                     />
                                     <div>
-                                        <div className="text-dark fw-semibold">
-                                            {item.author.username}
-                                        </div>
-                                        <small className="text-muted">
-                                            {new Date(item.createdAt).toLocaleDateString()}
-                                        </small>
+                                        <div className="text-dark fw-semibold"> {item.author.username} </div>
+                                        <small className="text-muted"> {new Date(item.createdAt).toLocaleDateString()} </small>
                                         <br />
-                                        <small className="text-muted">
-                                            {new Date(item.expiresAt).toLocaleDateString()}
-                                        </small>
+                                        <small className="text-muted"> {new Date(item.expiresAt).toLocaleDateString()} </small>
                                     </div>
                                 </>
                             )}
@@ -75,53 +69,60 @@ const MarketplaceCard = ({
 
                 {/* Custom image carousel */}
                 {images.length > 0 && (
-                    <div className="position-relative">
-                        <img
-                            src={images[currentImageIndex]}
-                            alt={`${item.title}-${currentImageIndex}`}
-                            className="w-100"
-                            style={{ objectFit: "contain", height: "200px" }}
-                        />
-                        {images.length > 1 && (
-                            <>
-                                <button
-                                    onClick={handlePrev}
-                                    className="bg-dark text-white position-absolute"
-                                    style={{ top: "50%", left: "10px", transform: "translateY(-50%)" }}
-                                >
-                                    &#10094;
-                                </button>
-                                <button
-                                    onClick={handleNext}
-                                    className="bg-dark text-white position-absolute"
-                                    style={{ top: "50%", right: "10px", transform: "translateY(-50%)" }}
-                                >
-                                    &#10095;
-                                </button>
-                            </>
+                    <div>
+                        {["expired", "removed"].includes(item.status) && (
+                            <div className="bg-danger text-white text-center py-1 fw-bold">
+                                {item.status.toUpperCase()}
+                            </div>
                         )}
-                        {item.isNegotiable && (
-                            <span
-                                className="position-absolute"
-                                style={{
-                                    bottom: "12px",
-                                    right: "12px",
-                                    backgroundColor: "rgb(255, 0, 0)",
-                                    color: "white",
-                                    padding: "6px 12px",
-                                    borderRadius: "20px",
-                                    fontSize: "0.85rem",
-                                    fontWeight: "600",
-                                    boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-                                    userSelect: "none",
-                                    pointerEvents: "none",
-                                    letterSpacing: "0.05em",
-                                    textTransform: "uppercase",
-                                }}
-                            >
-                                Negotiable
-                            </span>
-                        )}
+                        <div className="position-relative">
+                            <img
+                                src={images[currentImageIndex]}
+                                alt={`${item.title}-${currentImageIndex}`}
+                                className="w-100"
+                                style={{ objectFit: "contain", height: "200px" }}
+                            />
+                            {images.length > 1 && (
+                                <>
+                                    <button
+                                        onClick={handlePrev}
+                                        className="bg-dark text-white position-absolute"
+                                        style={{ top: "50%", left: "10px", transform: "translateY(-50%)" }}
+                                    >
+                                        <FaChevronLeft />
+                                    </button>
+                                    <button
+                                        onClick={handleNext}
+                                        className="bg-dark text-white position-absolute"
+                                        style={{ top: "50%", right: "10px", transform: "translateY(-50%)" }}
+                                    >
+                                        <FaChevronRight />
+                                    </button>
+                                </>
+                            )}
+                            {item.isNegotiable && (
+                                <span
+                                    className="position-absolute"
+                                    style={{
+                                        bottom: "12px",
+                                        right: "12px",
+                                        backgroundColor: "rgb(255, 0, 0)",
+                                        color: "white",
+                                        padding: "6px 12px",
+                                        borderRadius: "20px",
+                                        fontSize: "0.85rem",
+                                        fontWeight: "600",
+                                        boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                                        userSelect: "none",
+                                        pointerEvents: "none",
+                                        letterSpacing: "0.05em",
+                                        textTransform: "uppercase",
+                                    }}
+                                >
+                                    Negotiable
+                                </span>
+                            )}
+                        </div>
                     </div>
                 )}
 
