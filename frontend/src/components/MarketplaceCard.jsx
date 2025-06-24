@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import MarketplaceItemButton from "./MarketplaceItemButton";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const MarketplaceCard = ({
     item,
@@ -11,6 +12,21 @@ const MarketplaceCard = ({
     showTags = true,
     onDelete = () => { },
 }) => {
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const images = Array.isArray(item.images) ? item.images : [item.images];
+
+    const handlePrev = () => {
+        setCurrentImageIndex((prev) =>
+            prev === 0 ? images.length - 1 : prev - 1
+        );
+    };
+
+    const handleNext = () => {
+        setCurrentImageIndex((prev) =>
+            prev === images.length - 1 ? 0 : prev + 1
+        );
+    };
+
     return (
         <div className="col-lg-4 col-md-6 col-sm-12 mb-4">
             <div className="marketplace-card card shadow-sm h-100">
@@ -28,66 +44,65 @@ const MarketplaceCard = ({
                                         style={{ objectFit: "cover" }}
                                     />
                                     <div>
-                                        <div className="text-dark fw-semibold">{item.author.username}</div>
-                                        <small className="text-muted">{new Date(item.createdAt).toLocaleDateString()}</small>
+                                        <div className="text-dark fw-semibold">
+                                            {item.author.username}
+                                        </div>
+                                        <small className="text-muted">
+                                            {new Date(item.createdAt).toLocaleDateString()}
+                                        </small>
                                         <br />
-                                        <small className="text-muted">{new Date(item.expiresAt).toLocaleDateString()}</small>
+                                        <small className="text-muted">
+                                            {new Date(item.expiresAt).toLocaleDateString()}
+                                        </small>
                                     </div>
                                 </>
                             )}
                         </div>
-                        <span className={`badge text-capitalize px-3 py-1  ${item.status === 'active' ? 'bg-success' :
-                            item.status === 'expired' || item.status === 'removed' ? 'bg-danger' :
-                                item.status === 'pending' ? 'bg-warning text-dark' :
-                                    item.status === 'sold' ? 'bg-secondary' : 'bg-secondary'}`}>
+                        <span
+                            className={`badge text-capitalize px-3 py-1 ${item.status === "active"
+                                ? "bg-success"
+                                : item.status === "expired" || item.status === "removed"
+                                    ? "bg-danger"
+                                    : item.status === "pending"
+                                        ? "bg-warning text-dark"
+                                        : "bg-secondary"
+                                }`}
+                        >
                             {item.status}
                         </span>
                     </div>
                 ) : null}
 
-                {item.images && Array.isArray(item.images) && item.images.length > 0 && (
+                {/* Custom image carousel */}
+                {images.length > 0 && (
                     <div className="position-relative">
-                        <div id={`carousel-${item.id}`} className="carousel slide" data-bs-ride="carousel">
-                            <div className="carousel-inner">
-                                {item.images.map((img, index) => (
-                                    <div className={`carousel-item ${index === 0 ? 'active' : ''}`} key={index}>
-                                        <img
-                                            src={img}
-                                            alt={`${item.title}-${index}`}
-                                            className="d-block w-100 marketplace-image"
-                                            style={{ objectFit: "contain", height: "200px" }}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-
-                            {item.images.length > 1 && (
-                                <>
-                                    <button
-                                        className="carousel-control-prev"
-                                        type="button"
-                                        data-bs-target={`#carousel-${item.id}`}
-                                        data-bs-slide="prev"
-                                    >
-                                        <span className="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
-                                        <span className="visually-hidden">Previous</span>
-                                    </button>
-                                    <button
-                                        className="carousel-control-next"
-                                        type="button"
-                                        data-bs-target={`#carousel-${item.id}`}
-                                        data-bs-slide="next"
-                                    >
-                                        <span className="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
-                                        <span className="visually-hidden">Next</span>
-                                    </button>
-                                </>
-                            )}
-                        </div>
-
+                        <img
+                            src={images[currentImageIndex]}
+                            alt={`${item.title}-${currentImageIndex}`}
+                            className="w-100"
+                            style={{ objectFit: "contain", height: "200px" }}
+                        />
+                        {images.length > 1 && (
+                            <>
+                                <button
+                                    onClick={handlePrev}
+                                    className="bg-dark text-white position-absolute"
+                                    style={{ top: "50%", left: "10px", transform: "translateY(-50%)" }}
+                                >
+                                    &#10094;
+                                </button>
+                                <button
+                                    onClick={handleNext}
+                                    className="bg-dark text-black position-absolute"
+                                    style={{ top: "50%", right: "10px", transform: "translateY(-50%)" }}
+                                >
+                                    &#10095;
+                                </button>
+                            </>
+                        )}
                         {item.isNegotiable && (
                             <span
-                                className="position-absolute d-flex align-items-center justify-content-center"
+                                className="position-absolute"
                                 style={{
                                     bottom: "12px",
                                     right: "12px",
@@ -117,53 +132,67 @@ const MarketplaceCard = ({
                         <h6 className="card-subtitle mb-2 text-muted">{item.category}</h6>
                     )}
 
-                    <p className="card-text text-secondary small flex-grow-1">{item.description}</p>
+                    <p className="card-text text-secondary small flex-grow-1">
+                        {item.description}
+                    </p>
 
-                    <p className="fw-bold text-primary mt-auto">{item.currency} {item.price}</p>
+                    <p className="fw-bold text-primary mt-auto">
+                        {item.currency} {item.price}
+                    </p>
 
-                    {showAllDetails && (
-                        (() => {
-                            const hasLocation = item.location?.city || item.location?.state || item.location?.country;
-                            const hasQuantity = item.quantity !== undefined && item.quantity !== null;
-                            const hasCondition = item.conditionType;
-                            const hasTags = showTags && item.tags && item.tags.length > 0;
+                    {showAllDetails && (() => {
+                        const hasLocation =
+                            item.location?.city ||
+                            item.location?.state ||
+                            item.location?.country;
+                        const hasQuantity =
+                            item.quantity !== undefined && item.quantity !== null;
+                        const hasCondition = item.conditionType;
+                        const hasTags = showTags && item.tags && item.tags.length > 0;
 
-                            if (hasLocation || hasQuantity || hasCondition || hasTags) {
-                                return (
-                                    <div className="mt-3 border-top pt-3">
-                                        <h6 className="fw-semibold text-dark mb-3">Item Details</h6>
-                                        <div className="row gy-2">
-                                            {hasLocation && (
-                                                <div className="col-md-6">
-                                                    <p className="mb-1 fw-bold text-muted">Location</p>
-                                                    <p>{[item.location?.city, item.location?.state, item.location?.country].filter(Boolean).join(", ")}</p>
-                                                </div>
-                                            )}
-                                            {hasQuantity && (
-                                                <div className="col-md-6">
-                                                    <p className="mb-1 fw-bold text-muted">Quantity</p>
-                                                    <p>{item.quantity}</p>
-                                                </div>
-                                            )}
-                                            {hasCondition && (
-                                                <div className="col-md-6">
-                                                    <p className="mb-1 fw-bold text-muted">Condition</p>
-                                                    <p>{item.conditionType}</p>
-                                                </div>
-                                            )}
-                                            {hasTags && (
-                                                <div className="col-12">
-                                                    <p className="mb-1 fw-bold text-muted">Tags</p>
-                                                    <p>{item.tags.join(", ")}</p>
-                                                </div>
-                                            )}
-                                        </div>
+                        if (hasLocation || hasQuantity || hasCondition || hasTags) {
+                            return (
+                                <div className="mt-3 border-top pt-3">
+                                    <h6 className="fw-semibold text-dark mb-3">Item Details</h6>
+                                    <div className="row gy-2">
+                                        {hasLocation && (
+                                            <div className="col-md-6">
+                                                <p className="mb-1 fw-bold text-muted">Location</p>
+                                                <p>
+                                                    {[
+                                                        item.location?.city,
+                                                        item.location?.state,
+                                                        item.location?.country,
+                                                    ]
+                                                        .filter(Boolean)
+                                                        .join(", ")}
+                                                </p>
+                                            </div>
+                                        )}
+                                        {hasQuantity && (
+                                            <div className="col-md-6">
+                                                <p className="mb-1 fw-bold text-muted">Quantity</p>
+                                                <p>{item.quantity}</p>
+                                            </div>
+                                        )}
+                                        {hasCondition && (
+                                            <div className="col-md-6">
+                                                <p className="mb-1 fw-bold text-muted">Condition</p>
+                                                <p>{item.conditionType}</p>
+                                            </div>
+                                        )}
+                                        {hasTags && (
+                                            <div className="col-12">
+                                                <p className="mb-1 fw-bold text-muted">Tags</p>
+                                                <p>{item.tags.join(", ")}</p>
+                                            </div>
+                                        )}
                                     </div>
-                                );
-                            }
-                            return null;
-                        })()
-                    )}
+                                </div>
+                            );
+                        }
+                        return null;
+                    })()}
 
                     {showContactDetails && (
                         <div className="mt-3 border-top pt-3">
