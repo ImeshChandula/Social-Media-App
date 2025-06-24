@@ -44,14 +44,35 @@ const MarketplaceCard = ({
                     </div>
                 ) : null}
 
-                {item.images?.length > 0 && (
+                {item.images && Array.isArray(item.images) && item.images.length > 0 && (
                     <div className="position-relative">
-                        <img
-                            src={item.images}
-                            alt={item.title}
-                            className="marketplace-image w-100"
-                            style={{ objectFit: "contain", height: "200px" }}
-                        />
+                        <div id={`carousel-${item.id}`} className="carousel slide" data-bs-ride="carousel">
+                            <div className="carousel-inner">
+                                {item.images.map((img, index) => (
+                                    <div className={`carousel-item ${index === 0 ? 'active' : ''}`} key={index}>
+                                        <img
+                                            src={img}
+                                            alt={`${item.title}-${index}`}
+                                            className="d-block w-100 marketplace-image"
+                                            style={{ objectFit: "contain", height: "200px" }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                            {item.images.length > 1 && (
+                                <>
+                                    <button className="carousel-control-prev" type="button" data-bs-target={`#carousel-${item.id}`} data-bs-slide="prev">
+                                        <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span className="visually-hidden">Previous</span>
+                                    </button>
+                                    <button className="carousel-control-next" type="button" data-bs-target={`#carousel-${item.id}`} data-bs-slide="next">
+                                        <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span className="visually-hidden">Next</span>
+                                    </button>
+                                </>
+                            )}
+                        </div>
+
                         {item.isNegotiable && (
                             <span
                                 className="position-absolute d-flex align-items-center justify-content-center"

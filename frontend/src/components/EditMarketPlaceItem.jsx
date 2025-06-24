@@ -98,10 +98,25 @@ const EditMarketPlaceItem = () => {
 
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
-        setFormData((prev) => ({ ...prev, images: files }));
+        if (!files.length) return;
 
-        const previews = files.map((file) => URL.createObjectURL(file));
-        setPreviewImages((prev) => [...prev.filter((img) => typeof img === "string"), ...previews]); // keep existing URLs
+        // Append new files
+        setFormData((prev) => ({
+            ...prev,
+            images: [...(prev.images || []), ...files]
+        }));
+
+        // Generate and append new previews
+        const newPreviews = files.map((file) => URL.createObjectURL(file));
+        setPreviewImages((prev) => [...prev, ...newPreviews]);
+    };
+
+    const removeImage = (indexToRemove) => {
+        setPreviewImages((prev) => prev.filter((_, i) => i !== indexToRemove));
+        setFormData((prev) => ({
+            ...prev,
+            images: (prev.images || []).filter((_, i) => i !== indexToRemove)
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -114,9 +129,10 @@ const EditMarketPlaceItem = () => {
                 ...dataToSend
             } = formData;
 
-            delete dataToSend.isAccept
+            delete dataToSend.isAccept;
 
-            if (formData.images) {
+            // Convert images to base64
+            if (formData.images && formData.images.length > 0) {
                 const base64Images = await Promise.all(
                     formData.images.map((file) =>
                         new Promise((resolve, reject) => {
@@ -128,8 +144,6 @@ const EditMarketPlaceItem = () => {
                     )
                 );
                 dataToSend.images = base64Images;
-            } else {
-                delete dataToSend.images;
             }
 
             const res = await axiosInstance.patch(`/marketplace/update/${id}`, dataToSend);
@@ -280,15 +294,7 @@ const EditMarketPlaceItem = () => {
                                     <button
                                         type="button"
                                         className="bg-danger text-white rounded-circle position-absolute"
-                                        onClick={() => {
-                                            setPreviewImages((prev) => prev.filter((_, i) => i !== idx));
-                                            if (formData.images && Array.isArray(formData.images)) {
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    images: prev.images.filter((_, i) => i !== idx),
-                                                }));
-                                            }
-                                        }}
+                                        onClick={() => removeImage(idx)}
                                         style={{
                                             top: '4px',
                                             right: '4px',
