@@ -93,7 +93,7 @@ const MarketplaceCard = ({
                                 </button>
                                 <button
                                     onClick={handleNext}
-                                    className="bg-dark text-black position-absolute"
+                                    className="bg-dark text-white position-absolute"
                                     style={{ top: "50%", right: "10px", transform: "translateY(-50%)" }}
                                 >
                                     &#10095;
