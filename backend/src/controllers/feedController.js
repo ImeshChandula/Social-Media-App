@@ -72,11 +72,18 @@ const getAllPostsInFeed = async (req, res) => {
         return res.status(200).json({ 
             success: true, 
             message: "Fetching posts for feed successfully.", 
-            count: populatedPosts.length,
-            posts: populatedPosts,
+            count: paginatedPosts.length,
+            totalCount: sortedPosts.length,
+            posts: paginatedPosts,
             page: page,
             hasMore: endIndex < sortedPosts.length,
             posts: paginatedPosts,
+            pagination: {
+                page: page,
+                limit: limit,
+                hasMore: endIndex < sortedPosts.length,
+                totalPages: Math.ceil(sortedPosts.length / limit)
+            },
             metadata: {
                 algorithm: sort_by,
                 isRefresh: refresh === 'true',

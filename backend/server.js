@@ -63,6 +63,7 @@ app.use("/api/dashboard", require("./src/routes/dashboardRoutes"));
 app.use("/api/support", require("./src/routes/supportRoutes"));
 app.use("/api/appeal", require("./src/routes/appealRoutes"));
 app.use("/api/marketplace", require("./src/routes/marketplaceRoutes"));
+app.use("/api/feed", require("./src/routes/feedRoutes"));
 
 
 //  route handler for the root path

@@ -6,41 +6,63 @@ import toast from "react-hot-toast";
 const Feed = () => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
+    // eslint-disable-next-line no-unused-vars
+    const [loadingMore, setLoadingMore] = useState(false);
+    // eslint-disable-next-line no-unused-vars
+    const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
+    const [feedType, setFeedType] = useState('engagement'); // 'engagement' or 'recency' or 'trending'
+    const [pagination, setPagination] = useState({
+        page: 1,
+        hasMore: false,
+        totalPages: 0
+    });
 
     useEffect(() => {
-        const fetchFeed = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-
-                const res = await axiosInstance.get("/posts/feed", {
-                    params: {
-                        page: 1,
-                        limit: 20,
-                        sort_by: 'engagement',
-                        refresh: true,
-                        show_trending: false
-                    }
-                });
-                const postsData = res.data.posts || res.data || [];
-
-                if (res.data.success) {
-                    setPosts(postsData);
-                } else {
-                    setError(res.data.message);
-                    toast.error(res.data.message);
-                }
-            } catch (err) {
-                setError(err.response?.data?.message || err.message || "Failed to fetch posts");
-                toast.error(err.response?.data?.message || err.message || "Failed to fetch posts");
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchFeed();
     }, []);
+
+    const fetchFeed = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const res = await axiosInstance.get("/feed/", {
+                params: {
+                    page: 1,
+                    limit: 20,
+                    sort_by: 'engagement',
+                    refresh: true,
+                    show_trending: false
+                }
+            });
+
+
+            if (res.data.success) {
+                setPosts(res.data.posts || []);
+
+                // Set pagination info if available
+                if (res.data.pagination) {
+                    setPagination({
+                        page: res.data.pagination.page,
+                        hasMore: res.data.pagination.hasMore,
+                        totalPages: res.data.pagination.totalPages
+                    });
+                }
+            } else {
+                const errorMessage = res.data.message || "Failed to fetch posts";
+                setError(errorMessage);
+                toast.error(errorMessage);
+            }
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || err.message || "Failed to fetch posts";
+            setError(errorMessage);
+            toast.error(errorMessage);
+            console.error('Feed fetch error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const updatePostLike = (postId, isLiked, likeCount) => {
         setPosts(prevPosts =>
@@ -52,18 +74,91 @@ const Feed = () => {
         );
     };
 
-    if (loading) {
+    // Load more posts function
+    const loadMorePosts = async () => {
+        if (!pagination.hasMore || loadingMore || feedType === 'trending') return;
+        await fetchFeed(false, pagination.page + 1);
+    };
+
+    // Refresh feed function
+    const refreshFeed = async () => {
+        setPagination({ page: 1, hasMore: false, totalPages: 0 });
+        await fetchFeed(true);
+    };
+
+    // Change feed type
+    const changeFeedType = (newType) => {
+        if (newType !== feedType) {
+            setFeedType(newType);
+            setPagination({ page: 1, hasMore: false, totalPages: 0 });
+        }
+    };
+
+    if (loading && posts.length === 0) {
         return (
             <div className="text-white text-center my-5 fs-5 normal-loading-spinner">
                 Loading Feeds<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
             </div>
-        )
+        );
     }
-    if (error) return <div className="text-danger text-center my-5 fs-5">Error loading feed: {error}</div>;
-    if (!posts.length) return <div className="text-white text-center my-5 fs-5">No posts found</div>;
+
+    if (refreshing && posts.length === 0) {
+        return (
+            <div className="text-white text-center my-5 fs-5 normal-loading-spinner">
+                Refreshing Feed<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
+            </div>
+        );
+    }
+
+    if (error && posts.length === 0) {
+        return <div className="text-danger text-center my-5 fs-5">Error loading feed: {error}</div>;
+    }
+
+    if (!posts.length) {
+        return <div className="text-white text-center my-5 fs-5">No posts found</div>;
+    }
 
     return (
         <div className="container my-4">
+            {/* Feed Type Selector */}
+            <div className="d-flex justify-content-center mb-4">
+                <div className="btn-group" role="group">
+                    <button
+                        type="button"
+                        className={`btn ${feedType === 'engagement' ? 'btn-primary' : 'btn-outline-primary'}`}
+                        onClick={() => changeFeedType('engagement')}
+                    >
+                        For You
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn ${feedType === 'recency' ? 'btn-primary' : 'btn-outline-primary'}`}
+                        onClick={() => changeFeedType('recency')}
+                    >
+                        Recent
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn ${feedType === 'trending' ? 'btn-primary' : 'btn-outline-primary'}`}
+                        onClick={() => changeFeedType('trending')}
+                    >
+                        Trending
+                    </button>
+                </div>
+            </div>
+
+            {/* Refresh Button */}
+            <div className="text-center mb-3">
+                <button 
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={refreshFeed}
+                    disabled={refreshing || loading}
+                >
+                    {refreshing ? 'Refreshing...' : '🔄 Refresh Feed'}
+                </button>
+            </div>
+
+            {/* Posts */}
             {posts.map((post, index) => (
                 <PostCard
                     key={post._id || post.id || index}
@@ -72,6 +167,19 @@ const Feed = () => {
                     onLikeUpdate={updatePostLike}
                 />
             ))}
+            
+            {/* Load More Button */}
+            {pagination.hasMore && feedType !== 'trending' && (
+                <div className="text-center my-4">
+                    <button 
+                        className="btn btn-primary"
+                        onClick={loadMorePosts}
+                        disabled={loadingMore}
+                    >
+                        {loadingMore ? 'Loading...' : 'Load More Posts'}
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
