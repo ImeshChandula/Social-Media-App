@@ -14,7 +14,15 @@ const Feed = () => {
                 setLoading(true);
                 setError(null);
 
-                const res = await axiosInstance.get("/posts/feed");
+                const res = await axiosInstance.get("/posts/feed", {
+                    params: {
+                        page: 1,
+                        limit: 20,
+                        sort_by: 'engagement',
+                        refresh: true,
+                        show_trending: false
+                    }
+                });
                 const postsData = res.data.posts || res.data || [];
 
                 if (res.data.success) {
