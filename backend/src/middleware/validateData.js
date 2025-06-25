@@ -175,7 +175,7 @@ const validateMarketPlace = (req, res, next) => {
         isAvailable: Joi.boolean().default(true),
         isAccept: Joi.boolean().default(true),
         status: Joi.string().valid('active', 'sold', 'expired', 'removed', 'pending').default('active'),
-        expiresAt: Joi.date().iso().default(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)),
+        expiresAt: Joi.date().iso().default(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()),
         tags: Joi.array().items(Joi.string().max(50)).max(20).default([])
     });
 
