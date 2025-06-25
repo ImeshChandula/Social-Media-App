@@ -6,6 +6,8 @@ const socketIo = require("socket.io");          // ADD THIS
 const socketHandler = require("./src/middleware/socket");
 const { connectFirebase } = require("./src/config/firebase");
 const { initializeDefaultSuperAdmin } = require("./src/initialization/defaultSuperAdmin");
+const { initializeScheduler, setupGracefulShutdown } = require('./src/utils/initScheduler');
+
 require('dotenv').config();
 
 
@@ -41,6 +43,9 @@ app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:4000", cred
 app.use(cookieParser());
 
 
+// Initialize scheduler when server starts
+initializeScheduler(60); // Check every 60 minutes
+setupGracefulShutdown();
 
 
 // Routes
