@@ -22,13 +22,18 @@ const Feedstories = ({ type = "all" }) => {
 
         let processedStories = [];
         if (type === "me") {
-          processedStories = res.data.stories || [];
+          // /stories/me returns flat array of stories with user data
+          processedStories = (res.data.stories || []).map(story => ({
+            ...story,
+            user: story.user || { id: story.userId, username: 'Unknown User', profilePicture: 'https://via.placeholder.com/40' }
+          }));
           console.log('Processed user stories:', processedStories);
         } else {
+          // /stories/feed returns grouped stories by user
           processedStories = (res.data.stories || []).flatMap(group => 
             group.stories.map(story => ({
               ...story,
-              user: group.user || { id: story.userId, username: 'Unknown User' },
+              user: group.user || { id: story.userId, username: 'Unknown User', profilePicture: 'https://via.placeholder.com/40' }
             }))
           );
 
@@ -37,9 +42,8 @@ const Feedstories = ({ type = "all" }) => {
             story.privacy === 'friends' || story.privacy === 'public'
           );
 
-          // Sort by createdAt (newest first) and limit to 3
+          // Sort by createdAt (newest first)
           processedStories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-          processedStories = processedStories.slice(0, 3);
 
           console.log('Processed feed stories:', processedStories);
         }
@@ -133,7 +137,7 @@ const Feedstories = ({ type = "all" }) => {
                   isUserPost={type === "me"}
                   onDelete={handleDelete}
                   onStoriesUpdate={handleUpdate}
-                  isPreview={true} // Pass prop to render compact preview
+                  isPreview={true}
                 />
               </div>
             ))}
