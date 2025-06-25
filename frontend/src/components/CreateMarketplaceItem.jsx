@@ -147,6 +147,11 @@ const CreateMarketplaceItem = () => {
                 <div className="section-title mb-0">General Information</div>
 
                 <div className="col-md-6">
+                    <label className="form-label">Title</label>
+                    <input type="text" name="title" className="form-control" placeholder="Item title" required value={formData.title} onChange={handleChange} />
+                </div>
+
+                <div className="col-md-6">
                     <label className="form-label">Category</label>
                     {catLoading ? (
                         <div className="form-control bg-light text-muted">Loading categories...</div>
@@ -160,11 +165,6 @@ const CreateMarketplaceItem = () => {
                             ))}
                         </select>
                     )}
-                </div>
-
-                <div className="col-md-6">
-                    <label className="form-label">Title</label>
-                    <input type="text" name="title" className="form-control" placeholder="Item title" required value={formData.title} onChange={handleChange} />
                 </div>
 
                 <div className="col-12">

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
 import { useNavigate } from "react-router-dom";
 import UserPosts from "../components/UserPosts";
-import EnhancedBioSection from "../components/EnhancedBioSection ";
+import EnhancedBioSection from "../components/EnhancedBioSection";
 import EnhancedUserStats from "../components/EnhancedUserStats";
 import toast from "react-hot-toast";
 

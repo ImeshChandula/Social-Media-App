@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
 import OtherUserPosts from "../components/OtherUserPosts";
 import EnhancedUserStats from "../components/EnhancedUserStats";
-import EnhancedBioSection from "../components/EnhancedBioSection ";
-
+import EnhancedBioSection from "../components/EnhancedBioSection";
+import FriendActionButton from "../components/FriendActionButton";
 
 const OtherUserProfiles = () => {
   const { id } = useParams();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isFriend, setIsFriend] = useState(null);
+  const [friendRequestSent, setFriendRequestSent] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -20,7 +21,10 @@ const OtherUserProfiles = () => {
       setError("");
       try {
         const res = await axiosInstance.get(`/users/getUserById/${id}`);
-        setUser(res.data.user || res.data);
+        const fetchedUser = res.data.user || res.data;
+        setUser(fetchedUser);
+        setIsFriend(!!fetchedUser.isFriend);
+        setFriendRequestSent(!!fetchedUser.friendRequestSent);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to load user profile");
       } finally {
@@ -32,9 +36,12 @@ const OtherUserProfiles = () => {
 
   if (loading) {
     return (
-      <p className="text-white-50 text-center mt-5 normal-loading-spinner">Loading user profile<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span></p>
-    )
+      <p className="text-white-50 text-center mt-5 normal-loading-spinner">
+        Loading user profile<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
+      </p>
+    );
   }
+
   if (error) return <div className="alert alert-danger mt-5">{error}</div>;
   if (!user) return <p className="text-white-50 text-center mt-5">User not found.</p>;
 
@@ -48,7 +55,7 @@ const OtherUserProfiles = () => {
       {/* Cover Photo & Profile Picture */}
       <div className="position-relative mb-5 pt-3 mt-1 mt-md-0">
         <motion.img
-          src={user?.coverPhoto}
+          src={user.coverPhoto}
           alt="Cover"
           className="img-fluid w-100 rounded"
           style={{ objectFit: "cover", height: "200px" }}
@@ -56,9 +63,8 @@ const OtherUserProfiles = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6, type: "spring", stiffness: 50 }}
         />
-
         <motion.img
-          src={user?.profilePicture}
+          src={user.profilePicture}
           alt="Profile"
           className="rounded-circle border border-white shadow profile-pic-animate"
           whileHover={{ scale: 1.05 }}
@@ -83,16 +89,24 @@ const OtherUserProfiles = () => {
         transition={{ delay: 0.3 }}
       >
         <h4 className="fw-bold text-white">
-          {user.firstName || user.lastName ? `${user.firstName} ${user.lastName}` : "Unnamed User"}
+          {user.firstName || user.lastName
+            ? `${user.firstName} ${user.lastName}`
+            : "Unnamed User"}
         </h4>
         <p className="text-white-50">@{user.username}</p>
-        <motion.button
-          className="btn btn-success"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Add Friend
-        </motion.button>
+
+        <div className="d-flex justify-content-center">
+          <FriendActionButton
+            userId={id}
+            isFriend={isFriend}
+            friendRequestSent={friendRequestSent}
+            onStatusChange={({ isFriend, friendRequestSent }) => {
+              if (isFriend !== undefined) setIsFriend(isFriend);
+              if (friendRequestSent !== undefined) setFriendRequestSent(friendRequestSent);
+            }}
+          />
+        </div>
+
       </motion.div>
 
       {/* Stats */}
