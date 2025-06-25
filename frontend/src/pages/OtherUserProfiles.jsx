@@ -5,7 +5,7 @@ import { axiosInstance } from "../lib/axios";
 import OtherUserPosts from "../components/OtherUserPosts";
 import EnhancedUserStats from "../components/EnhancedUserStats";
 import EnhancedBioSection from "../components/EnhancedBioSection";
-import toast from "react-hot-toast";
+import FriendActionButton from "../components/FriendActionButton";
 
 const OtherUserProfiles = () => {
   const { id } = useParams();
@@ -14,7 +14,6 @@ const OtherUserProfiles = () => {
   const [error, setError] = useState("");
   const [isFriend, setIsFriend] = useState(null);
   const [friendRequestSent, setFriendRequestSent] = useState(null);
-  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -34,102 +33,6 @@ const OtherUserProfiles = () => {
     };
     fetchUser();
   }, [id]);
-
-  const sendFriendRequest = async () => {
-    try {
-      setActionLoading(true);
-      const res = await axiosInstance.post(`/friends/friend-request/send/${id}`);
-      if (res.data.success) {
-        setFriendRequestSent(true);
-        setIsFriend(false);
-        toast.success("Friend request sent");
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to send friend request");
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const cancelFriendRequest = async () => {
-    try {
-      setActionLoading(true);
-      const res = await axiosInstance.delete(`/friends/friend-request/cancel/${id}`);
-      if (res.data.success) {
-        setFriendRequestSent(false);
-        toast.success("Friend request cancelled");
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to cancel friend request");
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const removeFriend = async () => {
-    try {
-      setActionLoading(true);
-      const res = await axiosInstance.delete(`/friends/removeFriend/${id}`);
-      if (res.data.success) {
-        setIsFriend(false);
-        toast.success("Friend removed");
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to remove friend");
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const renderFriendActionButton = () => {
-    if (isFriend === null || friendRequestSent === null) {
-      return (
-        <button className="btn btn-secondary" disabled>
-          Checking status...
-        </button>
-      );
-    }
-
-    if (isFriend) {
-      return (
-        <motion.button
-          className="btn btn-danger"
-          onClick={removeFriend}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          disabled={actionLoading}
-        >
-          {actionLoading ? "Removing..." : "Remove Friend"}
-        </motion.button>
-      );
-    }
-
-    if (friendRequestSent) {
-      return (
-        <motion.button
-          className="btn btn-warning"
-          onClick={cancelFriendRequest}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          disabled={actionLoading}
-        >
-          {actionLoading ? "Canceling..." : "Cancel Request"}
-        </motion.button>
-      );
-    }
-
-    return (
-      <motion.button
-        className="btn btn-success"
-        onClick={sendFriendRequest}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        disabled={actionLoading}
-      >
-        {actionLoading ? "Sending..." : "Add Friend"}
-      </motion.button>
-    );
-  };
 
   if (loading) {
     return (
@@ -191,7 +94,19 @@ const OtherUserProfiles = () => {
             : "Unnamed User"}
         </h4>
         <p className="text-white-50">@{user.username}</p>
-        {renderFriendActionButton()}
+
+        <div className="d-flex justify-content-center">
+          <FriendActionButton
+            userId={id}
+            isFriend={isFriend}
+            friendRequestSent={friendRequestSent}
+            onStatusChange={({ isFriend, friendRequestSent }) => {
+              if (isFriend !== undefined) setIsFriend(isFriend);
+              if (friendRequestSent !== undefined) setFriendRequestSent(friendRequestSent);
+            }}
+          />
+        </div>
+
       </motion.div>
 
       {/* Stats */}
