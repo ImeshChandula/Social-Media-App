@@ -165,8 +165,8 @@ const Stories = ({ post, isUserPost = false, onDelete, onStoriesUpdate, isPrevie
             style={{ width: '100%' }}
           >
             <img
-              src={user?.profilePicture || 'https://via.placeholder.com/40'}
-              alt={`${user?.username || 'User'}'s profile`}
+              src={user?.profilePicture}
+              alt="profile"
               className="rounded-circle"
               style={{ 
                 width: '32px', 
@@ -195,8 +195,8 @@ const Stories = ({ post, isUserPost = false, onDelete, onStoriesUpdate, isPrevie
             <div className="d-flex justify-content-between align-items-center mb-2">
               <div className="d-flex align-items-center">
                 <img
-                  src={user?.profilePicture || 'https://via.placeholder.com/40'}
-                  alt={`${user?.username || 'User'}'s profile`}
+                  src={user?.profilePicture}
+                  alt="profile"
                   className="rounded-circle me-2"
                   style={{ width: '40px', height: '40px', objectFit: 'cover' }}
                 />
