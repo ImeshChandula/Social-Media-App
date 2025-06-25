@@ -34,6 +34,9 @@ class MarketPlaceService {
 
     async findAll() {
         try {
+            const updatedItemsCount = await this.updateExpiredItems();
+            console.log(`✅ Updated ${updateCount} expired items at ${new Date().toLocaleString()}`);
+            
             const docRef = await this.collection.orderBy('createdAt', 'desc').get();
 
             if (docRef.empty) {
@@ -49,6 +52,9 @@ class MarketPlaceService {
 
     async findAllByUserId(userId) {
         try {
+            const updatedItemsCount = await this.updateExpiredItems();
+            console.log(`✅ Updated ${updateCount} expired items at ${new Date().toLocaleString()}`);
+
             const docRef = await this.collection
                 .where('author', '==', userId)
                 .orderBy('createdAt', 'desc')
@@ -67,6 +73,9 @@ class MarketPlaceService {
 
     async findAllActive () {
         try {
+            const updatedItemsCount = await this.updateExpiredItems();
+            console.log(`✅ Updated ${updateCount} expired items at ${new Date().toLocaleString()}`);
+
             const docRef = await this.collection
                 .where('isAccept', '==', true)
                 .where('isAvailable', '==', true)
@@ -124,6 +133,41 @@ class MarketPlaceService {
             }
         } catch (error) {
             console.error("Error fetching all docs:", error);
+        }
+    }
+
+    async updateExpiredItems() {
+        try {
+            const currentDate = new Date().toISOString();
+
+            const expiredItemsRef = await this.collection
+                .where('expiresAt', '<', currentDate)
+                .where('isAvailable', '==', true)
+                .get();
+
+            if (expiredItemsRef.empty) {
+                console.log('No expired items found to update');
+                return 0;
+            }
+
+            // Batch update for better performance
+            const batch = db.batch();
+            let updateCount = 0;
+
+            expiredItemsRef.docs.forEach(doc => {
+                batch.update(doc.ref, {
+                    isAvailable: false,
+                    updatedAt: new Date().toISOString(),
+                    status: 'expired' // Optional: update status as well
+                });
+                updateCount++;
+            });
+
+            await batch.commit();
+            console.log(`Updated ${updateCount} expired items`);
+            return updateCount;
+        } catch (error) {
+            throw error;
         }
     }
 }
