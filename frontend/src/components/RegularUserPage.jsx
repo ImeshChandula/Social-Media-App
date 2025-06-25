@@ -1,4 +1,4 @@
-import FeedStories from "./FeedStories"
+import FeedStories from "./Feedstories"
 import Feed from "./Feed";
 
 const RegularUserPage = () => {

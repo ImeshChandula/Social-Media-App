@@ -10,6 +10,7 @@ const MarketplaceCard = ({
     showContactDetails = false,
     showActions = false,
     showTags = true,
+    showEdit = true,
     onDelete = () => { },
 }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -238,7 +239,11 @@ const MarketplaceCard = ({
 
                 {showActions && (
                     <div className="card-footer bg-white border-top">
-                        <MarketplaceItemButton itemId={item.id} onDelete={onDelete} />
+                        <MarketplaceItemButton
+                            itemId={item.id}
+                            onDelete={onDelete}
+                            showEdit={showEdit} // pass showEdit here
+                        />
                     </div>
                 )}
             </div>
