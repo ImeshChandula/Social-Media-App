@@ -19,6 +19,7 @@ const EditMarketPlaceItem = () => {
         status: 'active',
         images: null,
         isNegotiable: false,
+        expiresAt: '', // Add the expiration date field here
     });
 
     const [loading, setLoading] = useState(false);
@@ -51,6 +52,7 @@ const EditMarketPlaceItem = () => {
                     location: item.location || { city: "", state: "", country: "", postalCode: "" },
                     images: null,
                     isNegotiable: item.isNegotiable || false,
+                    expiresAt: item.expiresAt || '', // Set initial value for expiration date
                 });
 
                 setPreviewImages(Array.isArray(item.images) ? item.images : [item.images]);
@@ -228,6 +230,17 @@ const EditMarketPlaceItem = () => {
                             <option value="removed">Removed</option>
                             <option value="pending">Pending</option>
                         </select>
+                    </div>
+
+                    <div className="col-md-6">
+                        <label className="form-label">Expiration Date</label>
+                        <input
+                            type="date"
+                            name="expiresAt"
+                            className="form-control"
+                            value={formData.expiresAt}
+                            onChange={handleChange}
+                        />
                     </div>
 
                     <div className="col-md-6 d-flex align-items-center gap-2 mt-3">
