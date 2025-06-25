@@ -21,7 +21,13 @@ const createStory = async(req, res) => {
             content,
             type,
             caption,
-            privacy,
+            //newly added
+            privacy: privacy || 'friends', // Default to 'friends' if not provided
+            isActive: true, // Explicitly set to true
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
+            createdAt: new Date().toISOString(),
+            viewers: [], // Initialize empty viewers array
+            viewCount: 0 // Initialize view count
         };
 
         // Check if media is provided
@@ -34,6 +40,8 @@ const createStory = async(req, res) => {
                 return res.status(400).json({ error: "Failed to upload media", message: error.message });
             }
         }
+
+        console.log('Creating story with data:', storyData); // Debug log
 
         const newStory = await Story.create(storyData);
         if (!newStory) {
@@ -138,13 +146,18 @@ const getCurrentUserStories = async (req, res) => {
     const userId = req.user.id;
     
     // Fetch the user
-    const user = await Story.findByUserId(userId);
+    //const user = await Story.findByUserId(userId);
+    const user = await UserService.findById(userId);
+
+    
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
     
     // Simplified query - only filter by userId in Firestore
     const allStories = await Story.findByUserIdSimple(userId);
+
+    console.log('All stories found:', allStories.length); // Debug log
     
     if (!allStories || allStories.length === 0) {
       return res.status(200).json({ 
@@ -154,12 +167,15 @@ const getCurrentUserStories = async (req, res) => {
     }
     
     const now = new Date();
+    console.log('Current time:', now.toISOString()); // Debug log
     
     // Filter in application code instead of database query
     const activeStories = allStories.filter(story => {
       const expiresAt = new Date(story.expiresAt);
       return story.isActive && expiresAt > now;
     });
+
+    console.log('Active stories after filtering:', activeStories.length); // Debug log
     
     // Sort by creation date (newest first)
     activeStories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
