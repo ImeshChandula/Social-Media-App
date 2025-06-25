@@ -34,8 +34,13 @@ class MarketPlaceService {
 
     async findAll() {
         try {
-            const updatedItemsCount = await this.updateExpiredItems();
-            console.log(`✅ Updated ${updateCount} expired items at ${new Date().toLocaleString()}`);
+            let updatedItemsCount = 0;
+            try {
+                updatedItemsCount = await this.updateExpiredItems();
+            } catch (err) {
+                console.error("Failed to update expired items:", err.message);
+            }
+            console.log(`✅ Updated ${updatedItemsCount} expired items at ${new Date().toLocaleString()}`);
             
             const docRef = await this.collection.orderBy('createdAt', 'desc').get();
 
@@ -52,8 +57,13 @@ class MarketPlaceService {
 
     async findAllByUserId(userId) {
         try {
-            const updatedItemsCount = await this.updateExpiredItems();
-            console.log(`✅ Updated ${updateCount} expired items at ${new Date().toLocaleString()}`);
+            let updatedItemsCount = 0;
+            try {
+                updatedItemsCount = await this.updateExpiredItems();
+            } catch (err) {
+                console.error("Failed to update expired items:", err.message);
+            }
+            console.log(`✅ Updated ${updatedItemsCount} expired items at ${new Date().toLocaleString()}`);
 
             const docRef = await this.collection
                 .where('author', '==', userId)
@@ -73,8 +83,13 @@ class MarketPlaceService {
 
     async findAllActive () {
         try {
-            const updatedItemsCount = await this.updateExpiredItems();
-            console.log(`✅ Updated ${updateCount} expired items at ${new Date().toLocaleString()}`);
+            let updatedItemsCount = 0;
+            try {
+                updatedItemsCount = await this.updateExpiredItems();
+            } catch (err) {
+                console.error("Failed to update expired items:", err.message);
+            }
+            console.log(`✅ Updated ${updatedItemsCount} expired items at ${new Date().toLocaleString()}`);
 
             const docRef = await this.collection
                 .where('isAccept', '==', true)
