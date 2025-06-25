@@ -233,7 +233,7 @@ const validateMarketPlaceUpdate = (req, res, next) => {
         isAvailable: Joi.boolean().optional(),
         isAccept: Joi.boolean().optional(),
         status: Joi.string().valid('active', 'sold', 'expired', 'removed', 'pending').optional(),
-        expiresAt: Joi.date().optional(),
+        expiresAt: Joi.date().iso().optional(),
         tags: Joi.array().items(Joi.string().max(50)).max(20).optional()
     })
     .min(1) // Require at least one field to update
