@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
 import OtherUserPosts from "../components/OtherUserPosts";
 import EnhancedUserStats from "../components/EnhancedUserStats";
-import EnhancedBioSection from "../components/EnhancedBioSection ";
+import EnhancedBioSection from "../components/EnhancedBioSection";
 import toast from "react-hot-toast";
 
 const OtherUserProfiles = () => {
