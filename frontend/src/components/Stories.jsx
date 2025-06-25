@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import moment from 'moment';
 import StoriesPopup from './StoriesPopup';
 import { axiosInstance } from '../lib/axios';
+import { useNavigate } from 'react-router-dom';
 
 const Stories = ({ post, isUserPost = false, onDelete, onStoriesUpdate, isPreview = false }) => {
   const [showPopup, setShowPopup] = useState(false);
@@ -9,6 +10,7 @@ const Stories = ({ post, isUserPost = false, onDelete, onStoriesUpdate, isPrevie
   const [caption, setCaption] = useState(post.caption || '');
   const [error, setError] = useState('');
   const [user, setUser] = useState(post.user || null);
+  const navigate = useNavigate();
 
   // Fetch user details if incomplete
   useEffect(() => {
@@ -81,7 +83,7 @@ const Stories = ({ post, isUserPost = false, onDelete, onStoriesUpdate, isPrevie
             className="w-100 rounded"
             style={{ height: '160px', objectFit: 'cover' }}
             muted
-            poster={post.media} // Use first frame as preview
+            poster={post.media}
           >
             <source src={post.media} type="video/mp4" />
           </video>
@@ -147,7 +149,7 @@ const Stories = ({ post, isUserPost = false, onDelete, onStoriesUpdate, isPrevie
         <div 
           className="position-relative text-white" 
           style={{ width: '120px', cursor: 'pointer' }}
-          onClick={() => {/* Add navigation to full story view */}}
+          onClick={() => navigate(`/stories/${post._id}`)}
         >
           <div 
             className="rounded overflow-hidden"
@@ -163,8 +165,8 @@ const Stories = ({ post, isUserPost = false, onDelete, onStoriesUpdate, isPrevie
             style={{ width: '100%' }}
           >
             <img
-              src={user?.profilePicture || 'https://via.placeholder.com/40'}
-              alt={`${user?.username || 'User'}'s profile`}
+              src={user?.profilePicture}
+              alt="profile"
               className="rounded-circle"
               style={{ 
                 width: '32px', 
@@ -193,8 +195,8 @@ const Stories = ({ post, isUserPost = false, onDelete, onStoriesUpdate, isPrevie
             <div className="d-flex justify-content-between align-items-center mb-2">
               <div className="d-flex align-items-center">
                 <img
-                  src={user?.profilePicture || 'https://via.placeholder.com/40'}
-                  alt={`${user?.username || 'User'}'s profile`}
+                  src={user?.profilePicture}
+                  alt="profile"
                   className="rounded-circle me-2"
                   style={{ width: '40px', height: '40px', objectFit: 'cover' }}
                 />
