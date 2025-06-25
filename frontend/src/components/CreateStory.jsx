@@ -1,203 +1,194 @@
-import React, { useState, useEffect } from 'react';
-import { axiosInstance } from '../lib/axios';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { axiosInstance } from "../lib/axios";
 
 const CreateStory = () => {
-    const initialState = {
-        content: '',
-        media: null,
-        mediaPreview: '',
-        mediaType: '',
-        type: '',
-        privacy: 'public',
-        caption: '',
+  const [content, setContent] = useState("");
+  const [caption, setCaption] = useState("");
+  const [type, setType] = useState("image");
+  const [privacy, setPrivacy] = useState("friends");
+  const [file, setFile] = useState(null);
+  const [fileData, setFileData] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
+
+  /* helper: convert File → base-64 */
+  const toBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(file);
+    });
+
+  /* choose / convert file */
+  const handleFile = async (e) => {
+    const chosen = e.target.files[0];
+    if (!chosen) return;
+    
+    // Validate file size (optional, can adjust based on backend limits)
+    if (chosen.size > 10 * 1024 * 1024) { // 10MB limit
+      setError("File size exceeds 10MB limit");
+      return;
+    }
+
+    setFile(chosen);
+    try {
+      const b64 = await toBase64(chosen);
+      setFileData(b64);
+      setError("");
+    } catch {
+      setError("Could not read file. Please try another file.");
+    }
+  };
+
+  /* submit */
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    // Validate inputs (matching backend requirements)
+    if (!content.trim() && !fileData) {
+      setError("Please provide either text content or a media file");
+      return;
+    }
+
+    // Validate media type
+    if (fileData && !["image", "video"].includes(type)) {
+      setError("Invalid media type. Please select image or video");
+      return;
+    }
+
+    // Validate privacy setting
+    if (!["friends", "public"].includes(privacy)) {
+      setError("Invalid privacy setting");
+      return;
+    }
+
+    const payload = {
+      content: content.trim() || undefined,
+      media: fileData || undefined,
+      type: fileData ? type : "text",
+      caption: caption.trim() || undefined,
+      privacy
     };
 
-    const [formData, setFormData] = useState(initialState);
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState(null);
+    try {
+      setSaving(true);
+      const response = await axiosInstance.post("/stories/createStory", payload);
+      setSuccess(response.data.message || "Story created successfully!");
+      
+      // Reset form
+      setContent("");
+      setCaption("");
+      setType("image");
+      setPrivacy("friends");
+      setFile(null);
+      setFileData("");
 
-    useEffect(() => {
-        return () => {
-            if (formData.mediaType === 'video' && formData.mediaPreview) {
-                URL.revokeObjectURL(formData.mediaPreview);
-            }
-        };
-    }, [formData.mediaPreview, formData.mediaType]);
+      // Redirect to feed after 1 second
+      setTimeout(() => {
+        //navigate("/stories/feed");
+      }, 1000);
 
-    const handleMediaUpload = (file) =>
-        new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to create story. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
-    const handleChange = async (e) => {
-        const { name, value, files } = e.target;
+  return (
+    <div className="container py-4 text-white">
+      <h2>Create Story</h2>
+      {error && <div className="alert alert-danger">{error}</div>}
+      {success && <div className="alert alert-success">{success}</div>}
 
-        if (name === 'media' && files?.[0]) {
-            const file = files[0];
-            const base64 = await handleMediaUpload(file);
-            const type = file.type.startsWith('video') ? 'video' : 'image';
-
-            if (formData.mediaType === 'video' && formData.mediaPreview) {
-                URL.revokeObjectURL(formData.mediaPreview);
-            }
-
-            setFormData((prev) => ({
-                ...prev,
-                media: base64,
-                mediaPreview: type === 'video' ? URL.createObjectURL(file) : base64,
-                mediaType: type,
-            }));
-        } else {
-            setFormData((prev) => ({ ...prev, [name]: value }));
-        }
-    };
-
-    const handleRemoveMedia = () => {
-        if (formData.mediaType === 'video' && formData.mediaPreview) {
-            URL.revokeObjectURL(formData.mediaPreview);
-        }
-
-        setFormData((prev) => ({
-            ...prev,
-            media: null,
-            mediaPreview: '',
-            mediaType: '',
-        }));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        if (!formData.content.trim() && !formData.media) {
-            return setMessage({ type: 'danger', text: 'Content or media is required.' });
-        }
-
-        setLoading(true);
-        setMessage(null);
-
-        try {
-            const payload = {
-                content: formData.content,
-                media: formData.media,
-                type: formData.media ? formData.mediaType : 'text',
-                caption: 'text',
-                privacy: formData.privacy,
-            };
-
-            const res = await axiosInstance.post('/stories/createStory', payload);
-
-            setMessage({ type: 'success', text: res.data.message || 'Post created successfully!' });
-            setFormData(initialState);
-        } catch (error) {
-            setMessage({
-                type: 'danger',
-                text: error.response?.data?.message || 'Failed to create post.',
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="container mt-5" style={{ maxWidth: '720px' }}>
-            <div className="card shadow-lg rounded-4 border border-light">
-                <div className="card-body p-4 bg-white text-dark">
-                    <h3 className="text-center mb-4">Add story </h3>
-
-                    {message && (
-                        <div className={`alert alert-${message.type}`} role="alert">
-                            {message.text}
-                        </div>
-                    )}
-
-                    <form onSubmit={handleSubmit}>
-                        <div className="mb-3">
-                            <label className="form-label">Content</label>
-                            <textarea
-                                className="form-control"
-                                name="content"
-                                rows="4"
-                                value={formData.content}
-                                onChange={handleChange}
-                                placeholder="What's on your mind?"
-                            />
-                        </div>
-
-                        <div className="mb-3">
-                            <div className="d-flex justify-content-between align-items-center">
-                                <label className="form-label mb-0">Upload Media</label>
-                                {formData.media && (
-                                    <button
-                                        type="button"
-                                        className="btn btn-sm btn-outline-danger my-2"
-                                        onClick={handleRemoveMedia}
-                                    >
-                                        Remove
-                                    </button>
-                                )}
-                            </div>
-                            <input
-                                type="file"
-                                className="form-control"
-                                name="media"
-                                accept="image/*,video/*"
-                                onChange={handleChange}
-                            />
-                            {formData.mediaPreview && formData.mediaType === 'video' && (
-                                <div className="mt-3">
-                                    <p className="text-white-50">Video Preview:</p>
-                                    <video
-                                        src={formData.mediaPreview}
-                                        controls
-                                        className="w-100 rounded shadow"
-                                        style={{ maxHeight: '300px' }}
-                                    />
-                                </div>
-                            )}
-                            {formData.mediaPreview && formData.mediaType === 'image' && (
-                                <div className="mt-3">
-                                    <p className="text-white-50">Image Preview:</p>
-                                    <img
-                                        src={formData.mediaPreview}
-                                        alt="preview"
-                                        className="w-100 rounded shadow"
-                                        style={{ maxHeight: '300px', objectFit: 'contain' }}
-                                    />
-                                </div>
-                            )}
-                        </div>
-
-
-                        <div className="mb-3">
-                            <label className="form-label">Privacy</label>
-                            <select
-                                className="form-select"
-                                name="privacy"
-                                value={formData.privacy}
-                                onChange={handleChange}
-                            >
-                                <option value="public">Public</option>
-                                <option value="friends">Friends</option>
-                                <option value="private">Private</option>
-                            </select>
-                        </div>
-
-
-                        <button
-                            type="submit"
-                            className="btn btn-primary w-100 py-2 fw-bold rounded-pill"
-                            disabled={loading}
-                        >
-                            {loading ? 'Posting...' : 'Post Now'}
-                        </button>
-                    </form>
-                </div>
-            </div>
+      <form onSubmit={handleSubmit}>
+        {/* story text */}
+        <div className="mb-3">
+          <label className="form-label">Story text</label>
+          <textarea
+            className="form-control"
+            rows={3}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="What's happening?"
+            disabled={saving}
+          />
         </div>
-    );
+
+        {/* media type selector */}
+        <div className="mb-3">
+          <label className="form-label">Media type</label>
+          <select
+            className="form-select"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            disabled={saving}
+          >
+            <option value="image">Image</option>
+            <option value="video">Video</option>
+          </select>
+        </div>
+
+        {/* file picker */}
+        <div className="mb-3">
+          <label className="form-label">
+            {type === "image" ? "Choose image" : "Choose video"}
+          </label>
+          <input
+            className="form-control"
+            type="file"
+            accept={type === "image" ? "image/*" : "video/*"}
+            onChange={handleFile}
+            disabled={saving}
+          />
+          {file && (
+            <small className="text-info d-block mt-1">✔ {file.name}</small>
+          )}
+        </div>
+
+        {/* caption */}
+        <div className="mb-3">
+          <label className="form-label">Caption (optional)</label>
+          <input
+            className="form-control"
+            type="text"
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            placeholder="Nice sunset!"
+            disabled={saving}
+          />
+        </div>
+
+        {/* privacy */}
+        <div className="mb-3">
+          <label className="form-label">Privacy</label>
+          <select
+            className="form-select"
+            value={privacy}
+            onChange={(e) => setPrivacy(e.target.value)}
+            disabled={saving}
+          >
+            <option value="friends">Friends</option>
+            <option value="public">Public</option>
+          </select>
+        </div>
+
+        <button 
+          className="btn btn-primary" 
+          type="submit"
+          disabled={saving}
+        >
+          {saving ? "Posting…" : "Post Story"}
+        </button>
+      </form>
+    </div>
+  );
 };
 
 export default CreateStory;
