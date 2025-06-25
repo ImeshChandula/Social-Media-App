@@ -47,7 +47,15 @@ const MarketplaceCard = ({
                                         <div className="text-dark fw-semibold"> {item.author.username} </div>
                                         <small className="text-muted"> {new Date(item.createdAt).toLocaleDateString()} </small>
                                         <br />
-                                        <small className="text-muted"> {new Date(item.expiresAt).toLocaleDateString()} </small>
+                                        <small className="text-muted">
+                                            {item.expiresAt
+                                                ? new Date(
+                                                    typeof item.expiresAt === "object" && item.expiresAt._seconds
+                                                        ? item.expiresAt._seconds * 1000
+                                                        : item.expiresAt
+                                                ).toLocaleDateString()
+                                                : "N/A"}
+                                        </small>
                                     </div>
                                 </>
                             )}
