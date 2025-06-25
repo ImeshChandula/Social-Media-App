@@ -45,6 +45,7 @@ const MarketplaceAllProduct = () => {
                         showContactDetails={true}
                         showActions={true}
                         showEdit={false}
+                        forceEditButton={true}
                     />
                 ))}
             </div>

@@ -5,7 +5,7 @@ import withReactContent from "sweetalert2-react-content";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 
-const MarketplaceItemButton = ({ itemId, onDelete, showEdit = true }) => {
+const MarketplaceItemButton = ({ itemId, onDelete, showEdit = true, forceEditButton = false }) => {
     const navigate = useNavigate();
     const MySwal = withReactContent(Swal);
 
@@ -56,7 +56,7 @@ const MarketplaceItemButton = ({ itemId, onDelete, showEdit = true }) => {
 
     return (
         <div className="product-button-set flex gap-2 mt-3">
-            {showEdit && (
+            {(showEdit || forceEditButton) && (
                 <button
                     onClick={handleEdit}
                     className="product-edit-btn px-4 py-2"
