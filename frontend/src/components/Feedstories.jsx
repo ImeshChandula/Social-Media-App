@@ -18,26 +18,29 @@ const Feedstories = ({ type = "all" }) => {
         const endpoint = type === "me" ? "/stories/me" : "/stories/feed";
         const res = await axiosInstance.get(endpoint);
 
-        console.log('API response:', res.data);
+        console.log('Raw API response:', res.data);
 
         let processedStories = [];
         if (type === "me") {
-          // /stories/me returns flat array of stories with user data
-          processedStories = (res.data.stories || []).map(story => ({
+          // Ensure stories is an array
+          const userStories = Array.isArray(res.data.stories) ? res.data.stories : [];
+          processedStories = userStories.map(story => ({
             ...story,
-            user: story.user || { id: story.userId, username: 'Unknown User', profilePicture: 'https://via.placeholder.com/40' }
+            user: story.user || { id: story.userId || 'unknown', username: 'Unknown User', profilePicture: 'https://via.placeholder.com/40' }
           }));
           console.log('Processed user stories:', processedStories);
         } else {
-          // /stories/feed returns grouped stories by user
-          processedStories = (res.data.stories || []).flatMap(group => 
-            group.stories.map(story => ({
+          // Ensure stories is an array of groups
+          const feedStories = Array.isArray(res.data.stories) ? res.data.stories : [];
+          processedStories = feedStories.flatMap(group => {
+            const groupStories = Array.isArray(group.stories) ? group.stories : [];
+            return groupStories.map(story => ({
               ...story,
-              user: group.user || { id: story.userId, username: 'Unknown User', profilePicture: 'https://via.placeholder.com/40' }
-            }))
-          );
+              user: group.user || { id: story.userId || 'unknown', username: 'Unknown User', profilePicture: 'https://via.placeholder.com/40' }
+            }));
+          });
 
-          // Filter for friends' and public stories (public requires backend update)
+          // Filter for friends' and public stories
           processedStories = processedStories.filter(story => 
             story.privacy === 'friends' || story.privacy === 'public'
           );
@@ -50,8 +53,13 @@ const Feedstories = ({ type = "all" }) => {
 
         setStories(processedStories);
 
+        // Mark stories as viewed for feed (not for "me")
         if (type !== "me" && processedStories.length > 0) {
-          processedStories.forEach(story => markStoryAsViewed(story._id));
+          await Promise.all(
+            processedStories.map(story => 
+              story._id ? markStoryAsViewed(story._id) : Promise.resolve()
+            )
+          );
         }
       } catch (err) {
         const errorMessage = err.response?.data?.message || "Failed to load stories. Please try again.";
@@ -68,7 +76,14 @@ const Feedstories = ({ type = "all" }) => {
   const markStoryAsViewed = async (storyId) => {
     try {
       console.log(`Marking story ${storyId} as viewed`);
-      await axiosInstance.put(`/stories/${storyId}/view`);
+      const res = await axiosInstance.put(`/stories/${storyId}/view`);
+      setStories(prev =>
+        prev.map(story =>
+          story._id === storyId
+            ? { ...story, viewCount: res.data.viewCount || story.viewCount, viewers: res.data.viewers || story.viewers }
+            : story
+        )
+      );
     } catch (err) {
       console.error(`Failed to mark story ${storyId} as viewed:`, err.response || err);
     }
@@ -88,6 +103,10 @@ const Feedstories = ({ type = "all" }) => {
     );
   };
 
+  // Debug state
+  console.log('Current state:', { loading, error, stories });
+
+  // Always render something to avoid blank page
   return (
     <div className="container my-4">
       {loading && (
@@ -123,12 +142,13 @@ const Feedstories = ({ type = "all" }) => {
               scrollSnapType: 'x mandatory', 
               WebkitOverflowScrolling: 'touch',
               scrollbarWidth: 'none',
-              msOverflowStyle: 'none'
+              msOverflowStyle: 'none',
+              minHeight: '160px' // Ensure container has height
             }}
           >
             {stories.map(story => (
               <div 
-                key={story._id} 
+                key={story._id || `story-${Math.random()}`} // Fallback key
                 className="flex-shrink-0 mx-2" 
                 style={{ width: '120px', scrollSnapAlign: 'start' }}
               >
@@ -144,6 +164,14 @@ const Feedstories = ({ type = "all" }) => {
           </div>
         </>
       )}
+
+      {/* Fallback for debugging */}
+      {!loading && !error && stories.length === 0 && !type && (
+        <div className="text-center my-3">
+          <p className="text-white fs-5">No content to display. Check console for details.</p>
+        </div>
+      )}
+
       <style jsx>{`
         .overflow-x-auto::-webkit-scrollbar {
           display: none;

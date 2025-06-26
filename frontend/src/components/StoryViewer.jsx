@@ -1,180 +1,184 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import moment from "moment";
+import { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
+import Stories from "./Stories";
 
-const IMAGE_DISPLAY_MS = 5000;
-
-export default function StoryViewer() {
-  const { storyId } = useParams();
-  const navigate = useNavigate();
-  const [story, setStory] = useState(null);
-  const [user, setUser] = useState(null);
-  const [progress, setProgress] = useState(0);
+const Feedstories = ({ type = "all" }) => {
+  const [stories, setStories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchStory = async () => {
+    const fetchFeed = async () => {
       try {
-        const { data } = await axiosInstance.get(`/stories/${storyId}`);
-        setStory(data.story);
+        setLoading(true);
+        setError(null);
 
-        // Mark the story as viewed
-        const viewResponse = await axiosInstance.put(`/stories/${storyId}/view`);
-        setStory(prev => ({
-          ...prev,
-          viewCount: viewResponse.data.viewCount,
-          viewers: viewResponse.data.viewers,
-        }));
+        console.log(`Fetching stories from endpoint: ${type === "me" ? "/stories/me" : "/stories/feed"}`);
 
-        // Fetch user profile
-        const { data: userData } = await axiosInstance.get(
-          `/users/getUserById/${data.story.userId}`
-        );
-        setUser(userData.user);
+        const endpoint = type === "me" ? "/stories/me" : "/stories/feed";
+        const res = await axiosInstance.get(endpoint);
+
+        console.log('Raw API response:', res.data);
+
+        let processedStories = [];
+        if (type === "me") {
+          // Ensure stories is an array
+          const userStories = Array.isArray(res.data.stories) ? res.data.stories : [];
+          processedStories = userStories.map(story => ({
+            ...story,
+            user: story.user || { id: story.userId || 'unknown', username: 'Unknown User', profilePicture: 'https://via.placeholder.com/40' }
+          }));
+          console.log('Processed user stories:', processedStories);
+        } else {
+          // Ensure stories is an array of groups
+          const feedStories = Array.isArray(res.data.stories) ? res.data.stories : [];
+          processedStories = feedStories.flatMap(group => {
+            const groupStories = Array.isArray(group.stories) ? group.stories : [];
+            return groupStories.map(story => ({
+              ...story,
+              user: group.user || { id: story.userId || 'unknown', username: 'Unknown User', profilePicture: 'https://via.placeholder.com/40' }
+            }));
+          });
+
+          // Filter for friends' and public stories
+          processedStories = processedStories.filter(story => 
+            story.privacy === 'friends' || story.privacy === 'public'
+          );
+
+          // Sort by createdAt (newest first)
+          processedStories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+          console.log('Processed feed stories:', processedStories);
+        }
+
+        setStories(processedStories);
+
+        // Mark stories as viewed for feed (not for "me")
+        if (type !== "me" && processedStories.length > 0) {
+          await Promise.all(
+            processedStories.map(story => 
+              story._id ? markStoryAsViewed(story._id) : Promise.resolve()
+            )
+          );
+        }
       } catch (err) {
-        console.error(err);
-        navigate(-1);
+        const errorMessage = err.response?.data?.message || "Failed to load stories. Please try again.";
+        console.error("Fetch stories error:", err.response || err);
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchStory();
-  }, [storyId, navigate]);
+    fetchFeed();
+  }, [type]);
 
-  useEffect(() => {
-    if (!story || story.type === "video") return;
-
-    setProgress(0);
-    const step = 100 / (IMAGE_DISPLAY_MS / 100);
-    const id = setInterval(() => {
-      setProgress((p) => {
-        if (p + step >= 100) {
-          clearInterval(id);
-          navigate(-1);
-        }
-        return p + step;
-      });
-    }, 100);
-    return () => clearInterval(id);
-  }, [story, navigate]);
-
-  const handleVideoProgress = (e) => {
-    if (!e.target.duration) return;
-    const percent = (e.target.currentTime / e.target.duration) * 100;
-    setProgress(percent);
-    if (percent >= 99) navigate(-1);
+  const markStoryAsViewed = async (storyId) => {
+    try {
+      console.log(`Marking story ${storyId} as viewed`);
+      const res = await axiosInstance.put(`/stories/${storyId}/view`);
+      setStories(prev =>
+        prev.map(story =>
+          story._id === storyId
+            ? { ...story, viewCount: res.data.viewCount || story.viewCount, viewers: res.data.viewers || story.viewers }
+            : story
+        )
+      );
+    } catch (err) {
+      console.error(`Failed to mark story ${storyId} as viewed:`, err.response || err);
+    }
   };
 
-  const handleTap = (e) => {
-    e.stopPropagation();
-    navigate(-1);
+  const handleDelete = (storyId) => {
+    console.log(`Deleting story ${storyId}`);
+    setStories(prev => prev.filter(story => story._id !== storyId));
   };
 
-  if (!story) return null;
-
-  const renderMedia = () => {
-    if (story.type === "image")
-      return (
-        <img
-          src={story.media}
-          alt={story.caption || "story"}
-          className="w-100 h-100 object-fit-cover"
-        />
-      );
-
-    if (story.type === "video")
-      return (
-        <video
-          className="w-100 h-100"
-          autoPlay
-          muted
-          onTimeUpdate={handleVideoProgress}
-        >
-          <source src={story.media} type="video/mp4" />
-        </video>
-      );
-
-    if (story.type === "text")
-      return (
-        <div
-          className="w-100 h-100 d-flex align-items-center justify-content-center"
-          style={{
-            background:
-              "linear-gradient(45deg,#405de6,#5851db,#833ab4,#c13584)",
-          }}
-        >
-          <h2 className="text-white px-3 text-center">{story.content}</h2>
-        </div>
-      );
-
-    return null;
+  const handleUpdate = (updatedStory) => {
+    console.log(`Updating story ${updatedStory._id}`);
+    setStories(prev =>
+      prev.map(story => 
+        story._id === updatedStory._id ? { ...story, ...updatedStory } : story
+      )
+    );
   };
 
+  // Debug state
+  console.log('Current state:', { loading, error, stories });
+
+  // Always render something to avoid blank page
   return (
-    <div
-      className="position-fixed top-0 start-0 w-100 h-100 bg-black"
-      style={{ zIndex: 1050 }}
-      onClick={handleTap}
-    >
-      <div
-        className="position-absolute top-0 start-0 w-100"
-        style={{ height: "3px", background: "rgba(255,255,255,0.3)" }}
-      >
-        <div
-          style={{
-            width: `${progress}%`,
-            height: "100%",
-            background: "#fff",
-            transition: "width 0.1s linear",
-          }}
-        />
-      </div>
-
-      <div className="position-absolute top-0 start-0 p-3 d-flex align-items-center gap-2">
-        <img
-          src={user?.profilePicture || "https://via.placeholder.com/40"}
-          alt="profile"
-          className="rounded-circle"
-          style={{ width: "32px", height: "32px", objectFit: "cover" }}
-        />
-        <span className="text-white fw-semibold">
-          {user?.username || user?.firstName || user?.lastName || "Unknown"}
-        </span>
-        <span className="text-white-50 small">
-          {moment(story.createdAt).fromNow()}
-        </span>
-      </div>
-
-      <button
-        className="btn btn-sm btn-light position-absolute top-0 end-0 m-3"
-        onClick={(e) => {
-          e.stopPropagation();
-          navigate(-1);
-        }}
-      >
-        ✕
-      </button>
-
-      <div className="w-100 h-100 d-flex align-items-center justify-content-center">
-        {renderMedia()}
-      </div>
-
-      {story.caption && (
-        <div
-          className="position-absolute bottom-0 start-0 w-100 text-white p-3"
-          style={{
-            background:
-              "linear-gradient(to top,rgba(0,0,0,0.8) 0%,transparent 80%)",
-          }}
-        >
-          {story.caption}
+    <div className="container my-4">
+      {loading && (
+        <div className="d-flex align-items-center my-3">
+          <div className="spinner-border text-light me-3" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <span className="text-white fs-5">Loading stories...</span>
         </div>
       )}
 
-      {story.viewCount > 0 && (
-        <div className="position-absolute bottom-0 start-0 p-3 text-white-50 small">
-          Viewed by {story.viewCount} {story.viewCount === 1 ? 'person' : 'people'}
+      {!loading && error && (
+        <div className="alert alert-danger d-flex align-items-center my-3" role="alert">
+          <i className="bi bi-exclamation-triangle-fill me-2"></i>
+          {error}
         </div>
       )}
+
+      {!loading && !error && stories.length === 0 && (
+        <div className="text-center my-3">
+          <p className="text-white fs-5">
+            {type === "me" ? "You haven't posted any stories yet" : "No stories to show"}
+          </p>
+        </div>
+      )}
+
+      {!loading && !error && stories.length > 0 && (
+        <>
+          <h2 className="text-white mb-3 fs-4">{type === "me" ? "Your Stories" : "Stories"}</h2>
+          <div 
+            className="d-flex overflow-x-auto pb-3" 
+            style={{ 
+              scrollSnapType: 'x mandatory', 
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              minHeight: '160px' // Ensure container has height
+            }}
+          >
+            {stories.map(story => (
+              <div 
+                key={story._id || `story-${Math.random()}`} // Fallback key
+                className="flex-shrink-0 mx-2" 
+                style={{ width: '120px', scrollSnapAlign: 'start' }}
+              >
+                <Stories
+                  post={story}
+                  isUserPost={type === "me"}
+                  onDelete={handleDelete}
+                  onStoriesUpdate={handleUpdate}
+                  isPreview={true}
+                />
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Fallback for debugging */}
+      {!loading && !error && stories.length === 0 && !type && (
+        <div className="text-center my-3">
+          <p className="text-white fs-5">No content to display. Check console for details.</p>
+        </div>
+      )}
+
+      <style jsx>{`
+        .overflow-x-auto::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
-}
+};
+
+export default Feedstories;
