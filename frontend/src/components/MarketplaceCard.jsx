@@ -259,6 +259,7 @@ const MarketplaceCard = ({
                             </div>
                         </div>
                     )}
+
                     {/* Admin Toggles */}
                     {isAdmin && (
                         <div className="mt-3 border-top pt-3">
@@ -292,7 +293,7 @@ const MarketplaceCard = ({
                         <MarketplaceItemButton
                             itemId={item.id}
                             onDelete={onDelete}
-                            showEdit={showEdit} // pass showEdit here
+                            showEdit={showEdit}
                         />
                     </div>
                 )}
