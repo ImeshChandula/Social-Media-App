@@ -171,7 +171,7 @@ const ResetPassword = () => {
                 <div className="reset-password-body">
                     {step === 'email' && (
                         <>
-                            <div className="form-group">
+                            <div className="reset-form-group">
                                 <label htmlFor="email">Email Address</label>
                                 <div className="input-with-icon">
                                     <Mail className="input-icon" />
