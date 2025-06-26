@@ -13,6 +13,6 @@ router.get('/myItems', authenticateUser, marketplaceController.getAllMyItems);
 router.get('/activeItems', authenticateUser, marketplaceController.getAllActiveItems);
 router.patch('/update/:id', validateMarketPlaceUpdate, authenticateUser, marketplaceController.updateItem);
 router.delete('/delete/:id', authenticateUser, marketplaceController.deleteItem);
-
+router.post('/track-interaction', authenticateUser, marketplaceController.trackUserInteraction);
 
 module.exports = router;

@@ -1,8 +1,11 @@
 const MarketPlaceService = require('../services/marketplaceService');
+const MarketplaceFeedAlgorithm = require('../algorithms/MarketFeedAlgorithm');
 const { handleMediaUpload } = require('../utils/handleMediaUpload');
 const populateAuthor = require('../utils/populateAuthor');
 
 const marketplaceService = new MarketPlaceService();
+const feedAlgorithm = new MarketplaceFeedAlgorithm();
+
 
 const createItem = async (req, res) => {
 	try {
@@ -66,6 +69,13 @@ const getAllItems = async (req, res) => {
 
 const getAllActiveItems = async (req, res) => {
 	try {
+        // Extract query parameters for algorithm configuration
+        const { 
+            strategy = 'hybrid',    // Default strategy
+            userId = null,          // User ID for personalization
+            refresh = 'true'       // Force refresh flag
+        } = req.query;
+
         const activeItems = await marketplaceService.findAllActive();
         if (!activeItems) {
             return res.status(400).json({success: false, message: "Error in getting active items"});
@@ -76,11 +86,78 @@ const getAllActiveItems = async (req, res) => {
             return res.status(400).json({success: false, message: "Error in populate author"});
         }
 
-        return res.status(200).json({ success: true, message: "Active items received successfully", count: populatedActiveItems.length, data: populatedActiveItems});
+        // Apply the ordering algorithm
+        let orderedItems;
+        
+        // Check if we should apply new ordering (respect caching)
+        if (refresh === 'true' || feedAlgorithm.shouldReshuffle()) {
+            orderedItems = feedAlgorithm.getOrderedItems(
+                populatedActiveItems, 
+                strategy, 
+                userId
+            );
+        } else {
+            // For frequent requests, add minimal randomness to existing order
+            orderedItems = feedAlgorithm.addRandomness(populatedActiveItems, 0.1);
+        }
+
+        // Log algorithm usage for debugging (remove in production)
+        console.log(`Feed algorithm used: ${strategy}, User: ${userId || 'anonymous'}, Items: ${orderedItems.length}`);
+
+        return res.status(200).json({ 
+            success: true, 
+            message: "Active items received successfully", 
+            count: orderedItems.length, 
+            data: orderedItems,
+            meta: {
+                strategy: strategy,
+                userId: userId,
+                timestamp: new Date().toISOString(),
+                totalItems: orderedItems.length
+            }
+        });
     } catch (error) {
         return res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
 };
+
+// ===== Optional - Add user interaction tracking =====
+const trackUserInteraction = async (req, res) => {
+    try {
+        const { userId, itemId, action } = req.body; // action: 'view', 'like', 'contact'
+        
+        if (!userId || !itemId || !action) {
+            return res.status(400).json({
+                success: false,
+                message: "Missing required fields: userId, itemId, action"
+            });
+        }
+
+        if (action !== 'view' || action !== 'like' || action !== 'contact') {
+            return res.status(400).json({ success: false, message: "Invalid action"});
+        }
+
+        // Get item details (you might need to implement this)
+        const item = await marketplaceService.findById(itemId);
+        if (item) {
+            feedAlgorithm.updateUserPreferences(userId, item, action);
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "User interaction tracked successfully"
+        });
+
+    } catch (error) {
+        console.error('Error tracking user interaction:', error);
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message
+        });
+    }
+};
+
 
 const getAllMyItems = async (req, res) => {
 	try {
@@ -174,4 +251,4 @@ const deleteItem = async (req, res) => {
     }
 };
 
-module.exports = {createItem, getAllItems, getAllMyItems, getAllActiveItems, updateItem, deleteItem}
+module.exports = {createItem, getAllItems, getAllMyItems, getAllActiveItems, trackUserInteraction, updateItem, deleteItem};

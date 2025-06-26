@@ -72,9 +72,7 @@ class FeedAlgorithm {
         return sortedPosts;
     }
 
-    /**
-     * Calculate comprehensive score for a post
-     */
+    // Calculate comprehensive score for a post
     calculatePostScore(post, currentUserId, userFriends, userInteractions = {}) {
         const recencyScore = this.calculateRecencyScore(post);
         const engagementScore = this.calculateEngagementScore(post);
@@ -92,9 +90,7 @@ class FeedAlgorithm {
         return Math.max(0, totalScore);
     }
 
-    /**
-     * Calculate recency score (newer posts get higher scores)
-     */
+    //  Calculate recency score (newer posts get higher scores)
     calculateRecencyScore(post) {
         const now = new Date();
         const postTime = new Date(post.createdAt);
@@ -107,9 +103,7 @@ class FeedAlgorithm {
         return 0.2;
     }
 
-    /**
-     * Calculate engagement score based on likes, comments, shares
-     */
+    // Calculate engagement score based on likes, comments, shares
     calculateEngagementScore(post) {
         const likes = post.likeCount || 0;
         const comments = post.commentCount || 0;
@@ -128,9 +122,7 @@ class FeedAlgorithm {
         return Math.min(engagementScore / 100, 1.0);
     }
 
-    /**
-     * Calculate relationship score (closer friends get higher scores)
-     */
+    // Calculate relationship score (closer friends get higher scores)
     calculateRelationshipScore(post, currentUserId, userFriends) {
         if (post.author === currentUserId) {
             return 1.0; // User's own posts
@@ -143,9 +135,7 @@ class FeedAlgorithm {
         return 0.3; // Public posts from non-friends
     }
 
-    /**
-     * Calculate content type score (media posts vs text)
-     */
+    // Calculate content type score (media posts vs text)
     calculateContentTypeScore(post) {
         if (post.media && post.media.length > 0) {
             if (post.mediaType === 'video') return 0.9;
@@ -154,9 +144,7 @@ class FeedAlgorithm {
         return 0.5; // Text posts
     }
 
-    /**
-     * Calculate score based on user's past interactions
-     */
+    // Calculate score based on user's past interactions
     calculateUserInteractionScore(post, userInteractions) {
         const authorInteractions = userInteractions[post.author] || {};
         const likesGiven = authorInteractions.likes || 0;
@@ -166,9 +154,7 @@ class FeedAlgorithm {
         return Math.min((likesGiven * 0.1 + commentsGiven * 0.2) / 10, 0.5);
     }
 
-    /**
-     * Get count of recent comments within specified hours
-     */
+    // Get count of recent comments within specified hours
     getRecentComments(post, withinHours = 2) {
         if (!post.comments || post.comments.length === 0) return 0;
 
@@ -178,9 +164,7 @@ class FeedAlgorithm {
         ).length;
     }
 
-    /**
-     * Sort posts by engagement and recency combined
-     */
+    // Sort posts by engagement and recency combined
     sortByEngagementAndRecency(posts) {
         return posts.sort((a, b) => {
             // First, prioritize posts with recent activity
@@ -201,16 +185,12 @@ class FeedAlgorithm {
         });
     }
 
-    /**
-     * Sort posts purely by recency
-     */
+    // Sort posts purely by recency
     sortByRecency(posts) {
         return posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
 
-    /**
-     * Apply randomization when user refreshes to show different content
-     */
+    // Apply randomization when user refreshes to show different content
     applyRefreshRandomization(posts) {
         return posts.map(post => ({
             ...post,
@@ -218,9 +198,7 @@ class FeedAlgorithm {
         })).sort((a, b) => b.feedScore - a.feedScore);
     }
 
-    /**
-     * Promote posts with recent comments to the top
-     */
+    // Promote posts with recent comments to the top
     promoteRecentActivity(posts) {
         const now = new Date();
         const oneHourAgo = new Date(now.getTime() - (60 * 60 * 1000));
@@ -238,9 +216,7 @@ class FeedAlgorithm {
         });
     }
 
-    /**
-     * Check if post has recent activity
-     */
+    // Check if post has recent activity
     hasRecentActivity(post, cutoffTime) {
         if (!post.comments || post.comments.length === 0) return false;
 
@@ -249,9 +225,7 @@ class FeedAlgorithm {
         );
     }
 
-    /**
-     * Ensure diversity by limiting consecutive posts from same author
-     */
+    // Ensure diversity by limiting consecutive posts from same author
     ensureDiversity(posts) {
         const result = [];
         const authorPostCount = {};
@@ -277,9 +251,7 @@ class FeedAlgorithm {
         return result;
     }
 
-    /**
-     * Find appropriate position to insert post for diversity
-     */
+    // Find appropriate position to insert post for diversity
     findDiverseInsertPosition(existingPosts, newPost) {
         for (let i = existingPosts.length - 1; i >= 0; i--) {
             if (existingPosts[i].author !== newPost.author) {
@@ -289,16 +261,12 @@ class FeedAlgorithm {
         return existingPosts.length;
     }
 
-    /**
-     * Filter out posts user has already seen (for infinite scroll)
-     */
+    // Filter out posts user has already seen (for infinite scroll)
     filterSeenPosts(posts, seenPostIds) {
         return posts.filter(post => !seenPostIds.includes(post.id));
     }
 
-    /**
-     * Get trending posts (high engagement in short time)
-     */
+    // Get trending posts (high engagement in short time)
     getTrendingPosts(posts, hours = 6) {
         const cutoffTime = new Date(Date.now() - (hours * 60 * 60 * 1000));
         
@@ -311,9 +279,7 @@ class FeedAlgorithm {
             });
     }
 
-    /**
-     * Personalize feed based on user's interaction history
-     */
+    // Personalize feed based on user's interaction history
     personalizeFeed(posts, userInteractionData) {
         // Boost posts from authors user frequently interacts with
         return posts.map(post => {
