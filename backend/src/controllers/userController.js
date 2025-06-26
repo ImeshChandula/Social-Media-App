@@ -261,7 +261,8 @@ const updateUserProfile = async (req, res) => {
                 id: updatedUser.id,
                 username: updatedUser.username,
                 role: updatedUser.role,
-                accountStatus: updatedUser.accountStatus
+                accountStatus: updatedUser.accountStatus,
+                //isPublic: updatedUser.isPublic
             };
 
             generateToken(payload, res);

@@ -37,6 +37,7 @@ const registerUser = async (req, res) => {
             profilePicture: randomAvatar,
             coverPhoto: defaultCover,
             isActive: true,
+            isPublic: true, // Profile visibility
             lastLogin : new Date().toISOString(),
         };
 
@@ -118,7 +119,8 @@ const checkCurrent = async (req, res) => {
         id: existingUser.id,
         username: existingUser.username,
         role: existingUser.role,
-        accountStatus: existingUser.accountStatus
+        accountStatus: existingUser.accountStatus,
+        isPublic: existingUser.isPublic
     };
     
     res.status(200).json(user);

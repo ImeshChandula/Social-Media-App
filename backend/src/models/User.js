@@ -27,6 +27,7 @@ class User {
     this.resetOtpExpiredAt = userData.resetOtpExpiredAt || new Date().toISOString();
 
     this.isActive = userData.isActive || true;
+    this.isPublic = userData.isPublic || true; // Profile visibility
     this.lastLogin = userData.lastLogin || new Date().toISOString();
 
     this.role = userData.role || ROLES.USER;
