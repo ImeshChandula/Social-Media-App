@@ -187,11 +187,11 @@ const updateItem = async (req, res) => {
             return res.status(404).json({ success: false, message: "Item not found"});
         }
 
-        if (item.author !== req.user.id && (req.user.role !== "admin" || req.user.role !== "super_admin")) {
+        if (item.author !== req.user.id && (req.user.role !== "admin" && req.user.role !== "super_admin")) {
             return res.status(403).json({ success: false, message: "Unauthorized: You can not update others items" });
         }
 
-        if (req.body.hasOwnProperty('isAccept') && (req.user.role !== "admin" && req.user.role !== "super_admin")) {
+        if (req.body.isAccept && (req.user.role !== "admin" && req.user.role !== "super_admin")) {
             return res.status(403).json({ success: false, message: "Unauthorized: You can not update isAccept field" });
         }
 
