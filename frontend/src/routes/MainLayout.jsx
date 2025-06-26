@@ -19,6 +19,12 @@ import useAuthStore from "../store/authStore";
 import Contact from "./Contact";
 import NotificationForMobile from "../pages/NotificationForMobile";
 import CreateMarketplaceItem from "../components/CreateMarketplaceItem";
+import StoryViewer from "../components/StoryViewer";
+
+/* inside <Routes> … */
+<Route path="/stories/:storyId" element={<StoryViewer />} />
+
+
 
 const MainLayout = () => {
   const { checkAuth } = useAuthStore();
@@ -62,6 +68,7 @@ const MainLayout = () => {
               <Route path="/contact" element={<Contact />} />
               <Route path="/notifications" element={<NotificationForMobile />} />
               <Route path="/create-marketplace-item" element={<CreateMarketplaceItem />} />
+              <Route path="/stories/:storyId" element={<StoryViewer />} />
             </Routes>
           </div>
         </div>
