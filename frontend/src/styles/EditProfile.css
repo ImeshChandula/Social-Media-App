@@ -338,6 +338,67 @@
   100% { transform: rotate(360deg); }
 }
 
+
+.account-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.account-modal-content {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.account-modal-header h3 {
+  margin: 0 0 16px 0;
+  color: #dc2626;
+}
+
+.account-modal-body {
+  color: black;
+  margin-bottom: 24px;
+}
+
+.account-modal-body p {
+  margin: 8px 0;
+}
+
+.account-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.account-delete-confirm-btn {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.account-delete-confirm-btn:hover:not(:disabled) {
+  background-color: #b91c1c;
+}
+
+.account-delete-confirm-btn:disabled {
+  background-color: #fca5a5;
+  cursor: not-allowed;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .edit-profile-container {

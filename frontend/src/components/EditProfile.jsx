@@ -12,6 +12,8 @@ function EditProfile() {
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
   const [uploadingCoverPhoto, setUploadingCoverPhoto] = useState(false);
   const [jobCategories, setJobCategories] = useState([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const [userData, setUserData] = useState({
     id: '',
@@ -40,6 +42,7 @@ function EditProfile() {
   });
 
   const { authUser, checkAuth, logout } = useAuthStore();
+
   // Fetch user data on component mount
   useEffect(() => {
     const fetchData = async () => {
@@ -212,17 +215,31 @@ function EditProfile() {
     navigate('/reset-password');
   };
 
-  const handleDeleteMyAccount = async () => {
+  const handleDeleteButtonClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
     try {
-      const response = await axiosInstance.delete(`/deleteUser/${authUser.id}`);
+      setDeleting(true);
+      const response = await axiosInstance.delete(`/users/deleteUser/${authUser.id}`);
 
       if (response.data.success) {
         toast.success(response.data.message || "Your account deleted successfully");
+        setShowDeleteModal(false);
         logout();
       }
     } catch (error) {
-      toast.error(error.response.data?.message || 'Server error');
+      toast.error(error.response?.data?.message || 'Server error');
+    } finally {
+      setDeleting(false);
     }
+  };
+
+  // Handle delete cancellation
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
   };
 
   if (loading) {
@@ -236,7 +253,7 @@ function EditProfile() {
 
   
     return (
-        <div className="edit-profile-container">
+    <div className="edit-profile-container">
       <div className="edit-profile-card">
         <div className="profile-header">
           <h1>Edit Profile</h1>
@@ -428,9 +445,9 @@ function EditProfile() {
               <button
                 type="button"
                 className="reset-password-btn"
-                onClick={handleDeleteMyAccount}
+                onClick={handleDeleteButtonClick}
               >
-                Delete My_Account
+                Delete My Account
               </button>
               <button
                 type="submit"
@@ -443,6 +460,40 @@ function EditProfile() {
           </div>
         </form>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="account-modal-overlay">
+          <div className="account-modal-content">
+            <div className="account-modal-header">
+              <h3>Confirm Account Deletion</h3>
+            </div>
+            <div className="account-modal-body">
+              <p>Are you sure you want to delete your account?</p>
+              <p><strong>This action cannot be undone.</strong></p>
+              <p>All your data will be permanently removed.</p>
+            </div>
+            <div className="account-modal-actions">
+              <button
+                type="button"
+                className="account-cancel-btn"
+                onClick={handleDeleteCancel}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="account-delete-confirm-btn"
+                onClick={handleDeleteConfirm}
+                disabled={deleting}
+              >
+                {deleting ? 'Deleting...' : 'Yes, Delete My Account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     )
 }

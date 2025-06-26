@@ -46,7 +46,7 @@ router.get('/getAllUsers', authenticateUser, checkAccountStatus, authorizeRoles(
 //@route   GET api/users/deleteUser/:id
 //@desc    Delete user by ID
 //@access  Private
-router.delete('/deleteUser/:id', authenticateUser, checkAccountStatus, authorizeRoles("super_admin"), userController.deleteUser)
+router.delete('/deleteUser/:id', authenticateUser, checkAccountStatus, userController.deleteUser)
 
 //@route   GET /api/users/search?q=john&limit=10
 //@desc    Search user by username
