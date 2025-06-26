@@ -195,6 +195,10 @@ const updateItem = async (req, res) => {
             return res.status(403).json({ success: false, message: "Unauthorized: You can not update isAccept field" });
         }
 
+        if (req.body.isAvailable && item.author !== req.user.id) {
+            return res.status(403).json({ success: false, message: "Unauthorized: You can not update isAvailable field" });
+        }
+
         let updatedItem = await marketplaceService.updateById(itemId, rest);
         if (!updatedItem) {
             return res.status(400).json({ success: false, message: "Failed to update item data"});
