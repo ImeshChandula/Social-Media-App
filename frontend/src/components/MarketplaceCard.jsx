@@ -1,20 +1,44 @@
 import React, { useState } from "react";
 import MarketplaceItemButton from "./MarketplaceItemButton";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { axiosInstance } from "../lib/axios";
+import toast from "react-hot-toast";
 
 const MarketplaceCard = ({
     item,
-    showAuthor = true,
+    authUser,
+    onStatusChange,
     showCategory = false,
     showAllDetails = false,
     showContactDetails = false,
     showActions = false,
-    showTags = true,
     showEdit = true,
+    showAuthor = true,
+    showTags = true,
     onDelete = () => { },
 }) => {
+    const [isToggling, setIsToggling] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const images = Array.isArray(item.images) ? item.images : [item.images];
+
+    const handleToggle = async (field) => {
+        try {
+            setIsToggling(true);
+            const updatedValue = !item[field];
+            await axiosInstance.patch(`/marketplace/update/${item.id}`, {
+                [field]: updatedValue,
+            });
+
+            toast.success(`${field} updated to ${updatedValue}`);
+            onStatusChange(); // refetch or update UI state
+        } catch (error) {
+            toast.error(`Failed to update ${field}`);
+        } finally {
+            setIsToggling(false);
+        }
+    };
+
+    const isAdmin = authUser?.role === "admin" || authUser?.role === "super_admin";
 
     const handlePrev = () => {
         setCurrentImageIndex((prev) =>
@@ -232,6 +256,32 @@ const MarketplaceCard = ({
                                         </div>
                                     </div>
                                 )}
+                            </div>
+                        </div>
+                    )}
+                    {/* Admin Toggles */}
+                    {isAdmin && (
+                        <div className="mt-3 border-top pt-3">
+                            <h6 className="fw-semibold text-dark mb-2">Admin Controls</h6>
+                            <div className="form-check form-switch">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    checked={item.isAvailable}
+                                    onChange={() => handleToggle("isAvailable")}
+                                    disabled={isToggling}
+                                />
+                                <label className="form-check-label">Available</label>
+                            </div>
+                            <div className="form-check form-switch">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    checked={item.isAccept}
+                                    onChange={() => handleToggle("isAccept")}
+                                    disabled={isToggling}
+                                />
+                                <label className="form-check-label">Accepted</label>
                             </div>
                         </div>
                     )}
