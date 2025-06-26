@@ -300,11 +300,11 @@ const MarketplaceCard = ({
                         </div>
                     )}
 
-                    {isMyProductView && (!item.isAvailable || !item.isAccept) && (
-                        <div className="bg-warning text-dark text-center py-1 fw-bold mt-2">
-                            {!item.isAvailable && "Not Available"}
-                            {!item.isAvailable && !item.isAccept && " | "}
-                            {!item.isAccept && "Not Yet Accepted"}
+                    {isMyProductView && (!localItem.isAvailable || !localItem.isAccept) && (
+                        <div className="bg-warning text-dark text-center rounded py-1 fw-bold mt-2">
+                            {!localItem.isAvailable && "Not Available"}
+                            {!localItem.isAvailable && !localItem.isAccept && " | "}
+                            {!localItem.isAccept && "Not Yet Accepted"}
                         </div>
                     )}
                 </div>
