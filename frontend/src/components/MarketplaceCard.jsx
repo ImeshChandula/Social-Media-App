@@ -15,6 +15,7 @@ const MarketplaceCard = ({
     showEdit = true,
     showAuthor = true,
     showTags = true,
+    isMyProductView = false,
     onDelete = () => { },
 }) => {
     const [isToggling, setIsToggling] = useState(false);
@@ -284,6 +285,14 @@ const MarketplaceCard = ({
                                 />
                                 <label className="form-check-label">Accepted</label>
                             </div>
+                        </div>
+                    )}
+
+                    {isMyProductView && (!item.isAvailable || !item.isAccept) && (
+                        <div className="bg-warning text-dark text-center py-1 fw-bold mt-2">
+                            {!item.isAvailable && "Not Available"}
+                            {!item.isAvailable && !item.isAccept && " | "}
+                            {!item.isAccept && "Not Yet Accepted"}
                         </div>
                     )}
                 </div>
