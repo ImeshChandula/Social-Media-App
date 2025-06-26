@@ -81,7 +81,7 @@ const deleteUser = async (req, res) => {
         const userIdToDelete = req.params.id;
         const currentUserId = req.user.id;
 
-        // Only allow users to update their own profile unless admin
+        // Only allow users to delete their own profile unless admin
         if (req.user.role !== 'super_admin' && currentUserId !== userIdToDelete) {
             return res.status(403).json({ message: 'Not authorized to delete this user' });
         }
@@ -94,10 +94,10 @@ const deleteUser = async (req, res) => {
         // Call the external service to handle the entire deletion process
         await performUserDeletion(userToDelete.id);
         
-        res.status(200).json({ success: true, message: 'User deleted successfully' });
+        return res.status(200).json({ success: true, message: 'User deleted successfully' });
     } catch (err) {
         console.error("Error deleting user:", err);
-        res.status(500).json({ message: "Server error" });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
