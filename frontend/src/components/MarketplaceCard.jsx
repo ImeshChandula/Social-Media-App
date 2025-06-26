@@ -3,6 +3,7 @@ import MarketplaceItemButton from "./MarketplaceItemButton";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
 
 const MarketplaceCard = ({
     item,
@@ -300,13 +301,23 @@ const MarketplaceCard = ({
                         </div>
                     )}
 
-                    {isMyProductView && (!localItem.isAvailable || !localItem.isAccept) && (
-                        <div className="bg-warning text-dark text-center rounded py-1 fw-bold mt-2">
-                            {!localItem.isAvailable && "Not Available"}
-                            {!localItem.isAvailable && !localItem.isAccept && " | "}
-                            {!localItem.isAccept && "Not Yet Accepted"}
-                        </div>
-                    )}
+                    <AnimatePresence>
+                        {isMyProductView && (!localItem.isAvailable || !localItem.isAccept) && (
+                            <motion.div
+                                key="status-banner"
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.3 }}
+                                className="bg-warning text-dark text-center rounded py-1 fw-bold mt-2"
+                            >
+                                {!localItem.isAvailable && "Not Available"}
+                                {!localItem.isAvailable && !localItem.isAccept && " | "}
+                                {!localItem.isAccept && "Not Yet Accepted"}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
                 </div>
 
                 {showActions && (
