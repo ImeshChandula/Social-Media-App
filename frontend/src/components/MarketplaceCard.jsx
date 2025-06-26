@@ -31,7 +31,7 @@ const MarketplaceCard = ({
             });
 
             toast.success(`${field} updated to ${updatedValue}`);
-            onStatusChange();
+            if (onStatusChange) onStatusChange();
         } catch (error) {
             toast.error(`Failed to update ${field}`);
             console.log(`Failed to update ${field}: ${error.response?.data?.message || error.message}`);
@@ -263,29 +263,35 @@ const MarketplaceCard = ({
                     )}
 
                     {/* Admin Toggles */}
-                    {isAdmin && (
+                    {(isAdmin || isMyProductView) && (
                         <div className="mt-3 border-top pt-3">
-                            <h6 className="fw-semibold text-dark mb-2">Admin Controls</h6>
-                            <div className="form-check form-switch">
-                                <input
-                                    className="form-check-input"
-                                    type="checkbox"
-                                    checked={item.isAvailable}
-                                    onChange={() => handleToggle("isAvailable")}
-                                    disabled={isToggling}
-                                />
-                                <label className="form-check-label">Available</label>
-                            </div>
-                            <div className="form-check form-switch">
-                                <input
-                                    className="form-check-input"
-                                    type="checkbox"
-                                    checked={item.isAccept}
-                                    onChange={() => handleToggle("isAccept")}
-                                    disabled={isToggling}
-                                />
-                                <label className="form-check-label">Accepted</label>
-                            </div>
+                            <h6 className="fw-semibold text-dark mb-2">Controls</h6>
+
+                            {isMyProductView && (
+                                <div className="form-check form-switch">
+                                    <input
+                                        className="form-check-input"
+                                        type="checkbox"
+                                        checked={item.isAvailable}
+                                        onChange={() => handleToggle("isAvailable")}
+                                        disabled={isToggling}
+                                    />
+                                    <label className="form-check-label">Available</label>
+                                </div>
+                            )}
+
+                            {isAdmin && (
+                                <div className="form-check form-switch">
+                                    <input
+                                        className="form-check-input"
+                                        type="checkbox"
+                                        checked={item.isAccept}
+                                        onChange={() => handleToggle("isAccept")}
+                                        disabled={isToggling}
+                                    />
+                                    <label className="form-check-label">Accepted</label>
+                                </div>
+                            )}
                         </div>
                     )}
 
