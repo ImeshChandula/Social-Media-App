@@ -39,7 +39,7 @@ function EditProfile() {
     jobCategory: ''
   });
 
-  const { checkAuth } = useAuthStore();
+  const { authUser, checkAuth, logout } = useAuthStore();
   // Fetch user data on component mount
   useEffect(() => {
     const fetchData = async () => {
@@ -210,6 +210,19 @@ function EditProfile() {
 
   const handleResetPassword = () => {
     navigate('/reset-password');
+  };
+
+  const handleDeleteMyAccount = async () => {
+    try {
+      const response = await axiosInstance.delete(`/deleteUser/${authUser.id}`);
+
+      if (response.data.success) {
+        toast.success(response.data.message || "Your account deleted successfully");
+        logout();
+      }
+    } catch (error) {
+      toast.error(error.response.data?.message || 'Server error');
+    }
   };
 
   if (loading) {
@@ -411,6 +424,13 @@ function EditProfile() {
                 onClick={() => navigate(-1)}
               >
                 Cancel
+              </button>
+              <button
+                type="button"
+                className="reset-password-btn"
+                onClick={handleDeleteMyAccount}
+              >
+                Delete My_Account
               </button>
               <button
                 type="submit"
