@@ -61,20 +61,29 @@ const MarketplaceCard = ({
     };
 
     return (
-        <div className="col-lg-4 col-md-6 col-sm-12 mb-4">
-            <div className={`marketplace-card card shadow-sm h-100 ${["expired", "removed"].includes(item.status) ? "border-danger border-2" : ""}`}>
+        <motion.div
+            className="col-lg-4 col-md-6 col-sm-12 mb-4"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+        >
+            <motion.div className={`marketplace-card card shadow-sm h-100 ${["expired", "removed"].includes(item.status) ? "border-danger border-2" : ""}`}>
                 {(showAuthor && item.author) || showActions ? (
                     <div className="card-header d-flex justify-content-between align-items-center bg-light">
                         <div className="d-flex align-items-center">
                             {item.author && showAuthor && (
                                 <>
-                                    <img
+                                    <motion.img
                                         src={item.author.profilePicture}
                                         alt={item.author.username}
                                         className="rounded-circle me-2"
                                         width="40"
                                         height="40"
                                         style={{ objectFit: "cover" }}
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{ duration: 0.3 }}
                                     />
                                     <div>
                                         <div className="text-dark fw-semibold"> {item.author.username} </div>
@@ -112,9 +121,13 @@ const MarketplaceCard = ({
                 {images.length > 0 && (
                     <div>
                         {["expired", "removed"].includes(item.status) && (
-                            <div className="bg-danger text-white text-center py-1 fw-bold">
+                            <motion.div
+                                className="bg-danger text-white text-center py-1 fw-bold"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                            >
                                 {item.status.toUpperCase()}
-                            </div>
+                            </motion.div>
                         )}
                         <div className="position-relative">
                             <img
@@ -142,7 +155,7 @@ const MarketplaceCard = ({
                                 </>
                             )}
                             {item.isNegotiable && (
-                                <span
+                                <motion.span
                                     className="position-absolute"
                                     style={{
                                         bottom: "12px",
@@ -159,16 +172,25 @@ const MarketplaceCard = ({
                                         letterSpacing: "0.05em",
                                         textTransform: "uppercase",
                                     }}
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ duration: 0.3 }}
                                 >
                                     Negotiable
-                                </span>
+                                </motion.span>
                             )}
                         </div>
                     </div>
                 )}
 
                 <div className="card-body d-flex flex-column">
-                    <h5 className="card-title fw-semibold">{item.title}</h5>
+                    <motion.h5
+                        className="card-title fw-semibold"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                    >
+                        {item.title}
+                    </motion.h5>
 
                     {showCategory && (
                         <h6 className="card-subtitle mb-2 text-muted">{item.category}</h6>
@@ -329,8 +351,8 @@ const MarketplaceCard = ({
                         />
                     </div>
                 )}
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 };
 
