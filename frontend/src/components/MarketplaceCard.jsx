@@ -323,22 +323,24 @@ const MarketplaceCard = ({
                         </div>
                     )}
 
-                    <AnimatePresence>
-                        {isMyProductView && (!localItem.isAvailable || !localItem.isAccept) && (
-                            <motion.div
-                                key="status-banner"
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.3 }}
-                                className="bg-warning text-dark text-center rounded py-1 fw-bold mt-2"
-                            >
-                                {!localItem.isAvailable && "Not Available"}
-                                {!localItem.isAvailable && !localItem.isAccept && " | "}
-                                {!localItem.isAccept && "Not Yet Accepted"}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                    <motion.div layout className="position-relative">
+                        <AnimatePresence mode="wait">
+                            {isMyProductView && (!localItem.isAvailable || !localItem.isAccept) && (
+                                <motion.div
+                                    key="status-banner"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="bg-warning text-dark text-center rounded py-1 fw-bold mt-2"
+                                >
+                                    {!localItem.isAvailable && "Not Available"}
+                                    {!localItem.isAvailable && !localItem.isAccept && " | "}
+                                    {!localItem.isAccept && "Not Yet Accepted"}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </motion.div>
 
                 </div>
 
