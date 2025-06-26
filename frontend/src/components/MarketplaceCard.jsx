@@ -21,24 +21,29 @@ const MarketplaceCard = ({
     const [isToggling, setIsToggling] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const images = Array.isArray(item.images) ? item.images : [item.images];
+    const [localItem, setLocalItem] = useState(item);
 
     const handleToggle = async (field) => {
         try {
             setIsToggling(true);
-            const updatedValue = !item[field];
-            await axiosInstance.patch(`/marketplace/update/${item.id}`, {
+            const updatedValue = !localItem[field];
+            await axiosInstance.patch(`/marketplace/update/${localItem.id}`, {
                 [field]: updatedValue,
             });
+
+            // Update local state
+            setLocalItem((prev) => ({ ...prev, [field]: updatedValue }));
 
             toast.success(`${field} updated to ${updatedValue}`);
             if (onStatusChange) onStatusChange();
         } catch (error) {
             toast.error(`Failed to update ${field}`);
-            console.log(`Failed to update ${field}: ${error.response?.data?.message || error.message}`);
+            console.error(`Failed to update ${field}:`, error.response?.data?.message || error.message);
         } finally {
             setIsToggling(false);
         }
     };
+
 
     const isAdmin = authUser?.role === "admin" || authUser?.role === "super_admin";
 
@@ -272,7 +277,7 @@ const MarketplaceCard = ({
                                     <input
                                         className="form-check-input"
                                         type="checkbox"
-                                        checked={item.isAvailable}
+                                        checked={localItem.isAvailable}
                                         onChange={() => handleToggle("isAvailable")}
                                         disabled={isToggling}
                                     />
@@ -285,7 +290,7 @@ const MarketplaceCard = ({
                                     <input
                                         className="form-check-input"
                                         type="checkbox"
-                                        checked={item.isAccept}
+                                        checked={localItem.isAccept}
                                         onChange={() => handleToggle("isAccept")}
                                         disabled={isToggling}
                                     />
