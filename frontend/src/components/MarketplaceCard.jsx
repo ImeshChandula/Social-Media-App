@@ -31,9 +31,10 @@ const MarketplaceCard = ({
             });
 
             toast.success(`${field} updated to ${updatedValue}`);
-            onStatusChange(); // refetch or update UI state
+            onStatusChange();
         } catch (error) {
             toast.error(`Failed to update ${field}`);
+            console.log(`Failed to update ${field}: ${error.response?.data?.message || error.message}`);
         } finally {
             setIsToggling(false);
         }
