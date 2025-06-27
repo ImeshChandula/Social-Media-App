@@ -6,9 +6,11 @@ import PostDropdown from "./PostDropdown";
 import PostLikeButton from "./PostLikeButton";
 import PostComment from "./PostComment";
 import { axiosInstance } from "../lib/axios";
+import useAuthStore from "../store/authStore";
 
 const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost, disableNavigation = false }) => {
   const navigate = useNavigate();
+  const { authUser } = useAuthStore();
   const postId = post._id || post.id;
 
   const mediaArray = Array.isArray(post.media)
@@ -24,8 +26,16 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost, disabl
 
   const handleNavigateToProfile = () => {
     if (disableNavigation) return;
-    if (post.author?.id) {
-      navigate(`/profile/${post.author.id}`);
+
+    const authorId = post.author?.id || post.author?._id;
+    const currentUserId = authUser?._id || authUser?.id;
+
+    if (!authorId) return;
+
+    if (authorId === currentUserId) {
+      navigate("/profile");
+    } else {
+      navigate(`/profile/${authorId}`);
     }
   };
 
