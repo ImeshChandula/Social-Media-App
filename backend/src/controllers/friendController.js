@@ -198,6 +198,40 @@ const cancelFriendRequest = async (req, res) => {
 };
 
 
+// @desc    check friend status
+const checkOtherUserFriendStatus = async (req, res) => {
+	try {
+    const otherUserId = req.params.id;
+
+    if (req.user.id === otherUserId) {
+      return res.status(400).json({ success: false, message: "ID is not an other user ID"});
+    }
+
+    const result = await FriendService.getOtherUserFriendStatus(otherUserId, req.user.id);
+    if (!result) {
+      return res.status(400).json({ success: false, message: "Error getting other users friend status"});
+    }
+
+    const otherUser = await UserService.findById(otherUserId);
+
+    const resultData = { 
+      otherUserId: otherUser.id,
+      otherUserName: `${otherUser.firstName} ${otherUser.lastName}`,
+      friendStatus: result 
+    };
+
+    return res.status(200).json({ 
+      success: true, 
+      message: "getting other users friend status successful", 
+      data: resultData
+    });
+  } catch (error) {
+    console.log("Error: " + error.message);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
 
 module.exports = {
   sendFriendRequest,
@@ -207,5 +241,6 @@ module.exports = {
   removeFriend,
   getFriendsList,
   getAllSuggestFriends,
-  cancelFriendRequest
+  cancelFriendRequest,
+  checkOtherUserFriendStatus
 };
