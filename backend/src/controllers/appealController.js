@@ -158,7 +158,17 @@ const updateAppeal = async (req, res) => {
             updatedUser.username= existingUser.username;
             updatedUser.email= existingUser.email;
             updatedUser.accountStatus= existingUser.accountStatus;
+        } else {
+            const existingUser = await UserService.updateById(user.id, {accountStatus: "banned"});
+            if (!existingUser) {
+                return res.status(400).json({ success: false, message: "Updating user's account status failed"});
+            }
             
+            isUpdatedUserAccount = false;
+            updatedUser.id = existingUser.id;
+            updatedUser.username= existingUser.username;
+            updatedUser.email= existingUser.email;
+            updatedUser.accountStatus= existingUser.accountStatus;
         }
 
         // send email to user

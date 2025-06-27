@@ -9,7 +9,11 @@ const mailService = new MailService();
 const sendMail = async (req, res) => {
     try {
         const { name, email, subject, message } = req.body;
-        const user = await UserService.findById(req.user.id);
+
+        const user = await UserService.findByEmail(email);
+        if (!user) {
+            return res.status(400).json({ success: false, message: "You want to register first"});
+        }
 
         if (req.body.email !== user.email) {
             return res.status(400).json({ success: false, message: "Your email is mismatch to your registered email"});

@@ -1,8 +1,13 @@
 import React from 'react'
+import RequestHead from '../components/RequestHead'
+//import RequestProblem from '../components/RequestProblem'
 
 const Request = () => {
   return (
-    <div>Request</div>
+    <div>
+      <RequestHead />
+      {/*<RequestProblem />*/}
+    </div>
   )
 }
 

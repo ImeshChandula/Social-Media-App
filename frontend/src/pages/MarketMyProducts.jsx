@@ -68,6 +68,7 @@ const MarketMyProducts = () => {
                             showActions={true}
                             showEdit={true}
                             isMyProductView={true}
+                            isUser = {true}
                             onDelete={handleDelete}
                         />
                     ))

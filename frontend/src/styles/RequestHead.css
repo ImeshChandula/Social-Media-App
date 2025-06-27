@@ -1,0 +1,276 @@
+
+.req-contact-body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    /*background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);*/
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.req-contact-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    padding: 40px 30px;
+    max-width: 500px;
+    width: 100%;
+    animation: req-fadeInUp 0.6s ease-out;
+}
+
+@keyframes req-fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+.req-contact-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.req-contact-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #1877f2;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.req-contact-subtitle {
+    color: #65676b;
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+
+.req-contact-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 15px;
+    border-left: 4px solid #1877f2;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: req-slideIn 0.8s ease-out both;
+}
+
+.req-contact-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(24, 119, 242, 0.15);
+}
+
+/* Section Animation Delays */
+.req-contact-section:nth-child(2) { animation-delay: 0.1s; }
+.req-contact-section:nth-child(3) { animation-delay: 0.2s; }
+.req-contact-section:nth-child(4) { animation-delay: 0.3s; }
+
+@keyframes req-slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+
+.req-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1c1e21;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.req-section-icon {
+    width: 20px;
+    height: 20px;
+    background: #1877f2;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+}
+
+
+.req-contact-info {
+    color: #65676b;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.req-address-line {
+    margin-bottom: 4px;
+}
+
+.req-contact-link {
+    color: #1877f2;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.req-contact-link:hover {
+    color: #166fe5;
+    text-decoration: underline;
+}
+
+
+.req-support-hours {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.req-hours-item {
+    background: rgba(24, 119, 242, 0.1);
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid rgba(24, 119, 242, 0.2);
+}
+
+.req-hours-label {
+    font-weight: 600;
+    color: #1877f2;
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+}
+
+.req-hours-time {
+    color: #65676b;
+    font-size: 0.9rem;
+}
+
+
+.req-contact-footer {
+    text-align: center;
+    padding-top: 25px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    margin-top: 30px;
+}
+
+.req-footer-text {
+    color: #8a8d91;
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+
+@media (max-width: 768px) {
+    body {
+        padding: 15px;
+    }
+
+    .req-contact-container {
+        padding: 30px 20px;
+        border-radius: 15px;
+    }
+
+    .req-contact-title {
+        font-size: 1.8rem;
+    }
+
+    .req-contact-section {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .req-section-title {
+        font-size: 1rem;
+    }
+
+    .req-contact-info {
+        font-size: 0.9rem;
+    }
+
+    .req-support-hours {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .req-hours-item {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .req-contact-container {
+        padding: 25px 15px;
+    }
+
+    .req-contact-title {
+        font-size: 1.6rem;
+    }
+
+    .req-contact-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .req-section-title {
+        font-size: 0.95rem;
+    }
+
+    .req-contact-info {
+        font-size: 0.85rem;
+    }
+
+    .req-section-icon {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+    }
+}
+
+
+/* Animation */
+.req-contact-container {
+    animation: req-fadeInUp 0.6s ease-out;
+}
+
+@keyframes req-fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.req-contact-section {
+    animation: req-slideIn 0.8s ease-out;
+    animation-fill-mode: both;
+}
+
+.req-contact-section:nth-child(2) { animation-delay: 0.1s; }
+.req-contact-section:nth-child(3) { animation-delay: 0.2s; }
+.req-contact-section:nth-child(4) { animation-delay: 0.3s; }
+
+@keyframes req-slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
