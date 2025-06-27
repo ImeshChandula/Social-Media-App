@@ -75,7 +75,11 @@ const TicketsContent = () => {
   const fetchAppeals = async () => {
     try {
       const res = await axiosInstance.get('appeal/getAll');
-      setAppeals(res.data.data || []);
+      const normalised = (res.data.data || []).map(a => ({
+     ...a,
+     id: a.id ?? a._id,          // ensures every row has .id
+   }));
+   setAppeals(normalised);
     } catch (err) {
       console.error("Error fetching appeals:", err);
       alert(err.response?.data?.message || 'Failed to fetch appeals');
