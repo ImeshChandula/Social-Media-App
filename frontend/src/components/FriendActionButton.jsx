@@ -146,7 +146,7 @@ const FriendActionButton = ({ userId }) => {
                     {loading ? "Accepting..." : "Accept"}
                 </motion.button>
                 <motion.button
-                    className="btn btn-outline-danger"
+                    className="btn btn-danger"
                     onClick={handleRejectRequest}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
