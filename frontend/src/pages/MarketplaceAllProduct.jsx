@@ -47,6 +47,7 @@ const MarketplaceAllProduct = () => {
                         showAllDetails={true}
                         showContactDetails={true}
                         showActions={true}
+                        isMyProductView={true}
                         showEdit={false}
                     />
                 ))}

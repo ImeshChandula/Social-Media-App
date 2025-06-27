@@ -17,6 +17,7 @@ const MarketplaceCard = ({
     showAuthor = true,
     showTags = true,
     isMyProductView = false,
+    isUser = false,
     onDelete = () => { },
 }) => {
     const [isToggling, setIsToggling] = useState(false);
@@ -291,11 +292,11 @@ const MarketplaceCard = ({
                     )}
 
                     {/* Admin Toggles */}
-                    {(isAdmin || isMyProductView) && (
+                    {(isAdmin || isUser) && (
                         <div className="mt-3 border-top pt-3">
                             <h6 className="fw-semibold text-dark mb-2">Controls</h6>
 
-                            {isMyProductView && (
+                            {isUser && (
                                 <div className="form-check form-switch">
                                     <input
                                         className="form-check-input"
