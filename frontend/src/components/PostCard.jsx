@@ -104,8 +104,11 @@ const PostCard = ({ post, isUserPost = false, onLikeUpdate, onDeletePost, disabl
           />
           <div className="flex-grow-1 text-start">
             <h6 className="mb-0 fw-bold text-black">
-              {`${post.author?.firstName || ""} ${post.author?.lastName || ""}`}
+              {(post.author?.firstName && post.author?.lastName)
+                ? `${post.author.firstName} ${post.author.lastName}`
+                : post.author?.username || "Unknown User"}
             </h6>
+
             <small className="text-dark">
               {post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}
             </small>
