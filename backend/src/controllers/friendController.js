@@ -203,16 +203,19 @@ const checkOtherUserFriendStatus = async (req, res) => {
 	try {
     const otherUserId = req.params.id;
 
-    if (req.user.id === otherUserId) {
-      return res.status(400).json({ success: false, message: "ID is not an other user ID"});
-    }
-
-    const result = await FriendService.getOtherUserFriendStatus(otherUserId, req.user.id);
-    if (!result) {
-      return res.status(400).json({ success: false, message: "Error getting other users friend status"});
+    if (otherUserId === req.user.id) {
+      return res.status(400).json({ success: false, message: "Other user ID Invalid"});
     }
 
     const otherUser = await UserService.findById(otherUserId);
+    if (!otherUser) {
+      return res.status(404).json({ success: false, message: "User not found"});
+    }
+
+    const result = await FriendService.getOtherUserFriendStatus(otherUser.id, req.user.id);
+    if (!result) {
+      return res.status(400).json({ success: false, message: "Error getting other users friend status"});
+    }
 
     const resultData = { 
       otherUserId: otherUser.id,
