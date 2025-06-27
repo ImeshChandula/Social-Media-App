@@ -4,6 +4,19 @@ import toast from 'react-hot-toast';
 import '../styles/ContactContent.css';
 
 const ContactContent = () => {
+    const ADDRESS = {
+      street: import.meta.env.VITE_APP_ADDRESS_STREET,
+      city: import.meta.env.VITE_APP_ADDRESS_CITY,
+      state: import.meta.env.VITE_APP_ADDRESS_STATE,
+      zip: import.meta.env.VITE_APP_ADDRESS_ZIP,
+    };
+
+    const PHONE = import.meta.env.VITE_APP_PHONE;
+    const EMAIL = import.meta.env.VITE_APP_EMAIL;
+    const ACTIVE_WEEK = import.meta.env.VITE_APP_SUPPORT_WEEK;
+    const ACTIVE_WEEKEND = import.meta.env.VITE_APP_SUPPORT_WEEKEND;
+
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -71,7 +84,7 @@ const ContactContent = () => {
                 </div>
                 <div className="info-content">
                   <h3>Address</h3>
-                  <p>123 Social Street<br />Tech City, TC 12345</p>
+                  <p>{ADDRESS.street}<br />{ADDRESS.city}, {ADDRESS.state} {ADDRESS.zip}</p>
                 </div>
               </div>
 
@@ -83,7 +96,7 @@ const ContactContent = () => {
                 </div>
                 <div className="info-content">
                   <h3>Phone</h3>
-                  <p>+1 (555) 123-4567</p>
+                  <p>{PHONE}</p>
                 </div>
               </div>
 
@@ -95,7 +108,7 @@ const ContactContent = () => {
                 </div>
                 <div className="info-content">
                   <h3>Email</h3>
-                  <p>support@fbclone.com</p>
+                  <p>{EMAIL}</p>
                 </div>
               </div>
 
@@ -107,7 +120,7 @@ const ContactContent = () => {
                 </div>
                 <div className="info-content">
                   <h3>Support Hours</h3>
-                  <p>Mon - Fri: 9AM - 6PM<br />Weekend: 10AM - 4PM</p>
+                  <p>{ACTIVE_WEEK}<br />{ACTIVE_WEEKEND}</p>
                 </div>
               </div>
             </div>
