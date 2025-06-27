@@ -47,5 +47,11 @@ router.get('/allSuggestFriends', authenticateUser, friendController.getAllSugges
 // @access  Private
 router.delete('/removeFriend/:id', authenticateUser, checkAccountStatus, friendController.removeFriend);
 
+// @desc    check friend status
+// @route   GET /api/friends/friend-status/:id
+// @access  Private
+router.get('/friend-status/:id', authenticateUser, friendController.checkOtherUserFriendStatus);
+
+
 
 module.exports = router;

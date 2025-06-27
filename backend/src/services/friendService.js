@@ -368,6 +368,48 @@ const FriendService = {
         }
     },
 
+
+    // check other users friend status
+    async getOtherUserFriendStatus(otherUserId, currentUserId) {
+        try {
+            const currentUserDoc = await userCollection.doc(currentUserId).get();
+            const otherUserDoc = await userCollection.doc(otherUserId).get();
+            
+            if (!currentUserDoc.exists || !otherUserDoc.exists) {
+                return {
+                    success: false,
+                    message: 'Current user not found'
+                };
+            }
+
+            const currentUser = currentUserDoc.data();
+            const otherUser = otherUserDoc.data();
+
+            // check if user already friends
+            if (currentUser.friends && currentUser.friends.includes(otherUserId)) {
+                return "friend";
+            }
+            
+            // check if user already send friend request
+            if (otherUser.friendRequests && otherUser.friendRequests.includes(currentUserId)) {
+                return "pending";
+            }
+
+            // check if user already has friend request from other user
+            if (currentUser.friendRequests && currentUser.friendRequests.includes(otherUserId)) {
+                return "requested";
+            }
+
+            return "none";
+        } catch (error) {
+            console.error('Error getting other users friend status:', error);
+            return {
+                success: false,
+                message: 'Internal server error'
+            };
+        }
+    },
+
     
     // Cancel a Friend Request
     async cancelFriendRequest(senderId, recipientId) {
