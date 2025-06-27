@@ -119,6 +119,7 @@ const Stories = ({ post, isUserPost = false, onDelete, onStoriesUpdate, isPrevie
               height: '160px',
               background: 'linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584)',
               overflow: 'hidden',
+              //width: '200px'
             }}
           >
             <p className="text-white mb-0" style={{ fontSize: '0.9rem', fontWeight: '500' }}>
