@@ -22,9 +22,11 @@ const Feed = () => {
         fetchFeed();
     }, []);
 
-    const fetchFeed = async () => {
+    const fetchFeed = async (refresh = false, pageNumber = 1, scrollToFirstNew = false) => {
         try {
-            setLoading(true);
+            if (!refresh && pageNumber > 1) setLoadingMore(true);
+            else setLoading(true);
+
             setError(null);
 
             const res = await axiosInstance.get("/feed/", {
@@ -37,11 +39,21 @@ const Feed = () => {
                 }
             });
 
-
             if (res.data.success) {
-                setPosts(res.data.posts || []);
+                const newPosts = res.data.posts || [];
 
-                // Set pagination info if available
+                setPosts(prev =>
+                    pageNumber === 1 ? newPosts : [...prev, ...newPosts]
+                );
+
+                // Scroll into view of first new post
+                if (scrollToFirstNew && newPosts.length) {
+                    setTimeout(() => {
+                        const postElement = document.getElementById(`post-${newPosts[0]._id || newPosts[0].id}`);
+                        if (postElement) postElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100); // allow DOM to render
+                }
+
                 if (res.data.pagination) {
                     setPagination({
                         page: res.data.pagination.page,
@@ -61,6 +73,7 @@ const Feed = () => {
             console.error('Feed fetch error:', err);
         } finally {
             setLoading(false);
+            setLoadingMore(false);
         }
     };
 
@@ -149,7 +162,7 @@ const Feed = () => {
 
             {/* Refresh Button */}
             <div className="text-center mb-3">
-                <button 
+                <button
                     className="btn btn-outline-secondary btn-sm"
                     onClick={refreshFeed}
                     disabled={refreshing || loading}
@@ -160,18 +173,19 @@ const Feed = () => {
 
             {/* Posts */}
             {posts.map((post, index) => (
-                <PostCard
-                    key={post._id || post.id || index}
-                    post={post}
-                    isUserPost={post.isUserPost}
-                    onLikeUpdate={updatePostLike}
-                />
+                <div key={post._id || post.id || index} id={`post-${post._id || post.id}`}>
+                    <PostCard
+                        post={post}
+                        isUserPost={post.isUserPost}
+                        onLikeUpdate={updatePostLike}
+                    />
+                </div>
             ))}
-            
+
             {/* Load More Button */}
             {pagination.hasMore && feedType !== 'trending' && (
                 <div className="text-center my-4">
-                    <button 
+                    <button
                         className="btn btn-primary"
                         onClick={loadMorePosts}
                         disabled={loadingMore}
