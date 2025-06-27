@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import Stories from "./Stories";
@@ -22,26 +23,40 @@ const Feedstories = ({ type = "all" }) => {
 
         let processedStories = [];
         if (type === "me") {
-          // Ensure stories is an array
+          // Handle "me" endpoint response
           const userStories = Array.isArray(res.data.stories) ? res.data.stories : [];
           processedStories = userStories.map(story => ({
             ...story,
-            user: story.user || { id: story.userId || 'unknown', username: 'Unknown User', profilePicture: 'https://via.placeholder.com/40' }
+            _id: story._id || story.id, // Normalize ID field
+            user: story.user || {
+              id: story.userId || 'unknown',
+              username: story.user?.username || 'Unknown User',
+              profilePicture: story.user?.profilePicture || 'https://via.placeholder.com/40',
+              firstName: story.user?.firstName || '',
+              lastName: story.user?.lastName || ''
+            }
           }));
           console.log('Processed user stories:', processedStories);
         } else {
-          // Ensure stories is an array of groups
+          // Handle "feed" endpoint response
           const feedStories = Array.isArray(res.data.stories) ? res.data.stories : [];
           processedStories = feedStories.flatMap(group => {
             const groupStories = Array.isArray(group.stories) ? group.stories : [];
             return groupStories.map(story => ({
               ...story,
-              user: group.user || { id: story.userId || 'unknown', username: 'Unknown User', profilePicture: 'https://via.placeholder.com/40' }
+              _id: story._id || story.id, // Normalize ID field
+              user: group.user || {
+                id: story.userId || 'unknown',
+                username: group.user?.username || 'Unknown User',
+                profilePicture: group.user?.profilePicture || 'https://via.placeholder.com/40',
+                firstName: group.user?.firstName || '',
+                lastName: group.user?.lastName || ''
+              }
             }));
           });
 
           // Filter for friends' and public stories
-          processedStories = processedStories.filter(story => 
+          processedStories = processedStories.filter(story =>
             story.privacy === 'friends' || story.privacy === 'public'
           );
 
@@ -56,7 +71,7 @@ const Feedstories = ({ type = "all" }) => {
         // Mark stories as viewed for feed (not for "me")
         if (type !== "me" && processedStories.length > 0) {
           await Promise.all(
-            processedStories.map(story => 
+            processedStories.map(story =>
               story._id ? markStoryAsViewed(story._id) : Promise.resolve()
             )
           );
@@ -97,16 +112,14 @@ const Feedstories = ({ type = "all" }) => {
   const handleUpdate = (updatedStory) => {
     console.log(`Updating story ${updatedStory._id}`);
     setStories(prev =>
-      prev.map(story => 
+      prev.map(story =>
         story._id === updatedStory._id ? { ...story, ...updatedStory } : story
       )
     );
   };
 
-  // Debug state
   console.log('Current state:', { loading, error, stories });
 
-  // Always render something to avoid blank page
   return (
     <div className="container my-4">
       {loading && (
@@ -136,20 +149,20 @@ const Feedstories = ({ type = "all" }) => {
       {!loading && !error && stories.length > 0 && (
         <>
           <h2 className="text-white mb-3 fs-4">{type === "me" ? "Your Stories" : "Stories"}</h2>
-          <div 
-            className="d-flex overflow-x-auto pb-3" 
-            style={{ 
-              scrollSnapType: 'x mandatory', 
+          <div
+            className="d-flex overflow-x-auto pb-3"
+            style={{
+              scrollSnapType: 'x mandatory',
               WebkitOverflowScrolling: 'touch',
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
-              minHeight: '160px' // Ensure container has height
+              minHeight: '160px'
             }}
           >
             {stories.map(story => (
-              <div 
-                key={story._id || `story-${Math.random()}`} // Fallback key
-                className="flex-shrink-0 mx-2" 
+              <div
+                key={story._id || `story-${Math.random()}`}
+                className="flex-shrink-0 mx-2"
                 style={{ width: '120px', scrollSnapAlign: 'start' }}
               >
                 <Stories
@@ -163,13 +176,6 @@ const Feedstories = ({ type = "all" }) => {
             ))}
           </div>
         </>
-      )}
-
-      {/* Fallback for debugging */}
-      {!loading && !error && stories.length === 0 && !type && (
-        <div className="text-center my-3">
-          <p className="text-white fs-5">No content to display. Check console for details.</p>
-        </div>
       )}
 
       <style jsx>{`
