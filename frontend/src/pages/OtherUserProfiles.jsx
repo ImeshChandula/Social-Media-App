@@ -12,8 +12,6 @@ const OtherUserProfiles = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isFriend, setIsFriend] = useState(null);
-  const [friendRequestSent, setFriendRequestSent] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -23,8 +21,6 @@ const OtherUserProfiles = () => {
         const res = await axiosInstance.get(`/users/getUserById/${id}`);
         const fetchedUser = res.data.user || res.data;
         setUser(fetchedUser);
-        setIsFriend(!!fetchedUser.isFriend);
-        setFriendRequestSent(!!fetchedUser.friendRequestSent);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to load user profile");
       } finally {
@@ -96,15 +92,7 @@ const OtherUserProfiles = () => {
         <p className="text-white-50">@{user.username}</p>
 
         <div className="d-flex justify-content-center">
-          <FriendActionButton
-            userId={id}
-            isFriend={isFriend}
-            friendRequestSent={friendRequestSent}
-            onStatusChange={({ isFriend, friendRequestSent }) => {
-              if (isFriend !== undefined) setIsFriend(isFriend);
-              if (friendRequestSent !== undefined) setFriendRequestSent(friendRequestSent);
-            }}
-          />
+          <FriendActionButton userId={id} />
         </div>
 
       </motion.div>

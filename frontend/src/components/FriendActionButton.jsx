@@ -1,10 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 
-const FriendActionButton = ({ userId, isFriend, friendRequestSent, onStatusChange }) => {
+const FriendActionButton = ({ userId }) => {
     const [loading, setLoading] = useState(false);
+    const [statusLoading, setStatusLoading] = useState(true);
+    const [isFriend, setIsFriend] = useState(null);
+    const [friendRequestSent, setFriendRequestSent] = useState(null);
+
+    useEffect(() => {
+        const fetchStatus = async () => {
+            try {
+                const res = await axiosInstance.get(`/friends/friend-status/${userId}`);
+                if (res.data.success) {
+                    const status = res.data.data.friendStatus;
+                    setIsFriend(status === "friend");
+                    setFriendRequestSent(status === "pending");
+                }
+            } catch (err) {
+                toast.error("Failed to get friend status");
+            } finally {
+                setStatusLoading(false);
+            }
+        };
+        fetchStatus();
+    }, [userId]);
 
     const handleSendRequest = async () => {
         setLoading(true);
@@ -12,7 +33,8 @@ const FriendActionButton = ({ userId, isFriend, friendRequestSent, onStatusChang
             const res = await axiosInstance.post(`/friends/friend-request/send/${userId}`);
             if (res.data.success) {
                 toast.success("Friend request sent");
-                onStatusChange({ isFriend: false, friendRequestSent: true });
+                setIsFriend(false);
+                setFriendRequestSent(true);
             }
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to send friend request");
@@ -27,7 +49,7 @@ const FriendActionButton = ({ userId, isFriend, friendRequestSent, onStatusChang
             const res = await axiosInstance.delete(`/friends/friend-request/cancel/${userId}`);
             if (res.data.success) {
                 toast.success("Friend request cancelled");
-                onStatusChange({ friendRequestSent: false });
+                setFriendRequestSent(false);
             }
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to cancel friend request");
@@ -42,7 +64,7 @@ const FriendActionButton = ({ userId, isFriend, friendRequestSent, onStatusChang
             const res = await axiosInstance.delete(`/friends/removeFriend/${userId}`);
             if (res.data.success) {
                 toast.success("Friend removed");
-                onStatusChange({ isFriend: false });
+                setIsFriend(false);
             }
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to remove friend");
@@ -51,7 +73,7 @@ const FriendActionButton = ({ userId, isFriend, friendRequestSent, onStatusChang
         }
     };
 
-    if (isFriend === null || friendRequestSent === null) {
+    if (statusLoading || isFriend === null || friendRequestSent === null) {
         return <button className="btn btn-secondary" disabled>Checking status...</button>;
     }
 
