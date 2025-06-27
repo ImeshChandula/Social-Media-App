@@ -30,7 +30,7 @@ const formatDate = (isoString) => {
 
 const TicketsContent = () => {
   const [appeals, setAppeals] = useState([]);
-  const [editingAppeal, setEditingAppeal] = useState(null);
+  const [appeal, setAppeal] = useState(null); // Fixed variable name
   const [creating, setCreating] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
@@ -57,11 +57,12 @@ const TicketsContent = () => {
       setAppeals(res.data.data || []);
     } catch (err) {
       console.error("Error fetching appeals", err);
+      alert('Failed to fetch appeals');
     }
   };
 
   const openEditModal = (appeal) => {
-    setEditingAppeal(appeal);
+    setAppeal(appeal); // Fixed variable name
     setFormData({
       status: appeal.status || '',
       priority: appeal.priority || '',
@@ -71,19 +72,20 @@ const TicketsContent = () => {
   };
 
   const handleUpdate = async () => {
-    if (!formData.adminNotes || !formData.responseMessage) {
-      alert("Admin Notes and Response Message are required.");
+    if (!formData.status || !formData.priority || !formData.adminNotes || !formData.responseMessage) {
+      alert("All fields (Status, Priority, Admin Notes, Response Message) are required.");
       return;
     }
 
     try {
-      await axiosInstance.patch(`/appeal/update/${editingAppeal.id}`, formData);
+      await axiosInstance.patch(`/appeal/update/${appeal.id}`, formData);
       alert('Appeal updated successfully');
-      setEditingAppeal(null);
+      setAppeal(null); // Fixed variable name
+      setFormData({ status: '', priority: '', adminNotes: '', responseMessage: '' }); // Reset formData
       fetchAppeals();
     } catch (err) {
       console.error("Update failed", err);
-      alert('Update failed');
+      alert(err.response?.data?.message || 'Failed to update appeal');
     }
   };
 
@@ -101,7 +103,7 @@ const TicketsContent = () => {
       fetchAppeals();
     } catch (err) {
       console.error("Create failed", err);
-      alert("Failed to create appeal");
+      alert(err.response?.data?.message || 'Failed to create appeal');
     }
   };
 
@@ -113,13 +115,12 @@ const TicketsContent = () => {
       fetchAppeals();
     } catch (err) {
       console.error("Delete failed", err);
+      alert(err.response?.data?.message || 'Failed to delete appeal');
     }
   };
 
   return (
     <div className="tickets-wrapper">
-     
-
       {user.role === 'banned' && (
         <button className="edit-btn" onClick={() => setCreating(!creating)}>
           {creating ? 'Cancel New Appeal' : 'Create New Appeal'}
@@ -161,13 +162,15 @@ const TicketsContent = () => {
               <th>Status</th>
               <th>Priority</th>
               <th>Reason</th>
+              <th>Additional</th>
+              <th>Incident Date</th>
               <th>Created</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {appeals.length === 0 ? (
-              <tr><td colSpan="8">No appeals found.</td></tr>
+              <tr><td colSpan="10">No appeals found.</td></tr>
             ) : (
               appeals.map((appeal) => (
                 <tr key={appeal.id}>
@@ -177,6 +180,8 @@ const TicketsContent = () => {
                   <td><span className={`badge status-${appeal.status}`}>{appeal.status}</span></td>
                   <td><span className={`badge priority-${appeal.priority}`}>{appeal.priority}</span></td>
                   <td>{appeal.appealReason}</td>
+                  <td>{appeal.additionalInfo}</td>
+                  <td>{formatDate(appeal.incidentDate)}</td>
                   <td>{formatDate(appeal.createdAt)}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '6px' }}>
@@ -191,11 +196,10 @@ const TicketsContent = () => {
         </table>
       </div>
 
-      {/* Edit Modal */}
-      {editingAppeal && (
+      {appeal && (
         <div className="modal">
           <div className="modal-box">
-            <h3>Edit Appeal: {editingAppeal.appealNumber}</h3>
+            <h3>Edit Appeal: {appeal.appealNumber}</h3>
 
             <label>Status</label>
             <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
@@ -221,13 +225,12 @@ const TicketsContent = () => {
 
             <div className="modal-actions">
               <button className="save-btn" onClick={handleUpdate}>Save</button>
-              <button className="cancel-btn" onClick={() => setEditingAppeal(null)}>Cancel</button>
+              <button className="cancel-btn" onClick={() => setAppeal(null)}>Cancel</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       {deleteId && (
         <div className="modal">
           <div className="modal-box">
