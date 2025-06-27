@@ -6,17 +6,14 @@ import toast from "react-hot-toast";
 const FriendActionButton = ({ userId }) => {
     const [loading, setLoading] = useState(false);
     const [statusLoading, setStatusLoading] = useState(true);
-    const [isFriend, setIsFriend] = useState(null);
-    const [friendRequestSent, setFriendRequestSent] = useState(null);
+    const [friendStatus, setFriendStatus] = useState(null); // "friend", "pending", "received", "none"
 
     useEffect(() => {
         const fetchStatus = async () => {
             try {
                 const res = await axiosInstance.get(`/friends/friend-status/${userId}`);
                 if (res.data.success) {
-                    const status = res.data.data.friendStatus;
-                    setIsFriend(status === "friend");
-                    setFriendRequestSent(status === "pending");
+                    setFriendStatus(res.data.data.friendStatus);
                 }
             } catch (err) {
                 toast.error("Failed to get friend status");
@@ -33,8 +30,7 @@ const FriendActionButton = ({ userId }) => {
             const res = await axiosInstance.post(`/friends/friend-request/send/${userId}`);
             if (res.data.success) {
                 toast.success("Friend request sent");
-                setIsFriend(false);
-                setFriendRequestSent(true);
+                setFriendStatus("pending");
             }
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to send friend request");
@@ -49,7 +45,7 @@ const FriendActionButton = ({ userId }) => {
             const res = await axiosInstance.delete(`/friends/friend-request/cancel/${userId}`);
             if (res.data.success) {
                 toast.success("Friend request cancelled");
-                setFriendRequestSent(false);
+                setFriendStatus("none");
             }
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to cancel friend request");
@@ -64,7 +60,7 @@ const FriendActionButton = ({ userId }) => {
             const res = await axiosInstance.delete(`/friends/removeFriend/${userId}`);
             if (res.data.success) {
                 toast.success("Friend removed");
-                setIsFriend(false);
+                setFriendStatus("none");
             }
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to remove friend");
@@ -73,38 +69,105 @@ const FriendActionButton = ({ userId }) => {
         }
     };
 
-    if (statusLoading || isFriend === null || friendRequestSent === null) {
+    const handleAcceptRequest = async () => {
+        setLoading(true);
+        try {
+            const res = await axiosInstance.post(`/friends/friend-request/accept/${userId}`);
+            if (res.data.success) {
+                toast.success("Friend request accepted");
+                setFriendStatus("friend");
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to accept request");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRejectRequest = async () => {
+        setLoading(true);
+        try {
+            const res = await axiosInstance.post(`/friends/friend-request/reject/${userId}`);
+            if (res.data.success) {
+                toast.success("Friend request rejected");
+                setFriendStatus("none");
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to reject request");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (statusLoading || friendStatus === null) {
         return <button className="btn btn-secondary" disabled>Checking status...</button>;
     }
 
-    let label = "";
-    let onClick = null;
-    let btnClass = "";
+    if (friendStatus === "friend") {
+        return (
+            <motion.button
+                className="btn btn-danger"
+                onClick={handleRemoveFriend}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                disabled={loading}
+                style={{ display: "block", margin: "0 auto" }}
+            >
+                {loading ? "Removing..." : "Remove Friend"}
+            </motion.button>
+        );
+    }
 
-    if (isFriend) {
-        label = loading ? "Removing..." : "Remove Friend";
-        onClick = handleRemoveFriend;
-        btnClass = "btn btn-danger";
-    } else if (friendRequestSent) {
-        label = loading ? "Canceling..." : "Cancel Request";
-        onClick = handleCancelRequest;
-        btnClass = "btn btn-warning";
-    } else {
-        label = loading ? "Sending..." : "Add Friend";
-        onClick = handleSendRequest;
-        btnClass = "btn btn-success";
+    if (friendStatus === "pending") {
+        return (
+            <motion.button
+                className="btn btn-warning"
+                onClick={handleCancelRequest}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                disabled={loading}
+                style={{ display: "block", margin: "0 auto" }}
+            >
+                {loading ? "Canceling..." : "Cancel Request"}
+            </motion.button>
+        );
+    }
+
+    if (friendStatus === "requested") {
+        return (
+            <div className="d-flex justify-content-center gap-2">
+                <motion.button
+                    className="btn btn-success"
+                    onClick={handleAcceptRequest}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    disabled={loading}
+                >
+                    {loading ? "Accepting..." : "Accept"}
+                </motion.button>
+                <motion.button
+                    className="btn btn-outline-danger"
+                    onClick={handleRejectRequest}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    disabled={loading}
+                >
+                    {loading ? "Rejecting..." : "Reject"}
+                </motion.button>
+            </div>
+        );
     }
 
     return (
         <motion.button
-            className={btnClass}
-            onClick={onClick}
+            className="btn btn-success"
+            onClick={handleSendRequest}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             disabled={loading}
             style={{ display: "block", margin: "0 auto" }}
         >
-            {label}
+            {loading ? "Sending..." : "Add Friend"}
         </motion.button>
     );
 };
