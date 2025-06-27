@@ -22,19 +22,40 @@ const user = {
   role: '', // change to 'banned' to show create appeal button
 };
 
-const formatDate = (isoString) => {
-  if (!isoString) return 'N/A';
-  const date = new Date(isoString);
+/* helper ─ now handles ISO strings, Date objects AND Firestore timestamps */
+const formatDate = (value) => {
+  if (!value) return 'N/A';
+
+  let date;
+  // 1️⃣  Already a JS Date
+  if (value instanceof Date) {
+    date = value;
+  }
+  // 2️⃣  ISO string
+  else if (typeof value === 'string') {
+    date = new Date(value);
+  }
+  // 3️⃣  Firestore Timestamp (v9 SDK → { seconds, nanoseconds })
+  else if (typeof value === 'object' && ('seconds' in value || '_seconds' in value)) {
+    // support both `seconds` and `_seconds`
+    const secs = value.seconds ?? value._seconds;
+    date = new Date(secs * 1000);
+  }
+  // 4️⃣  Anything else we don’t recognise
+  else {
+    return 'N/A';
+  }
+
   return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
 };
 
 const TicketsContent = () => {
   const [appeals, setAppeals] = useState([]);
-  const [appeal, setAppeal] = useState(null); // Fixed variable name
+  const [editAppeal, setEditAppeal] = useState(null); // Fixed variable name
   const [creating, setCreating] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
-  const [formData, setFormData] = useState({
+  const [editForm, setEditForm] = useState({
     status: '',
     priority: '',
     adminNotes: '',
@@ -53,17 +74,17 @@ const TicketsContent = () => {
 
   const fetchAppeals = async () => {
     try {
-      const res = await axiosInstance.get('/appeal/getAll');
+      const res = await axiosInstance.get('appeal/getAll');
       setAppeals(res.data.data || []);
     } catch (err) {
-      console.error("Error fetching appeals", err);
-      alert('Failed to fetch appeals');
+      console.error("Error fetching appeals:", err);
+      alert(err.response?.data?.message || 'Failed to fetch appeals');
     }
   };
 
   const openEditModal = (appeal) => {
-    setAppeal(appeal); // Fixed variable name
-    setFormData({
+    setEditAppeal(appeal); // Fixed variable name
+    setEditForm({
       status: appeal.status || '',
       priority: appeal.priority || '',
       adminNotes: appeal.adminNotes || '',
@@ -72,49 +93,49 @@ const TicketsContent = () => {
   };
 
   const handleUpdate = async () => {
-    if (!formData.status || !formData.priority || !formData.adminNotes || !formData.responseMessage) {
-      alert("All fields (Status, Priority, Admin Notes, Response Message) are required.");
-      return;
+    const { status, priority, adminNotes, responseMessage } = editForm;
+    if (!status || !priority || !adminNotes.trim() || !responseMessage.trim()) {
+      return alert('All fields are required.');
     }
 
     try {
-      await axiosInstance.patch(`/appeal/update/${appeal.id}`, formData);
+      await axiosInstance.patch(`appeal/update/${editAppeal.id || editAppeal._id}`, editForm);
       alert('Appeal updated successfully');
-      setAppeal(null); // Fixed variable name
-      setFormData({ status: '', priority: '', adminNotes: '', responseMessage: '' }); // Reset formData
+      setEditAppeal(null); // Close modal
+      setEditForm({ status: '', priority: '', adminNotes: '', responseMessage: '' }); // Reset form
       fetchAppeals();
     } catch (err) {
-      console.error("Update failed", err);
+      console.error("Error updating appeal:", err);
       alert(err.response?.data?.message || 'Failed to update appeal');
     }
   };
 
   const handleCreate = async () => {
-    if (!newAppeal.appealReason) {
+    if (!newAppeal.appealReason?.trim()) {
       alert("Appeal Reason is required.");
       return;
     }
 
     try {
-      await axiosInstance.post('/appeal/create', newAppeal);
-      alert("Appeal submitted");
+      await axiosInstance.post('appeal/create', newAppeal);
+      alert("Appeal submitted successfully");
       setCreating(false);
       setNewAppeal({ appealReason: '', additionalInfo: '', contactMethod: 'email' });
       fetchAppeals();
     } catch (err) {
-      console.error("Create failed", err);
+      console.error("Error creating appeal:", err);
       alert(err.response?.data?.message || 'Failed to create appeal');
     }
   };
 
   const confirmDelete = async () => {
     try {
-      await axiosInstance.delete(`/appeal/delete/${deleteId}`);
-      alert("Appeal deleted");
+      await axiosInstance.delete(`appeal/delete/${deleteId}`);
+      alert("Appeal deleted successfully");
       setDeleteId(null);
       fetchAppeals();
     } catch (err) {
-      console.error("Delete failed", err);
+      console.error("Error deleting appeal:", err);
       alert(err.response?.data?.message || 'Failed to delete appeal');
     }
   };
@@ -133,13 +154,22 @@ const TicketsContent = () => {
             <h3>Create New Appeal</h3>
 
             <label>Appeal Reason</label>
-            <textarea value={newAppeal.appealReason} onChange={(e) => setNewAppeal({ ...newAppeal, appealReason: e.target.value })} />
+            <textarea
+              value={newAppeal.appealReason}
+              onChange={(e) => setNewAppeal({ ...newAppeal, appealReason: e.target.value })}
+            />
 
             <label>Additional Info</label>
-            <textarea value={newAppeal.additionalInfo} onChange={(e) => setNewAppeal({ ...newAppeal, additionalInfo: e.target.value })} />
+            <textarea
+              value={newAppeal.additionalInfo}
+              onChange={(e) => setNewAppeal({ ...newAppeal, additionalInfo: e.target.value })}
+            />
 
             <label>Contact Method</label>
-            <select value={newAppeal.contactMethod} onChange={(e) => setNewAppeal({ ...newAppeal, contactMethod: e.target.value })}>
+            <select
+              value={newAppeal.contactMethod}
+              onChange={(e) => setNewAppeal({ ...newAppeal, contactMethod: e.target.value })}
+            >
               <option value="email">Email</option>
               <option value="phone">Phone</option>
             </select>
@@ -196,36 +226,50 @@ const TicketsContent = () => {
         </table>
       </div>
 
-      {appeal && (
+      {editAppeal && (
         <div className="modal">
           <div className="modal-box">
-            <h3>Edit Appeal: {appeal.appealNumber}</h3>
+            <h3>Edit Appeal: {editAppeal.appealNumber}</h3>
 
             <label>Status</label>
-            <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
+            <select
+              value={editForm.status}
+              onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+            >
               <option value="">Select Status</option>
-              {Object.values(APPEAL_STATUS).map(s => (
+              {Object.values(APPEAL_STATUS).map((s) => (
                 <option key={s} value={s}>{s.replace('_', ' ').toUpperCase()}</option>
               ))}
             </select>
 
             <label>Priority</label>
-            <select value={formData.priority} onChange={(e) => setFormData({ ...formData, priority: e.target.value })}>
+            <select
+              value={editForm.priority}
+              onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
+            >
               <option value="">Select Priority</option>
-              {Object.values(APPEAL_PRIORITY).map(p => (
+              {Object.values(APPEAL_PRIORITY).map((p) => (
                 <option key={p} value={p}>{p.toUpperCase()}</option>
               ))}
             </select>
 
             <label>Admin Notes</label>
-            <textarea value={formData.adminNotes} onChange={(e) => setFormData({ ...formData, adminNotes: e.target.value })} maxLength={2000} />
+            <textarea
+              value={editForm.adminNotes}
+              onChange={(e) => setEditForm({ ...editForm, adminNotes: e.target.value })}
+              maxLength={2000}
+            />
 
             <label>Response Message</label>
-            <textarea value={formData.responseMessage} onChange={(e) => setFormData({ ...formData, responseMessage: e.target.value })} maxLength={2000} />
+            <textarea
+              value={editForm.responseMessage}
+              onChange={(e) => setEditForm({ ...editForm, responseMessage: e.target.value })}
+              maxLength={2000}
+            />
 
             <div className="modal-actions">
               <button className="save-btn" onClick={handleUpdate}>Save</button>
-              <button className="cancel-btn" onClick={() => setAppeal(null)}>Cancel</button>
+              <button className="cancel-btn" onClick={() => setEditAppeal(null)}>Cancel</button>
             </div>
           </div>
         </div>
