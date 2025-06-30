@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.post('/create', validateAppeal, authenticateUser, appealController.createAppeal);
 router.get('/getAll', authenticateUser, authorizeRoles("super_admin", "admin"), appealController.getAllAppeals);
-router.patch('update/:id', validateAppealUpdate, authenticateUser, authorizeRoles("super_admin", "admin"), appealController.updateAppeal);
+router.patch('/update/:id', validateAppealUpdate, authenticateUser, authorizeRoles("super_admin", "admin"), appealController.updateAppeal);
 router.delete('/delete/:id', authenticateUser, authorizeRoles("super_admin"), appealController.deleteAppeal);
 
 module.exports = router;
