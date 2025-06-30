@@ -32,6 +32,7 @@ const EditMarketPlaceItem = () => {
     const [catLoading, setCatLoading] = useState(true);
     const [catError, setCatError] = useState("");
     const [previewImages, setPreviewImages] = useState([]);
+    const [existingImages, setExistingImages] = useState([]); // Track existing images separately
 
     const [errors, setErrors] = useState({
         phone: "",
@@ -42,6 +43,42 @@ const EditMarketPlaceItem = () => {
         if (!phone) return false;
         const phoneNumber = parsePhoneNumberFromString(phone);
         return phoneNumber ? phoneNumber.isValid() : false;
+    };
+
+    // Helper function to convert Firebase Timestamp to date string
+    const convertFirebaseTimestampToDateString = (timestamp) => {
+        if (!timestamp) return '';
+        
+        // Handle Firebase Timestamp object
+        if (timestamp._seconds) {
+            const date = new Date(timestamp._seconds * 1000);
+            return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD format
+        }
+        
+        // Handle regular date string
+        if (typeof timestamp === 'string') {
+            const date = new Date(timestamp);
+            return date.toISOString().split('T')[0];
+        }
+        
+        return '';
+    };
+
+    // Helper function to format phone number for PhoneInput
+    const formatPhoneForInput = (phone) => {
+        if (!phone) return '';
+        
+        // If phone already starts with +, remove it (PhoneInput adds it automatically)
+        if (phone.startsWith('+')) {
+            return phone.substring(1);
+        }
+        
+        // If phone starts with 0, assume it's a local Sri Lankan number and add country code
+        if (phone.startsWith('0')) {
+            return `94${phone.substring(1)}`;
+        }
+        
+        return phone;
     };
 
     useEffect(() => {
@@ -58,27 +95,33 @@ const EditMarketPlaceItem = () => {
                     return navigate(-1);
                 }
 
+                // Format expiration date properly
+                const formattedExpiresAt = convertFirebaseTimestampToDateString(item.expiresAt);
+
                 setFormData({
                     ...item,
                     contactDetails: {
-                        phone: item.contactDetails?.phone || '',
+                        phone: formatPhoneForInput(item.contactDetails?.phone || ''),
                         email: item.contactDetails?.email || '',
-                        whatsapp: item.contactDetails?.whatsapp || '',
+                        whatsapp: formatPhoneForInput(item.contactDetails?.whatsapp || ''),
                     },
                     location: item.location || { city: "", state: "", country: "", postalCode: "" },
-                    images: null,
+                    images: null, // Reset images for new uploads
                     isNegotiable: item.isNegotiable || false,
-                    expiresAt: item.expiresAt || '',
+                    expiresAt: formattedExpiresAt,
                     tags: item.tags || [],
                 });
 
-                setPreviewImages(Array.isArray(item.images) ? item.images : [item.images]);
+                // Handle existing images
+                const existingImageUrls = Array.isArray(item.images) ? item.images : (item.images ? [item.images] : []);
+                setExistingImages(existingImageUrls);
+                setPreviewImages(existingImageUrls);
 
                 setCategories(categoryRes.data.data);
                 setCatError("");
             } catch (error) {
                 setCatError("Failed to load categories");
-                toast.error(error?.response?.data?.message || "Update failed");
+                toast.error(error?.response?.data?.message || "Failed to load item data");
             } finally {
                 setCatLoading(false);
             }
@@ -119,23 +162,44 @@ const EditMarketPlaceItem = () => {
         const files = Array.from(e.target.files);
         if (!files.length) return;
 
-        // Append new files
+        // Set new files (don't append to existing ones)
         setFormData((prev) => ({
             ...prev,
-            images: [...(prev.images || []), ...files]
+            images: files
         }));
 
-        // Generate and append new previews
+        // Generate previews for new files
         const newPreviews = files.map((file) => URL.createObjectURL(file));
-        setPreviewImages((prev) => [...prev, ...newPreviews]);
+        
+        // Combine existing images with new previews
+        setPreviewImages([...existingImages, ...newPreviews]);
     };
 
     const removeImage = (indexToRemove) => {
-        setPreviewImages((prev) => prev.filter((_, i) => i !== indexToRemove));
-        setFormData((prev) => ({
-            ...prev,
-            images: (prev.images || []).filter((_, i) => i !== indexToRemove)
-        }));
+        const isExistingImage = indexToRemove < existingImages.length;
+        
+        if (isExistingImage) {
+            // Remove from existing images
+            const newExistingImages = existingImages.filter((_, i) => i !== indexToRemove);
+            setExistingImages(newExistingImages);
+            
+            // Update preview images
+            const newImageFiles = formData.images || [];
+            setPreviewImages([...newExistingImages, ...newImageFiles.map(file => URL.createObjectURL(file))]);
+        } else {
+            // Remove from new uploaded files
+            const newFileIndex = indexToRemove - existingImages.length;
+            const newImageFiles = (formData.images || []).filter((_, i) => i !== newFileIndex);
+            
+            setFormData((prev) => ({
+                ...prev,
+                images: newImageFiles.length > 0 ? newImageFiles : null
+            }));
+            
+            // Update preview images
+            const newFilePreviews = newImageFiles.map(file => URL.createObjectURL(file));
+            setPreviewImages([...existingImages, ...newFilePreviews]);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -143,15 +207,43 @@ const EditMarketPlaceItem = () => {
         setLoading(true);
 
         try {
+            // Validate phone numbers
+            if (formData.contactDetails.phone && !validatePhoneNumber(`+${formData.contactDetails.phone}`)) {
+                setErrors(prev => ({ ...prev, phone: 'Invalid phone number' }));
+                setLoading(false);
+                return;
+            }
+
+            if (formData.contactDetails.whatsapp && !validatePhoneNumber(`+${formData.contactDetails.whatsapp}`)) {
+                setErrors(prev => ({ ...prev, whatsapp: 'Invalid WhatsApp number' }));
+                setLoading(false);
+                return;
+            }
+
             const {
-                id, createdAt, updatedAt, author,
+                // eslint-disable-next-line no-unused-vars
+                id: itemId, createdAt, updatedAt, author,
                 ...dataToSend
             } = formData;
 
             delete dataToSend.isAccept;
 
-            // Convert images to base64
+            // Handle phone numbers - ensure they have + prefix
+            if (dataToSend.contactDetails.phone) {
+                dataToSend.contactDetails.phone = dataToSend.contactDetails.phone.startsWith('+') 
+                    ? dataToSend.contactDetails.phone 
+                    : `+${dataToSend.contactDetails.phone}`;
+            }
+
+            if (dataToSend.contactDetails.whatsapp) {
+                dataToSend.contactDetails.whatsapp = dataToSend.contactDetails.whatsapp.startsWith('+') 
+                    ? dataToSend.contactDetails.whatsapp 
+                    : `+${dataToSend.contactDetails.whatsapp}`;
+            }
+
+            // Handle images
             if (formData.images && formData.images.length > 0) {
+                // Convert new images to base64
                 const base64Images = await Promise.all(
                     formData.images.map((file) =>
                         new Promise((resolve, reject) => {
@@ -162,15 +254,21 @@ const EditMarketPlaceItem = () => {
                         })
                     )
                 );
-                dataToSend.images = base64Images;
+                
+                // Combine existing images with new base64 images
+                dataToSend.images = [...existingImages, ...base64Images];
+            } else {
+                // Only existing images
+                dataToSend.images = existingImages;
             }
 
-            const res = await axiosInstance.patch(`/marketplace/update/${id}`, dataToSend);
+            const res = await axiosInstance.patch(`/marketplace/update/${itemId}`, dataToSend);
             if (res.data.success) {
                 toast.success(res.data.message || "Item updated successfully");
                 navigate(-1);
             }
         } catch (error) {
+            console.error('Update error:', error);
             toast.error(error?.response?.data?.message || "Update failed");
         } finally {
             setLoading(false);
@@ -294,7 +392,7 @@ const EditMarketPlaceItem = () => {
                                     ...prev,
                                     contactDetails: {
                                         ...prev.contactDetails,
-                                        phone: `+${phone}`,
+                                        phone: phone,
                                     },
                                 }))
                             }
@@ -303,7 +401,7 @@ const EditMarketPlaceItem = () => {
                                     ...prev,
                                     phone:
                                         formData.contactDetails.phone &&
-                                            !validatePhoneNumber(formData.contactDetails.phone)
+                                            !validatePhoneNumber(`+${formData.contactDetails.phone}`)
                                             ? 'Invalid phone number. Please enter a valid number for the selected country.'
                                             : '',
                                 }));
@@ -327,7 +425,7 @@ const EditMarketPlaceItem = () => {
                                     ...prev,
                                     contactDetails: {
                                         ...prev.contactDetails,
-                                        whatsapp: `+${whatsapp}`,
+                                        whatsapp: whatsapp,
                                     },
                                 }))
                             }
@@ -336,7 +434,7 @@ const EditMarketPlaceItem = () => {
                                     ...prev,
                                     whatsapp:
                                         formData.contactDetails.whatsapp &&
-                                            !validatePhoneNumber(formData.contactDetails.whatsapp)
+                                            !validatePhoneNumber(`+${formData.contactDetails.whatsapp}`)
                                             ? 'Invalid WhatsApp number. Use international format.'
                                             : '',
                                 }));
@@ -421,7 +519,8 @@ const EditMarketPlaceItem = () => {
                     <div className="section-title mt-4 mb-0 text-black">Upload Images</div>
 
                     <div className="col-12">
-                        <input type="file" className="form-control" onChange={handleImageChange} multiple />
+                        <input type="file" className="form-control" onChange={handleImageChange} multiple accept="image/*" />
+                        <small className="text-muted">You can upload additional images. Existing images will be preserved unless you remove them.</small>
                     </div>
 
                     {previewImages.length > 0 && (
@@ -436,7 +535,7 @@ const EditMarketPlaceItem = () => {
                                     />
                                     <button
                                         type="button"
-                                        className="bg-danger text-white rounded-circle position-absolute"
+                                        className="bg-danger text-white rounded-circle position-absolute border-0"
                                         onClick={() => removeImage(idx)}
                                         style={{
                                             top: '4px',
@@ -453,6 +552,11 @@ const EditMarketPlaceItem = () => {
                                     >
                                         <i className="bi bi-trash" style={{ fontSize: '16px' }}></i>
                                     </button>
+                                    {idx < existingImages.length && (
+                                        <small className="position-absolute bottom-0 start-0 bg-info text-white px-1 rounded-end" style={{ fontSize: '10px' }}>
+                                            Existing
+                                        </small>
+                                    )}
                                 </div>
                             ))}
                         </div>

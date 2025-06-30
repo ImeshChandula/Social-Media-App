@@ -3,6 +3,7 @@ import MarketplaceItemButton from "./MarketplaceItemButton";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 
 const MarketplaceCard = ({
@@ -22,7 +23,9 @@ const MarketplaceCard = ({
 }) => {
     const [isToggling, setIsToggling] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const images = Array.isArray(item.images) ? item.images : [item.images];
+    
+    // Fix: Handle empty images array properly
+    const images = Array.isArray(item.images) && item.images.length > 0 ? item.images : [];
     const [localItem, setLocalItem] = useState(item);
 
     const handleToggle = async (field) => {
@@ -46,7 +49,6 @@ const MarketplaceCard = ({
         }
     };
 
-
     const isAdmin = authUser?.role === "admin" || authUser?.role === "super_admin";
 
     const handlePrev = () => {
@@ -61,6 +63,29 @@ const MarketplaceCard = ({
         );
     };
 
+    // Fix: Safe date formatting function
+    const formatDate = (date) => {
+        if (!date) return "N/A";
+        
+        try {
+            let dateObj;
+            if (typeof date === "object" && date._seconds) {
+                dateObj = new Date(date._seconds * 1000);
+            } else {
+                dateObj = new Date(date);
+            }
+            
+            if (isNaN(dateObj.getTime())) {
+                return "Invalid Date";
+            }
+            
+            return dateObj.toLocaleDateString();
+        } catch (error) {
+            console.error("Date formatting error:", error);
+            return "Invalid Date";
+        }
+    };
+
     return (
         <motion.div
             className="col-lg-4 col-md-6 col-sm-12 mb-4"
@@ -69,15 +94,15 @@ const MarketplaceCard = ({
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3 }}
         >
-            <motion.div className={`marketplace-card card shadow-sm h-100 ${["expired", "removed"].includes(item.status) ? "border-danger border-2" : ""}`}>
-                {(showAuthor && item.author) || showActions ? (
+            <motion.div className={`marketplace-card card shadow-sm h-100 ${["expired", "removed"].includes(localItem.status) ? "border-danger border-2" : ""}`}>
+                {(showAuthor && localItem.author) || showActions ? (
                     <div className="card-header d-flex justify-content-between align-items-center bg-light">
                         <div className="d-flex align-items-center">
-                            {item.author && showAuthor && (
+                            {localItem.author && showAuthor && (
                                 <>
                                     <motion.img
-                                        src={item.author.profilePicture}
-                                        alt={item.author.username}
+                                        src={localItem.author.profilePicture}
+                                        alt={localItem.author.username}
                                         className="rounded-circle me-2"
                                         width="40"
                                         height="40"
@@ -87,104 +112,109 @@ const MarketplaceCard = ({
                                         transition={{ duration: 0.3 }}
                                     />
                                     <div>
-                                        <div className="text-dark fw-semibold"> {item.author.username} </div>
-                                        <small className="text-muted"> {new Date(item.createdAt).toLocaleDateString()} </small>
+                                        <div className="text-dark fw-semibold">{localItem.author.username}</div>
+                                        <small className="text-muted">Created: {formatDate(localItem.createdAt)}</small>
                                         <br />
-                                        <small className="text-muted"> {new Date(item.expiresAt).toLocaleDateString()} </small>
-                                        <br />
-                                        <small className="text-muted">
-                                            {item.expiresAt
-                                                ? new Date(
-                                                    typeof item.expiresAt === "object" && item.expiresAt._seconds
-                                                        ? item.expiresAt._seconds * 1000
-                                                        : item.expiresAt
-                                                ).toLocaleDateString()
-                                                : "N/A"}
-                                        </small>
+                                        <small className="text-muted">Expires: {formatDate(localItem.expiresAt)}</small>
                                     </div>
                                 </>
                             )}
                         </div>
                         <span
-                            className={`badge text-capitalize px-3 py-1 ${item.status === "active"
+                            className={`badge text-capitalize px-3 py-1 ${localItem.status === "active"
                                 ? "bg-success"
-                                : item.status === "expired" || item.status === "removed"
+                                : localItem.status === "expired" || localItem.status === "removed"
                                     ? "bg-danger"
-                                    : item.status === "pending"
+                                    : localItem.status === "pending"
                                         ? "bg-warning text-dark"
                                         : "bg-secondary"
                                 }`}
                         >
-                            {item.status}
+                            {localItem.status}
                         </span>
                     </div>
                 ) : null}
 
                 {/* Custom image carousel */}
-                {images.length > 0 && (
-                    <div>
-                        {["expired", "removed"].includes(item.status) && (
-                            <motion.div
-                                className="bg-danger text-white text-center py-1 fw-bold"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
+                <div>
+                    {["expired", "removed"].includes(localItem.status) && (
+                        <motion.div
+                            className="bg-danger text-white text-center py-1 fw-bold"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                        >
+                            {localItem.status.toUpperCase()}
+                        </motion.div>
+                    )}
+                    
+                    {/* Fix: Show placeholder when no images */}
+                    <div className="position-relative">
+                        {images.length > 0 ? (
+                            <>
+                                <img
+                                    src={images[currentImageIndex]}
+                                    alt={`${localItem.title}-${currentImageIndex}`}
+                                    className="w-100"
+                                    style={{ objectFit: "contain", height: "200px" }}
+                                />
+                                {images.length > 1 && (
+                                    <>
+                                        <button
+                                            onClick={handlePrev}
+                                            className="btn btn-dark position-absolute"
+                                            style={{ top: "50%", left: "10px", transform: "translateY(-50%)" }}
+                                        >
+                                            <FaChevronLeft />
+                                        </button>
+                                        <button
+                                            onClick={handleNext}
+                                            className="btn btn-dark position-absolute"
+                                            style={{ top: "50%", right: "10px", transform: "translateY(-50%)" }}
+                                        >
+                                            <FaChevronRight />
+                                        </button>
+                                    </>
+                                )}
+                            </>
+                        ) : (
+                            <div 
+                                className="w-100 d-flex align-items-center justify-content-center bg-light text-muted"
+                                style={{ height: "200px" }}
                             >
-                                {item.status.toUpperCase()}
-                            </motion.div>
+                                <div className="text-center">
+                                    <i className="fas fa-image fa-3x mb-2"></i>
+                                    <p>No Image Available</p>
+                                </div>
+                            </div>
                         )}
-                        <div className="position-relative">
-                            <img
-                                src={images[currentImageIndex]}
-                                alt={`${item.title}-${currentImageIndex}`}
-                                className="w-100"
-                                style={{ objectFit: "contain", height: "200px" }}
-                            />
-                            {images.length > 1 && (
-                                <>
-                                    <button
-                                        onClick={handlePrev}
-                                        className="bg-dark text-white position-absolute"
-                                        style={{ top: "50%", left: "10px", transform: "translateY(-50%)" }}
-                                    >
-                                        <FaChevronLeft />
-                                    </button>
-                                    <button
-                                        onClick={handleNext}
-                                        className="bg-dark text-white position-absolute"
-                                        style={{ top: "50%", right: "10px", transform: "translateY(-50%)" }}
-                                    >
-                                        <FaChevronRight />
-                                    </button>
-                                </>
-                            )}
-                            {item.isNegotiable && (
-                                <motion.span
-                                    className="position-absolute"
-                                    style={{
-                                        bottom: "12px",
-                                        right: "12px",
-                                        backgroundColor: "rgb(255, 0, 0)",
-                                        color: "white",
-                                        padding: "6px 12px",
-                                        borderRadius: "20px",
-                                        fontSize: "0.85rem",
-                                        fontWeight: "600",
-                                        boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-                                        userSelect: "none",
-                                        pointerEvents: "none",
-                                        letterSpacing: "0.05em",
-                                        textTransform: "uppercase",
-                                    }}
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    Negotiable
-                                </motion.span>
-                            )}
-                        </div>
+                        
+                        {localItem.isNegotiable && (
+                            <motion.span
+                                className="position-absolute"
+                                style={{
+                                    bottom: "12px",
+                                    right: "12px",
+                                    backgroundColor: "rgb(255, 0, 0)",
+                                    color: "white",
+                                    padding: "6px 12px",
+                                    borderRadius: "20px",
+                                    fontSize: "0.85rem",
+                                    fontWeight: "600",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+                                    userSelect: "none",
+                                    pointerEvents: "none",
+                                    letterSpacing: "0.05em",
+                                    textTransform: "uppercase",
+                                }}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                Negotiable
+                            </motion.span>
+                        )}
                     </div>
-                )}
+                </div>
 
                 <div className="card-body d-flex flex-column">
                     <motion.h5
@@ -192,30 +222,30 @@ const MarketplaceCard = ({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                     >
-                        {item.title}
+                        {localItem.title}
                     </motion.h5>
 
                     {showCategory && (
-                        <h6 className="card-subtitle mb-2 text-muted">{item.category}</h6>
+                        <h6 className="card-subtitle mb-2 text-muted">{localItem.category}</h6>
                     )}
 
                     <p className="card-text text-secondary small flex-grow-1">
-                        {item.description}
+                        {localItem.description || "No description available"}
                     </p>
 
                     <p className="fw-bold text-primary mt-auto">
-                        {item.currency} {item.price}
+                        {localItem.currency} {localItem.price}
                     </p>
 
                     {showAllDetails && (() => {
                         const hasLocation =
-                            item.location?.city ||
-                            item.location?.state ||
-                            item.location?.country;
+                            localItem.location?.city ||
+                            localItem.location?.state ||
+                            localItem.location?.country;
                         const hasQuantity =
-                            item.quantity !== undefined && item.quantity !== null;
-                        const hasCondition = item.conditionType;
-                        const hasTags = showTags && item.tags && item.tags.length > 0;
+                            localItem.quantity !== undefined && localItem.quantity !== null;
+                        const hasCondition = localItem.conditionType;
+                        const hasTags = showTags && localItem.tags && localItem.tags.length > 0;
 
                         if (hasLocation || hasQuantity || hasCondition || hasTags) {
                             return (
@@ -227,9 +257,9 @@ const MarketplaceCard = ({
                                                 <p className="mb-1 fw-bold text-muted">Location</p>
                                                 <p>
                                                     {[
-                                                        item.location?.city,
-                                                        item.location?.state,
-                                                        item.location?.country,
+                                                        localItem.location?.city,
+                                                        localItem.location?.state,
+                                                        localItem.location?.country,
                                                     ]
                                                         .filter(Boolean)
                                                         .join(", ")}
@@ -239,19 +269,19 @@ const MarketplaceCard = ({
                                         {hasQuantity && (
                                             <div className="col-md-6">
                                                 <p className="mb-1 fw-bold text-muted">Quantity</p>
-                                                <p>{item.quantity}</p>
+                                                <p>{localItem.quantity}</p>
                                             </div>
                                         )}
                                         {hasCondition && (
                                             <div className="col-md-6">
                                                 <p className="mb-1 fw-bold text-muted">Condition</p>
-                                                <p>{item.conditionType}</p>
+                                                <p className="text-capitalize">{localItem.conditionType}</p>
                                             </div>
                                         )}
                                         {hasTags && (
                                             <div className="col-12">
                                                 <p className="mb-1 fw-bold text-muted">Tags</p>
-                                                <p>{item.tags.join(", ")}</p>
+                                                <p>{localItem.tags.join(", ")}</p>
                                             </div>
                                         )}
                                     </div>
@@ -261,49 +291,49 @@ const MarketplaceCard = ({
                         return null;
                     })()}
 
-                    {showContactDetails && (
+                    {showContactDetails && localItem.contactDetails && (
                         <div className="mt-3 border-top pt-3">
                             <h6 className="fw-semibold text-dark mb-3">Contact Details</h6>
                             <div className="row gy-2">
-                                {item.contactDetails?.phone && (
+                                {localItem.contactDetails?.phone && (
                                     <div className="col-12">
                                         <div className="d-flex flex-column">
                                             <span className="text-muted small fw-bold">Phone</span>
                                             <a
-                                                href={`tel:${item.contactDetails.phone}`}
+                                                href={`tel:${localItem.contactDetails.phone}`}
                                                 className="text-dark text-decoration-none"
                                             >
-                                                {item.contactDetails.phone}
+                                                {localItem.contactDetails.phone}
                                             </a>
                                         </div>
                                     </div>
                                 )}
-                                {item.contactDetails?.email && (
+                                {localItem.contactDetails?.email && (
                                     <div className="col-12">
                                         <div className="d-flex flex-column">
                                             <span className="text-muted small fw-bold">Email</span>
                                             <a
-                                                href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(item.contactDetails.email)}`}
+                                                href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(localItem.contactDetails.email)}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="text-dark text-decoration-none"
                                             >
-                                                {item.contactDetails.email}
+                                                {localItem.contactDetails.email}
                                             </a>
                                         </div>
                                     </div>
                                 )}
-                                {item.contactDetails?.whatsapp && (
+                                {localItem.contactDetails?.whatsapp && (
                                     <div className="col-12">
                                         <div className="d-flex flex-column">
-                                            <span className="text-muted small fw-bold">Whatsapp</span>
+                                            <span className="text-muted small fw-bold">WhatsApp</span>
                                             <a
-                                                href={`https://wa.me/${item.contactDetails.whatsapp}`}
+                                                href={`https://wa.me/${localItem.contactDetails.whatsapp.replace(/\D/g, '')}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="text-dark text-decoration-none"
                                             >
-                                                {item.contactDetails.whatsapp}
+                                                {localItem.contactDetails.whatsapp}
                                             </a>
                                         </div>
                                     </div>
@@ -322,7 +352,7 @@ const MarketplaceCard = ({
                                     <input
                                         className="form-check-input"
                                         type="checkbox"
-                                        checked={localItem.isAvailable}
+                                        checked={localItem.isAvailable || false}
                                         onChange={() => handleToggle("isAvailable")}
                                         disabled={isToggling}
                                     />
@@ -335,7 +365,7 @@ const MarketplaceCard = ({
                                     <input
                                         className="form-check-input"
                                         type="checkbox"
-                                        checked={localItem.isAccept}
+                                        checked={localItem.isAccept || false}
                                         onChange={() => handleToggle("isAccept")}
                                         disabled={isToggling}
                                     />
@@ -363,13 +393,12 @@ const MarketplaceCard = ({
                             )}
                         </AnimatePresence>
                     </motion.div>
-
                 </div>
 
                 {showActions && (
                     <div className="card-footer bg-white border-top">
                         <MarketplaceItemButton
-                            itemId={item.id}
+                            itemId={localItem.id}
                             onDelete={onDelete}
                             showEdit={showEdit}
                         />

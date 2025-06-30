@@ -12,6 +12,8 @@ const MarketplaceAllProduct = () => {
 
     const fetchItems = async () => {
         try {
+            setLoading(true);
+            
             const response = await axiosInstance.get("/marketplace/getAllItems");
             setItems(response.data.data || []);
         } catch (err) {
