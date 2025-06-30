@@ -23,7 +23,8 @@ const EditMarketPlaceItem = () => {
         status: 'active',
         images: null,
         isNegotiable: false,
-        expiresAt: '', // Add the expiration date field here
+        expiresAt: '',
+        tags: [],
     });
 
     const [loading, setLoading] = useState(false);
@@ -67,7 +68,8 @@ const EditMarketPlaceItem = () => {
                     location: item.location || { city: "", state: "", country: "", postalCode: "" },
                     images: null,
                     isNegotiable: item.isNegotiable || false,
-                    expiresAt: item.expiresAt || '', // Set initial value for expiration date
+                    expiresAt: item.expiresAt || '',
+                    tags: item.tags || [],
                 });
 
                 setPreviewImages(Array.isArray(item.images) ? item.images : [item.images]);
@@ -363,6 +365,57 @@ const EditMarketPlaceItem = () => {
                             <input type="text" name={`location.${field}`} className="form-control" value={formData.location[field]} onChange={handleChange} />
                         </div>
                     ))}
+
+                    {/* ────── Section: Tags ────── */}
+                    <div className="section-title mt-4 mb-0 text-black">Tags</div>
+
+                    <div className="col-12">
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Enter a tag and press Enter"
+                            onKeyDown={(e) => {
+                                const key = e.key;
+                                const value = e.target.value.trim().replace(/,$/, '');
+                                if ((key === 'Enter' || key === ',') && value) {
+                                    e.preventDefault();
+                                    if (!formData.tags.includes(value) && formData.tags.length < 20) {
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            tags: [...prev.tags, value],
+                                        }));
+                                    }
+                                    e.target.value = '';
+                                }
+                            }}
+                        />
+                    </div>
+
+                    {formData.tags.length > 0 && (
+                        <div className="col-12 mt-2 d-flex flex-wrap gap-2">
+                            {formData.tags.map((tag, idx) => (
+                                <span
+                                    key={idx}
+                                    className="badge bg-secondary d-flex align-items-center"
+                                    style={{ paddingRight: '0.5rem', fontSize: '16px' }}
+                                >
+                                    {tag}
+                                    <button
+                                        type="button"
+                                        className="btn-close btn-close-white ms-2"
+                                        style={{ fontSize: '0.6rem' }}
+                                        aria-label="Remove"
+                                        onClick={() =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                tags: prev.tags.filter((_, i) => i !== idx),
+                                            }))
+                                        }
+                                    ></button>
+                                </span>
+                            ))}
+                        </div>
+                    )}
 
                     {/* ────── Section: Image Upload ────── */}
                     <div className="section-title mt-4 mb-0 text-black">Upload Images</div>
