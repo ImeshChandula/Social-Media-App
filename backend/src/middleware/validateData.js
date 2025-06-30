@@ -170,7 +170,7 @@ const validateMarketPlace = (req, res, next) => {
                 )
               ),
               Joi.valid(null)
-            ).optional(),
+            ).required(),
         quantity: Joi.number().integer().min(1).default(1),
         isNegotiable: Joi.boolean().default(false),
         isAvailable: Joi.boolean().default(true),
@@ -225,10 +225,19 @@ const validateMarketPlaceUpdate = (req, res, next) => {
         }).optional(),
         conditionType: Joi.string().valid('new', 'like_new', 'good', 'fair', 'poor').optional(),
         images: Joi.alternatives().try(
-            Joi.string().uri(),
-            Joi.array().items(Joi.string().uri()),
-            Joi.valid(null)
-        ).optional(),
+              Joi.string().uri(),                         // media link
+              Joi.string().pattern(/^data:.*;base64,.*/), // base64 image/video
+              Joi.array().items(
+                Joi.alternatives().try(
+                  Joi.string().uri(),                         // media URL in array
+                  Joi.string().pattern(/^data:.*;base64,.*/), // base64 in array
+                  Joi.object({                                // file object from multer
+                    path: Joi.string().required()
+                  })
+                )
+              ),
+              Joi.valid(null)
+            ).optional(),
         quantity: Joi.number().integer().min(1).optional(),
         isNegotiable: Joi.boolean().optional(),
         isAvailable: Joi.boolean().optional(),
