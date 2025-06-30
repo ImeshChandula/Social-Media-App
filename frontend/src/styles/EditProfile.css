@@ -467,3 +467,142 @@
     padding: 18px;
   }
 }
+
+/* Additional styles for the profile lock toggle */
+/* Privacy Settings Section Styles */
+.privacy-section {
+  border: 1px solid #e1e5e9;
+  border-radius: 12px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  margin-top: 20px;
+}
+
+.privacy-section h3 {
+  margin: 0 0 16px 0;
+  color: #1c1e21;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.privacy-control {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.privacy-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* Custom Toggle Switch */
+.toggle-checkbox {
+  display: none;
+}
+
+.toggle-label {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccd0d5;
+  transition: all 0.3s ease;
+  border-radius: 26px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: all 0.3s ease;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-checkbox:checked + .toggle-label .toggle-slider {
+  background-color: #1877f2;
+}
+
+.toggle-checkbox:checked + .toggle-label .toggle-slider:before {
+  transform: translateX(24px);
+}
+
+.toggle-checkbox:focus + .toggle-label .toggle-slider {
+  box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+}
+
+/* Privacy Info */
+.privacy-info {
+  flex: 1;
+}
+
+.privacy-title {
+  display: block;
+  font-weight: 600;
+  font-size: 16px;
+  color: #1c1e21;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+
+.privacy-description {
+  margin: 0;
+  font-size: 14px;
+  color: #65676b;
+  line-height: 1.4;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .privacy-section {
+    padding: 16px;
+  }
+  
+  .privacy-toggle {
+    align-items: flex-start;
+  }
+  
+  .privacy-title {
+    font-size: 15px;
+  }
+  
+  .privacy-description {
+    font-size: 13px;
+  }
+}
+
+/* Animation for smooth transitions */
+.privacy-section {
+  transition: all 0.3s ease;
+}
+
+.privacy-section:hover {
+  border-color: #1877f2;
+}
+
+/* Lock/Unlock Icon Visual Feedback (Optional) */
+.privacy-toggle:hover .toggle-label .toggle-slider {
+  background-color: #1877f2;
+  opacity: 0.8;
+}
+
+.toggle-checkbox:not(:checked) + .toggle-label:hover .toggle-slider {
+  background-color: #b0b3b8;
+}

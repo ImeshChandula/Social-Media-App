@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
 import { useNavigate } from "react-router-dom";
-import UserPosts from "../components/UserPosts";
+import UserPosts from "../components/UserPosts"; 
 import EnhancedBioSection from "../components/EnhancedBioSection";
 import EnhancedUserStats from "../components/EnhancedUserStats";
 import toast from "react-hot-toast";
@@ -14,6 +14,8 @@ function ProfilePage() {
   //const [error, setError] = useState("");
   const navigate = useNavigate();
   //const [showStoryModal, setShowStoryModal] = useState(false);
+
+  
 
   useEffect(() => {
     const fetchUser = async () => {

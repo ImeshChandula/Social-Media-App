@@ -28,6 +28,7 @@ function EditProfile() {
     accountStatus: 'active',
     role: '',
     jobCategory: '',
+    isPublic: true, // added 
   });
 
   const [formData, setFormData] = useState({
@@ -38,7 +39,8 @@ function EditProfile() {
     location: '',
     birthday: '',
     accountStatus: 'active',
-    jobCategory: ''
+    jobCategory: '',
+    isPublic: true // added
   });
 
   const { authUser, checkAuth, logout } = useAuthStore();
@@ -66,7 +68,8 @@ function EditProfile() {
             location: data.user.location || '',
             birthday: data.user.birthday ? data.user.birthday.split('T')[0] : '',
             accountStatus: data.user.accountStatus || 'active',
-            jobCategory: data.user.jobCategory || 'None'
+            jobCategory: data.user.jobCategory || 'None',
+            isPublic: data.user.isPublic !== undefined ? data.user.isPublic : true // default to true if not set
         });
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -93,6 +96,15 @@ function EditProfile() {
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  // Handle profile lock toggle
+  const handleProfileLockToggle = (e) => {
+    const isPublic = e.target.checked;
+    setFormData(prev => ({
+      ...prev,
+      isPublic: isPublic
     }));
   };
 
@@ -197,6 +209,8 @@ function EditProfile() {
 
       await axiosInstance.patch(`/users/updateProfile/${userData.id}`, dataToSend);
       toast.success('Profile updated successfully!');
+      // In your handleSubmit function, after successful update:
+      await fetchUserData(); // Refresh user data
       setTimeout(() => {
         navigate(-1);
         }, 3000
@@ -421,6 +435,37 @@ function EditProfile() {
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
+            </div>
+
+            {/* Privacy Settings Section */}
+            <div className="form-group full-width privacy-section">
+              <h3>Privacy Settings</h3>
+              <div className="privacy-control">
+                <div className="privacy-toggle">
+                  <input
+                    type="checkbox"
+                    id="profileLock"
+                    name="isPublic"
+                    checked={formData.isPublic}
+                    onChange={handleProfileLockToggle}
+                    className="toggle-checkbox"
+                  />
+                  <label htmlFor="profileLock" className="toggle-label">
+                    <span className="toggle-slider"></span>
+                  </label>
+                  <div className="privacy-info">
+                    <label htmlFor="profileLock" className="privacy-title">
+                      {formData.isPublic ? 'Public Profile' : 'Private Profile'}
+                    </label>
+                    <p className="privacy-description">
+                      {formData.isPublic 
+                        ? 'Everyone can see your posts, photos, and profile details'
+                        : 'Only your friends can see your posts, photos, and profile details. Others will only see your profile picture, name, and a few photos.'
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
           </div>
