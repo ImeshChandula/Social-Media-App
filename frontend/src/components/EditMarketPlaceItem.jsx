@@ -161,14 +161,14 @@ const EditMarketPlaceItem = () => {
     };
 
     return (
-        <div className="container p-4 bg-dark shadow rounded mt-4">
+        <div className="marketplace-form container p-4 shadow rounded mt-4">
             <h2 className="text-center mb-4 fw-bold text-primary">Edit Marketplace Item</h2>
 
             <form onSubmit={handleSubmit}>
                 <div className="row g-4">
 
                     {/* ────── Section: General Information ────── */}
-                    <div className="section-title mb-0">General Information</div>
+                    <div className="section-title mb-0 text-black">General Information</div>
 
                     <div className="col-md-6">
                         <label className="form-label">Title</label>
@@ -197,7 +197,7 @@ const EditMarketPlaceItem = () => {
                     </div>
 
                     {/* ────── Section: Pricing & Status ────── */}
-                    <div className="section-title mt-4 mb-0">Pricing & Status</div>
+                    <div className="section-title mt-4 mb-0 text-black">Pricing & Status</div>
 
                     <div className="col-md-4">
                         <label className="form-label">Price</label>
@@ -260,7 +260,7 @@ const EditMarketPlaceItem = () => {
                     </div>
 
                     {/* ────── Section: Contact Info ────── */}
-                    <div className="section-title mt-4 mb-0">Contact Information</div>
+                    <div className="section-title mt-4 mb-0 text-black">Contact Information</div>
 
                     <div className="col-md-4">
                         <label className="form-label">Phone</label>
@@ -278,7 +278,7 @@ const EditMarketPlaceItem = () => {
                     </div>
 
                     {/* ────── Section: Location ────── */}
-                    <div className="section-title mt-4 mb-0">Location</div>
+                    <div className="section-title mt-4 mb-0 text-black">Location</div>
 
                     {["city", "state", "country", "postalCode"].map((field) => (
                         <div className="col-md-6" key={field}>
@@ -288,7 +288,7 @@ const EditMarketPlaceItem = () => {
                     ))}
 
                     {/* ────── Section: Image Upload ────── */}
-                    <div className="section-title mt-4 mb-0">Upload Images</div>
+                    <div className="section-title mt-4 mb-0 text-black">Upload Images</div>
 
                     <div className="col-12">
                         <input type="file" className="form-control" onChange={handleImageChange} multiple />

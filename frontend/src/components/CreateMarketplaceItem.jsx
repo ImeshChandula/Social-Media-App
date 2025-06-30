@@ -154,12 +154,12 @@ const CreateMarketplaceItem = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="marketplace-form container p-4 bg-dark shadow rounded mt-4">
+        <form onSubmit={handleSubmit} className="marketplace-form container p-4 shadow rounded mt-4">
             <h2 className="text-center mb-4 fw-bold text-primary">Create Marketplace Item</h2>
             <div className="row g-4">
 
                 {/* ────── Section: General Info ────── */}
-                <div className="section-title mb-0">General Information</div>
+                <div className="section-title mb-0 text-black">General Information</div>
 
                 <div className="col-md-6">
                     <label className="form-label">Title</label>
@@ -169,7 +169,7 @@ const CreateMarketplaceItem = () => {
                 <div className="col-md-6">
                     <label className="form-label">Category</label>
                     {catLoading ? (
-                        <div className="form-control bg-light text-muted">Loading categories...</div>
+                        <div className="form-control bg-light text-dark">Loading categories...</div>
                     ) : catError ? (
                         <div className="text-danger">{catError}</div>
                     ) : (
@@ -198,7 +198,7 @@ const CreateMarketplaceItem = () => {
                 </div>
 
                 {/* ────── Section: Contact Details ────── */}
-                <div className="section-title mt-4 mb-0">Contact Details</div>
+                <div className="section-title mt-4 mb-0 text-black">Contact Details</div>
 
                 <div className="col-md-4">
                     <label className="form-label">Phone</label>
@@ -235,7 +235,7 @@ const CreateMarketplaceItem = () => {
                 </div>
 
                 <div className="col-md-4">
-                    <label className="form-label">WhatsApp</label>
+                    <label className="marketplace-item form-label">WhatsApp</label>
                     <PhoneInput
                         enableSearch={true}
                         searchPlaceholder="Search country"
@@ -274,7 +274,7 @@ const CreateMarketplaceItem = () => {
                 </div>
 
                 {/* ────── Section: Location ────── */}
-                <div className="section-title mt-4 mb-0">Location Details</div>
+                <div className="section-title mt-4 mb-0 text-black">Location Details</div>
 
                 {["city", "state", "country", "postalCode"].map((field) => (
                     <div className="col-md-6" key={field}>
@@ -284,7 +284,7 @@ const CreateMarketplaceItem = () => {
                 ))}
 
                 {/* ────── Section: Product Details ────── */}
-                <div className="section-title mt-4 mb-0">Product Details</div>
+                <div className="section-title mt-4 mb-0 text-black">Product Details</div>
 
                 <div className="col-md-6">
                     <label className="form-label">Condition</label>
@@ -308,7 +308,7 @@ const CreateMarketplaceItem = () => {
                 </div>
 
                 {/* ────── Section: Extra ────── */}
-                <div className="section-title mt-4 mb-0 ">Extra Information</div>
+                <div className="section-title mt-4 mb-0 text-black">Extra Information</div>
 
                 <div className="col-md-6">
                     <label className="form-label">
@@ -332,7 +332,7 @@ const CreateMarketplaceItem = () => {
                 </div>
 
                 {/* ────── Section: Media ────── */}
-                <div className="section-title mt-4 mb-0 ">Upload Image</div>
+                <div className="section-title mt-4 mb-0 text-black">Upload Image</div>
 
                 <div className="col-12">
                     <input type="file" accept="image/*" multiple onChange={handleFileChange} className="form-control" />

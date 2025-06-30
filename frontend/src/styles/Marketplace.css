@@ -55,6 +55,13 @@
   margin-left: 1rem;
 }
 
+/* Form */
+.marketplace-form {
+  background-color: #ffffff25;
+}
+.marketplace-form .form-lable{
+color: #000 !important;
+}
 /* PhoneInput main input */
 .react-tel-input .form-control {
   color: #000 !important; /* Black text */
