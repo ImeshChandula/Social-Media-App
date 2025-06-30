@@ -80,6 +80,27 @@ const CreateMarketplaceItem = () => {
         }
     };
 
+    const addTag = (e) => {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            const value = e.target.value.trim().replace(/,$/, "");
+            if (value && !formData.tags.includes(value) && formData.tags.length < 20) {
+                setFormData((prev) => ({
+                    ...prev,
+                    tags: [...prev.tags, value],
+                }));
+            }
+            e.target.value = '';
+        }
+    };
+
+    const removeTag = (index) => {
+        setFormData((prev) => ({
+            ...prev,
+            tags: prev.tags.filter((_, i) => i !== index),
+        }));
+    };
+
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
         const newImages = [];
@@ -311,10 +332,33 @@ const CreateMarketplaceItem = () => {
                 <div className="section-title mt-4 mb-0 text-black">Extra Information</div>
 
                 <div className="col-md-6">
-                    <label className="form-label">
-                        Tags <small className="text-white-50">(optional)</small>
-                    </label>
-                    <input type="text" name="tags" className="form-control" placeholder="Comma-separated tags" value={formData.tags.join(", ")} onChange={handleChange} />
+                    <label className="form-label">Tags (press Enter or comma)</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Type tag and press Enter"
+                        onKeyDown={addTag}
+                    />
+                    {formData.tags.length > 0 && (
+                        <div className="d-flex flex-wrap gap-2 mt-2">
+                            {formData.tags.map((tag, idx) => (
+                                <span
+                                    key={idx}
+                                    className="badge bg-secondary d-flex align-items-center"
+                                    style={{ paddingRight: '0.5rem', fontSize: '16px' }}
+                                >
+                                    {tag}
+                                    <button
+                                        type="button"
+                                        className="btn-close btn-close-white ms-2"
+                                        style={{ fontSize: '0.7rem' }}
+                                        aria-label="Remove"
+                                        onClick={() => removeTag(idx)}
+                                    ></button>
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="col-md-6">
