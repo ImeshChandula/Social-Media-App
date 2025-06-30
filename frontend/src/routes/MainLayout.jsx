@@ -1,9 +1,7 @@
 import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import styles from "../styles/DashboardStyle";
-
 import Sidebar from "../components/Sidebar";
-
 import Videos from "../pages/Videos";
 import NotificationPage from "../pages/Notifications";
 import ProfilePage from "../pages/ProfilePage";
@@ -19,12 +17,7 @@ import useAuthStore from "../store/authStore";
 import Contact from "./Contact";
 import NotificationForMobile from "../pages/NotificationForMobile";
 import CreateMarketplaceItem from "../components/CreateMarketplaceItem";
-import StoryViewer from "../components/StoryViewer";
-
-/* inside <Routes> … */
-<Route path="/stories/:storyId" element={<StoryViewer />} />
-
-
+import StoryView from "../components/StoryView";
 
 const MainLayout = () => {
   const { checkAuth } = useAuthStore();
@@ -68,7 +61,7 @@ const MainLayout = () => {
               <Route path="/contact" element={<Contact />} />
               <Route path="/notifications" element={<NotificationForMobile />} />
               <Route path="/create-marketplace-item" element={<CreateMarketplaceItem />} />
-              <Route path="/stories/:storyId" element={<StoryViewer />} />
+              <Route path="/stories/:id" element={<StoryView />} />
             </Routes>
           </div>
         </div>
