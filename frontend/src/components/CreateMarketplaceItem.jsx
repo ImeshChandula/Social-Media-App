@@ -3,6 +3,9 @@ import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate, useLocation } from "react-router-dom";
 
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/bootstrap.css';
+
 const initialState = {
     category: "",
     title: "",
@@ -40,6 +43,16 @@ const CreateMarketplaceItem = () => {
 
     const [images, setImages] = useState([]); // now an array
     const [previewUrls, setPreviewUrls] = useState([]);
+
+    const [errors, setErrors] = useState({
+        phone: "",
+        whatsapp: "",
+    });
+
+    const validatePhoneNumber = (num) => {
+        const pattern = /^\+?[1-9]\d{1,14}$/; // E.164 format
+        return pattern.test(num);
+    };
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -187,17 +200,75 @@ const CreateMarketplaceItem = () => {
 
                 <div className="col-md-4">
                     <label className="form-label">Phone</label>
-                    <input type="text" name="contactDetails.phone" className="form-control" placeholder="Phone number" value={formData.contactDetails.phone} onChange={handleChange} />
+                    <PhoneInput
+                        enableSearch={true}
+                        searchPlaceholder="Search country"
+                        inputProps={{
+                            name: 'contactDetails.phone',
+                            required: false,
+                            className: `form-control ${errors.phone ? 'is-invalid' : ''}`
+                        }}
+                        value={formData.contactDetails.phone}
+                        onChange={(phone) =>
+                            setFormData((prev) => ({
+                                ...prev,
+                                contactDetails: {
+                                    ...prev.contactDetails,
+                                    phone: `+${phone}`
+                                }
+                            }))
+                        }
+                        onBlur={() => {
+                            setErrors((prev) => ({
+                                ...prev,
+                                phone:
+                                    formData.contactDetails.phone &&
+                                        !validatePhoneNumber(formData.contactDetails.phone)
+                                        ? 'Invalid phone number. Use international format.'
+                                        : ''
+                            }));
+                        }}
+                    />
+                    {errors.phone && <div className="invalid-feedback d-block">{errors.phone}</div>}
+                </div>
+
+                <div className="col-md-4">
+                    <label className="form-label">WhatsApp</label>
+                    <PhoneInput
+                        enableSearch={true}
+                        searchPlaceholder="Search country"
+                        inputProps={{
+                            name: 'contactDetails.whatsapp',
+                            required: false,
+                            className: `form-control ${errors.whatsapp ? 'is-invalid' : ''}`
+                        }}
+                        value={formData.contactDetails.whatsapp}
+                        onChange={(whatsapp) =>
+                            setFormData((prev) => ({
+                                ...prev,
+                                contactDetails: {
+                                    ...prev.contactDetails,
+                                    whatsapp: `+${whatsapp}`
+                                }
+                            }))
+                        }
+                        onBlur={() => {
+                            setErrors((prev) => ({
+                                ...prev,
+                                whatsapp:
+                                    formData.contactDetails.whatsapp &&
+                                        !validatePhoneNumber(formData.contactDetails.whatsapp)
+                                        ? 'Invalid WhatsApp number. Use international format.'
+                                        : ''
+                            }));
+                        }}
+                    />
+                    {errors.whatsapp && <div className="invalid-feedback d-block">{errors.whatsapp}</div>}
                 </div>
 
                 <div className="col-md-4">
                     <label className="form-label">Email</label>
                     <input type="email" name="contactDetails.email" className="form-control" placeholder="Email address" value={formData.contactDetails.email} onChange={handleChange} />
-                </div>
-
-                <div className="col-md-4">
-                    <label className="form-label">WhatsApp</label>
-                    <input type="text" name="contactDetails.whatsapp" className="form-control" placeholder="WhatsApp number" value={formData.contactDetails.whatsapp} onChange={handleChange} />
                 </div>
 
                 {/* ────── Section: Location ────── */}

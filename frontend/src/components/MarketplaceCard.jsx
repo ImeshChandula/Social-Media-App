@@ -90,6 +90,8 @@ const MarketplaceCard = ({
                                         <div className="text-dark fw-semibold"> {item.author.username} </div>
                                         <small className="text-muted"> {new Date(item.createdAt).toLocaleDateString()} </small>
                                         <br />
+                                        <small className="text-muted"> {new Date(item.expiresAt).toLocaleDateString()} </small>
+                                        <br />
                                         <small className="text-muted">
                                             {item.expiresAt
                                                 ? new Date(

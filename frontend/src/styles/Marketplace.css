@@ -54,3 +54,74 @@
 .card-header .text-muted + .text-muted {
   margin-left: 1rem;
 }
+
+/* PhoneInput main input */
+.react-tel-input .form-control {
+  color: #000 !important; /* Black text */
+  background-color: #fff !important; /* White background */
+  border: 1px solid #ced4da !important; /* Bootstrap default border */
+  border-radius: 0.375rem !important; /* Bootstrap rounded */
+  padding-left: 3.5rem !important; /* to account for the flag dropdown */
+  height: calc(2.25rem + 2px) !important; /* Bootstrap input height */
+  font-size: 1rem !important;
+  box-shadow: none !important;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+}
+
+/* Focus state */
+.react-tel-input .form-control:focus {
+  border-color: #86b7fe !important; /* Bootstrap blue focus */
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important; /* Bootstrap focus ring */
+  outline: none !important;
+}
+
+/* Flag dropdown container */
+.react-tel-input .flag-dropdown {
+  border: 1px solid #ced4da !important;
+  border-radius: 0.375rem 0 0 0.375rem !important; /* Rounded left corners */
+  background-color: #fff !important;
+  height: calc(2.25rem + 2px) !important;
+  width: 3.5rem !important;
+  margin-right: 0.25rem !important;
+}
+
+/* Flag dropdown hover and focus */
+.react-tel-input .flag-dropdown:hover,
+.react-tel-input .flag-dropdown:focus {
+  border-color: #86b7fe !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+  outline: none !important;
+  cursor: pointer !important;
+}
+
+/* Dropdown list */
+.react-tel-input .country-list {
+  background: #fff !important;
+  border: 1px solid #ced4da !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  max-height: 240px !important;
+  overflow-y: auto !important;
+  color: #000 !important;
+  font-size: 0.9rem !important;
+}
+
+/* Search input inside dropdown */
+.react-tel-input .country-list .search {
+  padding: 0.5rem !important;
+  border-bottom: 1px solid #ced4da !important;
+}
+
+.react-tel-input .country-list .search input {
+  width: 100% !important;
+  padding: 0.375rem 0.75rem !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 0.375rem !important;
+  font-size: 0.9rem !important;
+  color: #000 !important;
+}
+
+.react-tel-input .country-list .country:hover,
+.react-tel-input .country-list .country.highlight {
+  background-color: #0d6dfd33 !important; /* Bootstrap primary */
+  color: #000000 !important;
+}
