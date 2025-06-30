@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { axiosInstance } from "../lib/axios";
+import toast from 'react-hot-toast';
 import '../styles/TicketsContent.css';
 
 const APPEAL_STATUS = {
@@ -103,14 +104,17 @@ const TicketsContent = () => {
     }
 
     try {
-      await axiosInstance.patch(`appeal/update/${editAppeal.id || editAppeal._id}`, editForm);
-      alert('Appeal updated successfully');
-      setEditAppeal(null); // Close modal
-      setEditForm({ status: '', priority: '', adminNotes: '', responseMessage: '' }); // Reset form
-      fetchAppeals();
+      const response = await axiosInstance.patch(`appeal/update/${editAppeal.id}`, editForm);
+      
+      if (response.data.success) {
+        toast.success(response.data.message || 'Appeal updated successfully');
+        setEditAppeal(null); // Close modal
+        setEditForm({ status: '', priority: '', adminNotes: '', responseMessage: '' }); // Reset form
+        fetchAppeals();
+      }
     } catch (err) {
       console.error("Error updating appeal:", err);
-      alert(err.response?.data?.message || 'Failed to update appeal');
+      toast.error(err.response?.data?.message || 'Failed to update appeal');
     }
   };
 
