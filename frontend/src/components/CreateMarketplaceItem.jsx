@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/bootstrap.css';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 const initialState = {
     category: "",
@@ -49,9 +50,10 @@ const CreateMarketplaceItem = () => {
         whatsapp: "",
     });
 
-    const validatePhoneNumber = (num) => {
-        const pattern = /^\+?[1-9]\d{1,14}$/; // E.164 format
-        return pattern.test(num);
+    const validatePhoneNumber = (phone) => {
+        if (!phone) return false;
+        const phoneNumber = parsePhoneNumberFromString(phone);
+        return phoneNumber ? phoneNumber.isValid() : false;
     };
 
     const handleChange = (e) => {
@@ -224,7 +226,7 @@ const CreateMarketplaceItem = () => {
                                 phone:
                                     formData.contactDetails.phone &&
                                         !validatePhoneNumber(formData.contactDetails.phone)
-                                        ? 'Invalid phone number. Use international format.'
+                                        ? 'Invalid phone number. Please enter a valid number for the selected country.'
                                         : ''
                             }));
                         }}
