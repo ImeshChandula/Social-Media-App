@@ -269,7 +269,12 @@ const MarketplaceCard = ({
                                     <div className="col-12">
                                         <div className="d-flex flex-column">
                                             <span className="text-muted small fw-bold">Phone</span>
-                                            <span className="text-dark">{item.contactDetails.phone}</span>
+                                            <a
+                                                href={`tel:${item.contactDetails.phone}`}
+                                                className="text-dark text-decoration-none"
+                                            >
+                                                {item.contactDetails.phone}
+                                            </a>
                                         </div>
                                     </div>
                                 )}
@@ -277,7 +282,14 @@ const MarketplaceCard = ({
                                     <div className="col-12">
                                         <div className="d-flex flex-column">
                                             <span className="text-muted small fw-bold">Email</span>
-                                            <span className="text-dark">{item.contactDetails.email}</span>
+                                            <a
+                                                href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(item.contactDetails.email)}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-dark text-decoration-none"
+                                            >
+                                                {item.contactDetails.email}
+                                            </a>
                                         </div>
                                     </div>
                                 )}
@@ -285,7 +297,14 @@ const MarketplaceCard = ({
                                     <div className="col-12">
                                         <div className="d-flex flex-column">
                                             <span className="text-muted small fw-bold">Whatsapp</span>
-                                            <span className="text-dark">{item.contactDetails.whatsapp}</span>
+                                            <a
+                                                href={`https://wa.me/${item.contactDetails.whatsapp}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-dark text-decoration-none"
+                                            >
+                                                {item.contactDetails.whatsapp}
+                                            </a>
                                         </div>
                                     </div>
                                 )}
