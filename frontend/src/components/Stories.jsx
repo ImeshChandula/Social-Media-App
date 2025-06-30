@@ -17,6 +17,7 @@ const Stories = ({
   onDelete,
   onStoriesUpdate,
   isPreview = false,
+  onOpen
 }) => {
   /* ─────────────────── state ─────────────────── */
   const [showPopup, setShowPopup]     = useState(false);  // ⋮ menu
@@ -142,7 +143,7 @@ const Stories = ({
         <div
           className="position-relative text-white"
           style={{ width: 120, cursor: "pointer" }}
-          onClick={() => setShowFull(true)}   /* ← OPEN FULLSCREEN */
+          onClick={() => (onOpen ? onOpen() : setShowFull(true))}   /* ← OPEN FULLSCREEN */
         >
           <div
             className="rounded overflow-hidden"
@@ -197,8 +198,15 @@ const Stories = ({
 
             {/* reuse SAME component in “full card” mode */}
             <div
-              className="w-100 px-3"
-              style={{ maxWidth: 600, overflowY: "auto", maxHeight: "100%" }}
+              className="rounded shadow-lg bg-dark text-white"
+              style={{
+    width: "100%",
+    maxWidth: "400px",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    padding: "1rem",
+    borderRadius: "12px",
+  }}
             >
               {/* everything below identical to non‑preview render */}
               <div className="card bg-dark text-white border-0 shadow-sm">

@@ -1,54 +1,52 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { axiosInstance } from '../lib/axios';
-import Stories from '../components/Stories';
-import toast from 'react-hot-toast';
+import { useCallback, useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { axiosInstance } from "../lib/axios";
+import Stories from "../components/Stories";
+import toast from "react-hot-toast";
 
 /**
- * Full‑screen Facebook‑style story viewer.
- * Route:  /stories/:id
+ * Full-screen story viewer for route /stories/:id
  */
 const StoryView = () => {
-  const { id }      = useParams();
-  const navigate    = useNavigate();
-  const [story, setStory]     = useState(null);
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState('');
+  const [error, setError] = useState("");
 
-  /** fetch story once (and mark as viewed) */
   const fetchStory = useCallback(async () => {
     try {
       setLoading(true);
-      setError('');
-      // 1) get story + user
+      setError("");
       const { data } = await axiosInstance.get(`/stories/${id}`);
       const { story: s, user } = data;
 
       setStory({
         ...s,
-        _id : s._id || s.id,
+        _id: s._id || s.id,
         user: {
           id: user.id,
           username: user.username,
           profilePicture: user.profilePicture,
-          firstName : user.firstName  ?? '',
-          lastName  : user.lastName   ?? ''
-        }
+          firstName: user.firstName ?? "",
+          lastName: user.lastName ?? "",
+        },
       });
 
-      // 2) mark viewed (best‑effort)
       axiosInstance.put(`/stories/${id}/view`).catch(() => {});
     } catch (err) {
-      const msg = err?.response?.data?.message || 'Failed to load story';
+      const msg = err?.response?.data?.message || "Failed to load story";
       setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   }, [id]);
 
-  useEffect(() => { fetchStory(); }, [fetchStory]);
+  useEffect(() => {
+    fetchStory();
+  }, [fetchStory]);
 
-  /* ─── render ───────────────────────────────────────────── */
   if (loading) {
     return (
       <div className="d-flex vh-100 justify-content-center align-items-center text-white">
@@ -75,7 +73,6 @@ const StoryView = () => {
         <i className="bi bi-arrow-left" /> Back
       </button>
 
-      {/* reuse <Stories/> in non‑preview mode */}
       <Stories
         post={story}
         isUserPost={story.user?.id === story.userId}

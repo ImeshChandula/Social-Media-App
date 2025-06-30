@@ -1,12 +1,13 @@
-
 import { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import Stories from "./Stories";
+import StoryCarousel from "./StoryCarousel";
 
 const Feedstories = ({ type = "all" }) => {
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [carouselIndex, setCarouselIndex] = useState(null); // Index for StoryCarousel
 
   useEffect(() => {
     const fetchFeed = async () => {
@@ -19,59 +20,53 @@ const Feedstories = ({ type = "all" }) => {
         const endpoint = type === "me" ? "/stories/me" : "/stories/feed";
         const res = await axiosInstance.get(endpoint);
 
-        console.log('Raw API response:', res.data);
+        console.log("Raw API response:", res.data);
 
         let processedStories = [];
         if (type === "me") {
-          // Handle "me" endpoint response
           const userStories = Array.isArray(res.data.stories) ? res.data.stories : [];
-          processedStories = userStories.map(story => ({
+          processedStories = userStories.map((story) => ({
             ...story,
-            _id: story._id || story.id, // Normalize ID field
+            _id: story._id || story.id,
             user: story.user || {
-              id: story.userId || 'unknown',
-              username: story.user?.username || 'Unknown User',
-              profilePicture: story.user?.profilePicture || 'https://via.placeholder.com/40',
-              firstName: story.user?.firstName || '',
-              lastName: story.user?.lastName || ''
-            }
+              id: story.userId || "unknown",
+              username: story.user?.username || "Unknown User",
+              profilePicture: story.user?.profilePicture || "https://via.placeholder.com/40",
+              firstName: story.user?.firstName || "",
+              lastName: story.user?.lastName || "",
+            },
           }));
-          console.log('Processed user stories:', processedStories);
+          console.log("Processed user stories:", processedStories);
         } else {
-          // Handle "feed" endpoint response
           const feedStories = Array.isArray(res.data.stories) ? res.data.stories : [];
-          processedStories = feedStories.flatMap(group => {
+          processedStories = feedStories.flatMap((group) => {
             const groupStories = Array.isArray(group.stories) ? group.stories : [];
-            return groupStories.map(story => ({
+            return groupStories.map((story) => ({
               ...story,
-              _id: story._id || story.id, // Normalize ID field
+              _id: story._id || story.id,
               user: group.user || {
-                id: story.userId || 'unknown',
-                username: group.user?.username || 'Unknown User',
-                profilePicture: group.user?.profilePicture || 'https://via.placeholder.com/40',
-                firstName: group.user?.firstName || '',
-                lastName: group.user?.lastName || ''
-              }
+                id: story.userId || "unknown",
+                username: group.user?.username || "Unknown User",
+                profilePicture: group.user?.profilePicture || "https://via.placeholder.com/40",
+                firstName: group.user?.firstName || "",
+                lastName: group.user?.last waterfall
+              },
             }));
           });
 
-          // Filter for friends' and public stories
-          processedStories = processedStories.filter(story =>
-            story.privacy === 'friends' || story.privacy === 'public'
+          processedStories = processedStories.filter(
+            (story) => story.privacy === "friends" || story.privacy === "public"
           );
 
-          // Sort by createdAt (newest first)
           processedStories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-          console.log('Processed feed stories:', processedStories);
+          console.log("Processed feed stories:", processedStories);
         }
 
         setStories(processedStories);
 
-        // Mark stories as viewed for feed (not for "me")
         if (type !== "me" && processedStories.length > 0) {
           await Promise.all(
-            processedStories.map(story =>
+            processedStories.map((story) =>
               story._id ? markStoryAsViewed(story._id) : Promise.resolve()
             )
           );
@@ -92,8 +87,8 @@ const Feedstories = ({ type = "all" }) => {
     try {
       console.log(`Marking story ${storyId} as viewed`);
       const res = await axiosInstance.put(`/stories/${storyId}/view`);
-      setStories(prev =>
-        prev.map(story =>
+      setStories((prev) =>
+        prev.map((story) =>
           story._id === storyId
             ? { ...story, viewCount: res.data.viewCount || story.viewCount, viewers: res.data.viewers || story.viewers }
             : story
@@ -106,19 +101,29 @@ const Feedstories = ({ type = "all" }) => {
 
   const handleDelete = (storyId) => {
     console.log(`Deleting story ${storyId}`);
-    setStories(prev => prev.filter(story => story._id !== storyId));
+    setStories((prev) => prev.filter((story) => story._id !== storyId));
   };
 
   const handleUpdate = (updatedStory) => {
     console.log(`Updating story ${updatedStory._id}`);
-    setStories(prev =>
-      prev.map(story =>
+    setStories((prev) =>
+      prev.map((story) =>
         story._id === updatedStory._id ? { ...story, ...updatedStory } : story
       )
     );
   };
 
-  console.log('Current state:', { loading, error, stories });
+  // Open StoryCarousel
+  const openCarousel = (index) => {
+    setCarouselIndex(index);
+  };
+
+  // Close StoryCarousel
+  const closeCarousel = () => {
+    setCarouselIndex(null);
+  };
+
+  console.log("Current state:", { loading, error, stories });
 
   return (
     <div className="container my-4">
@@ -152,18 +157,18 @@ const Feedstories = ({ type = "all" }) => {
           <div
             className="d-flex overflow-x-auto pb-3"
             style={{
-              scrollSnapType: 'x mandatory',
-              WebkitOverflowScrolling: 'touch',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-              minHeight: '160px'
+              scrollSnapType: "x mandatory",
+              WebkitOverflowScrolling: "touch",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              minHeight: "160px",
             }}
           >
-            {stories.map(story => (
+            {stories.map((story, index) => (
               <div
                 key={story._id || `story-${Math.random()}`}
                 className="flex-shrink-0 mx-2"
-                style={{ width: '120px', scrollSnapAlign: 'start' }}
+                style={{ width: "120px", scrollSnapAlign: "start" }}
               >
                 <Stories
                   post={story}
@@ -171,11 +176,21 @@ const Feedstories = ({ type = "all" }) => {
                   onDelete={handleDelete}
                   onStoriesUpdate={handleUpdate}
                   isPreview={true}
+                  onOpen={() => openCarousel(index)} // Trigger StoryCarousel
                 />
               </div>
             ))}
           </div>
         </>
+      )}
+
+      {/* Render StoryCarousel when a story is clicked */}
+      {carouselIndex !== null && (
+        <StoryCarousel
+          stories={stories}
+          startIndex={carouselIndex}
+          onClose={closeCarousel}
+        />
       )}
 
       <style jsx>{`
