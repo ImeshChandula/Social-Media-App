@@ -17,20 +17,45 @@
 .tickets-table th,
 .tickets-table td {
     padding: 5px 5px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #914cf2;
     font-size: 14px;
     text-align: left;
     vertical-align: middle;
     word-wrap: break-word;
 }
 
+
+/* ─── Table header cells ─────────────────────────────── */
+
 .tickets-table th {
-    background: #f1f5f9;
-    color: #111827;
+    /* A single, smoother indigo‑blue that works well on light tables */
+    background: #6366f1;
+    /* Tailwind “indigo‑500” */
+    color: #ffffff;
+    /* pure white text for contrast */
     font-weight: 600;
     position: sticky;
     top: 0;
     z-index: 2;
+    /* Borders: subtle grid lines that don’t compete with the background */
+    border-bottom: 2px solid #4f46e5;
+    /* slightly darker bottom edge */
+    border-right: 1px solid #e5e7eb;
+    /* light vertical separator */
+}
+
+
+/* Remove the final vertical line so the header feels balanced */
+
+.tickets-table th:last-child {
+    border-right: none;
+}
+
+
+/* Make sure the whole table collapses borders cleanly */
+
+.tickets-table {
+    border-collapse: collapse;
 }
 
 .tickets-table tr:nth-child(even) {
@@ -336,4 +361,49 @@ button,
         padding: 4px 8px;
         font-size: 11px;
     }
+}
+
+
+/* ─── Core table reset ──────────────────────────────── */
+
+.tickets-table {
+    width: 100%;
+    border-collapse: collapse;
+    /* removes double borders / gaps */
+    background: #ffffff;
+    /* overall white canvas */
+}
+
+
+/* ─── Data cells (td) ───────────────────────────────── */
+
+.tickets-table td {
+    background: #ffffff;
+    /* pure‑white cell background */
+    color: #111827;
+    /* dark gray text for readability */
+    padding: 0.75rem 1rem;
+    /* comfortable breathing room */
+    border-bottom: 1px solid #e5e7eb;
+    /* subtle divider line */
+    border: 1px solid #bdc7dc;
+}
+
+
+/* Remove the last row’s divider so it doesn’t look “cut off” */
+
+.tickets-table tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* Optional: gentle hover highlight for better scanability */
+
+.tickets-table tr:hover td {
+    background: #f9fafb;
+}
+
+.tickets-table {
+    border-collapse: collapse;
+    /* removes double lines where borders touch */
 }
