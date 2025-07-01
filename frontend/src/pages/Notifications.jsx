@@ -44,6 +44,12 @@ function NotificationPage() {
     };
   }, []); 
 
+  // Fetch notification count on component mount
+  useEffect(() => {
+    fetchNotificationCount();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Fetch notifications
   const fetchNotifications = async (reset = false) => {
     try {
@@ -126,7 +132,7 @@ function NotificationPage() {
   const toggleDropdown = () => {
     if (!isOpen) {
       fetchNotifications(true);
-      fetchNotificationCount();
+      // Remove fetchNotificationCount() from here since it's now called on mount
     }
     setIsOpen(!isOpen);
   };
