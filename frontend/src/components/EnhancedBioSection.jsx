@@ -2,7 +2,7 @@ import { useState } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { MapPin, Calendar, User, Shield, Info, Briefcase } from 'lucide-react';
+import { MapPin, Calendar, User, Shield, Info, Briefcase, Eye, EyeOff } from 'lucide-react';
 import styles from '../styles/BioSectionStyles';
 
 const EnhancedBioSection = ({ user }) => {
@@ -141,7 +141,7 @@ const EnhancedBioSection = ({ user }) => {
 
               {user?.accountStatus && (
                 <motion.div
-                  style={styles.fullColumn}
+                  style={styles.halfColumn}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5, duration: 0.5 }}
@@ -177,6 +177,52 @@ const EnhancedBioSection = ({ user }) => {
                         }}
                       >
                         {user.accountStatus.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {user && typeof user.isPublic === 'boolean' && (
+                <motion.div
+                  style={styles.halfColumn}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.55, duration: 0.5 }}
+                >
+                  <div
+                    style={{
+                      ...styles.infoCard,
+                      borderLeft: user.isPublic
+                        ? '4px solid #ff6b6b'
+                        : '4px solid #51cf66'
+                    }}
+                  >
+                    <div style={styles.rowBetween}>
+                      <div style={styles.rowCenter}>
+                        {user.isPublic ? (
+                          <Eye size={18} color="white" style={styles.iconSpacing} />
+                        ) : (
+                          <EyeOff size={18} color="white" style={styles.iconSpacing} />
+                        )}
+                        <div>
+                          <h6 style={styles.cardTitle}>Privacy</h6>
+                          <p style={styles.cardText}>
+                            {user.isPublic ? 'Public Profile' : 'Private Profile'}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        style={{
+                          ...styles.badge,
+                          backgroundColor: user.isPublic
+                            ? 'rgba(255, 107, 107, 0.2)'
+                            : 'rgba(81, 207, 102, 0.2)',
+                          color: user.isPublic ? '#ff6b6b' : '#51cf66',
+                          borderColor: user.isPublic ? '#ff6b6b' : '#51cf66'
+                        }}
+                      >
+                        {user.isPublic ? 'PUBLIC' : 'PRIVATE'}
                       </span>
                     </div>
                   </div>
