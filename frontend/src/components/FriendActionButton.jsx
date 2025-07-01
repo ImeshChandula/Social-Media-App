@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
@@ -16,6 +17,7 @@ const FriendActionButton = ({ userId }) => {
                     setFriendStatus(res.data.data.friendStatus);
                 }
             } catch (err) {
+                console.log("Error: " + err);
                 toast.error("Failed to get friend status");
             } finally {
                 setStatusLoading(false);
