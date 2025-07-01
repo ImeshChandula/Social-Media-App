@@ -120,7 +120,6 @@ const checkCurrent = async (req, res) => {
         username: existingUser.username,
         role: existingUser.role,
         accountStatus: existingUser.accountStatus,
-        isPublic: existingUser.isPublic
     };
     
     res.status(200).json(user);

@@ -139,8 +139,6 @@ const getCurrentUser  = async (req, res) => {
 const getUserById = async (req, res) => {
     try {
         const userId = req.params.id;
-        //const currentUserId = req.user.id;  // Add this line
-        //const currentUserRole = req.user.role;  // Add this line
 
         const user = await UserService.findById(userId);
 
@@ -157,49 +155,8 @@ const getUserById = async (req, res) => {
         user.resetOtp = undefined;
         user.resetOtpExpiredAt = undefined;
 
-    //     //newly added privacy feature
-    //     // Check if profile is private and user is not a friend or super admin
-    //     const isProfileOwner = currentUserId === userId;
-    //     const isSuperAdmin = currentUserRole === 'super_admin';
-    //     const isFriend = user.friends && user.friends.includes(currentUserId);
-    
-    //     let userResponse;
-
-    //     if (!user.isPublic && !isProfileOwner && !isSuperAdmin && !isFriend) {
-    //   // Return limited profile information for private profiles
-    //   // Only show profile picture, username, and limited photos
-    //   const limitedPhotos = posts.slice(0, 5).map(post => ({
-    //     id: post.id,
-    //     image: post.image || null
-    //   })).filter(post => post.image);
-
-    //   userResponse = {
-    //     id: user.id,
-    //     username: user.username,
-    //     firstName: user.firstName,
-    //     lastName: user.lastName,
-    //     profilePicture: user.profilePicture,
-    //     isPublic: user.isPublic,
-    //     friendsCount: user.friendsCount,
-    //     limitedPhotos: limitedPhotos,
-    //     isPrivateProfile: true
-    //   };
-    // } else {
-    //     // Return full profile information
-    //   userResponse = {
-    //     ...user,
-    //     friendsCount: user.friendsCount,
-    //     friendRequestCount: user.friendRequestCount,
-    //     postsCount: postsCount,
-    //     isPrivateProfile: false
-    //   };
-    // } 
-
-
-        // Create response object with user data and calculated fields
         const userResponse = {
             ...user,
-            // Access the getter methods to include the counts
             friendsCount: user.friendsCount,
             friendRequestCount: user.friendRequestCount,
             postsCount: postsCount
@@ -409,45 +366,7 @@ const updateUserProfileCoverPhoto = async (req, res) => {
     }
 };
 
-// // 2. Add a new middleware function to check profile visibility for posts
-// const checkProfileAccess = async (req, res, next) => {
-//   try {
-//     const profileUserId = req.params.userId || req.params.id;
-//     const currentUserId = req.user.id;
-//     const currentUserRole = req.user.role;
 
-//     // If it's the profile owner or super admin, allow access
-//     if (currentUserId === profileUserId || currentUserRole === 'super_admin') {
-//       return next();
-//     }
-
-//     // Get the profile user
-//     const profileUser = await UserService.findById(profileUserId);
-//     if (!profileUser) {
-//       return res.status(404).json({ success: false, message: 'User not found' });
-//     }
-
-//     // If profile is public, allow access
-//     if (profileUser.isPublic) {
-//       return next();
-//     }
-
-//     // If profile is private, check if current user is a friend
-//     const isFriend = profileUser.friends && profileUser.friends.includes(currentUserId);
-//     if (!isFriend) {
-//       return res.status(403).json({ 
-//         success: false, 
-//         message: 'This profile is private. You need to be friends to view this content.',
-//         isPrivateProfile: true
-//       });
-//     }
-
-//     next();
-//   } catch (error) {
-//     console.error('Profile access check error:', error);
-//     res.status(500).json({ success: false, message: 'Server error' });
-//   }
-// };
 
 module.exports = {
     getAllUsers,
@@ -458,5 +377,4 @@ module.exports = {
     updateUserProfile,
     updateUserProfileImage,
     updateUserProfileCoverPhoto,
-    //checkProfileAccess
 };
