@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { axiosInstance } from '../lib/axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { BsTrash } from "react-icons/bs";
 
 const CreatePost = () => {
     const initialState = {
@@ -143,10 +144,10 @@ const CreatePost = () => {
                             {formData.media && (
                                 <button
                                     type="button"
-                                    className="btn btn-sm btn-outline-danger"
+                                    className="btn btn-sm btn-outline-danger m-1"
                                     onClick={handleRemoveMedia}
                                 >
-                                    Remove
+                                    Remove All
                                 </button>
                             )}
                         </div>
@@ -158,33 +159,73 @@ const CreatePost = () => {
                             multiple
                             onChange={handleChange}
                         />
-                        {formData.mediaPreview.length > 0 && formData.mediaType === 'video' && (
+                        {formData.mediaPreview.length > 0 && (
                             <div className="mt-3">
-                                <p className="text-muted small mb-1">Video Preview:</p>
-                                {formData.mediaPreview.map((preview, idx) => (
-                                    <video
-                                        key={idx}
-                                        src={preview}
-                                        controls
-                                        className="w-100 rounded shadow-sm mb-2"
-                                        style={{ maxHeight: '300px' }}
-                                    />
-                                ))}
-                            </div>
-                        )}
+                                <p className="text-white-50 small mb-2">
+                                    {formData.mediaType === "video" ? "Video Preview:" : "Image Preview:"}
+                                </p>
 
-                        {formData.mediaPreview.length > 0 && formData.mediaType === 'image' && (
-                            <div className="mt-3">
-                                <p className="text-white-50 small mb-1">Image Preview:</p>
-                                {formData.mediaPreview.map((preview, idx) => (
-                                    <img
-                                        key={idx}
-                                        src={preview}
-                                        alt={`preview-${idx}`}
-                                        className="w-100 rounded shadow-sm mb-2"
-                                        style={{ maxHeight: '300px', objectFit: 'contain' }}
-                                    />
-                                ))}
+                                <div className="d-flex flex-wrap gap-3">
+                                    {formData.mediaPreview.map((preview, idx) => (
+                                        <div key={idx} className="position-relative" style={{ width: 120 }}>
+                                            {/* Delete button */}
+                                            <button
+                                                type="button"
+                                                className="bg-danger text-white position-absolute top-0 end-0 m-1 p-1 d-flex align-items-center justify-content-center"
+                                                style={{ borderRadius: "50%", width: 28, height: 28, zIndex: 10 }}
+                                                aria-label="Remove media"
+                                                onClick={() => {
+                                                    if (formData.mediaType === "video") {
+                                                        URL.revokeObjectURL(preview);
+                                                    }
+
+                                                    const newMedia = [...formData.media];
+                                                    const newPreviews = [...formData.mediaPreview];
+
+                                                    newMedia.splice(idx, 1);
+                                                    newPreviews.splice(idx, 1);
+
+                                                    setFormData((prev) => ({
+                                                        ...prev,
+                                                        media: newMedia,
+                                                        mediaPreview: newPreviews,
+                                                        mediaType: newMedia.length === 0 ? "" : prev.mediaType,
+                                                    }));
+                                                }}
+                                            >
+                                                <BsTrash size={16} />
+                                            </button>
+
+                                            {/* Render media */}
+                                            {formData.mediaType === "video" ? (
+                                                <video
+                                                    src={preview}
+                                                    controls
+                                                    className="rounded shadow-sm border"
+                                                    style={{
+                                                        width: "120px",
+                                                        height: "90px",
+                                                        objectFit: "cover",
+                                                        userSelect: "none",
+                                                    }}
+                                                />
+                                            ) : (
+                                                <img
+                                                    src={preview}
+                                                    alt={`preview-${idx}`}
+                                                    className="rounded shadow-sm border"
+                                                    style={{
+                                                        width: "120px",
+                                                        height: "120px",
+                                                        objectFit: "contain",
+                                                        userSelect: "none",
+                                                    }}
+                                                    loading="lazy"
+                                                />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>
