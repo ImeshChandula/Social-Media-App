@@ -79,7 +79,7 @@ const validateAppeal = (req, res, next) => {
     communications: Joi.array().items(Joi.object()).default([]),
 
     status: Joi.string().valid(...Object.values(APPEAL_STATUS)).default(APPEAL_STATUS.PENDING),
-    priority: Joi.string().valid(...Object.values(APPEAL_PRIORITY)).default(APPEAL_PRIORITY.MEDIUM),
+    priority: Joi.string().valid(...Object.values(APPEAL_PRIORITY)).default(APPEAL_PRIORITY.URGENT),
 
   });
 
