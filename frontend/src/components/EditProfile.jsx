@@ -210,7 +210,7 @@ function EditProfile() {
       await axiosInstance.patch(`/users/updateProfile/${userData.id}`, dataToSend);
       toast.success('Profile updated successfully!');
       // In your handleSubmit function, after successful update:
-      await fetchUserData(); // Refresh user data
+      await fetchUserData(); // Refresh user data (updated in privacy bug fix)
       setTimeout(() => {
         navigate(-1);
         }, 3000
