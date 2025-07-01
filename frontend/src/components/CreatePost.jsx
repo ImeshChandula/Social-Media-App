@@ -42,14 +42,18 @@ const CreatePost = () => {
             const previews = [];
             const base64Files = [];
 
-            let detectedType = '';
+            let detectedType = formData.mediaType; // start from existing mediaType
 
             for (const file of files) {
                 const base64 = await handleMediaUpload(file);
                 const type = file.type.startsWith('video') ? 'video' : 'image';
 
-                if (!detectedType) detectedType = type;
-                if (detectedType !== type) {
+                // If no detectedType yet, set it
+                if (!detectedType) {
+                    detectedType = type;
+                }
+                // If detectedType differs from file's type, show error and exit
+                else if (detectedType !== type) {
                     toast.error('You can only upload one type: all images or all videos.');
                     return;
                 }
@@ -58,15 +62,19 @@ const CreatePost = () => {
                 previews.push(type === 'video' ? URL.createObjectURL(file) : base64);
             }
 
-            // Revoke previous previews if videos
-            if (formData.mediaType === 'video') {
-                formData.mediaPreview.forEach(preview => URL.revokeObjectURL(preview));
+            // If changing from video to image or vice versa, revoke old video URLs
+            if (
+                formData.mediaType === 'video' &&
+                detectedType !== 'video' &&
+                formData.mediaPreview.length > 0
+            ) {
+                formData.mediaPreview.forEach((preview) => URL.revokeObjectURL(preview));
             }
 
             setFormData((prev) => ({
                 ...prev,
-                media: base64Files,
-                mediaPreview: previews,
+                media: [...prev.media, ...base64Files],         // append new base64 files
+                mediaPreview: [...prev.mediaPreview, ...previews], // append new previews
                 mediaType: detectedType,
             }));
         } else {
