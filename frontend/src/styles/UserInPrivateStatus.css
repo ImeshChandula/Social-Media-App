@@ -1,0 +1,271 @@
+
+        .pri-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 400px;
+          padding: 20px;
+          margin-top: 2rem;
+        }
+
+        .pri-card {
+          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+          border-radius: 24px;
+          padding: 3rem 2rem;
+          text-align: center;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 
+            0 20px 40px rgba(0, 0, 0, 0.3),
+            0 0 0 1px rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px);
+          max-width: 500px;
+          width: 100%;
+          animation: pri-slideUp 0.8s ease-out;
+        }
+
+        .pri-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: radial-gradient(circle at 50% 0%, rgba(74, 144, 226, 0.1) 0%, transparent 50%);
+          pointer-events: none;
+        }
+
+        .pri-icon-wrapper {
+          position: relative;
+          margin-bottom: 2rem;
+        }
+
+        .pri-icon-bg {
+          width: 120px;
+          height: 120px;
+          margin: 0 auto;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          box-shadow: 
+            0 10px 30px rgba(102, 126, 234, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          animation: pri-pulse 2s ease-in-out infinite;
+        }
+
+        .pri-lock-icon {
+          color: white;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .pri-floating-icons {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          pointer-events: none;
+        }
+
+        .pri-float-icon {
+          position: absolute;
+          color: rgba(255, 255, 255, 0.6);
+          animation: pri-float 3s ease-in-out infinite;
+        }
+
+        .pri-float-1 {
+          top: 20%;
+          right: 10%;
+          animation-delay: -1s;
+        }
+
+        .pri-float-2 {
+          bottom: 25%;
+          left: 15%;
+          animation-delay: -2s;
+        }
+
+        .pri-content {
+          margin-bottom: 2rem;
+        }
+
+        .pri-title {
+          font-size: 1.8rem;
+          font-weight: 700;
+          color: #ffffff;
+          margin-bottom: 1rem;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .pri-description {
+          font-size: 1rem;
+          color: rgba(255, 255, 255, 0.8);
+          line-height: 1.6;
+          margin-bottom: 2rem;
+        }
+
+        .pri-features {
+          text-align: left;
+          max-width: 300px;
+          margin: 0 auto;
+        }
+
+        .pri-feature-item {
+          display: flex;
+          align-items: center;
+          margin-bottom: 0.8rem;
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.7);
+        }
+
+        .pri-feature-dot {
+          width: 6px;
+          height: 6px;
+          background: linear-gradient(45deg, #667eea, #764ba2);
+          border-radius: 50%;
+          margin-right: 0.8rem;
+          flex-shrink: 0;
+        }
+
+        .pri-action-hint {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          padding: 1rem;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          font-size: 0.85rem;
+          color: rgba(255, 255, 255, 0.6);
+        }
+
+        .pri-pulse-dot {
+          width: 8px;
+          height: 8px;
+          background: #4ade80;
+          border-radius: 50%;
+          animation: pri-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes pri-slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes pri-pulse {
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+        }
+
+        @keyframes pri-float {
+          0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+            opacity: 0.6;
+          }
+          50% {
+            transform: translateY(-10px) rotate(180deg);
+            opacity: 0.3;
+          }
+        }
+
+        @keyframes pri-ping {
+          75%, 100% {
+            transform: scale(2);
+            opacity: 0;
+          }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+          .pri-container {
+            min-height: 350px;
+            padding: 15px;
+            margin-top: 1rem;
+          }
+
+          .pri-card {
+            padding: 2rem 1.5rem;
+            border-radius: 20px;
+          }
+
+          .pri-icon-bg {
+            width: 100px;
+            height: 100px;
+          }
+
+          .pri-lock-icon {
+            width: 40px;
+            height: 40px;
+          }
+
+          .pri-title {
+            font-size: 1.5rem;
+          }
+
+          .pri-description {
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+          }
+
+          .pri-features {
+            max-width: 280px;
+          }
+
+          .pri-feature-item {
+            font-size: 0.85rem;
+            margin-bottom: 0.7rem;
+          }
+
+          .pri-action-hint {
+            font-size: 0.8rem;
+            padding: 0.8rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .pri-card {
+            padding: 1.5rem 1rem;
+            margin: 0 10px;
+          }
+
+          .pri-icon-bg {
+            width: 80px;
+            height: 80px;
+          }
+
+          .pri-lock-icon {
+            width: 32px;
+            height: 32px;
+          }
+
+          .pri-title {
+            font-size: 1.3rem;
+          }
+
+          .pri-description {
+            font-size: 0.85rem;
+          }
+
+          .pri-features {
+            max-width: 100%;
+          }
+
+          .pri-feature-item {
+            font-size: 0.8rem;
+          }
+        }
+    
