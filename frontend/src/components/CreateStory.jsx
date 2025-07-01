@@ -102,8 +102,10 @@ const CreateStory = () => {
   };
 
   return (
-    <div className="container py-4 text-white">
-      <h2>Create Story</h2>
+    <div className="container mt-5" style={{ maxWidth: '720px' }}>
+       <div className="card shadow-lg rounded-4 border border-light">
+        <div className="card-body p-4 bg-white text-dark">
+       <h3 className="text-center mb-4">📝 Create a Story</h3>
       {error && <div className="alert alert-danger">{error}</div>}
       {success && <div className="alert alert-success">{success}</div>}
 
@@ -187,6 +189,8 @@ const CreateStory = () => {
           {saving ? "Posting…" : "Post Story"}
         </button>
       </form>
+    </div>
+    </div>
     </div>
   );
 };

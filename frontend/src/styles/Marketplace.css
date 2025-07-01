@@ -56,8 +56,8 @@
 }
 
 /* Form */
-.marketplace-form {
-  background-color: #ffffff25;
+.marketplace-form, .createpost-bg {
+  background-color: #ffffff25 !important;
 }
 .marketplace-form .form-lable{
 color: #000 !important;
