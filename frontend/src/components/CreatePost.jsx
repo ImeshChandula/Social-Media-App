@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom';
 const CreatePost = () => {
     const initialState = {
         content: '',
-        media: null,
-        mediaPreview: '',
+        media: [],            // now an array
+        mediaPreview: [],
         mediaType: '',
         privacy: 'public',
         tags: '',
@@ -37,20 +37,36 @@ const CreatePost = () => {
     const handleChange = async (e) => {
         const { name, value, files } = e.target;
 
-        if (name === 'media' && files?.[0]) {
-            const file = files[0];
-            const base64 = await handleMediaUpload(file);
-            const type = file.type.startsWith('video') ? 'video' : 'image';
+        if (name === 'media' && files?.length > 0) {
+            const previews = [];
+            const base64Files = [];
 
-            if (formData.mediaType === 'video' && formData.mediaPreview) {
-                URL.revokeObjectURL(formData.mediaPreview);
+            let detectedType = '';
+
+            for (const file of files) {
+                const base64 = await handleMediaUpload(file);
+                const type = file.type.startsWith('video') ? 'video' : 'image';
+
+                if (!detectedType) detectedType = type;
+                if (detectedType !== type) {
+                    toast.error('You can only upload one type: all images or all videos.');
+                    return;
+                }
+
+                base64Files.push(base64);
+                previews.push(type === 'video' ? URL.createObjectURL(file) : base64);
+            }
+
+            // Revoke previous previews if videos
+            if (formData.mediaType === 'video') {
+                formData.mediaPreview.forEach(preview => URL.revokeObjectURL(preview));
             }
 
             setFormData((prev) => ({
                 ...prev,
-                media: base64,
-                mediaPreview: type === 'video' ? URL.createObjectURL(file) : base64,
-                mediaType: type,
+                media: base64Files,
+                mediaPreview: previews,
+                mediaType: detectedType,
             }));
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }));
@@ -58,14 +74,14 @@ const CreatePost = () => {
     };
 
     const handleRemoveMedia = () => {
-        if (formData.mediaType === 'video' && formData.mediaPreview) {
-            URL.revokeObjectURL(formData.mediaPreview);
+        if (formData.mediaType === 'video') {
+            formData.mediaPreview.forEach(preview => URL.revokeObjectURL(preview));
         }
 
         setFormData((prev) => ({
             ...prev,
-            media: null,
-            mediaPreview: '',
+            media: [],
+            mediaPreview: [],
             mediaType: '',
         }));
     };
@@ -81,8 +97,8 @@ const CreatePost = () => {
         try {
             const payload = {
                 content: formData.content,
-                media: formData.media,
-                mediaType: formData.media ? formData.mediaType : 'text',
+                media: formData.media.length > 0 ? formData.media : null,
+                mediaType: formData.media.length > 0 ? formData.mediaType : 'text',
                 tags: formData.tags
                     .split(',')
                     .map((tag) => tag.trim())
@@ -104,115 +120,121 @@ const CreatePost = () => {
 
     return (
         <div className="container mt-5" style={{ maxWidth: '720px' }}>
-            <div className="card shadow-lg rounded-4 border border-light">
-                <div className="card-body p-4 bg-white text-dark">
-                    <h3 className="text-center mb-4">📝 Create a Post</h3>
+            <div className="createpost-bg card-body p-4 text-dark rounded-4">
+                <h3 className="text-center mb-4 text-primary fw-bold">📝 Create a Post</h3>
 
-                    <form onSubmit={handleSubmit}>
-                        <div className="mb-3">
-                            <label className="form-label fw-semibold">Content</label>
-                            <textarea
-                                className="form-control"
-                                name="content"
-                                rows="4"
-                                value={formData.content}
-                                onChange={handleChange}
-                                placeholder="What's on your mind?"
-                                style={{ resize: 'vertical' }}
-                            />
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                        <label className="form-label fw-semibold">Content</label>
+                        <textarea
+                            className="form-control"
+                            name="content"
+                            rows="4"
+                            value={formData.content}
+                            onChange={handleChange}
+                            placeholder="What's on your mind?"
+                            style={{ resize: 'vertical' }}
+                        />
+                    </div>
+
+                    <div className="mb-3">
+                        <div className="d-flex justify-content-between align-items-center">
+                            <label className="form-label fw-semibold mb-0">Upload Media</label>
+                            {formData.media && (
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-danger"
+                                    onClick={handleRemoveMedia}
+                                >
+                                    Remove
+                                </button>
+                            )}
                         </div>
-
-                        <div className="mb-3">
-                            <div className="d-flex justify-content-between align-items-center">
-                                <label className="form-label fw-semibold mb-0">Upload Media</label>
-                                {formData.media && (
-                                    <button
-                                        type="button"
-                                        className="btn btn-sm btn-outline-danger"
-                                        onClick={handleRemoveMedia}
-                                    >
-                                        Remove
-                                    </button>
-                                )}
-                            </div>
-                            <input
-                                type="file"
-                                className="form-control"
-                                name="media"
-                                accept="image/*,video/*"
-                                onChange={handleChange}
-                            />
-                            {formData.mediaPreview && formData.mediaType === 'video' && (
-                                <div className="mt-3">
-                                    <p className="text-muted small mb-1">Video Preview:</p>
+                        <input
+                            type="file"
+                            className="form-control"
+                            name="media"
+                            accept="image/*,video/*"
+                            multiple
+                            onChange={handleChange}
+                        />
+                        {formData.mediaPreview.length > 0 && formData.mediaType === 'video' && (
+                            <div className="mt-3">
+                                <p className="text-muted small mb-1">Video Preview:</p>
+                                {formData.mediaPreview.map((preview, idx) => (
                                     <video
-                                        src={formData.mediaPreview}
+                                        key={idx}
+                                        src={preview}
                                         controls
-                                        className="w-100 rounded shadow-sm"
+                                        className="w-100 rounded shadow-sm mb-2"
                                         style={{ maxHeight: '300px' }}
                                     />
-                                </div>
-                            )}
-                            {formData.mediaPreview && formData.mediaType === 'image' && (
-                                <div className="mt-3">
-                                    <p className="text-muted small mb-1">Image Preview:</p>
+                                ))}
+                            </div>
+                        )}
+
+                        {formData.mediaPreview.length > 0 && formData.mediaType === 'image' && (
+                            <div className="mt-3">
+                                <p className="text-white-50 small mb-1">Image Preview:</p>
+                                {formData.mediaPreview.map((preview, idx) => (
                                     <img
-                                        src={formData.mediaPreview}
-                                        alt="preview"
-                                        className="w-100 rounded shadow-sm"
+                                        key={idx}
+                                        src={preview}
+                                        alt={`preview-${idx}`}
+                                        className="w-100 rounded shadow-sm mb-2"
                                         style={{ maxHeight: '300px', objectFit: 'contain' }}
                                     />
-                                </div>
-                            )}
-                        </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
-                        <div className="mb-3">
-                            <label className="form-label fw-semibold">Tags (comma separated)</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                name="tags"
-                                value={formData.tags}
-                                onChange={handleChange}
-                                placeholder="e.g. travel, food, nature"
-                            />
-                        </div>
+                    <div className="mb-3">
+                        <label className="form-label fw-semibold">Tags (comma separated)</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            name="tags"
+                            value={formData.tags}
+                            onChange={handleChange}
+                            placeholder="e.g. travel, food, nature"
+                        />
+                    </div>
 
-                        <div className="mb-3">
-                            <label className="form-label fw-semibold">Privacy</label>
-                            <select
-                                className="form-select"
-                                name="privacy"
-                                value={formData.privacy}
-                                onChange={handleChange}
-                            >
-                                <option value="public">Public</option>
-                                <option value="friends">Friends</option>
-                                <option value="private">Private</option>
-                            </select>
-                        </div>
-
-                        <div className="mb-4">
-                            <label className="form-label fw-semibold">Location</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                name="location"
-                                value={formData.location}
-                                onChange={handleChange}
-                                placeholder="City or place name"
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="btn btn-primary w-100 py-2 fw-bold rounded-pill"
-                            disabled={loading}
+                    <div className="mb-3">
+                        <label className="form-label fw-semibold">Privacy</label>
+                        <select
+                            className="form-select"
+                            name="privacy"
+                            value={formData.privacy}
+                            onChange={handleChange}
                         >
-                            {loading ? 'Posting...' : 'Post Now'}
-                        </button>
-                    </form>
-                </div>
+                            <option value="public">Public</option>
+                            <option value="friends">Friends</option>
+                            <option value="private">Private</option>
+                        </select>
+                    </div>
+
+                    <div className="mb-4">
+                        <label className="form-label fw-semibold">Location</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            name="location"
+                            value={formData.location}
+                            onChange={handleChange}
+                            placeholder="City or place name"
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="btn btn-primary w-100 py-2 fw-bold rounded-pill"
+                        disabled={loading}
+                    >
+                        {loading ? 'Posting...' : 'Post Now'}
+                    </button>
+                </form>
             </div>
         </div>
     );
