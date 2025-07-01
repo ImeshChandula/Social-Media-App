@@ -92,7 +92,6 @@ const PostCard = ({
     );
   };
 
-
   return (
     <div className="container px-2 px-sm-3">
       <div
