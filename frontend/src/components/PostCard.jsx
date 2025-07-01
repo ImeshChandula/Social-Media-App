@@ -65,33 +65,33 @@ const PostCard = ({
 
   const renderMedia = (url, idx) => {
     const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
+    const mediaStyles = {
+      width: "100%",
+      height: "clamp(200px, 30vw, 400px)", // responsive height
+      objectFit: "contain",
+      borderRadius: "0.75rem",
+    };
+
     return isVideo ? (
       <video
         key={idx}
         src={url}
         controls
-        className="rounded"
-        style={{
-          maxHeight: "300px",
-          maxWidth: "100%",
-          objectFit: "cover",
-        }}
+        className="w-100"
+        style={mediaStyles}
       />
     ) : (
       <img
         key={idx}
         src={url}
-        className="img-fluid rounded"
+        className="w-100"
         alt={`Post media ${idx + 1}`}
-        style={{
-          maxHeight: "300px",
-          maxWidth: "100%",
-          objectFit: "cover",
-        }}
         loading="lazy"
+        style={mediaStyles}
       />
     );
   };
+
 
   return (
     <div className="container px-2 px-sm-3">
@@ -143,7 +143,7 @@ const PostCard = ({
                   <div className="d-flex justify-content-center align-items-center position-relative">
                     <button
                       className="bg-dark text-white position-absolute top-50 start-0 translate-middle-y z-1 fw-bold"
-                      style={{fontSize:'20px'}}
+                      style={{ fontSize: '20px' }}
                       onClick={() =>
                         setCurrentMediaIndex(
                           (prev) =>
@@ -158,7 +158,7 @@ const PostCard = ({
 
                     <button
                       className="bg-dark text-white position-absolute top-50 end-0 translate-middle-y z-1 fw-bold"
-                      style={{fontSize:'20px'}}
+                      style={{ fontSize: '20px' }}
                       onClick={() =>
                         setCurrentMediaIndex(
                           (prev) => (prev + 1) % mediaArray.length
