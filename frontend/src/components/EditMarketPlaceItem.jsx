@@ -520,7 +520,7 @@ const EditMarketPlaceItem = () => {
 
                     <div className="col-12">
                         <input type="file" className="form-control" onChange={handleImageChange} multiple accept="image/*" />
-                        <small className="text-muted">You can upload additional images. Existing images will be preserved unless you remove them.</small>
+                        <small className="text-white-50">You can upload additional images. Existing images will be preserved unless you remove them.</small>
                     </div>
 
                     {previewImages.length > 0 && (

@@ -161,14 +161,14 @@ const MarketplaceCard = ({
                                     <>
                                         <button
                                             onClick={handlePrev}
-                                            className="btn btn-dark position-absolute"
+                                            className="bg-light text-black position-absolute"
                                             style={{ top: "50%", left: "10px", transform: "translateY(-50%)" }}
                                         >
                                             <FaChevronLeft />
                                         </button>
                                         <button
                                             onClick={handleNext}
-                                            className="btn btn-dark position-absolute"
+                                            className="bg-light text-black position-absolute"
                                             style={{ top: "50%", right: "10px", transform: "translateY(-50%)" }}
                                         >
                                             <FaChevronRight />
