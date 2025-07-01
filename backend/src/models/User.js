@@ -26,8 +26,8 @@ class User {
     this.resetOtp = userData.resetOtp || '';
     this.resetOtpExpiredAt = userData.resetOtpExpiredAt || new Date().toISOString();
 
-    this.isActive = userData.isActive || true;
-    this.isPublic = userData.isPublic || true; // Profile visibility
+    this.isActive = userData.isActive;
+    this.isPublic = userData.isPublic; // Profile visibility
     this.lastLogin = userData.lastLogin || new Date().toISOString();
 
     this.role = userData.role || ROLES.USER;
@@ -36,7 +36,7 @@ class User {
     
     // Timestamps
     this.createdAt = userData.createdAt || new Date().toISOString();
-    this.updatedAt = new Date().toISOString();
+    this.updatedAt = userData.createdAt || new Date().toISOString();
   }
 
 

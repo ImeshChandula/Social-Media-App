@@ -22,8 +22,8 @@ const validateUser = (req, res, next) => {
     friends: Joi.array().items(Joi.string()).optional(),
     friendRequests: Joi.array().items(Joi.string()).optional(),
 
-    isActive: Joi.boolean().optional(),
-    isPublic: Joi.boolean().optional(), // Profile visibility
+    isActive: Joi.boolean().default(true),
+    isPublic: Joi.boolean().default(true), // Profile visibility
     lastLogin: Joi.date().iso().optional(),
 
     role: Joi.string().valid('user', 'admin', 'super_admin').optional(),
