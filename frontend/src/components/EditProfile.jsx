@@ -463,7 +463,7 @@ function EditProfile() {
                     <p className="privacy-description">
                       {formData.isPublic 
                         ? 'Everyone can see your posts, photos, and profile details'
-                        : 'Only your friends can see your posts, photos, and profile details. Others will only see your profile picture, name, and a few photos.'
+                        : 'Only your friends can see your posts, photos, and profile details. Others will only see your profile picture, name and your about only.'
                       }
                     </p>
                   </div>
