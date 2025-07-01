@@ -69,7 +69,7 @@ function EditProfile() {
             birthday: data.user.birthday ? data.user.birthday.split('T')[0] : '',
             accountStatus: data.user.accountStatus || 'active',
             jobCategory: data.user.jobCategory || 'None',
-            isPublic: data.user.isPublic !== undefined ? data.user.isPublic : true // default to true if not set
+            isPublic: data.user.isPublic 
         });
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -207,15 +207,18 @@ function EditProfile() {
         delete dataToSend.birthday;
       }
 
-      await axiosInstance.patch(`/users/updateProfile/${userData.id}`, dataToSend);
-      toast.success('Profile updated successfully!');
-      // In your handleSubmit function, after successful update:
-      await fetchUserData(); // Refresh user data (updated in privacy bug fix)
-      setTimeout(() => {
-        navigate(-1);
-        }, 3000
-      );
-      checkAuth();
+      const response = await axiosInstance.patch(`/users/updateProfile/${userData.id}`, dataToSend);
+      
+      if (response.data.success) {
+        toast.success(response.data.message || 'Profile updated successfully!');
+      
+        await fetchUserData(); 
+        setTimeout(() => {
+          navigate(-1);
+          }, 3000
+        );
+        checkAuth();
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
       const errorMessage = error.response?.data?.message || 'Error updating profile';

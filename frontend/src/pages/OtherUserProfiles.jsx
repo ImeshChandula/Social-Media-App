@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
 import OtherUserPosts from "../components/OtherUserPosts";
