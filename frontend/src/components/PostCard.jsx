@@ -93,7 +93,7 @@ const PostCard = ({
   };
 
   return (
-    <div className="container px-2 px-sm-3">
+    <div className="container px-0">
       <div
         className="card bg-white border-secondary text-black mb-4 shadow-sm rounded-4 mx-auto"
       >

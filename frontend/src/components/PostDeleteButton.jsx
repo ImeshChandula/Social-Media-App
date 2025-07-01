@@ -3,6 +3,7 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
+import { FiTrash2 } from "react-icons/fi";
 
 const PostDeleteButton = ({ postId, onDeleteSuccess }) => {
   const MySwal = withReactContent(Swal);
@@ -43,10 +44,11 @@ const PostDeleteButton = ({ postId, onDeleteSuccess }) => {
 
   return (
     <button
-      className="dropdown-item text-danger"
+      className="dropdown-item text-danger d-flex align-items-center gap-2"
       onClick={handleDelete}
       type="button"
     >
+      <FiTrash2 size={16} />
       Delete
     </button>
   );
