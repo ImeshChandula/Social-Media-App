@@ -1,6 +1,7 @@
 const MarketPlaceService = require('../services/marketplaceService');
 const MarketplaceFeedAlgorithm = require('../algorithms/MarketFeedAlgorithm');
 const { handleMediaUpload } = require('../utils/handleMediaUpload');
+const { areImagesUnchanged } = require('../utils/checkImagesAreSame');
 const populateAuthor = require('../utils/populateAuthor');
 
 const marketplaceService = new MarketPlaceService();
@@ -204,8 +205,8 @@ const updateItem = async (req, res) => {
             return res.status(400).json({ success: false, message: "Failed to update item data"});
         }
 
-        const updateData = {};
-        if (images != undefined) {
+        // Handle images only if they have changed
+        if (images != undefined && !areImagesUnchanged(images, item.images)) {
             const mediaType = "image";
 
             const result = await handleMediaUpload(images, mediaType);
@@ -219,12 +220,13 @@ const updateItem = async (req, res) => {
                 });
             }
 
+            const updateData = {};
             updateData.images = result.imageUrl;
-        }
-
-        updatedItem = await marketplaceService.updateById(itemId, updateData);
-        if (!updatedItem) {
-            return res.status(400).json({ success: false, message: "Failed to update item images"});
+            
+            updatedItem = await marketplaceService.updateById(itemId, updateData);
+            if (!updatedItem) {
+                return res.status(400).json({ success: false, message: "Failed to update item images"});
+            }
         }
 
         return res.status(200).json({ success: true, message: "Item updated successfully", data: updatedItem});
