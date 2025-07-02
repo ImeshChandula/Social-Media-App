@@ -2,6 +2,7 @@ const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const {deleteAllComments} = require('../services/userDeletionService');
 const { handleMediaUpload } = require('../utils/handleMediaUpload');
+const { areImagesUnchanged } = require('../utils/checkImagesAreSame');
 const notificationUtils = require('../utils/notificationUtils');
 
 
@@ -409,20 +410,6 @@ const updatePostByPostId = async (req, res) => {
         if (tags !== undefined) updateData.tags = tags;
         if (privacy !== undefined) updateData.privacy = privacy;
         if (location !== undefined) updateData.location = location;
-        if (media !== undefined) {
-            const result = await handleMediaUpload(media, mediaType);
-            if (!result.success) {
-                return res.status(result.code).json({
-                    success: false,
-                    error: result.error,
-                    message: result.message,
-                    ...(result.suggestion && { suggestion: result.suggestion }),
-                    ...(result.maxSize && { maxSize: result.maxSize })
-                });
-            }
-
-            updateData.media = result.imageUrl;
-        }
         
         // Add edit history if content is changed
         if (content !== undefined && content !== existingPost.content) {
@@ -444,9 +431,27 @@ const updatePostByPostId = async (req, res) => {
         }
         
         // Update the post
-        const updatedPost = await PostService.updateById(postId, updateData);
+        let updatedPost = await PostService.updateById(postId, updateData);
         if (!updatedPost) {
             return res.status(404).json({ message: 'Failed to update post' });
+        }
+
+        if (media !== undefined && !areImagesUnchanged(media, existingPost.media)) {
+            const result = await handleMediaUpload(media, mediaType);
+            if (!result.success) {
+                return res.status(result.code).json({
+                    success: false,
+                    error: result.error,
+                    message: result.message,
+                    ...(result.suggestion && { suggestion: result.suggestion }),
+                    ...(result.maxSize && { maxSize: result.maxSize })
+                });
+            }
+
+            updatedPost = await PostService.updateById(postId, { media: result.imageUrl });
+            if (!updatedPost) {
+                return res.status(404).json({ message: 'Failed to update post' });
+            }
         }
 
         res.status(200).json({ message: 'Post updated successfully', post: updatedPost });

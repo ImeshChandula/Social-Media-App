@@ -3,6 +3,7 @@ const PostService = require('../services/postService');
 const CommentService = require('../services/commentService');
 const notificationUtils = require('../utils/notificationUtils');
 const { handleMediaUpload } = require('../utils/handleMediaUpload');
+const { areImagesUnchanged } = require('../utils/checkImagesAreSame');
 
 
 //@desc     Add comment to post
@@ -348,7 +349,7 @@ const updateComment = async(req, res) => {
         const updateData = {};
 
         if (text !== undefined) updateData.text = text;
-        if (media !== undefined) {
+        if (media !== undefined && !areImagesUnchanged(media, comment.media)) {
             const mediaType = "image";
 
             const result = await handleMediaUpload(media, mediaType);
