@@ -225,7 +225,7 @@ const ResetPassword = () => {
                                 </div>
                             </div>
                             
-                            <div className="form-group">
+                            <div className="reset-form-group">
                                 <label htmlFor="newPassword">New Password</label>
                                 <div className="input-with-icon">
                                     <Lock className="input-icon" />
@@ -247,7 +247,7 @@ const ResetPassword = () => {
                                 </div>
                             </div>
                             
-                            <div className="form-group">
+                            <div className="reset-form-group">
                                 <label htmlFor="confirmPassword">Confirm Password</label>
                                 <div className="input-with-icon">
                                     <Lock className="input-icon" />
