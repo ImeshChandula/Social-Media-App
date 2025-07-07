@@ -180,7 +180,7 @@ const PostCard = ({
         </div>
 
         {/* Footer */}
-        <div className="card-footer px-4 bg-white d-flex justify-content-between text-black small rounded-bottom-4 border-top border-white-50 btn btn-light d-flex align-items-center px-3 py-1">
+        <div className="card-footer px-4 bg-white d-flex justify-content-between text-black small rounded-bottom-4 border-top border-white-50 ">
           <div className="d-flex align-items-center gap-1">
             <PostLikeButton
               postId={postId}
