@@ -7,6 +7,7 @@ import PostLikeButton from "./PostLikeButton";
 import PostComment from "./PostComment";
 import { axiosInstance } from "../lib/axios";
 import useAuthStore from "../store/authStore";
+import ShareButton from "./ShareButton"; 
 
 const PostCard = ({
   post,
@@ -179,7 +180,7 @@ const PostCard = ({
         </div>
 
         {/* Footer */}
-        <div className="card-footer px-4 bg-white d-flex justify-content-between text-black small rounded-bottom-4 border-top border-white-50">
+        <div className="card-footer px-4 bg-white d-flex justify-content-between text-black small rounded-bottom-4 border-top border-white-50 btn btn-light d-flex align-items-center px-3 py-1">
           <div className="d-flex align-items-center gap-1">
             <PostLikeButton
               postId={postId}
@@ -196,7 +197,7 @@ const PostCard = ({
           </div>
 
           <div
-            className="d-flex align-items-center gap-1"
+            className="btn btn-light d-flex align-items-center px-3 py-1"
             onClick={() => setShowComments((prev) => !prev)}
             style={{ cursor: "pointer", fontSize: "0.9rem" }}
           >
@@ -205,13 +206,8 @@ const PostCard = ({
             comments
           </div>
 
-          <div
-            className="d-flex align-items-center gap-1"
-            style={{ cursor: "pointer", fontSize: "0.9rem" }}
-          >
-            <FaShare />
-            <span>{post.shares?.length || 0}</span>
-          </div>
+          {/* Share */}
+          <ShareButton postId={postId} />
         </div>
 
         {showComments && <PostComment postId={postId} />}
