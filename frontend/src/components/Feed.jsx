@@ -77,15 +77,22 @@ const Feed = () => {
         }
     };
 
-    const updatePostLike = (postId, isLiked, likeCount) => {
-        setPosts(prevPosts =>
-            prevPosts.map(post =>
-                post._id === postId || post.id === postId
-                    ? { ...post, isLiked, likeCount }
-                    : post
-            )
-        );
-    };
+    // Feed.jsx
+const updatePostLike = (postId, isLiked, likeCount) => {
+  setPosts(prevPosts =>
+    prevPosts.map(post => {
+      const id = post._id ?? post.id;          // support either field
+      if (id !== postId) return post;          // leave all other posts untouched
+
+      return {
+        ...post,
+        isLiked,
+        likeCount: Math.max(0, likeCount),     // extra guard: no negative counts
+      };
+    })
+  );
+};
+
 
     // Load more posts function
     const loadMorePosts = async () => {
