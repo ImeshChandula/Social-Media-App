@@ -313,16 +313,34 @@ const getStoriesFeed = async (req, res) => {
             });
         }
 
-        // OPTION A: Simplified query approach
-        // Get all stories from friends with minimal filtering in Firestore
-        const allFriendStories = await Story.getFriendsStoriesSimple(friendIds);
+        // Create array of user IDs to fetch stories from (friends + current user)
+        const userIdsToFetch = [...friendIds, userId];//new
 
+        // Get all stories from friends AND current user
+        const allFriendStories = await Story.getFriendsStoriesSimple(userIdsToFetch);//new
+        /*
+        Note: Here allFriendStories is defined as an array of stories for all stories. Not only for friend's stories but also for
+        user's stories + friend's stories.
+        */
+
+        //new
         if (!allFriendStories.length) {
             return res.status(200).json({ 
                 message: 'No stories found in your feed', 
                 stories: [] 
             });
         }
+
+        // // OPTION A: Simplified query approach
+        // // Get all stories from friends with minimal filtering in Firestore
+        // const allFriendStories = await Story.getFriendsStoriesSimple(friendIds);
+
+        // if (!allFriendStories.length) {
+        //     return res.status(200).json({ 
+        //         message: 'No stories found in your feed', 
+        //         stories: [] 
+        //     });
+        // }
 
         // Filter active and non-expired stories in application code
         const now = new Date();

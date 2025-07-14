@@ -8,6 +8,7 @@ const Feedstories = ({ type = "all" }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+
   useEffect(() => {
     const fetchFeed = async () => {
       try {
@@ -55,10 +56,11 @@ const Feedstories = ({ type = "all" }) => {
             }));
           });
 
-          // Filter for friends' and public stories
+          // Filter for friends' and public stories old---
           processedStories = processedStories.filter(story =>
             story.privacy === 'friends' || story.privacy === 'public'
           );
+
 
           // Sort by createdAt (newest first)
           processedStories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -188,3 +190,5 @@ const Feedstories = ({ type = "all" }) => {
 };
 
 export default Feedstories;
+
+

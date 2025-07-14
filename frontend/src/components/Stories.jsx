@@ -135,7 +135,7 @@ const Stories = ({
     return <div style={{ height, background: "#333" }} />;
   };
 
-  /* ───────────────── preview card (120 px) ───────────────── */
+  /* ───────────────── preview card (120px) ───────────────── */
   if (isPreview) {
     return (
       <>
