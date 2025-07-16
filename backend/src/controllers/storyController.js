@@ -211,86 +211,6 @@ const getCurrentUserStories = async (req, res) => {
  
 
 
-// Previouse one version of getCurrentUserStories
-// // Get stories feed (current user + friends)
-// const getStoriesFeed = async(req, res) => {
-//     try {
-//         const userId = req.user.id;
-
-//         // Get user details
-//         const user = await UserService.findById(userId);
-//         if (!user) {
-//             return res.status(404).json({ message: 'User not found' });
-//         }
-
-//         // Get user's friends
-//         const friendIds = user.friends || [];
-
-//         // If user has no friends, return empty story feed
-//         if (friendIds.length === 0) {
-//             return res.status(200).json({ message: 'You have no friends to fetch stories from.', stories: [] });
-//         }
-
-//         // Get stories from friends only
-//         const stories = await Story.getFriendsStories(friendIds);
-
-//         if (!stories.length) {
-//             return res.status(200).json({ message: 'No stories found in your feed', stories: [] });
-//         }
-
-//         // Get unique user IDs from the stories
-//         const uniqueUserIds = [...new Set(stories.map(story => story.userId))];
-
-//         // Create a map to store user details
-//         const userMap = {};
-
-//         // Fetch user details for each unique user ID
-//         for (const id of uniqueUserIds) {
-//             try {
-//                 if (!id) continue;
-
-//                 const friend = await User.findById(id);
-//                 if (friend) {
-//                     userMap[id] = {
-//                         id: friend.id,
-//                         firstName: friend.firstName,
-//                         lastName: friend.lastName,
-//                         username: friend.username,
-//                         profilePicture: friend.profilePicture
-//                     };
-//                 }
-//             } catch (userError) {
-//                 console.error(`Error fetching user ${id}:`, userError.message);
-//             }
-//         }
-
-//         // Group stories by user
-//         const storiesByUser = stories.reduce((acc, story) => {
-//             const storyUserId = story.userId;
-//             if (!acc[storyUserId]) {
-//                 acc[storyUserId] = {
-//                     user: userMap[storyUserId] || { id: storyUserId },
-//                     stories: []
-//                 };
-//             }
-//             acc[storyUserId].stories.push(story);
-//             return acc;
-//         }, {});
-
-//         // Convert to array format for response
-//         const feedStories = Object.values(storiesByUser);
-
-//         res.status(200).json({
-//             message: 'Stories feed retrieved successfully',
-//             stories: feedStories
-//         });
-
-//     } catch (error) {
-//         console.error('Error fetching stories feed:', error);
-//         res.status(500).json({ message: 'Server error' });
-//     }
-// };
-
 //updated code for getStoriesFeed function
 // Optimized approach to reduce index requirements
 const getStoriesFeed = async (req, res) => {
@@ -370,19 +290,41 @@ const getStoriesFeed = async (req, res) => {
         for (const id of uniqueUserIds) {
             try {
                 if (!id) continue;
-
-                const friend = await User.findById(id);
+                
+                //const friend = await User.findById(id);
+                
+                const friend = await UserService.findById(id);// new 16/07
                 if (friend) {
                     userMap[id] = {
                         id: friend.id,
-                        firstName: friend.firstName,
-                        lastName: friend.lastName,
-                        username: friend.username,
-                        profilePicture: friend.profilePicture
+                        firstName: friend.firstName || '',
+                        lastName: friend.lastName || '',
+                        username: friend.username || `User${id}`,//added || `User${id}`
+                        profilePicture: friend.profilePicture || 'https://via.placeholder.com/40' // added || 'https://via.placeholder.com/40'
+                    };
+                }else { //new 16/07
+                    // FIX 5: Add fallback user data when user is not found
+                    console.warn(`User ${id} not found, using fallback data`);
+                    userMap[id] = {
+                        id: id,
+                        firstName: '',
+                        lastName: '',
+                        username: `user_${id}`,
+                        profilePicture: 'https://via.placeholder.com/40'
                     };
                 }
             } catch (userError) {
                 console.error(`Error fetching user ${id}:`, userError.message);
+
+                //new 16/07
+                // FIX 6: Provide fallback data even when there's an error
+                userMap[id] = {
+                    id: id,
+                    firstName: '',
+                    lastName: '',
+                    username: `user_${id}`,
+                    profilePicture: 'https://via.placeholder.com/40'
+                };
             }
         }
 
@@ -391,7 +333,14 @@ const getStoriesFeed = async (req, res) => {
             const storyUserId = story.userId;
             if (!acc[storyUserId]) {
                 acc[storyUserId] = {
-                    user: userMap[storyUserId] || { id: storyUserId },
+                    //user: userMap[storyUserId] || { id: storyUserId }, old
+                    user: userMap[storyUserId] || { // new 16/07
+                        id: storyUserId,
+                        firstName: '',
+                        lastName: '',
+                        username: `user_${storyUserId}`,
+                        profilePicture: 'https://via.placeholder.com/40'
+                    },
                     stories: []
                 };
             }
@@ -402,7 +351,14 @@ const getStoriesFeed = async (req, res) => {
             acc[storyUserId].stories.push({
                 ...story,
                 _id: story.id || story._id,
-                user: userMap[storyUserId] || { id: storyUserId }
+                //user: userMap[storyUserId] || { id: storyUserId } old
+                user: userMap[storyUserId] || { // new 16/07
+                    id: storyUserId,
+                    firstName: '',
+                    lastName: '',
+                    username: `user_${storyUserId}`,
+                    profilePicture: 'https://via.placeholder.com/40'
+                }
             });
 
             return acc;
@@ -423,6 +379,17 @@ const getStoriesFeed = async (req, res) => {
             const bLatest = new Date(b.stories[0].createdAt);
             return bLatest - aLatest;
         });
+
+        //new 16/07
+        // FIX 7: Add debug logging to help identify issues
+        console.log('Feed stories with user data:', JSON.stringify(feedStories.map(group => ({
+            userId: group.user.id,
+            username: group.user.username,
+            firstName: group.user.firstName,
+            lastName: group.user.lastName,
+            storiesCount: group.stories.length
+        })), null, 2));
+
 
 
         res.status(200).json({

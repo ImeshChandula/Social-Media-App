@@ -192,12 +192,11 @@
 // export default Feedstories;
 
 
-// new-----------------------------------------------------------------------------------------------
-
+//new ------------------------------------------------------------------------------
 import { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import Stories from "./Stories";
-import StoryViewer from "./StoryView"; // You'll need to create this component
+import StoryViewer from "./StoryView";
 
 const Feedstories = ({ type = "all" }) => {
   const [stories, setStories] = useState([]);
@@ -244,29 +243,44 @@ const Feedstories = ({ type = "all" }) => {
           // Handle "feed" endpoint response
           const feedStories = Array.isArray(res.data.stories) ? res.data.stories : [];
           
-          // The backend already groups stories by user, so we can use this structure
-          const grouped = feedStories.map(group => ({
-            user: group.user || {
-              id: 'unknown',
-              username: 'Unknown User',
-              profilePicture: 'https://via.placeholder.com/40',
-              firstName: '',
-              lastName: ''
-            },
-            stories: (group.stories || []).map(story => ({
-              ...story,
-              _id: story._id || story.id,
-              user: group.user
-            })).filter(story => 
-              story.privacy === 'friends' || story.privacy === 'public'
-            ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          })).filter(group => group.stories.length > 0);
+          // FIX 1: Better handling of user data from backend
+          const grouped = feedStories.map(group => {
+            // FIX 2: Ensure user data exists with proper fallbacks
+            const userData = group.user || {};
+            const processedUser = {
+              id: userData.id || 'unknown',
+              username: userData.username || `user_${userData.id || 'unknown'}`,
+              profilePicture: userData.profilePicture || 'https://via.placeholder.com/40',
+              firstName: userData.firstName || '',
+              lastName: userData.lastName || ''
+            };
+
+            return {
+              user: processedUser,
+              stories: (group.stories || []).map(story => ({
+                ...story,
+                _id: story._id || story.id,
+                user: processedUser // FIX 3: Ensure each story has the user data
+              })).filter(story => 
+                story.privacy === 'friends' || story.privacy === 'public'
+              ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            };
+          }).filter(group => group.stories.length > 0);
 
           setGroupedStories(grouped);
           
           // Flatten for individual story processing if needed
           processedStories = grouped.flatMap(group => group.stories);
           console.log('Processed feed stories:', processedStories);
+          
+          // FIX 4: Add debug logging for user data
+          console.log('User data in grouped stories:', grouped.map(g => ({
+            userId: g.user.id,
+            username: g.user.username,
+            firstName: g.user.firstName,
+            lastName: g.user.lastName,
+            displayName: getDisplayName(g.user)
+          })));
         }
 
         setStories(processedStories);
@@ -374,12 +388,32 @@ const Feedstories = ({ type = "all" }) => {
     return null;
   };
 
-  // Helper function to get display name
+  // FIX 5: Improved helper function to get display name with better fallbacks
   const getDisplayName = (user) => {
+    if (!user) return 'Unknown User';
+    
+    // If both first and last name exist, use them
     if (user.firstName && user.lastName) {
       return `${user.firstName} ${user.lastName}`;
     }
-    return user.username || 'Unknown User';
+    
+    // If only first name exists, use it
+    if (user.firstName) {
+      return user.firstName;
+    }
+    
+    // If only last name exists, use it
+    if (user.lastName) {
+      return user.lastName;
+    }
+    
+    // If username exists, use it
+    if (user.username && user.username !== 'Unknown User') {
+      return user.username;
+    }
+    
+    // Final fallback
+    return 'Unknown User';
   };
 
   console.log('Current state:', { loading, error, stories, groupedStories });
@@ -423,13 +457,13 @@ const Feedstories = ({ type = "all" }) => {
               minHeight: '160px'
             }}
           >
-            {groupedStories.map(group => {
+            {groupedStories.map((group, index) => {
               const latestStory = group.stories[0]; // Get the latest story for preview
               const storyPreview = getStoryPreview(latestStory);
               
               return (
                 <div
-                  key={group.user.id || `user-${Math.random()}`}
+                  key={group.user?.id || `user-${index}`}
                   className="flex-shrink-0 mx-2 story-group"
                   style={{ width: '120px', scrollSnapAlign: 'start', cursor: 'pointer' }}
                   onClick={() => handleStoryClick(group)}
@@ -480,8 +514,8 @@ const Feedstories = ({ type = "all" }) => {
                       
                       {/* Profile picture overlay */}
                       <img
-                        src={group.user.profilePicture || 'https://via.placeholder.com/30'}
-                        alt={group.user.username}
+                        src={group.user?.profilePicture || 'https://via.placeholder.com/30'}
+                        alt={group.user?.username || 'User'}
                         className="story-profile-overlay"
                         style={{
                           width: '24px',
