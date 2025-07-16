@@ -4,13 +4,7 @@ import StoriesPopup from "./StoriesPopup";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 
-/**
- * Shows a story either as a tiny preview (in the horizontal bar)
- * or, when tapped, as a full‑screen “story view” just like Facebook.
- *
- * prop isPreview=true  → tiny card
- * prop isPreview=false → normal feed card (edit / delete etc.)
- */
+
 const Stories = ({
   post,
   isUserPost = false,
