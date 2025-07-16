@@ -192,6 +192,7 @@ const getCurrentUserStories = async (req, res) => {
     // Populate each story with user info
     const populatedStories = activeStories.map(story => ({
       ...story,
+      _id: story.id || story._id, // Ensure _id is set for frontend compatibility (newly added line 15/7)
       viewCount: story.viewCount,
       user: userData
     }));
@@ -394,12 +395,35 @@ const getStoriesFeed = async (req, res) => {
                     stories: []
                 };
             }
-            acc[storyUserId].stories.push(story);
+            //acc[storyUserId].stories.push(story);
+
+            //newly added line 15/7
+            // Add story with proper _id field for frontend compatibility
+            acc[storyUserId].stories.push({
+                ...story,
+                _id: story.id || story._id,
+                user: userMap[storyUserId] || { id: storyUserId }
+            });
+
             return acc;
         }, {});
 
-        // Convert to array format for response
-        const feedStories = Object.values(storiesByUser);
+        // // Convert to array format for response
+        // const feedStories = Object.values(storiesByUser);
+
+        //newly added line 15/7
+        // Convert to array format and sort user groups by most recent story
+        const feedStories = Object.values(storiesByUser).map(userGroup => {
+            // Sort stories within each user group by creation date (newest first)
+            userGroup.stories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            return userGroup;
+        }).sort((a, b) => {
+            // Sort user groups by their most recent story
+            const aLatest = new Date(a.stories[0].createdAt);
+            const bLatest = new Date(b.stories[0].createdAt);
+            return bLatest - aLatest;
+        });
+
 
         res.status(200).json({
             message: 'Stories feed retrieved successfully',
