@@ -148,6 +148,7 @@ const EditMarketPlaceItem = () => {
         const files = Array.from(e.target.files);
         if (!files.length) return;
 
+742
         setFormData((prev) => ({
             ...prev,
             images: files
@@ -244,8 +245,8 @@ const EditMarketPlaceItem = () => {
 
     return (
         <div style={{
-            maxWidth: '800px',
-            margin: '0 auto',
+            width: '75vw', // Set to 3/4 of viewport width
+            margin: '0 auto', // Center the container
             padding: '20px',
             backgroundColor: '#f8f9fa',
             borderRadius: '8px',
@@ -746,7 +747,7 @@ const EditMarketPlaceItem = () => {
                                         color: '#333',
                                         padding: '5px 10px',
                                         borderRadius: '12px',
-                                        fontSize: '16px'
+                                        fontSize: ' Presley, a 16px'
                                     }}
                                 >
                                     {tag}
