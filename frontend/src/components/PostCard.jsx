@@ -58,6 +58,15 @@ const PostCard = ({
       setLoadingLikes(false);
     }
   };
+  const updatePostLike = (postId, isLiked, likeCount) => {
+        setPosts(prevPosts =>
+            prevPosts.map(post =>
+                post._id === postId || post.id === postId
+                    ? { ...post, isLiked, likeCount }
+                    : post
+            )
+        );
+    };
 
   const handleOpenLikesPopup = () => {
     fetchLikes();
@@ -186,7 +195,7 @@ const PostCard = ({
               postId={postId}
               initialIsLiked={post.isLiked}
               initialLikeCount={post.likeCount}
-              onLikeUpdate={onLikeUpdate}
+              onLikeUpdate={updatePostLike}
             />
             <FaChevronRight
               className="text-black"
