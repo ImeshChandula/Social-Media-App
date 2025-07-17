@@ -87,17 +87,22 @@
 // export default StoryView;
 
 
-//new-----------------------------------------------------------------------------------------------------------------
+
+//new ------------------------------------------------------------------------------------
 
 import React, { useState, useEffect, useRef } from 'react';
 import { axiosInstance } from '../lib/axios';
-// import '../styles/StoryView.css'; // Assuming you have a CSS file for styles
+import toast from 'react-hot-toast';
 
-const StoryView = ({ userStories, onClose, onDelete, onUpdate, isUserPost = false }) => {
+const StoryView = ({ userStories, onClose, onDelete, onUpdate, isUserPost = false, currentUserId }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState('');
+  const [editCaption, setEditCaption] = useState('');
+  const [showOptions, setShowOptions] = useState(false);
   const intervalRef = useRef(null);
   const progressIntervalRef = useRef(null);
   
@@ -105,6 +110,12 @@ const StoryView = ({ userStories, onClose, onDelete, onUpdate, isUserPost = fals
   const PROGRESS_INTERVAL = 50; // Update progress every 50ms
 
   const currentStory = userStories.stories[currentIndex];
+
+  // Helper function to check if current story belongs to the current user
+  const isCurrentUserStory = () => {
+    if (!currentStory || !currentUserId) return false;
+    return currentStory.userId === currentUserId || currentStory.user?.id === currentUserId;
+  };
 
   // Helper function to get user info with fallback
   const getUserInfo = () => {
@@ -140,14 +151,22 @@ const StoryView = ({ userStories, onClose, onDelete, onUpdate, isUserPost = fals
   const userInfo = getUserInfo();
 
   useEffect(() => {
-    if (!isPaused && currentStory) {
+    if (!isPaused && !isEditing && currentStory) {
       startStoryTimer();
     }
     
     return () => {
       clearStoryTimer();
     };
-  }, [currentIndex, isPaused]);
+  }, [currentIndex, isPaused, isEditing]);
+
+  // Initialize edit fields when editing starts
+  useEffect(() => {
+    if (isEditing && currentStory) {
+      setEditContent(currentStory.content || '');
+      setEditCaption(currentStory.caption || '');
+    }
+  }, [isEditing, currentStory]);
 
   const startStoryTimer = () => {
     clearStoryTimer();
@@ -179,6 +198,8 @@ const StoryView = ({ userStories, onClose, onDelete, onUpdate, isUserPost = fals
   const nextStory = () => {
     if (currentIndex < userStories.stories.length - 1) {
       setCurrentIndex(prev => prev + 1);
+      setIsEditing(false);
+      setShowOptions(false);
     } else {
       onClose();
     }
@@ -187,6 +208,8 @@ const StoryView = ({ userStories, onClose, onDelete, onUpdate, isUserPost = fals
   const prevStory = () => {
     if (currentIndex > 0) {
       setCurrentIndex(prev => prev - 1);
+      setIsEditing(false);
+      setShowOptions(false);
     }
   };
 
@@ -195,28 +218,133 @@ const StoryView = ({ userStories, onClose, onDelete, onUpdate, isUserPost = fals
   };
 
   const handleDelete = async (storyId) => {
-    if (!isUserPost) return;
+    if (!isCurrentUserStory()) {
+      toast.error("You can only delete your own stories");
+      return;
+    }
+    
+    // Show confirmation dialog
+    if (!window.confirm('Are you sure you want to delete this story?')) {
+      return;
+    }
     
     try {
       setIsLoading(true);
-      await axiosInstance.delete(`/stories/${storyId}`);
+      await axiosInstance.delete(`/stories/delete/${storyId}`);
       onDelete(storyId);
+      toast.success('Story deleted successfully');
+      
+      // Update local userStories to remove deleted story
+      const updatedStories = userStories.stories.filter(story => story._id !== storyId);
       
       // If this was the last story, close viewer
-      if (userStories.stories.length === 1) {
+      if (updatedStories.length === 0) {
         onClose();
-      } else if (currentIndex === userStories.stories.length - 1) {
-        // If we're deleting the last story, go to previous
-        setCurrentIndex(prev => prev - 1);
+        return;
       }
+      
+      // Update userStories object
+      userStories.stories = updatedStories;
+      
+      // Adjust current index if necessary
+      if (currentIndex >= updatedStories.length) {
+        setCurrentIndex(updatedStories.length - 1);
+      }
+      
+      setShowOptions(false);
     } catch (error) {
       console.error('Error deleting story:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to delete story';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleUpdate = async () => {
+    if (!isCurrentUserStory()) {
+      toast.error("You can only edit your own stories");
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      
+      const updateData = {};
+      
+      // Get original values with proper fallbacks
+      const originalContent = currentStory.content || '';
+      const originalCaption = currentStory.caption || '';
+      
+      // Only include fields that have changed
+      if (currentStory.type === 'text' && editContent.trim() !== originalContent.trim()) {
+        updateData.content = editContent.trim();
+      }
+      
+      // Always check caption for all story types
+      if (editCaption.trim() !== originalCaption.trim()) {
+        updateData.caption = editCaption.trim();
+      }
+      
+      console.log('StoryView Update comparison:', {
+        storyType: currentStory.type,
+        originalContent: originalContent.trim(),
+        editContent: editContent.trim(),
+        originalCaption: originalCaption.trim(),
+        editCaption: editCaption.trim(),
+        updateData
+      });
+      
+      // Check if there are any changes
+      if (Object.keys(updateData).length === 0) {
+        toast.info('No changes to save');
+        setIsEditing(false);
+        return;
+      }
+      
+      console.log('Sending update request with:', updateData);
+      
+      const response = await axiosInstance.patch(`/stories/update/${currentStory._id}`, updateData);
+      
+      console.log('Update response:', response.data);
+      
+      // Update the story in local state
+      const updatedStory = {
+        ...currentStory,
+        ...updateData,
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Update userStories
+      userStories.stories[currentIndex] = updatedStory;
+      
+      // Call parent update handler
+      onUpdate(updatedStory);
+      
+      setIsEditing(false);
+      setShowOptions(false);
+      toast.success('Story updated successfully');
+    } catch (error) {
+      console.error('Error updating story:', error);
+      console.error('Error response:', error.response?.data);
+      const errorMessage = error.response?.data?.message || 'Failed to update story';
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    // Reset with proper fallbacks
+    setEditContent(currentStory.content || '');
+    setEditCaption(currentStory.caption || '');
+    setShowOptions(false);
+  };
+
   const handleKeyPress = (e) => {
+    if (isEditing) return; // Don't handle navigation when editing
+    
     switch (e.key) {
       case 'ArrowLeft':
         prevStory();
@@ -258,7 +386,7 @@ const StoryView = ({ userStories, onClose, onDelete, onUpdate, isUserPost = fals
     return () => {
       document.removeEventListener('keydown', handleKeyPress);
     };
-  }, [currentIndex]);
+  }, [currentIndex, isEditing]);
 
   if (!currentStory) return null;
 
@@ -300,14 +428,36 @@ const StoryView = ({ userStories, onClose, onDelete, onUpdate, isUserPost = fals
             <button className="story-action-btn" onClick={handlePause}>
               {isPaused ? '▶️' : '⏸️'}
             </button>
-            {isUserPost && (
-              <button 
-                className="story-action-btn story-delete-btn" 
-                onClick={() => handleDelete(currentStory._id)}
-                disabled={isLoading}
-              >
-                🗑️
-              </button>
+            {isCurrentUserStory() && (
+              <>
+                <button 
+                  className="story-action-btn" 
+                  onClick={() => setShowOptions(!showOptions)}
+                >
+                  ⋯
+                </button>
+                {showOptions && (
+                  <div className="story-options-menu">
+                    <button 
+                      className="story-option-btn"
+                      onClick={() => {
+                        setIsEditing(true);
+                        setShowOptions(false);
+                        setIsPaused(true);
+                      }}
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button 
+                      className="story-option-btn story-delete-option"
+                      onClick={() => handleDelete(currentStory._id)}
+                      disabled={isLoading}
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                )}
+              </>
             )}
             <button className="story-action-btn story-close-btn" onClick={onClose}>
               ✕
@@ -317,42 +467,103 @@ const StoryView = ({ userStories, onClose, onDelete, onUpdate, isUserPost = fals
 
         {/* Story Content */}
         <div className="story-content">
-          {/* Click areas for navigation */}
-          <div className="story-nav-left" onClick={prevStory} />
-          <div className="story-nav-right" onClick={nextStory} />
-          
-          {currentStory.media ? (
-            <img
-              src={currentStory.media}
-              alt="Story content"
-              className="story-media"
-              onLoad={() => setIsLoading(false)}
-              onError={() => setIsLoading(false)}
-            />
-          ) : (
-            <div className="story-text-content">
-              <p>{currentStory.content}</p>
-            </div>
+          {/* Click areas for navigation - only if not editing */}
+          {!isEditing && (
+            <>
+              <div className="story-nav-left" onClick={prevStory} />
+              <div className="story-nav-right" onClick={nextStory} />
+            </>
           )}
           
-          {currentStory.caption && (
-            <div className="story-caption">
-              <p>{currentStory.caption}</p>
+          {isEditing ? (
+            <div className="story-edit-form">
+              <div className="edit-form-content">
+                <h4 className="text-white mb-3">Edit Story</h4>
+                
+                {/* Content editor - only show for text stories */}
+                {currentStory.type === 'text' && (
+                  <div className="mb-3">
+                    <label className="form-label text-white">Content:</label>
+                    <textarea
+                      className="form-control"
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      rows={4}
+                      placeholder="What's on your mind?"
+                      style={{ backgroundColor: '#495057', color: 'white', border: '1px solid #6c757d' }}
+                    />
+                  </div>
+                )}
+                
+                {/* Caption editor - always show */}
+                <div className="mb-3">
+                  <label className="form-label text-white">Caption:</label>
+                  <textarea
+                    className="form-control"
+                    value={editCaption}
+                    onChange={(e) => setEditCaption(e.target.value)}
+                    rows={3}
+                    placeholder="Add a caption..."
+                    style={{ backgroundColor: '#495057', color: 'white', border: '1px solid #6c757d' }}
+                  />
+                </div>
+                
+                <div className="d-flex gap-2 justify-content-end">
+                  <button 
+                    className="btn btn-secondary"
+                    onClick={handleCancelEdit}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="btn btn-primary"
+                    onClick={handleUpdate}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </div>
             </div>
+          ) : (
+            <>
+              {currentStory.media ? (
+                <img
+                  src={currentStory.media}
+                  alt="Story content"
+                  className="story-media"
+                  onLoad={() => setIsLoading(false)}
+                  onError={() => setIsLoading(false)}
+                />
+              ) : (
+                <div className="story-text-content">
+                  <p>{currentStory.content}</p>
+                </div>
+              )}
+              
+              {currentStory.caption && (
+                <div className="story-caption">
+                  <p>{currentStory.caption}</p>
+                </div>
+              )}
+            </>
           )}
         </div>
 
         {/* Story indicators */}
-        <div className="story-indicators">
-          <span className="story-counter">
-            {currentIndex + 1} / {userStories.stories.length}
-          </span>
-          {currentStory.viewCount > 0 && (
-            <span className="story-views">
-              👁️ {currentStory.viewCount}
+        {!isEditing && (
+          <div className="story-indicators">
+            <span className="story-counter">
+              {currentIndex + 1} / {userStories.stories.length}
             </span>
-          )}
-        </div>
+            {currentStory.viewCount > 0 && (
+              <span className="story-views">
+                👁️ {currentStory.viewCount}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       <style jsx>{`
@@ -448,6 +659,7 @@ const StoryView = ({ userStories, onClose, onDelete, onUpdate, isUserPost = fals
         .story-actions {
           display: flex;
           gap: 8px;
+          position: relative;
         }
 
         .story-action-btn {
@@ -465,7 +677,36 @@ const StoryView = ({ userStories, onClose, onDelete, onUpdate, isUserPost = fals
           background: rgba(255, 255, 255, 0.1);
         }
 
-        .story-delete-btn {
+        .story-options-menu {
+          position: absolute;
+          top: 100%;
+          right: 0;
+          background: rgba(0, 0, 0, 0.9);
+          border-radius: 8px;
+          padding: 8px;
+          margin-top: 4px;
+          min-width: 120px;
+        }
+
+        .story-option-btn {
+          display: block;
+          width: 100%;
+          background: none;
+          border: none;
+          color: white;
+          padding: 8px 12px;
+          text-align: left;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+          transition: background 0.2s;
+        }
+
+        .story-option-btn:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        .story-delete-option {
           color: #ff4444;
         }
 
@@ -485,6 +726,27 @@ const StoryView = ({ userStories, onClose, onDelete, onUpdate, isUserPost = fals
           justify-content: center;
           align-items: center;
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .story-edit-form {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.95);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+        }
+
+        .edit-form-content {
+          background: rgba(255, 255, 255, 0.1);
+          padding: 24px;
+          border-radius: 12px;
+          width: 100%;
+          max-width: 320px;
         }
 
         .story-nav-left {

@@ -192,11 +192,13 @@
 // export default Feedstories;
 
 
-//new ------------------------------------------------------------------------------
+
+
 import { useEffect, useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import Stories from "./Stories";
 import StoryViewer from "./StoryView";
+import toast from "react-hot-toast";
 
 const Feedstories = ({ type = "all" }) => {
   const [stories, setStories] = useState([]);
@@ -205,6 +207,20 @@ const Feedstories = ({ type = "all" }) => {
   const [error, setError] = useState(null);
   const [selectedUserStories, setSelectedUserStories] = useState(null);
   const [showStoryViewer, setShowStoryViewer] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  // Get current user ID
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const res = await axiosInstance.get("/users/myProfile");
+        setCurrentUserId(res.data.user.id);
+      } catch (err) {
+        console.error("Failed to fetch current user:", err);
+      }
+    };
+    fetchCurrentUser();
+  }, []);
 
   useEffect(() => {
     const fetchFeed = async () => {
@@ -297,6 +313,7 @@ const Feedstories = ({ type = "all" }) => {
         const errorMessage = err.response?.data?.message || "Failed to load stories. Please try again.";
         console.error("Fetch stories error:", err.response || err);
         setError(errorMessage);
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -340,6 +357,8 @@ const Feedstories = ({ type = "all" }) => {
 
   const handleDelete = (storyId) => {
     console.log(`Deleting story ${storyId}`);
+    
+    // Update individual stories array
     setStories(prev => prev.filter(story => story._id !== storyId));
     
     // Update grouped stories as well
@@ -349,10 +368,28 @@ const Feedstories = ({ type = "all" }) => {
         stories: group.stories.filter(story => story._id !== storyId)
       })).filter(group => group.stories.length > 0)
     );
+
+    // Close story viewer if no stories left
+    if (selectedUserStories) {
+      const updatedStories = selectedUserStories.stories.filter(story => story._id !== storyId);
+      if (updatedStories.length === 0) {
+        setShowStoryViewer(false);
+        setSelectedUserStories(null);
+      } else {
+        setSelectedUserStories(prev => ({
+          ...prev,
+          stories: updatedStories
+        }));
+      }
+    }
+
+    toast.success('Story deleted successfully');
   };
 
   const handleUpdate = (updatedStory) => {
     console.log(`Updating story ${updatedStory._id}`);
+    
+    // Update individual stories array
     setStories(prev =>
       prev.map(story =>
         story._id === updatedStory._id ? { ...story, ...updatedStory } : story
@@ -368,6 +405,18 @@ const Feedstories = ({ type = "all" }) => {
         )
       }))
     );
+
+    // Update selected user stories if story viewer is open
+    if (selectedUserStories) {
+      setSelectedUserStories(prev => ({
+        ...prev,
+        stories: prev.stories.map(story =>
+          story._id === updatedStory._id ? { ...story, ...updatedStory } : story
+        )
+      }));
+    }
+
+    toast.success('Story updated successfully');
   };
 
   const handleStoryClick = (userStories) => {
@@ -386,6 +435,11 @@ const Feedstories = ({ type = "all" }) => {
       return story.media;
     }
     return null;
+  };
+
+  // Helper function to check if story belongs to current user
+  const isUserStory = (story) => {
+    return currentUserId && (story.userId === currentUserId || story.user?.id === currentUserId);
   };
 
   // FIX 5: Improved helper function to get display name with better fallbacks
@@ -553,6 +607,7 @@ const Feedstories = ({ type = "all" }) => {
           onDelete={handleDelete}
           onUpdate={handleUpdate}
           isUserPost={type === "me"}
+          currentUserId={currentUserId}
         />
       )}
 

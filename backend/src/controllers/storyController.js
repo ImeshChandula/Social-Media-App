@@ -548,7 +548,10 @@ const updateStoryByStoryId = async(req, res) => {
         const updateData = {};
 
         if (content !== undefined) updateData.content = content;
-        if (type !== undefined) updateData.mediaType = type; // fixed incorrect variable name from 'mediaType'
+        // if (type !== undefined) updateData.mediaType = type; // fixed incorrect variable name from 'mediaType'
+        if (type !== undefined) {
+            updateData.type = type; // Fixed: should be 'type', not 'mediaType'
+        }
         if (caption !== undefined) updateData.caption = caption;
         if (privacy !== undefined) updateData.privacy = privacy;
 
