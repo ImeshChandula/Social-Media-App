@@ -23,6 +23,8 @@ class User {
     this.friends = userData.friends || [];
     this.friendRequests = userData.friendRequests || [];
 
+    this.favorites = userData.favorites || []; //new field for favorite posts
+
     this.resetOtp = userData.resetOtp || '';
     this.resetOtpExpiredAt = userData.resetOtpExpiredAt || new Date().toISOString();
 
@@ -50,6 +52,10 @@ class User {
     return this.friendRequests.length;
   };
 
+  // get favorites count
+  get favoritesCount() {
+    return this.favorites.length;
+  }
 
 }
 

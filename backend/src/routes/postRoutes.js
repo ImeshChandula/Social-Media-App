@@ -53,5 +53,19 @@ router.patch("/update/:id", validatePost, authenticateUser, postController.updat
 // @access  Private
 router.delete("/delete/:id", authenticateUser, postController.deletePostByPostId);
 
+// @route   POST /api/posts/favorites/add/:postId
+// @desc    Add post to favorites
+// @access  Private
+router.post('/favorites/add/:postId', authenticateUser, postController.addToFavorites);
+
+// @route   DELETE /api/posts/favorites/remove/:postId
+// @desc    Remove post from favorites  
+// @access  Private
+router.delete('/favorites/remove/:postId', authenticateUser, postController.removeFromFavorites);
+
+// @route   GET /api/posts/favorites
+// @desc    Get favorite posts of the user  
+// @access  Private
+router.get('/favorites', authenticateUser, postController.getFavoritePosts);
 
 module.exports = router;

@@ -382,6 +382,164 @@ const getAllPostsByUserId = async (req, res) => {
 };
 
 
+//newly added for favorites feature
+//@desc     Add post to favorites
+const addToFavorites = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const postId = req.params.postId;
+
+        // Check if post exists
+        const post = await PostService.findById(postId);
+        if (!post) {
+            return res.status(404).json({ success: false, message: "Post not found" });
+        }
+
+        // Get current user
+        const user = await UserService.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        // Initialize favorites array if it doesn't exist
+        const favorites = user.favorites || [];
+
+        // Check if post is already in favorites
+        if (favorites.includes(postId)) {
+            return res.status(400).json({ success: false, message: "Post is already in favorites" });
+        }
+
+        // Add post to favorites
+        favorites.push(postId);
+        
+        // Update user with new favorites
+        const updatedUser = await UserService.updateById(userId, { favorites });
+        
+        if (!updatedUser) {
+            return res.status(500).json({ success: false, message: "Failed to add to favorites" });
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            message: "Post added to favorites successfully",
+            isFavorited: true
+        });
+    } catch (error) {
+        console.error('Add to favorites error:', error.message);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+
+//@desc     Remove post from favorites
+const removeFromFavorites = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const postId = req.params.postId;
+
+        // Get current user
+        const user = await UserService.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        // Get current favorites
+        const favorites = user.favorites || [];
+
+        // Check if post is in favorites
+        if (!favorites.includes(postId)) {
+            return res.status(400).json({ success: false, message: "Post is not in favorites" });
+        }
+
+        // Remove post from favorites
+        const updatedFavorites = favorites.filter(id => id !== postId);
+        
+        // Update user with new favorites
+        const updatedUser = await UserService.updateById(userId, { favorites: updatedFavorites });
+        
+        if (!updatedUser) {
+            return res.status(500).json({ success: false, message: "Failed to remove from favorites" });
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            message: "Post removed from favorites successfully",
+            isFavorited: false
+        });
+    } catch (error) {
+        console.error('Remove from favorites error:', error.message);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+
+//@desc     Get user's favorite posts
+const getFavoritePosts = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Get current user with favorites
+        const user = await UserService.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        const favorites = user.favorites || [];
+        
+        if (!favorites.length) {
+            return res.status(200).json({
+                success: true,
+                message: "No favorite posts found",
+                posts: []
+            });
+        }
+
+        // Get all favorite posts
+        const favoritePosts = [];
+        
+        for (const postId of favorites) {
+            try {
+                const post = await PostService.findById(postId);
+                if (post) {
+                    // Get author information
+                    const author = await UserService.findById(post.author);
+                    
+                    const postObj = {
+                        ...post,
+                        likeCount: post.likes ? post.likes.length : (post.likeCount || 0),
+                        commentCount: post.commentCount,
+                        shareCount: post.shareCount,
+                        isLiked: post.likes ? post.likes.includes(userId) : false,
+                        isFavorited: true, // All posts here are favorited
+                        author: author ? {
+                            id: author.id,
+                            firstName: author.firstName,
+                            lastName: author.lastName,
+                            username: author.username,
+                            profilePicture: author.profilePicture
+                        } : null
+                    };
+                    
+                    favoritePosts.push(postObj);
+                }
+            } catch (postError) {
+                console.error(`Error fetching post ${postId}:`, postError.message);
+            }
+        }
+
+        res.status(200).json({
+            success: true,
+            count: favoritePosts.length,
+            message: "Favorite posts retrieved successfully",
+            posts: favoritePosts
+        });
+    } catch (error) {
+        console.error('Get favorite posts error:', error.message);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+
 //@desc     Update post by post id
 const updatePostByPostId = async (req, res) => {
     try {
@@ -509,5 +667,8 @@ module.exports = {
     getAllPhotoPosts,
     getAllPostsByUserId,
     updatePostByPostId,
-    deletePostByPostId
+    deletePostByPostId,
+    addToFavorites,
+    removeFromFavorites,
+    getFavoritePosts
 };
