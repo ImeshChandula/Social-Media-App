@@ -6,9 +6,7 @@ import toast from "react-hot-toast";
 const Feed = () => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
-    // eslint-disable-next-line no-unused-vars
     const [loadingMore, setLoadingMore] = useState(false);
-    // eslint-disable-next-line no-unused-vars
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
     const [feedType, setFeedType] = useState('engagement'); // 'engagement' or 'recency' or 'trending'
@@ -20,38 +18,71 @@ const Feed = () => {
 
     useEffect(() => {
         fetchFeed();
-    }, []);
+    }, [feedType]); // Re-fetch when feedType changes
 
     const fetchFeed = async (refresh = false, pageNumber = 1, scrollToFirstNew = false) => {
         try {
-            if (!refresh && pageNumber > 1) setLoadingMore(true);
-            else setLoading(true);
+            if (refresh) {
+                setRefreshing(true);
+                setPagination({ page: 1, hasMore: false, totalPages: 0 });
+            } else if (pageNumber > 1) {
+                setLoadingMore(true);
+            } else {
+                setLoading(true);
+            }
 
             setError(null);
 
-            const res = await axiosInstance.get("/feed/", {
-                params: {
-                    page: 1,
-                    limit: 20,
-                    sort_by: 'engagement',
-                    refresh: true,
-                    show_trending: false
-                }
-            });
+            // Use dynamic parameters based on feedType
+            const params = {
+                page: pageNumber,
+                limit: 20,
+                refresh: refresh || pageNumber === 1,
+            };
+
+            // Set parameters based on feedType
+            switch (feedType) {
+                case 'engagement':
+                    params.sort_by = 'engagement';
+                    params.show_trending = false;
+                    break;
+                case 'recency':
+                    params.sort_by = 'createdAt';
+                    params.show_trending = false;
+                    break;
+                case 'trending':
+                    params.sort_by = 'trending';
+                    params.show_trending = true;
+                    break;
+                default:
+                    params.sort_by = 'engagement';
+                    params.show_trending = false;
+            }
+
+            const res = await axiosInstance.get("/feed/", { params });
 
             if (res.data.success) {
                 const newPosts = res.data.posts || [];
 
-                setPosts(prev =>
-                    pageNumber === 1 ? newPosts : [...prev, ...newPosts]
-                );
+                setPosts(prev => {
+                    if (pageNumber === 1 || refresh) {
+                        return newPosts;
+                    } else {
+                        // Avoid duplicates when loading more
+                        const existingIds = prev.map(p => p._id || p.id);
+                        const uniqueNewPosts = newPosts.filter(p => !existingIds.includes(p._id || p.id));
+                        return [...prev, ...uniqueNewPosts];
+                    }
+                });
 
                 // Scroll into view of first new post
                 if (scrollToFirstNew && newPosts.length) {
                     setTimeout(() => {
                         const postElement = document.getElementById(`post-${newPosts[0]._id || newPosts[0].id}`);
-                        if (postElement) postElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 100); // allow DOM to render
+                        if (postElement) {
+                            postElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }, 100);
                 }
 
                 if (res.data.pagination) {
@@ -74,39 +105,45 @@ const Feed = () => {
         } finally {
             setLoading(false);
             setLoadingMore(false);
+            setRefreshing(false);
         }
     };
 
-    // Feed.jsx
-const updatePostLike = (postId, isLiked, likeCount) => {
-        setPosts(prevPosts =>
-            prevPosts.map(post =>
-                post._id === postId || post.id === postId
-                    ? { ...post, isLiked, likeCount }
-                    : post
-            )
-        );
-    };
+   const updatePostLike = (postId, isLiked, likeCount) => {
+    setPosts(prevPosts =>
+        prevPosts.map(post =>
+            (post._id === postId || post.id === postId)
+                ? { ...post, isLiked, likeCount }
+                : post
+        )
+    );
+};
+
 
 
     // Load more posts function
     const loadMorePosts = async () => {
-        if (!pagination.hasMore || loadingMore || feedType === 'trending') return;
+        if (!pagination.hasMore || loadingMore || loading) return;
         await fetchFeed(false, pagination.page + 1);
     };
 
     // Refresh feed function
     const refreshFeed = async () => {
-        setPagination({ page: 1, hasMore: false, totalPages: 0 });
-        await fetchFeed(true);
+        await fetchFeed(true, 1);
     };
 
     // Change feed type
     const changeFeedType = (newType) => {
         if (newType !== feedType) {
             setFeedType(newType);
+            setPosts([]); // Clear posts immediately
             setPagination({ page: 1, hasMore: false, totalPages: 0 });
         }
+    };
+
+    // Handle post deletion
+    const handleDeletePost = (postId) => {
+        setPosts(prevPosts => prevPosts.filter(post => (post._id || post.id) !== postId));
     };
 
     if (loading && posts.length === 0) {
@@ -126,11 +163,35 @@ const updatePostLike = (postId, isLiked, likeCount) => {
     }
 
     if (error && posts.length === 0) {
-        return <div className="text-danger text-center my-5 fs-5">Error loading feed: {error}</div>;
+        return (
+            <div className="text-danger text-center my-5 fs-5">
+                Error loading feed: {error}
+                <div className="mt-3">
+                    <button 
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={() => fetchFeed(true)}
+                    >
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
     }
 
-    if (!posts.length) {
-        return <div className="text-white text-center my-5 fs-5">No posts found</div>;
+    if (!posts.length && !loading) {
+        return (
+            <div className="text-white text-center my-5 fs-5">
+                No posts found
+                <div className="mt-3">
+                    <button 
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={() => fetchFeed(true)}
+                    >
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -142,6 +203,7 @@ const updatePostLike = (postId, isLiked, likeCount) => {
                         type="button"
                         className={`btn ${feedType === 'engagement' ? 'btn-primary' : 'btn-outline-primary'}`}
                         onClick={() => changeFeedType('engagement')}
+                        disabled={loading || refreshing}
                     >
                         For You
                     </button>
@@ -149,6 +211,7 @@ const updatePostLike = (postId, isLiked, likeCount) => {
                         type="button"
                         className={`btn ${feedType === 'recency' ? 'btn-primary' : 'btn-outline-primary'}`}
                         onClick={() => changeFeedType('recency')}
+                        disabled={loading || refreshing}
                     >
                         Recent
                     </button>
@@ -156,6 +219,7 @@ const updatePostLike = (postId, isLiked, likeCount) => {
                         type="button"
                         className={`btn ${feedType === 'trending' ? 'btn-primary' : 'btn-outline-primary'}`}
                         onClick={() => changeFeedType('trending')}
+                        disabled={loading || refreshing}
                     >
                         Trending
                     </button>
@@ -173,6 +237,15 @@ const updatePostLike = (postId, isLiked, likeCount) => {
                 </button>
             </div>
 
+            {/* Loading indicator for feed type changes */}
+            {loading && posts.length === 0 && (
+                <div className="text-center my-4">
+                    <div className="spinner-border text-primary" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            )}
+
             {/* Posts */}
             {posts.map((post, index) => (
                 <div key={post._id || post.id || index} id={`post-${post._id || post.id}`}>
@@ -181,6 +254,7 @@ const updatePostLike = (postId, isLiked, likeCount) => {
                         isUserPost={post.isUserPost}
                         disableNavigation={true}
                         onLikeUpdate={updatePostLike}
+                        onDeletePost={handleDeletePost}
                     />
                 </div>
             ))}
@@ -191,10 +265,24 @@ const updatePostLike = (postId, isLiked, likeCount) => {
                     <button
                         className="btn btn-primary"
                         onClick={loadMorePosts}
-                        disabled={loadingMore}
+                        disabled={loadingMore || loading}
                     >
-                        {loadingMore ? 'Loading...' : 'Load More Posts'}
+                        {loadingMore ? (
+                            <>
+                                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Loading...
+                            </>
+                        ) : (
+                            'Load More Posts'
+                        )}
                     </button>
+                </div>
+            )}
+
+            {/* End of feed message */}
+            {!pagination.hasMore && posts.length > 0 && (
+                <div className="text-center my-4 text-muted">
+                    <small>You've reached the end of the feed</small>
                 </div>
             )}
         </div>

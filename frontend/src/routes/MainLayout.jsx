@@ -18,6 +18,7 @@ import Contact from "./Contact";
 import NotificationForMobile from "../pages/NotificationForMobile";
 import CreateMarketplaceItem from "../components/CreateMarketplaceItem";
 import StoryView from "../components/StoryView";
+import Favorites from "../components/Favorites";
 
 const MainLayout = () => {
   const { checkAuth } = useAuthStore();
@@ -62,6 +63,7 @@ const MainLayout = () => {
               <Route path="/notifications" element={<NotificationForMobile />} />
               <Route path="/create-marketplace-item" element={<CreateMarketplaceItem />} />
               <Route path="/stories/:id" element={<StoryView />} />
+              <Route path="/favorites" element={<Favorites />} />
             </Routes>
           </div>
         </div>

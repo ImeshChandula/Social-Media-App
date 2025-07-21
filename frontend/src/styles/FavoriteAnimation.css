@@ -1,0 +1,42 @@
+.favorite-container {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.favorite-icon {
+    font-size: 1.8rem;
+    color: gray;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.favorite-icon.favorited {
+    color: red;
+    transform: scale(1.3);
+}
+
+.floating-heart {
+    position: absolute;
+    font-size: 1.2rem;
+    animation: floatUp 1s ease forwards;
+    opacity: 0.9;
+}
+
+@keyframes floatUp {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-30px) scale(1.3);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateY(-60px) scale(1);
+        opacity: 0;
+    }
+}
