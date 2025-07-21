@@ -16,7 +16,7 @@
 
 .favorite-icon.favorited {
     color: red;
-    transform: scale(1.3);
+    transform: scale(1);
 }
 
 .floating-heart {
