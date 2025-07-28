@@ -1,6 +1,7 @@
 const express = require('express');
 const notificationController = require('../controllers/notificationController');
 const { authenticateUser, checkAccountStatus } = require('../middleware/authMiddleware');
+//const { logActivity } = require('../middleware/activityLogger'); // Import activity logging middleware
 
 const router = express.Router();
 // http://localhost:5000/api/notifications

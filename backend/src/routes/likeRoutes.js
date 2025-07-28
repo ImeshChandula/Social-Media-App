@@ -1,6 +1,7 @@
 const express = require('express');
 const { authenticateUser, checkAccountStatus } = require('../middleware/authMiddleware');
 const likeController  = require('../controllers/likeController');
+//const { logLike, logUnlike } = require('../middleware/activityLogger'); // Import activity logging middleware
 
 const router = express.Router();
 

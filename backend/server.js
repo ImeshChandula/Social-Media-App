@@ -64,6 +64,7 @@ app.use("/api/support", require("./src/routes/supportRoutes"));
 app.use("/api/appeal", require("./src/routes/appealRoutes"));
 app.use("/api/marketplace", require("./src/routes/marketplaceRoutes"));
 app.use("/api/feed", require("./src/routes/feedRoutes"));
+app.use("/api/activities", require("./src/routes/activityRoutes")); // added activity routes
 
 
 //  route handler for the root path

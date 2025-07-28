@@ -2,6 +2,7 @@ const express = require('express');
 const { authenticateUser, checkAccountStatus } = require('../middleware/authMiddleware');
 const { validateStory } = require("../middleware/validator");
 const storyController = require('../controllers/storyController');
+const { logStoryCreate, logActivity} = require('../middleware/activityLogger'); // Import activity logging middleware
 
 const router = express.Router();
 
@@ -11,7 +12,7 @@ const router = express.Router();
 // // @route   POST api/stories/createStory
 // // @desc    Create a story
 // // @access  Private
-router.post('/createStory', validateStory, authenticateUser, storyController.createStory);
+router.post('/createStory', validateStory, authenticateUser, logStoryCreate, storyController.createStory); // added activity logging
 
 // @route   GET /api/stories/me
 // @desc    Get all stories by the logged-in user (latest at top)
@@ -31,7 +32,7 @@ router.get('/:id', authenticateUser, storyController.getStoryById);
 // // @route   PUT /api/stories/:id/view
 // // @desc    Mark a story as viewed
 // // @access  Private
-router.put('/:id/view', authenticateUser, storyController.viewStory);
+router.put('/:id/view', authenticateUser, logActivity('story_view', (req) => ({ storyId: req.params.id, storyOwnerId: req.body.ownerId }) ), storyController.viewStory); // added activity logging
 
 // // @route   PATCH /api/stories/update/:id
 // // @desc    Update Story By Story Id

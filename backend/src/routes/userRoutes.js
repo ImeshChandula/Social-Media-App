@@ -2,6 +2,7 @@ const express = require('express');
 const { authenticateUser, authorizeRoles, checkAccountStatus } = require('../middleware/authMiddleware');
 const userController = require('../controllers/userController');
 const { validateUserData } = require("../middleware/validateData");
+const { logSearch, logProfileUpdate, logProfilePictureUpdate, logCoverPhotoUpdate } = require('../middleware/activityLogger'); // Import activity logging middleware
 
 const router = express.Router();
 
@@ -21,22 +22,22 @@ router.get('/getUserById/:id', authenticateUser, userController.getUserById);
 //@route   GET /api/users/search?q=john&limit=10
 //@desc    Search user by username
 //@access  Private 
-router.get("/search", authenticateUser, userController.searchUsersByUsername);
+router.get("/search", authenticateUser, logSearch, userController.searchUsersByUsername); // added activity logging middleware
 
 //@route   PATCH api/users/updateProfile
 //@desc    Update user profile data
 //@access  Private
-router.patch('/updateProfile/:id', validateUserData, authenticateUser, userController.updateUserProfile);
+router.patch('/updateProfile/:id', validateUserData, authenticateUser, logProfileUpdate, userController.updateUserProfile); // added activity logging 
 
 //@route   PATCH api/users/updateProfilePic
 //@desc    Update user profile Image
 //@access  Private
-router.patch("/updateProfilePic/:id", validateUserData, authenticateUser, checkAccountStatus, userController.updateUserProfileImage);
+router.patch("/updateProfilePic/:id", validateUserData, authenticateUser, checkAccountStatus, logProfilePictureUpdate, userController.updateUserProfileImage); // added activity logging 
 
 //@route   PATCH api/users/updateCoverPic
 //@desc    Update user profile Cover Photo
 //@access  Private
-router.patch("/updateCoverPic/:id", validateUserData, authenticateUser, checkAccountStatus, userController.updateUserProfileCoverPhoto);
+router.patch("/updateCoverPic/:id", validateUserData, authenticateUser, checkAccountStatus, logCoverPhotoUpdate, userController.updateUserProfileCoverPhoto); // added activity logging
 
 //@route   GET api/users/getAllUsers
 //@desc    Get All user data
@@ -51,7 +52,7 @@ router.delete('/deleteUser/:id', authenticateUser, checkAccountStatus, userContr
 //@route   GET /api/users/search?q=john&limit=10
 //@desc    Search user by username
 //@access  Private 
-router.get("/admin/search", authenticateUser, checkAccountStatus, authorizeRoles("super_admin"), userController.searchUsersByUsername);
+router.get("/admin/search", authenticateUser, checkAccountStatus, authorizeRoles("super_admin"), logSearch, userController.searchUsersByUsername);
 
 
 

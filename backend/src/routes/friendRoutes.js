@@ -1,6 +1,7 @@
 const express = require('express');
 const { authenticateUser, checkAccountStatus } = require('../middleware/authMiddleware');
 const friendController = require('../controllers/friendController');
+const { logFriendRequest, logFriendAccept, logFriendDecline, logActivity } = require('../middleware/activityLogger'); // Import activity logging middleware
 
 const router = express.Router();
 
@@ -10,17 +11,17 @@ const router = express.Router();
 // @desc    Send a friend request to another user
 // @route   POST /api/friends/friend-request/send/:id
 // @access  Private
-router.post("/friend-request/send/:id", authenticateUser, checkAccountStatus, friendController.sendFriendRequest);
+router.post("/friend-request/send/:id", authenticateUser, checkAccountStatus, logFriendRequest, friendController.sendFriendRequest); // added activity logging
 
 // @desc    Cancel a friend request sent to another user
 // @route   POST /api/friends/friend-request/cancel/:id
 // @access  Private
-router.delete("/friend-request/cancel/:id", authenticateUser, checkAccountStatus, friendController.cancelFriendRequest);
+router.delete("/friend-request/cancel/:id", authenticateUser, checkAccountStatus, logFriendDecline, friendController.cancelFriendRequest); // added activity logging
 
 // @desc    Accept a friend request
 // @route   POST /api/friends/friend-request/accept/:id
 // @access  Private
-router.post("/friend-request/accept/:id", authenticateUser, checkAccountStatus, friendController.acceptFriendRequest);
+router.post("/friend-request/accept/:id", authenticateUser, checkAccountStatus, logFriendAccept, friendController.acceptFriendRequest); // added activity logging
 
 // @desc    Reject a friend request
 // @route   POST /api/friends/friend-request/reject/:id
@@ -45,7 +46,7 @@ router.get('/allSuggestFriends', authenticateUser, friendController.getAllSugges
 // @desc    Remove a friend
 // @route   DELETE /api/friends/removeFriend/:id
 // @access  Private
-router.delete('/removeFriend/:id', authenticateUser, checkAccountStatus, friendController.removeFriend);
+router.delete('/removeFriend/:id', authenticateUser, checkAccountStatus, logActivity('friend_remove', (req) => ({ targetUserId: req.params.id })), friendController.removeFriend); // added activity logging
 
 // @desc    check friend status
 // @route   GET /api/friends/friend-status/:id

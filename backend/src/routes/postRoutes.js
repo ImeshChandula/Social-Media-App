@@ -2,6 +2,7 @@ const express = require('express');
 const { authenticateUser, authorizeRoles } = require('../middleware/authMiddleware');
 const { validatePost } = require("../middleware/validator");
 const postController  = require('../controllers/postController');
+const { logPostCreate, logPostUpdate, logPostDelete } = require('../middleware/activityLogger'); // Import activity logging middleware
 
 const router = express.Router();
 
@@ -11,12 +12,12 @@ const router = express.Router();
 // @route   POST api/posts/createPost
 // @desc    Create a post
 // @access  Private
-router.post('/createPost', validatePost, authenticateUser, postController.createPost);
+router.post('/createPost', validatePost, authenticateUser, logPostCreate, postController.createPost); // added activity logging 
 
 // @route   GET /api/posts/getPostById/:id
 // @desc    Get posts by post id
 // @access  Private
-router.get('/getPostById/:id', authenticateUser, postController.getPostByPostId);
+router.get('/getPostById/:id', authenticateUser, postController.getPostByPostId); 
 
 // @route   GET /api/posts/me
 // @desc    Get all posts by the logged-in user (latest at top)
@@ -46,12 +47,12 @@ router.get('/feed/photos', authenticateUser, postController.getAllPhotoPosts);
 // @route   PATCH /api/posts/update/:id
 // @desc    Update Post By Post Id
 // @access  Private
-router.patch("/update/:id", validatePost, authenticateUser, postController.updatePostByPostId);
+router.patch("/update/:id", validatePost, logPostUpdate, authenticateUser, postController.updatePostByPostId); // added activity logging
 
 // @route   DELETE /api/posts/delete/:id
 // @desc    Delete Post By Post Id
 // @access  Private
-router.delete("/delete/:id", authenticateUser, postController.deletePostByPostId);
+router.delete("/delete/:id", authenticateUser, logPostDelete, postController.deletePostByPostId); // added activity logging
 
 // @route   POST /api/posts/favorites/add/:postId
 // @desc    Add post to favorites

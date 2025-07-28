@@ -185,6 +185,10 @@ const searchUsersByUsername = async (req,res) => {
         // Use the comprehensive search function
         const users = await UserService.searchUsers(searchTerm, parseInt(limit));
 
+        // Store search result count for activity logging
+        req.searchResultCount = users.length;
+
+
         // Remove sensitive information from all users
         const sanitizedUsers = users.map(user => {
             user.password = undefined;
