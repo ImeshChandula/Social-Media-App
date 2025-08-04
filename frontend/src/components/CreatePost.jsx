@@ -10,6 +10,7 @@ const CreatePost = () => {
         media: [],            // now an array
         mediaPreview: [],
         mediaType: '',
+        category: '',         // NEW: Category field for videos
         privacy: 'public',
         tags: '',
         location: '',
@@ -18,6 +19,10 @@ const CreatePost = () => {
     const navigate = useNavigate()
     const [formData, setFormData] = useState(initialState);
     const [loading, setLoading] = useState(false);
+
+    //video category matching backend model
+    const VIDEO_CATEGORIES = ['Music', 'Sports', 'Education', 'Entertainment', 'News'];
+
 
     useEffect(() => {
         return () => {
@@ -76,6 +81,7 @@ const CreatePost = () => {
                 media: [...prev.media, ...base64Files],         // append new base64 files
                 mediaPreview: [...prev.mediaPreview, ...previews], // append new previews
                 mediaType: detectedType,
+                category: detectedType === 'video' ? prev.category : '', // Reset category if switching from video to image
             }));
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }));
@@ -92,6 +98,7 @@ const CreatePost = () => {
             media: [],
             mediaPreview: [],
             mediaType: '',
+            category: '', // Reset category when removing media
         }));
     };
 
@@ -100,6 +107,11 @@ const CreatePost = () => {
 
         if (!formData.content.trim() && !formData.media) {
             return toast.error('Content or media is required.')
+        }
+
+        // Validate category for video posts
+        if (formData.mediaType === 'video' && !formData.category) {
+            return toast.error('Please select a category for your video.');
         }
 
         setLoading(true);
@@ -115,6 +127,11 @@ const CreatePost = () => {
                 privacy: formData.privacy,
                 location: formData.location,
             };
+
+            // Add category only for video posts
+            if (formData.mediaType === 'video' && formData.category) {
+                payload.category = formData.category;
+            }
 
             const res = await axiosInstance.post('/posts/createPost', payload);
             toast.success(res.data.message || 'Post created successfully!');
@@ -198,6 +215,7 @@ const CreatePost = () => {
                                                         media: newMedia,
                                                         mediaPreview: newPreviews,
                                                         mediaType: newMedia.length === 0 ? "" : prev.mediaType,
+                                                        category: newMedia.length === 0 ? "" : prev.category, // Reset category if no more media
                                                     }));
                                                 }}
                                             >
@@ -237,6 +255,38 @@ const CreatePost = () => {
                             </div>
                         )}
                     </div>
+
+                    {/* Category Selection - Only show for videos */}
+                    {formData.mediaType === 'video' && (
+                        <div className="mb-3">
+                            <label className="form-label fw-semibold">
+                                Video Category <span className="text-danger">*</span>
+                            </label>
+                            <select
+                                className="form-select"
+                                name="category"
+                                value={formData.category}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="">Select a category...</option>
+                                {VIDEO_CATEGORIES.map(category => (
+                                    <option key={category} value={category}>
+                                        {category}
+                                    </option>
+                                ))}
+                            </select>
+                            <div className="form-text text-muted">
+                                Selecting a category helps others discover your video content on the Videos page.
+                            </div>
+                            {formData.mediaType === 'video' && !formData.category && (
+                                <div className="text-warning small mt-1">
+                                    ⚠️ Category is required for video posts
+                                </div>
+                            )}
+                        </div>
+                    )}
+
 
                     <div className="mb-3">
                         <label className="form-label fw-semibold">Tags (comma separated)</label>
@@ -279,10 +329,20 @@ const CreatePost = () => {
                     <button
                         type="submit"
                         className="btn btn-primary w-100 py-2 fw-bold rounded-pill"
-                        disabled={loading}
+                        disabled={loading || (formData.mediaType === 'video' && !formData.category)}
                     >
                         {loading ? 'Posting...' : 'Post Now'}
                     </button>
+
+                    {/* Category Reminder for Video Posts */}
+                    {formData.mediaType === 'video' && !formData.category && (
+                        <div className="text-center mt-2">
+                            <small className="text-warning">
+                                📹 Please select a category for your video to continue
+                            </small>
+                        </div>
+                    )}
+
                 </form>
             </div>
         </div>
@@ -290,3 +350,5 @@ const CreatePost = () => {
 };
 
 export default CreatePost;
+
+

@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import {
   FaCommentAlt,
   FaChevronRight,
-  FaHeart
+  FaHeart,
+  FaPlay
 } from "react-icons/fa";
 import LikesPopup from "./LikesPopup";
 import PostDropdown from "./PostDropdown";
@@ -67,6 +68,11 @@ const PostCard = ({
     navigate(authorId === currentUserId ? "/profile" : `/profile/${authorId}`);
   };
 
+  // Navigate to videos page with category filter
+  const handleCategoryClick = (category) => {
+    navigate(`/videos?category=${category}`);
+  };
+
   const fetchLikes = async () => {
     try {
       setLoadingLikes(true);
@@ -90,16 +96,6 @@ const PostCard = ({
 
     if (onLikeUpdate) {
       onLikeUpdate(postId, isLiked, likeCount);
-    }
-
-    try {
-      await axiosInstance.post(`/likes/toggle/${postId}`);
-    } catch (error) {
-      console.error("Failed to update like", error);
-      setLocalLikeData((prev) => ({
-        isLiked: !prev.isLiked,
-        likeCount: prev.isLiked ? prev.likeCount - 1 : prev.likeCount + 1,
-      }));
     }
   };
 
@@ -137,8 +133,20 @@ const PostCard = ({
     }
   };
 
+  // Helper function to get category badge class
+  const getCategoryBadgeClass = (category) => {
+    const badgeClasses = {
+      'Music': 'bg-purple text-white',
+      'Sports': 'bg-success text-white',
+      'Education': 'bg-primary text-white',
+      'Entertainment': 'bg-warning text-dark',
+      'News': 'bg-danger text-white'
+    };
+    return badgeClasses[category] || 'bg-secondary text-white';
+  };
+
   const renderMedia = (url, idx) => {
-    const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
+    const isVideo = /\.(mp4|webm|ogg)$/i.test(url) || post.mediaType === 'video';
     const mediaStyles = {
       width: "100%",
       height: "clamp(200px, 30vw, 400px)",
@@ -147,7 +155,21 @@ const PostCard = ({
     };
 
     return isVideo ? (
-      <video key={idx} src={url} controls className="w-100" style={mediaStyles} />
+      <div key={idx} className="position-relative">
+        <video src={url} controls className="w-100" style={mediaStyles} />
+        {/* Video category badge */}
+        {post.category && (
+          <div className="position-absolute top-0 end-0 m-2">
+            <span 
+              className={`badge ${getCategoryBadgeClass(post.category)} cursor-pointer`}
+              onClick={() => handleCategoryClick(post.category)}
+              title={`View more ${post.category} videos`}
+            >
+              {post.category}
+            </span>
+          </div>
+        )}
+      </div>
     ) : (
       <img key={idx} src={url} alt={`media ${idx + 1}`} style={mediaStyles} />
     );
@@ -168,10 +190,28 @@ const PostCard = ({
               alt="Profile"
               className="rounded-circle"
               style={{ width: 50, height: 50, objectFit: "cover" }}
+              onError={(e) => {
+                e.target.src = "/default-avatar.png";
+              }}
             />
             <div className="flex-grow-1 text-start">
               <h6 className="mb-0 fw-bold">{post.author?.username || "Unknown"}</h6>
-              <small>{post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}</small>
+              <div className="d-flex align-items-center gap-2">
+                <small className="text-muted">
+                  {post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}
+                </small>
+                {/* Show category for video posts in header */}
+                {post.mediaType === 'video' && post.category && (
+                  <span 
+                    className={`badge ${getCategoryBadgeClass(post.category)} badge-sm cursor-pointer`}
+                    onClick={() => handleCategoryClick(post.category)}
+                    title={`View more ${post.category} videos`}
+                    style={{ fontSize: '0.7rem' }}
+                  >
+                    {post.category}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           {isUserPost && <PostDropdown postId={postId} onDelete={handleDeletePost} />}
@@ -180,8 +220,36 @@ const PostCard = ({
         {/* Body */}
         <div className="card-body p-4">
           {post.content && <p className="mb-3">{post.content}</p>}
+          
+          {/* Location */}
+          {post.location && (
+            <div className="mb-3">
+              <small className="text-muted">
+                📍 {post.location}
+              </small>
+            </div>
+          )}
+          
           {mediaArray.length > 0 && (
             <div className="text-center">{renderMedia(mediaArray[currentMediaIndex], currentMediaIndex)}</div>
+          )}
+          
+          {/* Video category section (for better visibility) */}
+          {post.mediaType === 'video' && post.category && (
+            <div className="mt-3 d-flex align-items-center justify-content-between">
+              <div 
+                className="d-flex align-items-center gap-2 cursor-pointer"
+                onClick={() => handleCategoryClick(post.category)}
+              >
+                <FaPlay size={12} className="text-muted" />
+                <span className="text-muted small">
+                  Video in <strong>{post.category}</strong> category
+                </span>
+              </div>
+              <small className="text-muted">
+                Click to view more {post.category} videos
+              </small>
+            </div>
           )}
         </div>
 
@@ -206,6 +274,7 @@ const PostCard = ({
             <div className="favorite-container" onClick={handleFavoriteClick}>
               <FaHeart
                 className={`favorite-icon ${isFavorited ? "favorited" : ""}`}
+                title={isFavorited ? "Remove from favorites" : "Add to favorites"}
               />
               {burstHearts.map((h) => (
                 <span

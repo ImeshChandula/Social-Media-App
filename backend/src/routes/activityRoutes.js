@@ -73,7 +73,6 @@ router.get('/admin/user/:userId',authenticateUser,checkAccountStatus,authorizeRo
 router.get('/admin/user/:userId/stats',authenticateUser,checkAccountStatus,authorizeRoles(ROLES.SUPER_ADMIN),activityController.getUserActivityStats);
 
 /**
- * @route   DELETE /api/activities/admin/cleanup
  * @desc    Delete old activities (maintenance) (Super Admin only)
  * @access  Private - Super Admin only
  * @body    daysOld (number of days)

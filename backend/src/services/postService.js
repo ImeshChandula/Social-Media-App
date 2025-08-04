@@ -5,6 +5,26 @@ const { db } = connectFirebase();
 const postCollection = db.collection('posts');
 
 const PostService = {
+    // Helper method to safely create Post instances
+    _createPostSafely(docId, docData) {
+        try {
+            if (!docId) {
+                console.warn('Document ID is missing');
+                return null;
+            }
+            
+            if (!docData) {
+                console.warn(`Document data is missing for ID ${docId}`);
+                return null;
+            }
+
+            return new Post(docId, docData);
+        } catch (error) {
+            console.error(`Error creating Post instance for ID ${docId}:`, error);
+            return null;
+        }
+    },
+
     // static methods
     async findById(id) {
         try {
@@ -13,8 +33,9 @@ const PostService = {
                 return null;
             }
 
-            return new Post(doc.id, doc.data());
+            return this._createPostSafely(doc.id, doc.data());
         } catch (error) {
+            console.error('Error finding post by ID:', error);
             throw error;
         }
     },
@@ -25,8 +46,9 @@ const PostService = {
             postData.createdAt = new Date().toISOString();
 
             const docRef = await postCollection.add(postData);
-            return new Post(docRef.id, postData);
+            return this._createPostSafely(docRef.id, postData);
         } catch (error) {
+            console.error('Error creating post:', error);
             throw error;
         }
     },
@@ -41,6 +63,7 @@ const PostService = {
             const updatedPost = await PostService.findById(id);
             return updatedPost;
         } catch (error) {
+            console.error('Error updating post:', error);
             throw error;
         }
     },
@@ -51,6 +74,7 @@ const PostService = {
             await postCollection.doc(id).delete();
             return true;
         } catch (error) {
+            console.error('Error deleting post:', error);
             throw error;
         }
     },
@@ -63,45 +87,149 @@ const PostService = {
             if (postRef.empty) {
                 return [];
             }
-            const posts = postRef.docs.map(doc => new Post(doc.id, doc.data()));
+            
+            const posts = [];
+            postRef.docs.forEach(doc => {
+                const post = this._createPostSafely(doc.id, doc.data());
+                if (post) {
+                    posts.push(post);
+                } else {
+                    console.warn(`Skipped corrupted post with ID: ${doc.id}`);
+                }
+            });
+            
             return posts;
         } catch (error) {
+            console.error('Error finding all posts:', error);
             throw error;
         }
     },
 
-    // get all videos
+    // get all videos - FIXED: No composite index needed
     async findByMediaType(type) {
         try {
+            // Use only single field query to avoid composite index requirement
             const postRef = await postCollection
                     .where('mediaType', '==', type)
-                    .orderBy('createdAt', 'desc')
-                    .get();
+                    .get(); // Remove orderBy to avoid composite index
+            
             if (postRef.empty) {
                 return [];
             }
 
-            const posts = postRef.docs.map(doc => new Post(doc.id, doc.data()));
-            return posts
+            const posts = [];
+            postRef.docs.forEach(doc => {
+                const post = this._createPostSafely(doc.id, doc.data());
+                if (post) {
+                    posts.push(post);
+                } else {
+                    console.warn(`Skipped corrupted ${type} post with ID: ${doc.id}`);
+                }
+            });
+            
+            // Sort in memory instead of in query
+            posts.sort((a, b) => {
+                const dateA = new Date(a.createdAt || 0);
+                const dateB = new Date(b.createdAt || 0);
+                return dateB - dateA;
+            });
+            
+            return posts;
         } catch (error) {
             console.error('Error finding posts by media type', error);
             throw error;
         }
     },
+
+    // SOLUTION 1: Filter in memory (works immediately)
+    async findByMediaTypeAndCategory(mediaType, category) {
+        try {
+            console.log(`Fetching ${mediaType} posts for category: ${category}`);
+            
+            // Get all posts of the media type (single field query - no index needed)
+            const postRef = await postCollection
+                    .where('mediaType', '==', mediaType)
+                    .get(); // No orderBy to avoid composite index
+            
+            if (postRef.empty) {
+                return [];
+            }
+
+            // Filter by category and create posts in memory
+            const posts = [];
+            postRef.docs.forEach(doc => {
+                const postData = doc.data();
+                
+                // Filter by category in JavaScript
+                if (postData.category === category) {
+                    const post = this._createPostSafely(doc.id, postData);
+                    if (post) {
+                        posts.push(post);
+                    }
+                }
+            });
+            
+            // Sort by createdAt in memory
+            posts.sort((a, b) => {
+                const dateA = new Date(a.createdAt || 0);
+                const dateB = new Date(b.createdAt || 0);
+                return dateB - dateA;
+            });
+            
+            console.log(`Found ${posts.length} ${mediaType} posts in ${category} category`);
+            return posts;
+            
+        } catch (error) {
+            console.error('Error finding posts by media type and category', error);
+            // Fallback to all posts of that media type
+            return await this.findByMediaType(mediaType);
+        }
+    },
+
+    // SOLUTION 2: Alternative approach - get all videos first, then filter
+    async findVideosByCategory(category) {
+        try {
+            // Get all video posts first
+            const allVideos = await this.findByMediaType('video');
+            
+            // Filter by category
+            const categoryVideos = allVideos.filter(post => post.category === category);
+            
+            return categoryVideos;
+        } catch (error) {
+            console.error('Error finding videos by category:', error);
+            return [];
+        }
+    },
     
-    // Find posts by user ID
+    // Find posts by user ID - FIXED: No composite index needed
     async findByUserId(userId) {
         try {
             const postRef = await postCollection
                     .where('author', '==', userId)
-                    .orderBy('createdAt', 'desc')
-                    .get();
+                    .get(); // Remove orderBy to avoid composite index
             
             if (postRef.empty) {
                 return [];
             }
             
-            const posts = postRef.docs.map(doc => new Post(doc.id, doc.data()));
+            const posts = [];
+            postRef.docs.forEach(doc => {
+                const post = this._createPostSafely(doc.id, doc.data());
+                if (post) {
+                    posts.push(post);
+                } else {
+                    console.warn(`Skipped corrupted user post with ID: ${doc.id} for user: ${userId}`);
+                }
+            });
+            
+            // Sort in memory
+            posts.sort((a, b) => {
+                const dateA = new Date(a.createdAt || 0);
+                const dateB = new Date(b.createdAt || 0);
+                return dateB - dateA;
+            });
+            
             return posts;
         } catch (error) {
             console.error('Error finding posts by user ID:', error);
@@ -109,77 +237,104 @@ const PostService = {
         }
     },
 
-    // Find posts for feed 
+    // Find posts for feed - FIXED: Avoid composite indexes
     async findForFeed(currentUserId, userFriends = [], limit = 50) {
         try {
             const posts = [];
         
-            // 1. Get all public posts
-            const publicPostsRef = await postCollection
-                .where('privacy', '==', 'public')
-                .orderBy('createdAt', 'desc')
-                .limit(limit)
-                .get();
-            
-            console.log("public posts: " + publicPostsRef.size);
-
-            publicPostsRef.docs.forEach(doc => {
-                posts.push(new Post(doc.id, doc.data()));
-            });
-            
-            // 2. Get friends-only posts from user's friends
-            if (userFriends.length > 0) {
-                const friendsPostsRef = await postCollection
-                    .where('privacy', '==', 'friends')
-                    .orderBy('createdAt', 'desc')
-                    .limit(limit * 2)
-                    .get();
-
-                console.log("friends-only posts: " + friendsPostsRef.size);
+            // 1. Get all public posts - single field query
+            try {
+                const publicPostsRef = await postCollection
+                    .where('privacy', '==', 'public')
+                    .limit(limit * 2) // Get more since we'll sort in memory
+                    .get(); // Remove orderBy
                 
-                // Filter for friends' posts only (excluding current user)
-                let count = 0;
-                friendsPostsRef.docs.forEach(doc => {
-                    const postData = doc.data();
-                    
-                    if (userFriends.includes(postData.author) && postData.author !== currentUserId) {
-                        posts.push(new Post(doc.id, postData));
-                        count++;
+                console.log("public posts: " + publicPostsRef.size);
+
+                publicPostsRef.docs.forEach(doc => {
+                    const post = this._createPostSafely(doc.id, doc.data());
+                    if (post) {
+                        posts.push(post);
                     }
                 });
-                console.log("friends-only posts(for array): " + count);
+            } catch (publicError) {
+                console.error('Error fetching public posts:', publicError);
             }
             
-            // 3. DEBUG: Try getting user's posts without orderBy first
-            const userFriendsPostsRef = await postCollection
-                    .where('author', '==', currentUserId)
-                    .where('privacy', '==', 'friends')
-                    .orderBy('createdAt', 'desc')
-                    .limit(limit)
-                    .get();
-            
-            console.log("user's own friends-only posts: " + userFriendsPostsRef.size);
+            // 2. Get friends-only posts - single field query
+            if (userFriends.length > 0) {
+                try {
+                    const friendsPostsRef = await postCollection
+                        .where('privacy', '==', 'friends')
+                        .limit(limit * 2)
+                        .get(); // Remove orderBy
 
-            let friendsCount = 0;
-            userFriendsPostsRef.docs.forEach(doc => {
-                posts.push(new Post(doc.id, doc.data()));
-                friendsCount++;
+                    console.log("friends-only posts: " + friendsPostsRef.size);
+                    
+                    let count = 0;
+                    friendsPostsRef.docs.forEach(doc => {
+                        const postData = doc.data();
+                        
+                        if (postData && postData.author && 
+                            userFriends.includes(postData.author) && 
+                            postData.author !== currentUserId) {
+                            
+                            const post = this._createPostSafely(doc.id, postData);
+                            if (post) {
+                                posts.push(post);
+                                count++;
+                            }
+                        }
+                    });
+                    console.log("friends-only posts(for array): " + count);
+                } catch (friendsError) {
+                    console.error('Error fetching friends posts:', friendsError);
+                }
+            }
+            
+            // 3. Get user's own friends-only posts
+            try {
+                const userFriendsPostsRef = await postCollection
+                        .where('author', '==', currentUserId)
+                        .get(); // Remove compound where and orderBy
+                
+                console.log("user's own posts: " + userFriendsPostsRef.size);
+
+                let friendsCount = 0;
+                userFriendsPostsRef.docs.forEach(doc => {
+                    const postData = doc.data();
+                    
+                    // Filter for friends privacy in memory
+                    if (postData && postData.privacy === 'friends') {
+                        const post = this._createPostSafely(doc.id, postData);
+                        if (post) {
+                            posts.push(post);
+                            friendsCount++;
+                        }
+                    }
+                });
+
+                console.log("user's own friends-only posts(for array): " + friendsCount);
+            } catch (userPostsError) {
+                console.error("Error fetching user's posts:", userPostsError);
+            }
+            
+            // 4. Sort all posts by creation date in memory
+            posts.sort((a, b) => {
+                const dateA = new Date(a.createdAt || 0);
+                const dateB = new Date(b.createdAt || 0);
+                return dateB - dateA;
             });
-
-            console.log("user's own friends-only posts(for array): " + friendsCount);
             
-            
-            // 4. Sort all posts by creation date (newest first)
-            posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            
-            // 5. Remove duplicates if any (though there shouldn't be any with this logic)
+            // 5. Remove duplicates and limit
             const uniquePosts = posts.filter((post, index, self) => 
                 index === self.findIndex(p => p.id === post.id)
-            );
+            ).slice(0, limit);
             
-            console.log("total posts after remove duplicates: " + uniquePosts.length);
+            console.log("total posts after processing: " + uniquePosts.length);
             return uniquePosts;
         } catch (error) {
+            console.error('Error in findForFeed:', error);
             throw error;
         }
     },

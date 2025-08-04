@@ -1,11 +1,19 @@
 // Post table
 class Post {
     constructor(id, postData) {
+
+        // Add safety check for postData
+        if (!postData || typeof postData !== 'object') {
+            console.warn(`Post constructor called with invalid data for ID ${id}:`, postData);
+            postData = {}; // Fallback to empty object
+        }
+
         this.id = id;
         this.author = postData.author;
         this.content = postData.content || '';
         this.media = postData.media || [];
         this.mediaType = postData.mediaType || '';
+        this.category = postData.category || null; // Category field for videos
         this.tags = postData.tags || [];
         this.privacy = postData.privacy || 'public';
         this.location = postData.location || null;

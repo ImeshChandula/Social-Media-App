@@ -5,11 +5,21 @@ const { handleMediaUpload } = require('../utils/handleMediaUpload');
 const { areImagesUnchanged } = require('../utils/checkImagesAreSame');
 const notificationUtils = require('../utils/notificationUtils');
 
+// Valid video categories
+const VALID_VIDEO_CATEGORIES = ['Music', 'Sports', 'Education', 'Entertainment', 'News'];
 
 //@desc     create a post 
 const createPost = async (req, res) => {
     try {
-        const { content, media, mediaType, tags, privacy, location } = req.body;
+        // Added 'category' to the destructuring
+        const { content, media, mediaType, tags, privacy, location, category } = req.body;
+
+        // Debug logging
+        console.log('🔍 CREATE POST DEBUG:');
+        console.log('Request body:', req.body);
+        console.log('Category received:', category);
+        console.log('Media type:', mediaType);
+        console.log('Valid categories:', VALID_VIDEO_CATEGORIES);
 
         if (!content && !media) {
             return res.status(400).json({ error: "Either content or media is required." });
@@ -17,6 +27,35 @@ const createPost = async (req, res) => {
 
         if(!mediaType) {
             return res.status(400).json({ error: "Media type is required." });
+        }
+
+        // Validate category for video posts
+        if (mediaType === 'video') {
+            console.log('📹 Video post detected, validating category...');
+
+            if (!category) {
+                console.log('❌ No category provided for video');
+                return res.status(400).json({ 
+                    error: "Category is required for video posts.",
+                    validCategories: VALID_VIDEO_CATEGORIES
+                });
+            }
+            
+            if (!VALID_VIDEO_CATEGORIES.includes(category)) {
+                console.log('❌ Invalid category:', category);
+                console.log('Available categories:', VALID_VIDEO_CATEGORIES);
+                console.log('Category type:', typeof category);
+                console.log('Is string?', typeof category === 'string');
+
+                return res.status(400).json({ 
+                    error: "Invalid category for video post.",
+                    receivedCategory: category,
+                    validCategories: VALID_VIDEO_CATEGORIES,
+                    message: `"${category}" is not allowed. Please select from: ${VALID_VIDEO_CATEGORIES.join(', ')}`
+                });
+            }
+            
+            console.log('✅ Category validation passed:', category);
         }
         
         const postData = {
@@ -26,7 +65,15 @@ const createPost = async (req, res) => {
             location
         };
 
+        // Add category only for video posts
+        if (mediaType === 'video' && category) {
+            postData.category = category;
+            console.log('✅ Category added to postData:', postData.category);
+        }
+
         if (content !== undefined) postData.content = content;
+
+        console.log('📦 Final postData:', postData);
 
         const newPost = await PostService.create(postData);
 
@@ -73,14 +120,14 @@ const createPost = async (req, res) => {
             }
         }
 
+        console.log('✅ Post created successfully:', populatedPost.id);
         return res.status(201).json({ message: "Post created successfully", populatedPost });
         
     } catch (error) {
-        console.error('Post creation error:', error.message);
+        console.error('❌ Post creation error:', error.message);
         res.status(500).json({ message: 'Server error' });
     }
 };
-
 
 const getPostByPostId = async (req, res) => {
     try {
@@ -97,7 +144,6 @@ const getPostByPostId = async (req, res) => {
         res.status(500).json({ error: error.message, message: 'Server error' });
     }
 };
-
 
 //@desc     Get all posts
 const getAllPosts = async (req, res) => {
@@ -177,15 +223,28 @@ const getAllPosts = async (req, res) => {
     }
 };
 
-
 //@desc     Get all video posts
 const getAllVideoPosts = async (req, res) => {
     try {
         const mediaType = "video";
+        const {category} = req.query; //Get category from query params
 
-        const posts = await PostService.findByMediaType(mediaType);
+        let posts;
+
+        if(category && category !== 'All') {
+            //filter by specific category
+            posts = await PostService.findByMediaTypeAndCategory(mediaType, category);
+        } else{
+            // Get all video posts
+            posts = await PostService.findByMediaType(mediaType);
+        }
+
         if (!posts.length) {
-            return res.status(200).json({message: "No videos found", posts: []});
+            return res.status(200).json({
+                success: true,
+                message: category ? `No videos found for category "${category}"` : "No videos found", 
+                posts: []
+            });
         }
 
         // Collect all unique author IDs from posts
@@ -244,7 +303,7 @@ const getAllVideoPosts = async (req, res) => {
         res.status(200).json({
             success: true,
             count: populatedPosts.length, 
-            message: "All Videos retrieved successfully", 
+            message: category ? `Videos for category "${category}" retrieved successfully` : "All Videos retrieved successfully", 
             posts: populatedPosts
         });
     } catch (error) {
@@ -253,8 +312,7 @@ const getAllVideoPosts = async (req, res) => {
     }
 };
 
-
-//@desc     Get all video posts
+//@desc     Get all photo posts
 const getAllPhotoPosts = async (req, res) => {
     try {
         const mediaType = "image";
@@ -328,7 +386,6 @@ const getAllPhotoPosts = async (req, res) => {
     }
 };
 
-
 //@desc     Get all posts by id
 const getAllPostsByUserId = async (req, res) => {
     try {
@@ -381,9 +438,7 @@ const getAllPostsByUserId = async (req, res) => {
     }
 };
 
-
-//newly added for favorites feature
-//@desc     Add post to favorites
+// Rest of your functions remain the same...
 const addToFavorites = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -430,8 +485,6 @@ const addToFavorites = async (req, res) => {
     }
 };
 
-
-//@desc     Remove post from favorites
 const removeFromFavorites = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -472,8 +525,6 @@ const removeFromFavorites = async (req, res) => {
     }
 };
 
-
-//@desc     Get user's favorite posts
 const getFavoritePosts = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -539,8 +590,6 @@ const getFavoritePosts = async (req, res) => {
     }
 };
 
-
-//@desc     Update post by post id
 const updatePostByPostId = async (req, res) => {
     try {
         const postId = req.params.id;
@@ -558,7 +607,15 @@ const updatePostByPostId = async (req, res) => {
             return res.status(403).json({ message: 'Unauthorized: You can only update your own posts' });
         }
         
-        const { content, media, mediaType, tags, privacy, location } = req.body;
+        const { content, media, mediaType, tags, privacy, location, category } = req.body;
+        
+        // Validate category for video posts
+        if (mediaType === 'video' && category && !VALID_VIDEO_CATEGORIES.includes(category)) {
+            return res.status(400).json({ 
+                error: "Invalid category for video post.",
+                validCategories: VALID_VIDEO_CATEGORIES
+            });
+        }
         
         // Create update object with only the provided fields
         const updateData = {};
@@ -568,6 +625,11 @@ const updatePostByPostId = async (req, res) => {
         if (tags !== undefined) updateData.tags = tags;
         if (privacy !== undefined) updateData.privacy = privacy;
         if (location !== undefined) updateData.location = location;
+        
+        // Add category only for video posts
+        if (mediaType === 'video' && category !== undefined) {
+            updateData.category = category;
+        }
         
         // Add edit history if content is changed
         if (content !== undefined && content !== existingPost.content) {
@@ -619,8 +681,6 @@ const updatePostByPostId = async (req, res) => {
   }
 };
 
-
-//@desc 
 const deletePostByPostId = async (req, res) => {
     try {
         const currentUserId = req.user.id;
@@ -657,7 +717,110 @@ const deletePostByPostId = async (req, res) => {
     }
 };
 
+const getVideoCategories = async (req, res) => {
+    try {
+        res.status(200).json({
+            success: true,
+            categories: VALID_VIDEO_CATEGORIES,
+            message: "Video categories retrieved successfully"
+        });
+    } catch (error) {
+        console.error('Get video categories error:', error.message);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
 
+const getFeedPosts = async (req, res) => {
+    try {
+        const currentUserId = req.user.id;
+        
+        // Get user's friends list
+        const user = await UserService.findById(currentUserId);
+        const userFriends = user.friends || [];
+        
+        // Get posts for feed
+        const posts = await PostService.findForFeed(currentUserId, userFriends);
+        
+        if (!posts.length) {
+            return res.status(200).json({
+                success: true,
+                message: "No posts found in feed",
+                posts: []
+            });
+        }
+
+        // Collect all unique author IDs from posts
+        const authorIds = new Set();
+        posts.forEach(post => {
+            if (post.author && typeof post.author === 'string') {
+                authorIds.add(post.author);
+            }
+        });
+        
+        // Create a map to store author information
+        const authorsMap = {};
+        
+        // Fetch author data for each unique author ID
+        for (const authorId of authorIds) {
+            try {
+                if (!authorId) continue;
+                
+                const author = await UserService.findById(authorId);
+                
+                if (author) {
+                    authorsMap[authorId] = {
+                        id: author.id,
+                        firstName: author.firstName,
+                        lastName: author.lastName,
+                        username: author.username,
+                        profilePicture: author.profilePicture
+                    };
+                }
+            } catch (userError) {
+                console.error(`Error fetching user ${authorId}:`, userError.message);
+            }
+        }
+        
+        // Populate posts with author data and user-specific info
+        const populatedPosts = posts.map(post => {
+            let authorData = null;
+            
+            // Check if author is a string ID and exists in our map
+            if (post.author && typeof post.author === 'string' && authorsMap[post.author]) {
+                authorData = authorsMap[post.author];
+            }
+
+            // Check if current user has liked this post
+            const isLiked = currentUserId ? (post.likes || []).includes(currentUserId) : false;
+            
+            // Check if current user has favorited this post
+            const isFavorited = user.favorites ? user.favorites.includes(post.id) : false;
+            
+            // Create a new object with post properties
+            const postObj = {
+                ...post,
+                likeCount: post.likes ? post.likes.length : (post.likeCount || 0),
+                commentCount: post.commentCount,
+                shareCount: post.shareCount,
+                isLiked: isLiked,
+                isFavorited: isFavorited,
+                author: authorData
+            };
+            
+            return postObj;
+        });
+        
+        res.status(200).json({
+            success: true,
+            count: populatedPosts.length,
+            message: "Feed posts retrieved successfully",
+            posts: populatedPosts
+        });
+    } catch (error) {
+        console.error('Get feed posts error:', error.message);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
 
 module.exports = {
     createPost,
@@ -670,5 +833,7 @@ module.exports = {
     deletePostByPostId,
     addToFavorites,
     removeFromFavorites,
-    getFavoritePosts
+    getFavoritePosts,
+    getVideoCategories,
+    getFeedPosts
 };

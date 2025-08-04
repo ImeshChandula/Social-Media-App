@@ -1,4 +1,8 @@
+
 const Joi = require('joi');
+
+// Valid video categories
+const VALID_VIDEO_CATEGORIES = ['Music', 'Sports', 'Education', 'Entertainment', 'News'];
 
 // Validate user registration
 const validateUser = (req, res, next) => {
@@ -38,9 +42,7 @@ const validateUser = (req, res, next) => {
   next();
 };
 
-
-
-// Validate post creation
+// Validate post creation - UPDATED with category support
 const validatePost = (req, res, next) => {
   const schema = Joi.object({
     author: Joi.string().optional(), // typically user ID
@@ -65,6 +67,12 @@ const validatePost = (req, res, next) => {
       then: Joi.string().valid('image', 'video').required(),
       otherwise: Joi.string().valid('text', 'image', 'video').optional()
     }),
+    // Category field for video posts
+    category: Joi.when('mediaType', {
+      is: 'video',
+      then: Joi.string().valid(...VALID_VIDEO_CATEGORIES).required(),
+      otherwise: Joi.string().valid(...VALID_VIDEO_CATEGORIES).optional()
+    }),
     tags: Joi.array().items(Joi.string()).optional(),
     privacy: Joi.string().valid('public', 'private', 'friends').default('public'),
     location: Joi.string().allow('', null).optional(),
@@ -83,12 +91,17 @@ const validatePost = (req, res, next) => {
 
   const { error } = schema.validate(req.body);
   if (error) {
-    return res.status(400).json({ message: error.details[0].message });
+    console.log('❌ Joi validation error:', error.details[0].message);
+    console.log('❌ Failed field:', error.details[0].path);
+    console.log('❌ Received value:', error.details[0].context?.value);
+    return res.status(400).json({ 
+      message: error.details[0].message,
+      field: error.details[0].path,
+      receivedValue: error.details[0].context?.value
+    });
   }
   next();
 };
-
-
 
 // Validate comment creation
 const validateComment = (req, res, next) => {
@@ -109,7 +122,6 @@ const validateComment = (req, res, next) => {
   }
   next();
 };
-
 
 // Validate story creation
 const validateStory = (req, res, next) => {
@@ -135,7 +147,7 @@ const validateStory = (req, res, next) => {
       is: Joi.exist().not(null),
       then: Joi.string().valid('image', 'video').required(),
       otherwise: Joi.string().valid('text', 'image', 'video').optional()
-    }),
+	}),
     // Story styling options
     caption: Joi.string().allow('').max(500).optional(),
     
@@ -163,9 +175,7 @@ const validateStory = (req, res, next) => {
   next();
 }; 
 
-
-
-// Validate comment creation
+// Validate category creation
 const validateCategory = (req, res, next) => {
   const schema = Joi.object({
     categoryFor: Joi.string().valid('job_role', 'marketplace', 'other').required(),
@@ -183,7 +193,5 @@ const validateCategory = (req, res, next) => {
   }
   next();
 };
-
-
 
 module.exports = {validateUser, validatePost, validateComment, validateStory, validateCategory };

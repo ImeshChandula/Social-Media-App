@@ -69,4 +69,9 @@ router.delete('/favorites/remove/:postId', authenticateUser, postController.remo
 // @access  Private
 router.get('/favorites', authenticateUser, postController.getFavoritePosts);
 
+// @route   GET /api/posts/video-categories
+// @desc    Get valid video categories
+// @access  Private
+router.get('/video-categories', authenticateUser, postController.getVideoCategories);
+
 module.exports = router;
