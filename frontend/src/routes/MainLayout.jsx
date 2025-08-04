@@ -19,6 +19,7 @@ import NotificationForMobile from "../pages/NotificationForMobile";
 import CreateMarketplaceItem from "../components/CreateMarketplaceItem";
 import StoryView from "../components/StoryView";
 import Favorites from "../components/Favorites";
+import ActivityLogsPage from "../components/ActivityLogsPage";
 
 const MainLayout = () => {
   const { checkAuth } = useAuthStore();
@@ -64,6 +65,7 @@ const MainLayout = () => {
               <Route path="/create-marketplace-item" element={<CreateMarketplaceItem />} />
               <Route path="/stories/:id" element={<StoryView />} />
               <Route path="/favorites" element={<Favorites />} />
+              <Route path="/activity-logs" element={<ActivityLogsPage/>} />
             </Routes>
           </div>
         </div>

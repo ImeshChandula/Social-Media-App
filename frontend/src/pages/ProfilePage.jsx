@@ -115,6 +115,9 @@ function ProfilePage() {
               <button className="btn btn-secondary" onClick={handleCreateStory}>
                 Add to Story
               </button>
+              <button className="btn btn-outline-info" onClick={() => navigate("/activity-logs")}>
+  Activity Logs
+</button>
             </div>
           </div>
 
@@ -158,4 +161,4 @@ function ProfilePage() {
   );
 }
 
-export default ProfilePage;
+export default ProfilePage
