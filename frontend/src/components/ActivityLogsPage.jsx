@@ -392,8 +392,10 @@ const useActivityData = (currentPage, filters, activeTab) => {
     types: null, 
     pagination: null,
     allHistory: [],
+    userHistory: [],
     userStats: null,
-    specificActivity: null
+    specificActivity: null,
+    selectedUserInfo: null
   });
   const [loading, setLoading] = useState(true);
 
@@ -411,8 +413,14 @@ const useActivityData = (currentPage, filters, activeTab) => {
           }
         } else if (activeTab === 'all-activities') {
           requests.push(axiosInstance.get(`/activities/admin/all-history?page=${currentPage}&limit=10${buildQueryString(filters)}`));
+          if (currentPage === 1) {
+            requests.push(axiosInstance.get("/activities/types"));
+          }
         } else if (activeTab === 'user-activity' && filters.userId) {
           requests.push(axiosInstance.get(`/activities/admin/user/${filters.userId}?page=${currentPage}&limit=10${buildQueryString(filters)}`));
+          if (currentPage === 1) {
+            requests.push(axiosInstance.get("/activities/types"));
+          }
         }
 
         const responses = await Promise.all(requests);
@@ -421,9 +429,11 @@ const useActivityData = (currentPage, filters, activeTab) => {
           ...prev,
           history: activeTab === 'my-activity' ? (responses[0]?.data?.data || []) : prev.history,
           allHistory: activeTab === 'all-activities' ? (responses[0]?.data?.data || []) : prev.allHistory,
+          userHistory: activeTab === 'user-activity' ? (responses[0]?.data?.data || []) : prev.userHistory,
+          selectedUserInfo: activeTab === 'user-activity' ? (responses[0]?.data?.user || null) : prev.selectedUserInfo,
           pagination: responses[0]?.data?.pagination || null,
-          stats: responses[1]?.data?.data || prev.stats,
-          types: responses[2]?.data?.data || prev.types,
+          stats: (activeTab === 'my-activity' && responses[1]) ? responses[1].data?.data : prev.stats,
+          types: responses.find(r => r?.data?.data?.activityTypes)?.data?.data || prev.types,
         }));
       } catch (err) {
         console.error(err);
@@ -459,10 +469,10 @@ const ActivityLogsPage = () => {
     userId: '',
     period: 'month'
   });
-  const [userRole, setUserRole] = useState('user'); // This should come from your auth context
+  const [userRole] = useState('super_admin'); // This should come from your auth context - set to super_admin for testing
   const [selectedUser, setSelectedUser] = useState('');
 
-  const { history, allHistory, stats, types, pagination, loading } = useActivityData(currentPage, filters, activeTab);
+  const { history, allHistory, userHistory, selectedUserInfo, stats, types, pagination, loading } = useActivityData(currentPage, filters, activeTab);
 
   // Reset page when changing tabs or filters
   useEffect(() => {
@@ -479,7 +489,8 @@ const ActivityLogsPage = () => {
         responseType: format === 'csv' ? 'blob' : 'json'
       });
       
-      const blob = new Blob([format === 'csv' ? response.data : JSON.stringify(response.data, null, 2)], {
+      const data = response.data;
+      const blob = new Blob([format === 'csv' ? data : JSON.stringify(data, null, 2)], {
         type: format === 'csv' ? 'text/csv' : 'application/json'
       });
       
@@ -491,10 +502,42 @@ const ActivityLogsPage = () => {
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
       toast.success(`Data exported as ${format.toUpperCase()}`);
     } catch (error) {
       console.error('Export error:', error);
       toast.error('Failed to export data');
+    }
+  };
+
+  const handleExportAllData = async () => {
+    if (!window.confirm('This will export ALL users activity data. This may take some time. Continue?')) {
+      return;
+    }
+    
+    try {
+      // Since there's no specific endpoint for exporting all users data,
+      // we'll export the current all-activities view
+      const response = await axiosInstance.get('/activities/admin/all-history?limit=10000');
+      const allData = response.data;
+      
+      const blob = new Blob([JSON.stringify(allData, null, 2)], {
+        type: 'application/json'
+      });
+      
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `all-users-activity-export.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success('All users data exported successfully');
+    } catch (error) {
+      console.error('Export all data error:', error);
+      toast.error('Failed to export all users data');
     }
   };
 
@@ -507,26 +550,75 @@ const ActivityLogsPage = () => {
       const response = await axiosInstance.delete('/activities/admin/cleanup', {
         data: { daysOld: 365 }
       });
-      toast.success(`Successfully deleted ${response.data.deletedCount} old activities`);
+      const result = response.data;
+      toast.success(`Successfully deleted ${result.deletedCount} old activities`);
     } catch (error) {
       console.error('Cleanup error:', error);
       toast.error('Failed to cleanup activities');
     }
   };
 
-  const fetchUserActivity = async () => {
+  const fetchSpecificUserStats = async () => {
     if (!selectedUser) {
       toast.error('Please enter a user ID');
       return;
     }
     
     try {
-      const response = await axiosInstance.get(`/activities/admin/user/${selectedUser}`);
-      // Handle user-specific activity data
-      toast.success('User activity loaded');
+      const response = await axiosInstance.get(`/activities/admin/user/${selectedUser}/stats?period=${filters.period}`);
+      const userData = response.data;
+      toast.success(`User stats loaded for ${userData.user?.username || selectedUser}`);
+      console.log('User stats:', userData);
     } catch (error) {
-      console.error('User activity error:', error);
-      toast.error('Failed to fetch user activity');
+      console.error('User stats error:', error);
+      toast.error('Failed to fetch user stats');
+    }
+  };
+
+  const fetchActivityById = async (activityId) => {
+    try {
+      const response = await axiosInstance.get(`/activities/${activityId}`);
+      const activityData = response.data;
+      toast.success('Activity details loaded');
+      console.log('Activity details:', activityData);
+    } catch (error) {
+      console.error('Activity details error:', error);
+      toast.error('Failed to fetch activity details');
+    }
+  };
+
+  const handleExportUserData = async (userId) => {
+    try {
+      // For super admin, we can export any user's data by making a request
+      // Since the export endpoint is for current user only, we'll use the user activity data
+      const response = await axiosInstance.get(`/activities/admin/user/${userId}?limit=10000`);
+      const userData = response.data;
+      
+      const exportData = {
+        userId: userId,
+        username: userData.user?.username,
+        exportDate: new Date().toISOString(),
+        totalActivities: userData.data?.length || 0,
+        activities: userData.data || []
+      };
+      
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: 'application/json'
+      });
+      
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `user-${userId}-activity-export.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success(`User ${userData.user?.username || userId} data exported successfully`);
+    } catch (error) {
+      console.error('Export user data error:', error);
+      toast.error('Failed to export user data');
     }
   };
 
@@ -542,7 +634,33 @@ const ActivityLogsPage = () => {
     );
   }
 
-  const currentHistory = activeTab === 'my-activity' ? history : allHistory;
+  const getCurrentHistory = () => {
+    switch (activeTab) {
+      case 'my-activity':
+        return history;
+      case 'all-activities':
+        return allHistory;
+      case 'user-activity':
+        return userHistory;
+      default:
+        return [];
+    }
+  };
+
+  const currentHistory = getCurrentHistory();
+
+  const getHistoryTitle = () => {
+    switch (activeTab) {
+      case 'my-activity':
+        return "Recent Activity History";
+      case 'all-activities':
+        return "All Users Activity History";
+      case 'user-activity':
+        return `User Activity History${selectedUserInfo ? ` - ${selectedUserInfo.username}` : ''}`;
+      default:
+        return "Activity History";
+    }
+  };
 
   return (
     <div style={styles.container}>
@@ -565,10 +683,16 @@ const ActivityLogsPage = () => {
               <AdminIcon /> All Activities
             </TabButton>
             <TabButton
+              active={activeTab === 'user-activity'}
+              onClick={() => setActiveTab('user-activity')}
+            >
+              <SearchIcon /> User Activity
+            </TabButton>
+            <TabButton
               active={activeTab === 'admin-tools'}
               onClick={() => setActiveTab('admin-tools')}
             >
-              <SearchIcon /> Admin Tools
+              <CleanupIcon /> Admin Tools
             </TabButton>
           </>
         )}
@@ -624,6 +748,16 @@ const ActivityLogsPage = () => {
             onChange={(e) => handleFilterChange('endDate', e.target.value)}
           />
 
+          {activeTab === 'user-activity' && (
+            <input
+              type="text"  
+              style={styles.input}
+              placeholder="Enter User ID"
+              value={filters.userId}
+              onChange={(e) => handleFilterChange('userId', e.target.value)}
+            />
+          )}
+
           <Button variant="primary" onClick={() => handleExportData('json')}>
             <ExportIcon /> Export JSON
           </Button>
@@ -631,15 +765,40 @@ const ActivityLogsPage = () => {
           <Button variant="secondary" onClick={() => handleExportData('csv')}>
             <ExportIcon /> Export CSV
           </Button>
+
+          {userRole === 'super_admin' && activeTab === 'all-activities' && (
+            <Button variant="warning" onClick={handleExportAllData}>
+              <ExportIcon /> Export All Users Data
+            </Button>
+          )}
         </div>
       </Card>
 
       {/* Content based on active tab */}
-      {activeTab === 'my-activity' && (
+      {(activeTab === 'my-activity' || (userRole === 'super_admin' && activeTab === 'all-activities') || (userRole === 'super_admin' && activeTab === 'user-activity')) && (
         <>
-          <Card title="Activity Statistics" icon={<StatsIcon />}>{memoStats}</Card>
+          {activeTab === 'my-activity' && (
+            <Card title="Activity Statistics" icon={<StatsIcon />}>{memoStats}</Card>
+          )}
           <Card title="Activity Types" icon={<TypesIcon />}>{memoTypes}</Card>
         </>
+      )}
+
+      {activeTab === 'user-activity' && selectedUserInfo && (
+        <Card title="User Information" icon={<SearchIcon />}>
+          <div style={styles.controlsRow}>
+            <strong>User: {selectedUserInfo.username}</strong>
+            <span>({selectedUserInfo.firstName} {selectedUserInfo.lastName})</span>
+            <span>Role: {selectedUserInfo.role}</span>
+            <span>Email: {selectedUserInfo.email}</span>
+            <Button variant="secondary" onClick={fetchSpecificUserStats}>
+              Get User Stats
+            </Button>
+            <Button variant="primary" onClick={() => handleExportUserData(selectedUserInfo.id)}>
+              <ExportIcon /> Export User Data
+            </Button>
+          </div>
+        </Card>
       )}
 
       {activeTab === 'admin-tools' && userRole === 'super_admin' && (
@@ -649,24 +808,41 @@ const ActivityLogsPage = () => {
             <input
               type="text"
               style={styles.input}
-              placeholder="User ID"
+              placeholder="User ID for Stats"
               value={selectedUser}
               onChange={(e) => setSelectedUser(e.target.value)}
             />
-            <Button variant="primary" onClick={fetchUserActivity}>
-              <SearchIcon /> Get User Activity
+            <Button variant="primary" onClick={fetchSpecificUserStats}>
+              <SearchIcon /> Get User Stats
             </Button>
             <Button variant="danger" onClick={handleCleanupActivities}>
               <CleanupIcon /> Cleanup Old Activities
             </Button>
           </div>
+          <div style={{ ...styles.controlsRow, marginTop: theme.spacing.md }}>
+            <select
+              style={styles.select}
+              value={filters.period}
+              onChange={(e) => handleFilterChange('period', e.target.value)}
+            >
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="year">This Year</option>
+            </select>
+          </div>
         </div>
       )}
 
       {/* Activity History */}
-      <Card title={activeTab === 'all-activities' ? "All Users Activity History" : "Recent Activity History"} icon={<ActivityIcon />}>
+      <Card title={getHistoryTitle()} icon={<ActivityIcon />}>
         {currentHistory.length === 0 ? (
-          <p style={styles.emptyState}>No activity found.</p>
+          <p style={styles.emptyState}>
+            {activeTab === 'user-activity' && !filters.userId 
+              ? "Please enter a User ID to view their activity history."
+              : "No activity found."
+            }
+          </p>
         ) : (
           <ul style={{ listStyle: "none", padding: 0, margin: `-${theme.spacing.md} -${theme.spacing.sm}` }}>
             {currentHistory.map((activity, index) => (
