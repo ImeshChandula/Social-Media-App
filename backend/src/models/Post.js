@@ -25,6 +25,12 @@ class Post {
         this.isEdited = postData.isEdited || false;
         this.editHistory = postData.editHistory || [];
 
+        // Report related fields
+        this.isReported = postData.isReported || false;
+        this.reportCount = postData.reportCount || 0;
+        this.isHidden = postData.isHidden || false; // Hidden from normal feed when reported
+        this.reports = postData.reports || []; // Array of report IDs
+
         this.createdAt = postData.createdAt || new Date().toISOString();
         this.updatedAt = postData.updatedAt || new Date().toISOString();
     };

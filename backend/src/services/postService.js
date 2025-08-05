@@ -1,3 +1,4 @@
+
 const { connectFirebase } = require('../config/firebase');
 const Post = require('../models/Post');
 
@@ -237,12 +238,12 @@ const PostService = {
         }
     },
 
-    // Find posts for feed - FIXED: Avoid composite indexes
+    // Find posts for feed - FIXED: Avoid composite indexes - UPDATED to exclude hidden posts
     async findForFeed(currentUserId, userFriends = [], limit = 50) {
         try {
             const posts = [];
         
-            // 1. Get all public posts - single field query
+            // 1. Get all public posts - single field query, exclude hidden posts
             try {
                 const publicPostsRef = await postCollection
                     .where('privacy', '==', 'public')
@@ -252,16 +253,20 @@ const PostService = {
                 console.log("public posts: " + publicPostsRef.size);
 
                 publicPostsRef.docs.forEach(doc => {
-                    const post = this._createPostSafely(doc.id, doc.data());
-                    if (post) {
-                        posts.push(post);
+                    const postData = doc.data();
+                    // Exclude hidden (reported) posts from normal feed
+                    if (!postData.isHidden) {
+                        const post = this._createPostSafely(doc.id, postData);
+                        if (post) {
+                            posts.push(post);
+                        }
                     }
                 });
             } catch (publicError) {
                 console.error('Error fetching public posts:', publicError);
             }
             
-            // 2. Get friends-only posts - single field query
+            // 2. Get friends-only posts - single field query, exclude hidden posts
             if (userFriends.length > 0) {
                 try {
                     const friendsPostsRef = await postCollection
@@ -277,7 +282,8 @@ const PostService = {
                         
                         if (postData && postData.author && 
                             userFriends.includes(postData.author) && 
-                            postData.author !== currentUserId) {
+                            postData.author !== currentUserId &&
+                            !postData.isHidden) { // Exclude hidden posts
                             
                             const post = this._createPostSafely(doc.id, postData);
                             if (post) {
@@ -292,7 +298,7 @@ const PostService = {
                 }
             }
             
-            // 3. Get user's own friends-only posts
+            // 3. Get user's own friends-only posts, exclude hidden posts
             try {
                 const userFriendsPostsRef = await postCollection
                         .where('author', '==', currentUserId)
@@ -304,8 +310,8 @@ const PostService = {
                 userFriendsPostsRef.docs.forEach(doc => {
                     const postData = doc.data();
                     
-                    // Filter for friends privacy in memory
-                    if (postData && postData.privacy === 'friends') {
+                    // Filter for friends privacy in memory and exclude hidden posts
+                    if (postData && postData.privacy === 'friends' && !postData.isHidden) {
                         const post = this._createPostSafely(doc.id, postData);
                         if (post) {
                             posts.push(post);
@@ -338,6 +344,81 @@ const PostService = {
             throw error;
         }
     },
+
+    // NEW METHODS FOR REPORT FUNCTIONALITY
+
+    // Mark post as reported and hide from feed
+    async markAsReported(postId, reportId) {
+        try {
+            const post = await this.findById(postId);
+            if (!post) {
+                throw new Error('Post not found');
+            }
+
+            const reports = post.reports || [];
+            reports.push(reportId);
+
+            const updateData = {
+                isReported: true,
+                isHidden: true, // Hide from normal feed
+                reportCount: reports.length,
+                reports: reports
+            };
+
+            return await this.updateById(postId, updateData);
+        } catch (error) {
+            console.error('Error marking post as reported:', error);
+            throw error;
+        }
+    },
+
+    // Show post in feed again (when report is declined)
+    async showPost(postId) {
+        try {
+            const updateData = {
+                isHidden: false
+            };
+
+            return await this.updateById(postId, updateData);
+        } catch (error) {
+            console.error('Error showing post:', error);
+            throw error;
+        }
+    },
+
+    // Get all reported posts for admin dashboard
+    async findReportedPosts() {
+        try {
+            // Use single field query to avoid composite index requirement
+            const postRef = await postCollection
+                .where('isReported', '==', true)
+                .get(); // Remove orderBy to avoid composite index
+            
+            if (postRef.empty) {
+                return [];
+            }
+            
+            const posts = [];
+            postRef.docs.forEach(doc => {
+                const post = this._createPostSafely(doc.id, doc.data());
+                if (post) {
+                    posts.push(post);
+                }
+            });
+            
+            // Sort in memory by updatedAt (most recent first)
+            posts.sort((a, b) => {
+                const dateA = new Date(a.updatedAt || a.createdAt || 0);
+                const dateB = new Date(b.updatedAt || b.createdAt || 0);
+                return dateB - dateA;
+            });
+            
+            return posts;
+        } catch (error) {
+            console.error('Error finding reported posts:', error);
+            throw error;
+        }
+    }
 };
 
 module.exports = PostService;

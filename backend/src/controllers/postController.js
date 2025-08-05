@@ -4,6 +4,7 @@ const {deleteAllComments} = require('../services/userDeletionService');
 const { handleMediaUpload } = require('../utils/handleMediaUpload');
 const { areImagesUnchanged } = require('../utils/checkImagesAreSame');
 const notificationUtils = require('../utils/notificationUtils');
+const ReportService = require('../services/reportService');
 
 // Valid video categories
 const VALID_VIDEO_CATEGORIES = ['Music', 'Sports', 'Education', 'Entertainment', 'News'];
@@ -438,7 +439,7 @@ const getAllPostsByUserId = async (req, res) => {
     }
 };
 
-// Rest of your functions remain the same...
+// @desc     Add post to favorites
 const addToFavorites = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -485,6 +486,8 @@ const addToFavorites = async (req, res) => {
     }
 };
 
+
+// @desc     Remove post from favorites
 const removeFromFavorites = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -525,6 +528,8 @@ const removeFromFavorites = async (req, res) => {
     }
 };
 
+
+// @desc     Get favorite posts
 const getFavoritePosts = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -590,6 +595,8 @@ const getFavoritePosts = async (req, res) => {
     }
 };
 
+
+// @desc     Update post by post ID
 const updatePostByPostId = async (req, res) => {
     try {
         const postId = req.params.id;
@@ -681,6 +688,8 @@ const updatePostByPostId = async (req, res) => {
   }
 };
 
+
+//@desc     Delete post by post ID
 const deletePostByPostId = async (req, res) => {
     try {
         const currentUserId = req.user.id;
@@ -717,6 +726,8 @@ const deletePostByPostId = async (req, res) => {
     }
 };
 
+
+// @desc     Get video categories
 const getVideoCategories = async (req, res) => {
     try {
         res.status(200).json({
@@ -730,6 +741,9 @@ const getVideoCategories = async (req, res) => {
     }
 };
 
+
+// @desc     Get feed posts
+// This function retrieves posts for the user's feed, including posts from friends and public posts.
 const getFeedPosts = async (req, res) => {
     try {
         const currentUserId = req.user.id;
@@ -822,6 +836,244 @@ const getFeedPosts = async (req, res) => {
     }
 };
 
+
+//Report functionality
+
+//@desc     Report a post
+const reportPost = async (req, res) => {
+    try {
+        const { postId } = req.params;
+        const { reason } = req.body;
+        const reporterId = req.user.id;
+
+        if (!reason || reason.trim() === '') {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Reason is required for reporting a post" 
+            });
+        }
+
+        // Check if post exists
+        const post = await PostService.findById(postId);
+        if (!post) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Post not found" 
+            });
+        }
+
+        // Check if user has already reported this post
+        const hasReported = await ReportService.hasUserReported(postId, reporterId);
+        if (hasReported) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "You have already reported this post" 
+            });
+        }
+
+        // Create report data
+        const reportData = {
+            postId: postId,
+            reportedBy: reporterId,
+            postAuthor: post.author,
+            reason: reason.trim()
+        };
+
+        // Create the report
+        const report = await ReportService.create(reportData);
+        if (!report) {
+            return res.status(500).json({ 
+                success: false, 
+                message: "Failed to create report" 
+            });
+        }
+
+        // Mark post as reported and hide from feed
+        await PostService.markAsReported(postId, report.id);
+
+        res.status(201).json({
+            success: true,
+            message: "Post reported successfully",
+            reportId: report.id
+        });
+    } catch (error) {
+        console.error('Report post error:', error.message);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+//@desc     Get all reported posts for admin dashboard
+const getReportedPosts = async (req, res) => {
+    try {
+        // Get all reported posts
+        const reportedPosts = await PostService.findReportedPosts();
+        
+        if (!reportedPosts.length) {
+            return res.status(200).json({
+                success: true,
+                message: "No reported posts found",
+                posts: []
+            });
+        }
+
+        // Get reports for each post and populate with user data
+        const populatedPosts = [];
+        
+        for (const post of reportedPosts) {
+            try {
+                // Get all reports for this post
+                const reports = await ReportService.findByPostId(post.id);
+                
+                // Get post author info
+                const author = await UserService.findById(post.author);
+                
+                // Get reporter info for each report
+                const reportsWithUserInfo = [];
+                for (const report of reports) {
+                    const reporter = await UserService.findById(report.reportedBy);
+                    
+                    reportsWithUserInfo.push({
+                        ...report,
+                        reporterInfo: reporter ? {
+                            id: reporter.id,
+                            firstName: reporter.firstName,
+                            lastName: reporter.lastName,
+                            username: reporter.username
+                        } : null
+                    });
+                }
+                
+                // Create populated post object
+                const populatedPost = {
+                    ...post,
+                    author: author ? {
+                        id: author.id,
+                        firstName: author.firstName,
+                        lastName: author.lastName,
+                        username: author.username,
+                        profilePicture: author.profilePicture
+                    } : null,
+                    reports: reportsWithUserInfo
+                };
+                
+                populatedPosts.push(populatedPost);
+            } catch (postError) {
+                console.error(`Error processing post ${post.id}:`, postError.message);
+            }
+        }
+
+        res.status(200).json({
+            success: true,
+            count: populatedPosts.length,
+            message: "Reported posts retrieved successfully",
+            posts: populatedPosts
+        });
+    } catch (error) {
+        console.error('Get reported posts error:', error.message);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+//@desc     Accept a report (keep post hidden, can delete)
+const acceptReport = async (req, res) => {
+    try {
+        const { reportId } = req.params;
+        const { reviewNote } = req.body;
+        const adminId = req.user.id;
+
+        // Find the report
+        const report = await ReportService.findById(reportId);
+        if (!report) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Report not found" 
+            });
+        }
+
+        // Update report status
+        const updateData = {
+            status: 'accepted',
+            reviewedBy: adminId,
+            reviewNote: reviewNote || null
+        };
+
+        const updatedReport = await ReportService.updateById(reportId, updateData);
+        if (!updatedReport) {
+            return res.status(500).json({ 
+                success: false, 
+                message: "Failed to update report" 
+            });
+        }
+
+        // Update post: remove from reported posts list, but keep hidden
+        await PostService.updateById(report.postId, {
+            isReported: false // Remove from reported posts list
+            // isHidden remains true (post stays hidden)
+        });
+
+        // Post remains hidden (already marked as hidden when reported)
+
+        res.status(200).json({
+            success: true,
+            message: "Report accepted successfully",
+            report: updatedReport
+        });
+    } catch (error) {
+        console.error('Accept report error:', error.message);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+//@desc     Decline a report (show post in feed again)
+const declineReport = async (req, res) => {
+    try {
+        const { reportId } = req.params;
+        const { reviewNote } = req.body;
+        const adminId = req.user.id;
+
+        // Find the report
+        const report = await ReportService.findById(reportId);
+        if (!report) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Report not found" 
+            });
+        }
+
+        // Update report status
+        const updateData = {
+            status: 'declined',
+            reviewedBy: adminId,
+            reviewNote: reviewNote || null
+        };
+
+        const updatedReport = await ReportService.updateById(reportId, updateData);
+        if (!updatedReport) {
+            return res.status(500).json({ 
+                success: false, 
+                message: "Failed to update report" 
+            });
+        }
+
+        // Show post in feed again
+        await PostService.showPost(report.postId, {
+            isReported: false, // Remove from reported posts list
+            isHidden: false // Show post in feed again
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Report declined successfully. Post is now visible in feed.",
+            report: updatedReport
+        });
+    } catch (error) {
+        console.error('Decline report error:', error.message);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+
+
 module.exports = {
     createPost,
     getAllPosts,
@@ -835,5 +1087,9 @@ module.exports = {
     removeFromFavorites,
     getFavoritePosts,
     getVideoCategories,
-    getFeedPosts
+    getFeedPosts,
+    reportPost,
+    getReportedPosts,
+    acceptReport,
+    declineReport
 };

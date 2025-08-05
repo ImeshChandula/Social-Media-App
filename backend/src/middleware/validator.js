@@ -194,4 +194,36 @@ const validateCategory = (req, res, next) => {
   next();
 };
 
-module.exports = {validateUser, validatePost, validateComment, validateStory, validateCategory };
+// Add this function to your existing validator.js
+const validateReport = (req, res, next) => {
+  const schema = Joi.object({
+    reason: Joi.string().trim().min(5).max(500).required().messages({
+      'string.empty': 'Reason is required',
+      'string.min': 'Reason must be at least 5 characters long',
+      'string.max': 'Reason cannot exceed 500 characters',
+      'any.required': 'Reason is required for reporting a post'
+    }),
+    reviewNote: Joi.string().trim().max(1000).optional().allow(''),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ 
+      success: false,
+      message: error.details[0].message 
+    });
+  }
+  next();
+};
+
+
+module.exports = {
+  validateUser, 
+  validatePost, 
+  validateComment, 
+  validateStory, 
+  validateCategory,
+  validateReport 
+};
+
+

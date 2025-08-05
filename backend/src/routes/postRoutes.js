@@ -1,6 +1,6 @@
 const express = require('express');
 const { authenticateUser, authorizeRoles } = require('../middleware/authMiddleware');
-const { validatePost } = require("../middleware/validator");
+const { validatePost, validateReport } = require("../middleware/validator");
 const postController  = require('../controllers/postController');
 const { logPostCreate, logPostUpdate, logPostDelete } = require('../middleware/activityLogger'); // Import activity logging middleware
 
@@ -73,5 +73,26 @@ router.get('/favorites', authenticateUser, postController.getFavoritePosts);
 // @desc    Get valid video categories
 // @access  Private
 router.get('/video-categories', authenticateUser, postController.getVideoCategories);
+
+// @route   POST /api/posts/report/:postId
+// @desc    Report a post
+// @access  Private
+router.post('/report/:postId', validateReport, authenticateUser, postController.reportPost);
+
+// @route   GET /api/posts/reported
+// @desc    Get all reported posts (Super Admin only)
+// @access  Private - Super Admin
+router.get('/reported', authenticateUser, authorizeRoles("super_admin"), postController.getReportedPosts);
+
+// @route   PATCH /api/posts/reports/accept/:reportId
+// @desc    Accept a report (Super Admin only)
+// @access  Private - Super Admin
+router.patch('/reports/accept/:reportId', authenticateUser, authorizeRoles("super_admin"), postController.acceptReport);
+
+// @route   PATCH /api/posts/reports/decline/:reportId
+// @desc    Decline a report (Super Admin only)
+// @access  Private - Super Admin
+router.patch('/reports/decline/:reportId', authenticateUser, authorizeRoles("super_admin"), postController.declineReport);
+
 
 module.exports = router;
