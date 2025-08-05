@@ -7,6 +7,12 @@ const theme = {
   colors: {
     primary: "#4f46e5",
     primaryHover: "#4338ca",
+    secondary: "#059669",
+    secondaryHover: "#047857",
+    danger: "#dc2626",
+    dangerHover: "#b91c1c",
+    warning: "#d97706",
+    warningHover: "#b45309",
     text: "#111827",
     textSecondary: "#6b7280",
     border: "#e5e7eb",
@@ -14,6 +20,8 @@ const theme = {
     cardBg: "#ffffff",
     disabled: "#d1d5db",
     disabledText: "#9ca3af",
+    success: "#10b981",
+    info: "#3b82f6",
   },
   spacing: {
     xs: "4px",
@@ -32,7 +40,7 @@ const styles = {
     fontFamily: theme.fontFamily,
     backgroundColor: theme.colors.background,
     color: theme.colors.text,
-    maxWidth: "1200px",
+    maxWidth: "1400px",
     margin: "0 auto",
     padding: theme.spacing.xl,
   },
@@ -42,6 +50,27 @@ const styles = {
     fontWeight: "700",
     paddingBottom: theme.spacing.md,
     marginBottom: theme.spacing.xl,
+  },
+  tabContainer: {
+    display: "flex",
+    borderBottom: `2px solid ${theme.colors.border}`,
+    marginBottom: theme.spacing.xl,
+    gap: theme.spacing.xs,
+  },
+  tab: {
+    padding: `${theme.spacing.md} ${theme.spacing.lg}`,
+    border: "none",
+    backgroundColor: "transparent",
+    color: theme.colors.textSecondary,
+    fontWeight: "600",
+    fontSize: "1rem",
+    cursor: "pointer",
+    borderBottom: "3px solid transparent",
+    transition: "all 0.2s ease",
+  },
+  tabActive: {
+    color: theme.colors.primary,
+    borderBottomColor: theme.colors.primary,
   },
   card: {
     backgroundColor: theme.colors.cardBg,
@@ -62,6 +91,63 @@ const styles = {
     textAlign: "center",
     padding: `${theme.spacing.xl} ${theme.spacing.md}`,
     color: theme.colors.textSecondary,
+  },
+  controlsRow: {
+    display: "flex",
+    gap: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
+    flexWrap: "wrap",
+    alignItems: "center",
+  },
+  input: {
+    padding: "10px 12px",
+    border: `1px solid ${theme.colors.border}`,
+    borderRadius: "8px",
+    fontSize: "0.875rem",
+    minWidth: "120px",
+  },
+  select: {
+    padding: "10px 12px",
+    border: `1px solid ${theme.colors.border}`,
+    borderRadius: "8px",
+    fontSize: "0.875rem",
+    backgroundColor: theme.colors.cardBg,
+    minWidth: "150px",
+  },
+  button: {
+    base: {
+      padding: "10px 16px",
+      border: "none",
+      borderRadius: "8px",
+      cursor: "pointer",
+      fontSize: "0.875rem",
+      fontWeight: "600",
+      transition: "all 0.2s ease",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: theme.spacing.xs,
+    },
+    primary: {
+      backgroundColor: theme.colors.primary,
+      color: "white",
+    },
+    secondary: {
+      backgroundColor: theme.colors.secondary,
+      color: "white",
+    },
+    danger: {
+      backgroundColor: theme.colors.danger,
+      color: "white",
+    },
+    warning: {
+      backgroundColor: theme.colors.warning,
+      color: "white",
+    },
+    outline: {
+      backgroundColor: "transparent",
+      color: theme.colors.text,
+      border: `1px solid ${theme.colors.border}`,
+    },
   },
   historyItem: {
     base: {
@@ -144,22 +230,65 @@ const styles = {
     line: { width: "100%", height: "16px", marginBottom: theme.spacing.sm },
     lineShort: { width: "60%", height: "16px", marginBottom: theme.spacing.sm },
   },
+  adminPanel: {
+    backgroundColor: "#fef3c7",
+    border: "1px solid #f59e0b",
+    borderRadius: theme.borderRadius,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+  },
+  adminTitle: {
+    color: "#92400e",
+    fontWeight: "600",
+    marginBottom: theme.spacing.md,
+  },
 };
 
 // --- Icons ---
 const ActivityIcon = () => <span role="img" aria-label="activity">📋</span>;
 const StatsIcon = () => <span role="img" aria-label="stats">📊</span>;
 const TypesIcon = () => <span role="img" aria-label="types">🗂️</span>;
+const AdminIcon = () => <span role="img" aria-label="admin">⚙️</span>;
+const ExportIcon = () => <span role="img" aria-label="export">📤</span>;
+const SearchIcon = () => <span role="img" aria-label="search">🔍</span>;
+const CleanupIcon = () => <span role="img" aria-label="cleanup">🧹</span>;
 
 // --- Components ---
-const Card = ({ title, icon, children }) => (
-  <div style={styles.card}>
+const Card = ({ title, icon, children, className = "" }) => (
+  <div style={{ ...styles.card, className }}>
     <h3 style={styles.sectionTitle}>{icon} {title}</h3>
     {children}
   </div>
 );
 
-const ActivityHistoryItem = ({ activity, isLast }) => (
+const TabButton = ({ active, onClick, children }) => (
+  <button
+    style={{
+      ...styles.tab,
+      ...(active ? styles.tabActive : {}),
+    }}
+    onClick={onClick}
+  >
+    {children}
+  </button>
+);
+
+const Button = ({ variant = "primary", onClick, disabled, children, ...props }) => (
+  <button
+    style={{
+      ...styles.button.base,
+      ...styles.button[variant],
+      ...(disabled ? { opacity: 0.6, cursor: "not-allowed" } : {}),
+    }}
+    onClick={onClick}
+    disabled={disabled}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+const ActivityHistoryItem = ({ activity, isLast, showUser = false }) => (
   <li style={{ ...styles.historyItem.base, ...(isLast ? styles.historyItem.last : {}) }}>
     <div style={styles.historyItem.icon}><ActivityIcon /></div>
     <div style={styles.historyItem.content}>
@@ -168,6 +297,9 @@ const ActivityHistoryItem = ({ activity, isLast }) => (
       </span>
       <small style={styles.historyItem.meta}>
         {new Date(activity.createdAt).toLocaleString()} | Category: {activity.category || "N/A"}
+        {showUser && activity.user && (
+          <> | User: {activity.user.username} ({activity.user.firstName} {activity.user.lastName})</>
+        )}
       </small>
     </div>
   </li>
@@ -211,7 +343,7 @@ const RenderData = ({ data }) => {
   }
 
   const cleanKey = (key) => {
-    const noNumbers = key.replace(/[0-9]/g, ""); // Remove digits
+    const noNumbers = key.replace(/[0-9]/g, "");
     const readable = noNumbers.replace(/_/g, " ").trim();
     return readable.charAt(0).toUpperCase() + readable.slice(1);
   };
@@ -252,30 +384,46 @@ const SkeletonLoader = () => (
   </>
 );
 
-// --- Hook ---
-const useActivityData = (currentPage) => {
-  const [data, setData] = useState({ history: [], stats: null, types: null, pagination: null });
+// --- Hooks ---
+const useActivityData = (currentPage, filters, activeTab) => {
+  const [data, setData] = useState({ 
+    history: [], 
+    stats: null, 
+    types: null, 
+    pagination: null,
+    allHistory: [],
+    userStats: null,
+    specificActivity: null
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchActivityData = async () => {
       setLoading(true);
       try {
-        const requests = [axiosInstance.get(`/activities/my-history?page=${currentPage}&limit=10`)];
-        if (currentPage === 1) {
-          requests.push(
-            axiosInstance.get("/activities/my-stats"),
-            axiosInstance.get("/activities/types")
-          );
+        const requests = [];
+        
+        if (activeTab === 'my-activity') {
+          requests.push(axiosInstance.get(`/activities/my-history?page=${currentPage}&limit=10${buildQueryString(filters)}`));
+          if (currentPage === 1) {
+            requests.push(axiosInstance.get("/activities/my-stats"));
+            requests.push(axiosInstance.get("/activities/types"));
+          }
+        } else if (activeTab === 'all-activities') {
+          requests.push(axiosInstance.get(`/activities/admin/all-history?page=${currentPage}&limit=10${buildQueryString(filters)}`));
+        } else if (activeTab === 'user-activity' && filters.userId) {
+          requests.push(axiosInstance.get(`/activities/admin/user/${filters.userId}?page=${currentPage}&limit=10${buildQueryString(filters)}`));
         }
 
-        const [historyRes, statsRes, typesRes] = await Promise.all(requests);
-
+        const responses = await Promise.all(requests);
+        
         setData(prev => ({
-          history: historyRes.data.data || [],
-          pagination: historyRes.data.pagination || null,
-          stats: statsRes?.data?.data || prev.stats,
-          types: typesRes?.data?.data || prev.types,
+          ...prev,
+          history: activeTab === 'my-activity' ? (responses[0]?.data?.data || []) : prev.history,
+          allHistory: activeTab === 'all-activities' ? (responses[0]?.data?.data || []) : prev.allHistory,
+          pagination: responses[0]?.data?.pagination || null,
+          stats: responses[1]?.data?.data || prev.stats,
+          types: responses[2]?.data?.data || prev.types,
         }));
       } catch (err) {
         console.error(err);
@@ -284,16 +432,103 @@ const useActivityData = (currentPage) => {
         setLoading(false);
       }
     };
+    
     fetchActivityData();
-  }, [currentPage]);
+  }, [currentPage, filters, activeTab]);
 
   return { ...data, loading };
 };
 
-// --- Main Page ---
+const buildQueryString = (filters) => {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) params.append(key, value);
+  });
+  return params.toString() ? `&${params.toString()}` : '';
+};
+
+// --- Main Component ---
 const ActivityLogsPage = () => {
+  const [activeTab, setActiveTab] = useState('my-activity');
   const [currentPage, setCurrentPage] = useState(1);
-  const { history, stats, types, pagination, loading } = useActivityData(currentPage);
+  const [filters, setFilters] = useState({
+    category: '',
+    activityType: '',
+    startDate: '',
+    endDate: '',
+    userId: '',
+    period: 'month'
+  });
+  const [userRole, setUserRole] = useState('user'); // This should come from your auth context
+  const [selectedUser, setSelectedUser] = useState('');
+
+  const { history, allHistory, stats, types, pagination, loading } = useActivityData(currentPage, filters, activeTab);
+
+  // Reset page when changing tabs or filters
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, filters]);
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleExportData = async (format = 'json') => {
+    try {
+      const response = await axiosInstance.get(`/activities/export?format=${format}`, {
+        responseType: format === 'csv' ? 'blob' : 'json'
+      });
+      
+      const blob = new Blob([format === 'csv' ? response.data : JSON.stringify(response.data, null, 2)], {
+        type: format === 'csv' ? 'text/csv' : 'application/json'
+      });
+      
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `activity-export.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      toast.success(`Data exported as ${format.toUpperCase()}`);
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export data');
+    }
+  };
+
+  const handleCleanupActivities = async () => {
+    if (!window.confirm('Are you sure you want to cleanup old activities? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      const response = await axiosInstance.delete('/activities/admin/cleanup', {
+        data: { daysOld: 365 }
+      });
+      toast.success(`Successfully deleted ${response.data.deletedCount} old activities`);
+    } catch (error) {
+      console.error('Cleanup error:', error);
+      toast.error('Failed to cleanup activities');
+    }
+  };
+
+  const fetchUserActivity = async () => {
+    if (!selectedUser) {
+      toast.error('Please enter a user ID');
+      return;
+    }
+    
+    try {
+      const response = await axiosInstance.get(`/activities/admin/user/${selectedUser}`);
+      // Handle user-specific activity data
+      toast.success('User activity loaded');
+    } catch (error) {
+      console.error('User activity error:', error);
+      toast.error('Failed to fetch user activity');
+    }
+  };
 
   const memoStats = useMemo(() => stats ? <RenderData data={stats} /> : <p style={styles.emptyState}>No stats available</p>, [stats]);
   const memoTypes = useMemo(() => types ? <RenderData data={types} /> : <p style={styles.emptyState}>No type data available</p>, [types]);
@@ -307,20 +542,140 @@ const ActivityLogsPage = () => {
     );
   }
 
+  const currentHistory = activeTab === 'my-activity' ? history : allHistory;
+
   return (
     <div style={styles.container}>
       <h2 style={styles.header}>Activity Logs</h2>
 
-      <Card title="Activity Statistics" icon={<StatsIcon />}>{memoStats}</Card>
-      <Card title="Activity Types" icon={<TypesIcon />}>{memoTypes}</Card>
+      {/* Tab Navigation */}
+      <div style={styles.tabContainer}>
+        <TabButton
+          active={activeTab === 'my-activity'}
+          onClick={() => setActiveTab('my-activity')}
+        >
+          <ActivityIcon /> My Activity
+        </TabButton>
+        {userRole === 'super_admin' && (
+          <>
+            <TabButton
+              active={activeTab === 'all-activities'}
+              onClick={() => setActiveTab('all-activities')}
+            >
+              <AdminIcon /> All Activities
+            </TabButton>
+            <TabButton
+              active={activeTab === 'admin-tools'}
+              onClick={() => setActiveTab('admin-tools')}
+            >
+              <SearchIcon /> Admin Tools
+            </TabButton>
+          </>
+        )}
+      </div>
 
-      <Card title="Recent Activity History" icon={<ActivityIcon />}>
-        {history.length === 0 ? (
+      {/* Filters */}
+      <Card title="Filters & Controls" icon={<SearchIcon />}>
+        <div style={styles.controlsRow}>
+          <select
+            style={styles.select}
+            value={filters.category}
+            onChange={(e) => handleFilterChange('category', e.target.value)}
+          >
+            <option value="">All Categories</option>
+            <option value="authentication">Authentication</option>
+            <option value="content">Content</option>
+            <option value="interaction">Interaction</option>
+            <option value="social">Social</option>
+            <option value="profile">Profile</option>
+            <option value="activity">Activity</option>
+            <option value="marketplace">Marketplace</option>
+            <option value="other">Other</option>
+          </select>
+
+          <select
+            style={styles.select}
+            value={filters.activityType}
+            onChange={(e) => handleFilterChange('activityType', e.target.value)}
+          >
+            <option value="">All Activity Types</option>
+            <option value="login">Login</option>
+            <option value="logout">Logout</option>
+            <option value="post_create">Post Create</option>
+            <option value="post_update">Post Update</option>
+            <option value="post_delete">Post Delete</option>
+            <option value="comment_create">Comment Create</option>
+            <option value="profile_update">Profile Update</option>
+          </select>
+
+          <input
+            type="date"
+            style={styles.input}
+            placeholder="Start Date"
+            value={filters.startDate}
+            onChange={(e) => handleFilterChange('startDate', e.target.value)}
+          />
+
+          <input
+            type="date"
+            style={styles.input}
+            placeholder="End Date"
+            value={filters.endDate}
+            onChange={(e) => handleFilterChange('endDate', e.target.value)}
+          />
+
+          <Button variant="primary" onClick={() => handleExportData('json')}>
+            <ExportIcon /> Export JSON
+          </Button>
+
+          <Button variant="secondary" onClick={() => handleExportData('csv')}>
+            <ExportIcon /> Export CSV
+          </Button>
+        </div>
+      </Card>
+
+      {/* Content based on active tab */}
+      {activeTab === 'my-activity' && (
+        <>
+          <Card title="Activity Statistics" icon={<StatsIcon />}>{memoStats}</Card>
+          <Card title="Activity Types" icon={<TypesIcon />}>{memoTypes}</Card>
+        </>
+      )}
+
+      {activeTab === 'admin-tools' && userRole === 'super_admin' && (
+        <div style={styles.adminPanel}>
+          <h3 style={styles.adminTitle}>Admin Tools</h3>
+          <div style={styles.controlsRow}>
+            <input
+              type="text"
+              style={styles.input}
+              placeholder="User ID"
+              value={selectedUser}
+              onChange={(e) => setSelectedUser(e.target.value)}
+            />
+            <Button variant="primary" onClick={fetchUserActivity}>
+              <SearchIcon /> Get User Activity
+            </Button>
+            <Button variant="danger" onClick={handleCleanupActivities}>
+              <CleanupIcon /> Cleanup Old Activities
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Activity History */}
+      <Card title={activeTab === 'all-activities' ? "All Users Activity History" : "Recent Activity History"} icon={<ActivityIcon />}>
+        {currentHistory.length === 0 ? (
           <p style={styles.emptyState}>No activity found.</p>
         ) : (
           <ul style={{ listStyle: "none", padding: 0, margin: `-${theme.spacing.md} -${theme.spacing.sm}` }}>
-            {history.map((activity, index) => (
-              <ActivityHistoryItem key={activity.id || index} activity={activity} isLast={index === history.length - 1} />
+            {currentHistory.map((activity, index) => (
+              <ActivityHistoryItem 
+                key={activity.id || index} 
+                activity={activity} 
+                isLast={index === currentHistory.length - 1}
+                showUser={activeTab === 'all-activities'}
+              />
             ))}
           </ul>
         )}
