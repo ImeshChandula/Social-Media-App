@@ -1,5 +1,6 @@
 const UserService = require('../services/userService');
 const PostService = require('../services/postService');
+const ReportService = require('../services/reportService');
 const { performUserDeletion } = require('../services/userDeletionService');
 const {uploadImage} = require('../utils/uploadMedia');
 const { generateToken } = require("../utils/jwtToken");
@@ -370,6 +371,193 @@ const updateUserProfileCoverPhoto = async (req, res) => {
     }
 };
 
+//Profile report operations
+
+//@desc     Report a user profile
+const reportProfile = async (req, res) => {
+    try {
+        const reportedUserId = req.params.userId;
+        const reportedBy = req.user.id;
+        const { reason } = req.body;
+
+        // Check if the user is trying to report their own profile
+        if (reportedUserId === reportedBy) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'You cannot report your own profile' 
+            });
+        }
+
+        // Check if the reported user exists
+        const reportedUser = await UserService.findById(reportedUserId);
+        if (!reportedUser) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'User not found' 
+            });
+        }
+
+        // Check if user has already reported this profile
+        const hasReported = await ReportService.hasUserReportedProfile(reportedUserId, reportedBy);
+        if (hasReported) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'You have already reported this profile' 
+            });
+        }
+
+        // Create the report
+        const reportData = {
+            reportType: 'profile',
+            reportedUserId: reportedUserId,
+            reportedBy: reportedBy,
+            reason: reason,
+            status: 'pending'
+        };
+
+        const report = await ReportService.create(reportData);
+
+        res.status(201).json({ 
+            success: true, 
+            message: 'Profile reported successfully', 
+            report: report 
+        });
+
+    } catch (error) {
+        console.error('Error reporting profile:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error' 
+        });
+    }
+};
+
+//@desc     Get all reported users (for super admin dashboard)
+const getReportedUsers = async (req, res) => {
+    try {
+        // Get all profile reports
+        const reports = await ReportService.findAllProfileReports();
+        
+        // Group reports by reported user
+        const reportedUsersMap = new Map();
+        
+        for (const report of reports) {
+            const userId = report.reportedUserId;
+            
+            if (!reportedUsersMap.has(userId)) {
+                // Get user details
+                const user = await UserService.findById(userId);
+                if (user) {
+                    // Remove sensitive data
+                    user.password = undefined;
+                    user._isPasswordModified = undefined;
+                    user.resetOtp = undefined;
+                    user.resetOtpExpiredAt = undefined;
+                    
+                    reportedUsersMap.set(userId, {
+                        user: user,
+                        reports: [],
+                        totalReports: 0,
+                        pendingReports: 0,
+                        lastReportDate: null
+                    });
+                }
+            }
+            
+            if (reportedUsersMap.has(userId)) {
+                const userData = reportedUsersMap.get(userId);
+                userData.reports.push(report);
+                userData.totalReports++;
+                
+                if (report.status === 'pending') {
+                    userData.pendingReports++;
+                }
+                
+                // Update last report date
+                const reportDate = new Date(report.createdAt);
+                if (!userData.lastReportDate || reportDate > new Date(userData.lastReportDate)) {
+                    userData.lastReportDate = report.createdAt;
+                }
+            }
+        }
+        
+        // Convert map to array and sort by last report date (most recent first)
+        const reportedUsers = Array.from(reportedUsersMap.values()).sort((a, b) => {
+            return new Date(b.lastReportDate) - new Date(a.lastReportDate);
+        });
+        
+        res.status(200).json({
+            success: true,
+            message: 'Reported users fetched successfully',
+            count: reportedUsers.length,
+            data: reportedUsers
+        });
+        
+    } catch (error) {
+        console.error('Error fetching reported users:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
+//@desc     Review a profile report (accept/reject)
+const reviewProfileReport = async (req, res) => {
+    try {
+        const reportId = req.params.reportId;
+        const { status, reviewNote } = req.body;
+        const reviewedBy = req.user.id;
+
+        // Validate status
+        if (!['accepted', 'declined'].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid status. Must be either "accepted" or "declined"'
+            });
+        }
+
+        // Find the report
+        const report = await ReportService.findById(reportId);
+        if (!report) {
+            return res.status(404).json({
+                success: false,
+                message: 'Report not found'
+            });
+        }
+
+        // Check if report is for a profile
+        if (report.reportType !== 'profile') {
+            return res.status(400).json({
+                success: false,
+                message: 'This is not a profile report'
+            });
+        }
+
+        // Update the report
+        const updateData = {
+            status: status,
+            reviewedBy: reviewedBy,
+            reviewNote: reviewNote || '',
+            reviewedAt: new Date().toISOString()
+        };
+
+        const updatedReport = await ReportService.updateById(reportId, updateData);
+
+        res.status(200).json({
+            success: true,
+            message: `Profile report ${status} successfully`,
+            report: updatedReport
+        });
+
+    } catch (error) {
+        console.error('Error reviewing profile report:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
 
 
 module.exports = {
@@ -381,4 +569,7 @@ module.exports = {
     updateUserProfile,
     updateUserProfileImage,
     updateUserProfileCoverPhoto,
+    reportProfile,
+    getReportedUsers,
+    reviewProfileReport
 };

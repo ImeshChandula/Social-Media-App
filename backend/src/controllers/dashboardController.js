@@ -134,4 +134,50 @@ const categorySummery = async (req, res) => {
     }
 };
 
-module.exports = {userSummery, appealSummery, messageSummary, categorySummery};
+//function for profile report summary
+const profileReportSummary = async (req, res) => {
+    try {
+        const allReports = await ReportService.findAll();
+        const profileReports = allReports.filter(report => report.reportType === 'profile');
+        const postReports = allReports.filter(report => report.reportType === 'post' || !report.reportType);
+
+        const pendingProfileReports = profileReports.filter(report => report.status === 'pending');
+        const acceptedProfileReports = profileReports.filter(report => report.status === 'accepted');
+        const declinedProfileReports = profileReports.filter(report => report.status === 'declined');
+
+        // Count unique reported users
+        const reportedUserIds = new Set(profileReports.map(report => report.reportedUserId));
+        const uniqueReportedUsers = reportedUserIds.size;
+
+        const summaryData = {
+            // Profile report stats
+            totalProfileReports: profileReports.length,
+            pendingProfileReports: pendingProfileReports.length,
+            acceptedProfileReports: acceptedProfileReports.length,
+            declinedProfileReports: declinedProfileReports.length,
+            uniqueReportedUsers: uniqueReportedUsers,
+            
+            // Overall report stats
+            totalReports: allReports.length,
+            totalPostReports: postReports.length,
+            
+            // Combined pending reports
+            totalPendingReports: allReports.filter(report => report.status === 'pending').length
+        };
+
+        return res.status(200).json({ 
+            success: true, 
+            message: "Profile report summary fetched successfully", 
+            data: summaryData
+        });
+    } catch (error) {
+        console.error('Error in profile report summary:', error);
+        return res.status(500).json({ 
+            success: false, 
+            message: "Server error", 
+            error: error.message 
+        });
+    }
+};
+
+module.exports = {userSummery, appealSummery, messageSummary, categorySummery, profileReportSummary};

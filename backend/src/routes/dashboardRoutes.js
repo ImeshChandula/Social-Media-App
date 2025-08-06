@@ -10,5 +10,6 @@ router.get('/userSummery', authenticateUser, authorizeRoles("admin", "super_admi
 router.get('/appealSummery', authenticateUser, authorizeRoles("admin", "super_admin"), dashboardController.appealSummery);
 router.get('/messageSummery', authenticateUser, authorizeRoles("admin", "super_admin"), dashboardController.messageSummary);
 router.get('/categorySummery', authenticateUser, authorizeRoles("admin", "super_admin"), dashboardController.categorySummery);
+router.get('/profileReportSummary', authenticateUser, authorizeRoles("admin", "super_admin"), dashboardController.profileReportSummary);
 
 module.exports = router;

@@ -194,7 +194,7 @@ const validateCategory = (req, res, next) => {
   next();
 };
 
-// Add this function to your existing validator.js
+// validate report creation (post)
 const validateReport = (req, res, next) => {
   const schema = Joi.object({
     reason: Joi.string().trim().min(5).max(500).required().messages({
@@ -216,6 +216,49 @@ const validateReport = (req, res, next) => {
   next();
 };
 
+// Validate profile report - new function
+const validateProfileReport = (req, res, next) => {
+  const schema = Joi.object({
+    reason: Joi.string().trim().min(5).max(500).required().messages({
+      'string.empty': 'Reason is required',
+      'string.min': 'Reason must be at least 5 characters long',
+      'string.max': 'Reason cannot exceed 500 characters',
+      'any.required': 'Reason is required for reporting a profile'
+    })
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ 
+      success: false,
+      message: error.details[0].message 
+    });
+  }
+  next();
+};
+
+// Validate profile report review - new function
+const validateProfileReportReview = (req, res, next) => {
+  const schema = Joi.object({
+    status: Joi.string().valid('accepted', 'declined').required().messages({
+      'any.only': 'Status must be either "accepted" or "declined"',
+      'any.required': 'Status is required'
+    }),
+    reviewNote: Joi.string().trim().max(1000).optional().allow('').messages({
+      'string.max': 'Review note cannot exceed 1000 characters'
+    })
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ 
+      success: false,
+      message: error.details[0].message 
+    });
+  }
+  next();
+};
+
 
 module.exports = {
   validateUser, 
@@ -223,7 +266,9 @@ module.exports = {
   validateComment, 
   validateStory, 
   validateCategory,
-  validateReport 
+  validateReport,
+  validateProfileReport,
+  validateProfileReportReview 
 };
 
 

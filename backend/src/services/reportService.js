@@ -89,6 +89,74 @@ const ReportService = {
         }
     },
 
+    // Find all reports for a specific user profile
+    async findByReportedUserId(reportedUserId) {
+        try {
+            const reportRef = await reportCollection
+                .where('reportedUserId', '==', reportedUserId)
+                .where('reportType', '==', 'profile')
+                .get();
+            
+            if (reportRef.empty) {
+                return [];
+            }
+            
+            const reports = [];
+            reportRef.docs.forEach(doc => {
+                const report = this._createReportSafely(doc.id, doc.data());
+                if (report) {
+                    reports.push(report);
+                }
+            });
+            
+            // Sort in memory by createdAt (most recent first)
+            reports.sort((a, b) => {
+                const dateA = new Date(a.createdAt || 0);
+                const dateB = new Date(b.createdAt || 0);
+                return dateB - dateA;
+            });
+            
+            return reports;
+        } catch (error) {
+            console.error('Error finding reports by reported user ID:', error);
+            throw error;
+        }
+    },
+
+    // Find all profile reports
+    async findAllProfileReports() {
+        try {
+            const reportRef = await reportCollection
+                .where('reportType', '==', 'profile')
+                .get();
+            
+            if (reportRef.empty) {
+                return [];
+            }
+            
+            const reports = [];
+            reportRef.docs.forEach(doc => {
+                const report = this._createReportSafely(doc.id, doc.data());
+                if (report) {
+                    reports.push(report);
+                }
+            });
+            
+            // Sort in memory by createdAt (most recent first)
+            reports.sort((a, b) => {
+                const dateA = new Date(a.createdAt || 0);
+                const dateB = new Date(b.createdAt || 0);
+                return dateB - dateA;
+            });
+            
+            return reports;
+        } catch (error) {
+            console.error('Error finding all profile reports:', error);
+            throw error;
+        }
+    },
+
+
     // Find all pending reports for admin dashboard
     async findPendingReports() {
         try {
@@ -122,6 +190,41 @@ const ReportService = {
             throw error;
         }
     },
+
+    // Find all pending profile reports
+    async findPendingProfileReports() {
+        try {
+            const reportRef = await reportCollection
+                .where('status', '==', 'pending')
+                .where('reportType', '==', 'profile')
+                .get();
+            
+            if (reportRef.empty) {
+                return [];
+            }
+            
+            const reports = [];
+            reportRef.docs.forEach(doc => {
+                const report = this._createReportSafely(doc.id, doc.data());
+                if (report) {
+                    reports.push(report);
+                }
+            });
+            
+            // Sort in memory by createdAt (most recent first)
+            reports.sort((a, b) => {
+                const dateA = new Date(a.createdAt || 0);
+                const dateB = new Date(b.createdAt || 0);
+                return dateB - dateA;
+            });
+            
+            return reports;
+        } catch (error) {
+            console.error('Error finding pending profile reports:', error);
+            throw error;
+        }
+    },
+
 
     // Find all reports (for admin dashboard)
     async findAll() {
@@ -195,7 +298,26 @@ const ReportService = {
             console.error('Error checking if user has reported:', error);
             throw error;
         }
+    },
+
+    // Check if user has already reported a profile
+    async hasUserReportedProfile(reportedUserId, reportedBy) {
+        try {
+            const reportRef = await reportCollection
+                .where('reportedUserId', '==', reportedUserId)
+                .where('reportedBy', '==', reportedBy)
+                .where('reportType', '==', 'profile')
+                .limit(1)
+                .get();
+            
+            return !reportRef.empty;
+        } catch (error) {
+            console.error('Error checking if user has reported profile:', error);
+            throw error;
+        }
     }
 };
+
+
 
 module.exports = ReportService;

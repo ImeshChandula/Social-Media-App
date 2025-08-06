@@ -2,6 +2,7 @@ const express = require('express');
 const { authenticateUser, authorizeRoles, checkAccountStatus } = require('../middleware/authMiddleware');
 const userController = require('../controllers/userController');
 const { validateUserData } = require("../middleware/validateData");
+const { validateProfileReport, validateProfileReportReview } = require('../middleware/validator'); // Import validation middleware
 const { logSearch, logProfileUpdate, logProfilePictureUpdate, logCoverPhotoUpdate } = require('../middleware/activityLogger'); // Import activity logging middleware
 
 const router = express.Router();
@@ -54,8 +55,20 @@ router.delete('/deleteUser/:id', authenticateUser, checkAccountStatus, userContr
 //@access  Private 
 router.get("/admin/search", authenticateUser, checkAccountStatus, authorizeRoles("super_admin"), logSearch, userController.searchUsersByUsername);
 
+//@route   POST api/users/report/:userId
+//@desc    Report a user profile
+//@access  Private
+router.post('/report/:userId', authenticateUser, checkAccountStatus, validateProfileReport, userController.reportProfile);
 
+//@route   GET api/users/reported-users
+//@desc    Get all reported users for super admin dashboard
+//@access  Private (Super Admin only)
+router.get('/reported-users', authenticateUser, checkAccountStatus, authorizeRoles("super_admin"), userController.getReportedUsers);
 
+//@route   PATCH api/users/report-review/:reportId
+//@desc    Review a profile report (accept/reject)
+//@access  Private (Super Admin only)
+router.patch('/report-review/:reportId', authenticateUser, checkAccountStatus, authorizeRoles("super_admin"), validateProfileReportReview, userController.reviewProfileReport);
 
 
 module.exports = router;

@@ -9,6 +9,11 @@ class Report {
 
         this.id = id;
         this.postId = reportData.postId;
+
+        // New profile report fields
+        this.reportedUserId = reportData.reportedUserId || null; // ID of the user being reported
+        this.reportType = reportData.reportType || 'post'; // 'post' or 'profile'
+        
         this.reportedBy = reportData.reportedBy; // User ID who reported
         this.postAuthor = reportData.postAuthor; // Original post author ID
         this.reason = reportData.reason || '';
