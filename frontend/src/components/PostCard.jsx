@@ -4,7 +4,9 @@ import {
   FaCommentAlt,
   FaChevronRight,
   FaHeart,
-  FaPlay
+  FaPlay,
+  FaFlag,
+  FaTimes
 } from "react-icons/fa";
 import LikesPopup from "./LikesPopup";
 import PostDropdown from "./PostDropdown";
@@ -13,6 +15,7 @@ import PostComment from "./PostComment";
 import { axiosInstance } from "../lib/axios";
 import useAuthStore from "../store/authStore";
 import ShareButton from "./ShareButton";
+import toast from "react-hot-toast";
 import "../styles/FavoriteAnimation.css"; // ✅ CSS for heart animation
 
 const PostCard = ({
@@ -20,6 +23,8 @@ const PostCard = ({
   isUserPost = false,
   onLikeUpdate,
   onDeletePost,
+  onReportPost,
+  isBeingReported = false,
   disableNavigation = false,
 }) => {
   const navigate = useNavigate();
@@ -37,6 +42,23 @@ const PostCard = ({
   const [showLikesPopup, setShowLikesPopup] = useState(false);
   const [likes, setLikes] = useState([]);
   const [loadingLikes, setLoadingLikes] = useState(false);
+
+  // Report modal state
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+
+  // Report reason options
+  const reportReasons = [
+    "Spam",
+    "Inappropriate content",
+    "Harassment or bullying",
+    "False information",
+    "Copyright infringement",
+    "Violence or harmful behavior",
+    "Hate speech",
+    "Other"
+  ];
 
   // Like state
   const [localLikeData, setLocalLikeData] = useState({
@@ -103,6 +125,56 @@ const PostCard = ({
     if (onDeletePost) {
       onDeletePost(postId);
     }
+  };
+
+  // ✅ Report functionality
+  const handleReportClick = () => {
+    if (isUserPost) {
+      toast.error("You cannot report your own post");
+      return;
+    }
+    setShowReportModal(true);
+  };
+
+  const handleReportSubmit = async () => {
+    if (!reportReason.trim()) {
+      toast.error("Please select or enter a reason for reporting");
+      return;
+    }
+
+    if (!onReportPost) {
+      toast.error("Report functionality is not available");
+      return;
+    }
+
+    setReportSubmitting(true);
+
+    try {
+      const result = await onReportPost(postId, reportReason);
+      
+      if (result.success) {
+        setShowReportModal(false);
+        setReportReason("");
+        // Post will be removed from feed by parent component
+      } else {
+        toast.error(result.message || "Failed to report post");
+      }
+    } catch (error) {
+      console.error("Report submission error:", error);
+      toast.error("Failed to report post");
+    } finally {
+      setReportSubmitting(false);
+    }
+  };
+
+  const handleReportModalClose = () => {
+    if (reportSubmitting) return; // Prevent closing while submitting
+    setShowReportModal(false);
+    setReportReason("");
+  };
+
+  const handleReportReasonChange = (e) => {
+    setReportReason(e.target.value);
   };
 
   // ✅ Favorite click handler with API integration & animation
@@ -214,7 +286,30 @@ const PostCard = ({
               </div>
             </div>
           </div>
-          {isUserPost && <PostDropdown postId={postId} onDelete={handleDeletePost} />}
+          
+          {/* Action buttons */}
+          <div className="d-flex align-items-center gap-2">
+            {/* Report button - only show for other users' posts */}
+            {!isUserPost && (
+              <button
+                className="btn btn-sm btn-outline-secondary"
+                onClick={handleReportClick}
+                disabled={isBeingReported}
+                title="Report this post"
+              >
+                {isBeingReported ? (
+                  <div className="spinner-border spinner-border-sm" role="status">
+                    <span className="visually-hidden">Reporting...</span>
+                  </div>
+                ) : (
+                  <FaFlag />
+                )}
+              </button>
+            )}
+            
+            {/* Post dropdown for user's own posts */}
+            {isUserPost && <PostDropdown postId={postId} onDelete={handleDeletePost} />}
+          </div>
         </div>
 
         {/* Body */}
@@ -292,22 +387,131 @@ const PostCard = ({
           </div>
 
           {/* Comments & Share */}
-          <button
-            className="btn btn-light"
-            onClick={() => setShowComments((prev) => !prev)}
-          >
-            <FaCommentAlt /> {post.comments?.length || 0} comments
-          </button>
-          <ShareButton postId={postId} />
+          <div className="d-flex align-items-center gap-2">
+            <button
+              className="btn btn-light"
+              onClick={() => setShowComments((prev) => !prev)}
+            >
+              <FaCommentAlt /> {post.comments?.length || 0} comments
+            </button>
+            <ShareButton postId={postId} />
+          </div>
         </div>
 
         {showComments && <PostComment postId={postId} />}
+        
+        {/* Likes Popup */}
         <LikesPopup
           show={showLikesPopup}
           onClose={() => setShowLikesPopup(false)}
           likes={likes}
           loading={loadingLikes}
         />
+
+        {/* ✅ Report Modal */}
+        {showReportModal && (
+          <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">
+                    <FaFlag className="me-2 text-danger" />
+                    Report Post
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={handleReportModalClose}
+                    disabled={reportSubmitting}
+                  ></button>
+                </div>
+                
+                <div className="modal-body">
+                  <p className="text-muted mb-3">
+                    Help us understand what's wrong with this post. Your report will be reviewed by our team.
+                  </p>
+                  
+                  <div className="mb-3">
+                    <label className="form-label">Reason for reporting:</label>
+                    
+                    {/* Predefined reasons */}
+                    {reportReasons.map((reason) => (
+                      <div key={reason} className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="reportReason"
+                          id={`reason-${reason}`}
+                          value={reason}
+                          checked={reportReason === reason}
+                          onChange={handleReportReasonChange}
+                          disabled={reportSubmitting}
+                        />
+                        <label className="form-check-label" htmlFor={`reason-${reason}`}>
+                          {reason}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Custom reason input */}
+                  <div className="mb-3">
+                    <label className="form-label">Or specify your reason:</label>
+                    <textarea
+                      className="form-control"
+                      rows="3"
+                      placeholder="Please describe why you're reporting this post..."
+                      value={reportReason.startsWith('Spam') || 
+                             reportReason.startsWith('Inappropriate') || 
+                             reportReason.startsWith('Harassment') || 
+                             reportReason.startsWith('False') || 
+                             reportReason.startsWith('Copyright') || 
+                             reportReason.startsWith('Violence') || 
+                             reportReason.startsWith('Hate') || 
+                             reportReason === 'Other' ? '' : reportReason}
+                      onChange={(e) => setReportReason(e.target.value)}
+                      disabled={reportSubmitting || reportReasons.includes(reportReason)}
+                    />
+                  </div>
+
+                  <div className="alert alert-warning small">
+                    <strong>Note:</strong> False reports may result in account restrictions. 
+                    Only report content that violates our community guidelines.
+                  </div>
+                </div>
+                
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={handleReportModalClose}
+                    disabled={reportSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={handleReportSubmit}
+                    disabled={!reportReason.trim() || reportSubmitting}
+                  >
+                    {reportSubmitting ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                        Reporting...
+                      </>
+                    ) : (
+                      <>
+                        <FaFlag className="me-2" />
+                        Submit Report
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
