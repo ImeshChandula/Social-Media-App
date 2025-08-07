@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Edit3, Trash2, Shield, User, Crown, Ban, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { Search, Edit3, Trash2, Shield, User, Crown, Ban, CheckCircle, XCircle, Eye, Flag, Users as UsersIcon } from 'lucide-react';
 import { axiosInstance } from "../lib/axios";
 import styles from '../styles/UsersStyles';
 import toast from 'react-hot-toast';
 import "../styles/UserStyles.css";
 import { useNavigate } from 'react-router-dom';
 import DashboardUserSummery from './DashboardUserSummery';
+import ReportedUsers from './ReportedUsers';
 import useAuthStore from "../store/authStore";
 
 const Users = () => {
@@ -16,13 +17,16 @@ const Users = () => {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(null);
+  const [activeTab, setActiveTab] = useState('all-users'); // 'all-users' or 'reported-users'
 
   const navigate = useNavigate()
 const { checkAuth } = useAuthStore();
 
   useEffect(() => {
-    fetchAllUsers();
-  }, []);
+    if (activeTab === 'all-users') {
+      fetchAllUsers();
+    }
+  }, [activeTab]);
 
   const fetchAllUsers = async () => {
     try {
@@ -240,6 +244,33 @@ const { checkAuth } = useAuthStore();
     navigate(`/profile/${userId}`);
   };
 
+  const tabStyles = {
+    container: {
+      display: 'flex',
+      marginBottom: '32px',
+      borderBottom: '1px solid #333',
+      gap: '0'
+    },
+    tab: {
+      padding: '16px 24px',
+      backgroundColor: 'transparent',
+      border: 'none',
+      color: '#9ca3af',
+      cursor: 'pointer',
+      fontSize: '16px',
+      fontWeight: '500',
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      transition: 'all 0.2s ease',
+      borderBottom: '2px solid transparent'
+    },
+    activeTab: {
+      color: '#fff',
+      borderBottom: '2px solid #3b82f6'
+    }
+  };
 
   return (
     <div style={styles.container}>
@@ -247,71 +278,121 @@ const { checkAuth } = useAuthStore();
         {/* Header */}
         <div style={styles.header}>
           <h1 style={styles.title}>User Management</h1>
-          <p style={styles.subtitle}>Manage users, roles, and permissions</p>
+          <p style={styles.subtitle}>Manage users, roles, permissions, and reports</p>
         </div>
 
-        {/* Search Bar */}
-        <div style={styles.searchContainer}>
-          <div style={styles.searchWrapper}>
-            <Search style={styles.searchIcon} />
-            <input
-              type="text"
-              placeholder="Search users by username..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                searchUsers(e.target.value);
-              }}
-              style={styles.searchInput}
-            />
-          </div>
+        {/* Tabs */}
+        <div style={tabStyles.container}>
+          <button
+            style={{
+              ...tabStyles.tab,
+              ...(activeTab === 'all-users' ? tabStyles.activeTab : {})
+            }}
+            onClick={() => setActiveTab('all-users')}
+            onMouseEnter={(e) => {
+              if (activeTab !== 'all-users') {
+                e.target.style.color = '#d1d5db';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== 'all-users') {
+                e.target.style.color = '#9ca3af';
+              }
+            }}
+          >
+            <UsersIcon size={20} />
+            All Users
+          </button>
+          <button
+            style={{
+              ...tabStyles.tab,
+              ...(activeTab === 'reported-users' ? tabStyles.activeTab : {})
+            }}
+            onClick={() => setActiveTab('reported-users')}
+            onMouseEnter={(e) => {
+              if (activeTab !== 'reported-users') {
+                e.target.style.color = '#d1d5db';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== 'reported-users') {
+                e.target.style.color = '#9ca3af';
+              }
+            }}
+          >
+            <Flag size={20} />
+            Reported Users
+          </button>
         </div>
 
-        {/* Search Results */}
-        {showSearchResults && (
-          <div style={styles.section}>
-            <div style={styles.sectionHeader}>
-              <h2 style={styles.sectionTitle}>Search Results</h2>
-              <button
-                onClick={() => {
-                  setShowSearchResults(false);
-                  setSearchTerm('');
-                }}
-                style={styles.clearButton}
-              >
-                Clear Search
-              </button>
+        {activeTab === 'all-users' && (
+          <>
+            {/* Search Bar */}
+            <div style={styles.searchContainer}>
+              <div style={styles.searchWrapper}>
+                <Search style={styles.searchIcon} />
+                <input
+                  type="text"
+                  placeholder="Search users by username..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    searchUsers(e.target.value);
+                  }}
+                  style={styles.searchInput}
+                />
+              </div>
             </div>
-            <div style={styles.grid}>
-              {searchResults.map((user) => (
-                <UserCard key={user.id} user={user} isSearchResult={true} />
-              ))}
-            </div>
-            {searchResults.length === 0 && (
-              <div style={styles.noResults}>
-                No users found matching "{searchTerm}"
+
+            {/* Search Results */}
+            {showSearchResults && (
+              <div style={styles.section}>
+                <div style={styles.sectionHeader}>
+                  <h2 style={styles.sectionTitle}>Search Results</h2>
+                  <button
+                    onClick={() => {
+                      setShowSearchResults(false);
+                      setSearchTerm('');
+                    }}
+                    style={styles.clearButton}
+                  >
+                    Clear Search
+                  </button>
+                </div>
+                <div style={styles.grid}>
+                  {searchResults.map((user) => (
+                    <UserCard key={user.id} user={user} isSearchResult={true} />
+                  ))}
+                </div>
+                {searchResults.length === 0 && (
+                  <div style={styles.noResults}>
+                    No users found matching "{searchTerm}"
+                  </div>
+                )}
               </div>
             )}
-          </div>
+
+            {/* All Users */}
+            <div style={styles.section}>
+              {<h2 style={styles.sectionTitle}>All Users ({users.length})</h2>}
+              {/*<DashboardUserSummery />*/}
+              {loading ? (
+                <div style={styles.loadingContainer}>
+                  <div style={styles.spinner}></div>
+                  <p style={styles.loadingText}>Loading users...</p>
+                </div>
+              ) : (
+                <div style={styles.grid}>
+                  {users.map((user) => (
+                    <UserCard key={user.id} user={user} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
         )}
 
-        {/* All Users */}
-        <div style={styles.section}>
-          {<h2 style={styles.sectionTitle}>All Users ({users.length})</h2>}
-          {/*<DashboardUserSummery />*/}
-          {loading ? (
-            <div style={styles.loadingContainer}>
-              <div style={styles.spinner}></div>
-              <p style={styles.loadingText}>Loading users...</p>
-            </div>
-          ) : (
-            <div style={styles.grid}>
-              {users.map((user) => (
-                <UserCard key={user.id} user={user} />
-              ))}
-            </div>
-          )}
-        </div>
+        {activeTab === 'reported-users' && <ReportedUsers />}
 
         {/* Edit User Modal */}
         {editingUser && (
