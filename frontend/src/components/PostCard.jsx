@@ -136,32 +136,44 @@ const PostCard = ({
     setShowReportModal(true);
   };
 
+  // ✅ Fixed report submission to match backend endpoint
   const handleReportSubmit = async () => {
     if (!reportReason.trim()) {
       toast.error("Please select or enter a reason for reporting");
       return;
     }
 
-    if (!onReportPost) {
-      toast.error("Report functionality is not available");
-      return;
-    }
-
     setReportSubmitting(true);
 
     try {
-      const result = await onReportPost(postId, reportReason);
-      
-      if (result.success) {
+      // ✅ Direct API call to match backend endpoint structure
+      const response = await axiosInstance.post(`/posts/report/${postId}`, {
+        reason: reportReason.trim() // ✅ Send as 'reason' to match backend
+      });
+
+      if (response.data.success) {
+        toast.success("Post reported successfully");
         setShowReportModal(false);
         setReportReason("");
-        // Post will be removed from feed by parent component
+        
+        // ✅ Call parent callback if provided
+        if (onReportPost) {
+          onReportPost(postId, reportReason);
+        }
       } else {
-        toast.error(result.message || "Failed to report post");
+        toast.error(response.data.message || "Failed to report post");
       }
     } catch (error) {
       console.error("Report submission error:", error);
-      toast.error("Failed to report post");
+      
+      // ✅ Handle specific error responses
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else if (error.response?.status === 400) {
+        toast.error("You have already reported this post");
+      } else {
+        toast.error("Failed to report post. Please try again.");
+      }
     } finally {
       setReportSubmitting(false);
     }
