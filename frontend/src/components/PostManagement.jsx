@@ -37,10 +37,7 @@ const PostManagement = () => {
 
     // Apply responsive styles dynamically
     const getResponsiveStyles = (baseStyles, mobileStyles = {}) => {
-        if (isMobile) {
-            return { ...baseStyles, ...mobileStyles };
-        }
-        return baseStyles;
+        return isMobile ? { ...baseStyles, ...mobileStyles } : baseStyles;
     };
 
     // Function to parse media URLs
@@ -67,7 +64,6 @@ const PostManagement = () => {
             if (response.data.success) {
                 setPosts(response.data.posts || []);
             } else {
-                console.error('Failed to fetch posts');
                 toast.error('Failed to fetch posts');
                 setPosts([]);
             }
@@ -88,7 +84,6 @@ const PostManagement = () => {
             if (response.data.success) {
                 setReportedPosts(response.data.posts || []);
             } else {
-                console.error('Failed to fetch reported posts');
                 toast.error('Failed to fetch reported posts');
                 setReportedPosts([]);
             }
@@ -119,11 +114,11 @@ const PostManagement = () => {
                 setReportedPosts(prevPosts => prevPosts.filter(post => post.id !== id));
                 toast.success(response.data.message || 'Post deleted successfully!');
             } else {
-                toast.error(`Failed to delete post: ${response.data.message || 'Unknown error'}`);
+                toast.error(response.data.message || 'Failed to delete post');
             }
         } catch (error) {
             console.error('Error deleting post:', error);
-            toast.error('Error deleting post. Please try again.');
+            toast.error(error.response?.data?.message || 'Error deleting post');
         } finally {
             setDeleteLoading(prev => ({ ...prev, [id]: false }));
             setShowDeleteModal(null);
@@ -133,19 +128,16 @@ const PostManagement = () => {
     const handleAcceptReport = async (reportId, postId, action) => {
         try {
             setActionLoading(prev => ({ ...prev, [`${reportId}_${action}`]: true }));
-            const response = await axiosInstance.patch(`/posts/reports/accept/${reportId}`, { action });
+            const response = await axiosInstance.patch(`/posts/reports/accept/${reportId}`, { 
+                reviewNote: `${action.replace('_', ' ')} action taken`
+            });
             
             if (response.data.success) {
                 toast.success(`Report accepted and ${action.replace('_', ' ')} action taken`);
-                
-                // Remove from reported posts list
                 setReportedPosts(prev => prev.filter(post => post.id !== postId));
-                
-                // If post was deleted, also remove from all posts
                 if (action === 'delete_post') {
                     setPosts(prev => prev.filter(post => post.id !== postId));
                 }
-                
                 setShowReportActionModal(null);
             } else {
                 toast.error(response.data.message || 'Failed to accept report');
@@ -158,19 +150,16 @@ const PostManagement = () => {
         }
     };
 
-    const handleDeclineReport = async (reportId, postId, reason = '') => {
+    const handleDeclineReport = async (reportId, postId) => {
         try {
             setActionLoading(prev => ({ ...prev, [`${reportId}_decline`]: true }));
             const response = await axiosInstance.patch(`/posts/reports/decline/${reportId}`, { 
-                reason: reason || 'No violation found' 
+                reviewNote: 'No violation found' 
             });
             
             if (response.data.success) {
                 toast.success('Report declined successfully');
-                
-                // Remove from reported posts list
                 setReportedPosts(prev => prev.filter(post => post.id !== postId));
-                
                 setShowReportActionModal(null);
             } else {
                 toast.error(response.data.message || 'Failed to decline report');
@@ -281,13 +270,19 @@ const PostManagement = () => {
     const renderPost = (post, isReported = false) => {
         const mediaUrls = parseMediaUrls(post.media);
         const author = post.author || {
-            id: post.authorId,
-            firstName: post.firstName,
-            lastName: post.lastName,
-            username: post.username,
-            profilePicture: post.profilePicture
+            id: post.authorId || post.userId,
+            firstName: post.firstName || 'Unknown',
+            lastName: post.lastName || 'User',
+            username: post.username || 'unknown',
+            profilePicture: post.profilePicture || '/default-avatar.png'
         };
-        
+
+        const reports = post.reports || [];
+        const reportCount = reports.length;
+        const reportReasons = reports.map(r => r.reason).join(', ') || 'No reason specified';
+        const reporterNames = reports.map(r => r.reporterInfo ? `${r.reporterInfo.firstName} ${r.reporterInfo.lastName}` : 'Anonymous').join(', ') || 'Unknown';
+        const lastReportedAt = reports.length > 0 ? reports[reports.length - 1].createdAt : null;
+
         return (
             <div
                 key={post.id}
@@ -305,7 +300,6 @@ const PostManagement = () => {
                 onMouseEnter={() => !isMobile && setHoveredCard(post.id)}
                 onMouseLeave={() => !isMobile && setHoveredCard(null)}
             >
-                {/* Report indicator for reported posts */}
                 {isReported && (
                     <div style={{
                         border: '1px solid #feb2b2',
@@ -313,7 +307,6 @@ const PostManagement = () => {
                         marginBottom: '20px',
                         backgroundColor: '#fef5f5'
                     }}>
-                        {/* Report Header */}
                         <div 
                             style={{
                                 display: 'flex',
@@ -330,13 +323,12 @@ const PostManagement = () => {
                             onClick={() => toggleReportExpand(post.id)}
                         >
                             <AlertTriangle size={18} />
-                            <span>⚠️ {post.reportCount} Report{post.reportCount > 1 ? 's' : ''} - Click to view details</span>
+                            <span>⚠️ {reportCount} Report{reportCount !== 1 ? 's' : ''}</span>
                             <div style={{ marginLeft: 'auto' }}>
                                 {expandedReports[post.id] ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
                             </div>
                         </div>
 
-                        {/* Always show basic report info */}
                         <div style={{
                             padding: '12px 16px',
                             borderBottom: expandedReports[post.id] ? '1px solid #feb2b2' : 'none'
@@ -355,17 +347,16 @@ const PostManagement = () => {
                                         borderRadius: '6px',
                                         fontSize: '0.85rem'
                                     }}>
-                                        {post.reportReasons}
+                                        {reportReasons}
                                     </span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <span style={{ fontWeight: '600', minWidth: '70px' }}>Reported:</span>
-                                    <span>{new Date(post.lastReportedAt).toLocaleDateString()} at {new Date(post.lastReportedAt).toLocaleTimeString()}</span>
+                                    <span>{lastReportedAt ? new Date(lastReportedAt).toLocaleString() : 'Date unknown'}</span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Expanded report details */}
                         {expandedReports[post.id] && (
                             <div style={{
                                 padding: '12px 16px',
@@ -379,7 +370,6 @@ const PostManagement = () => {
                                 }}>
                                     📋 Detailed Report Information
                                 </h4>
-                                
                                 <div style={{ 
                                     display: 'grid', 
                                     gap: '10px',
@@ -398,7 +388,7 @@ const PostManagement = () => {
                                         <div>
                                             <strong style={{ color: '#581c87' }}>Reported by:</strong>
                                             <div style={{ marginTop: '4px' }}>
-                                                {post.reporterNames.split(', ').map((reporter, index) => (
+                                                {reporterNames.split(', ').map((reporter, index) => (
                                                     <span 
                                                         key={index}
                                                         style={{
@@ -432,7 +422,7 @@ const PostManagement = () => {
                                         <div>
                                             <strong style={{ color: '#92400e' }}>Report Reasons:</strong>
                                             <div style={{ marginTop: '4px' }}>
-                                                {post.reportReasons.split(', ').map((reason, index) => (
+                                                {reportReasons.split(', ').map((reason, index) => (
                                                     <span 
                                                         key={index}
                                                         style={{
@@ -465,11 +455,11 @@ const PostManagement = () => {
                                     }}>
                                         <Clock size={14} style={{ color: '#7c3aed' }} />
                                         <div style={{ color: '#581c87' }}>
-                                            <strong>Timeline:</strong> Last report submitted on {new Date(post.lastReportedAt).toLocaleDateString()} at {new Date(post.lastReportedAt).toLocaleTimeString()}
+                                            <strong>Timeline:</strong> Last report on {lastReportedAt ? new Date(lastReportedAt).toLocaleString() : 'Unknown'}
                                         </div>
                                     </div>
 
-                                    {post.reportCount > 1 && (
+                                    {reportCount > 1 && (
                                         <div style={{
                                             padding: '8px',
                                             backgroundColor: '#fee2e2',
@@ -479,7 +469,7 @@ const PostManagement = () => {
                                             fontSize: '0.8rem',
                                             fontWeight: '500'
                                         }}>
-                                            🚨 High Priority: This post has received multiple reports ({post.reportCount} total)
+                                            🚨 High Priority: This post has received multiple reports ({reportCount} total)
                                         </div>
                                     )}
                                 </div>
@@ -488,11 +478,10 @@ const PostManagement = () => {
                     </div>
                 )}
 
-                {/* Author section */}
                 <div
                     onClick={() => handleNavigateToProfile(author.id)}
-                    style={getResponsiveStyles(styles.authorSection, {
-                        flexDirection: 'row',
+                    style={getResponsiveStyles({
+                        display: 'flex',
                         alignItems: 'center',
                         gap: '12px',
                         cursor: 'pointer'
@@ -500,33 +489,39 @@ const PostManagement = () => {
                     className='cursor-pointer'
                 >
                     <img
-                        src={author.profilePicture || '/default-avatar.png'}
-                        alt={`${author.firstName || 'User'} ${author.lastName || ''}`}
-                        style={getResponsiveStyles(styles.avatar, {
-                            width: isMobile ? '45px' : '50px',
-                            height: isMobile ? '45px' : '50px'
+                        src={author.profilePicture}
+                        alt={`${author.firstName} ${author.lastName}`}
+                        style={getResponsiveStyles({
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '50%',
+                            objectFit: 'cover'
+                        }, {
+                            width: '45px',
+                            height: '45px'
                         })}
                         onError={(e) => {
                             e.target.src = '/default-avatar.png';
                         }}
                     />
                     <div style={styles.authorInfo}>
-                        <div style={getResponsiveStyles(styles.authorName, {
-                            fontSize: isMobile ? '1rem' : '1.1rem'
+                        <div style={getResponsiveStyles({
+                            fontSize: '1.1rem',
+                            fontWeight: '600',
+                            color: '#2d3748'
+                        }, {
+                            fontSize: '1rem'
                         })}>
-                            {author.firstName && author.lastName ? 
-                                `${author.firstName} ${author.lastName}` : 'Unknown User'
-                            }
+                            {`${author.firstName} ${author.lastName}`}
                         </div>
                         <div style={styles.username}>
-                            @{author.username || 'unknown'}
+                            @{author.username}
                         </div>
                     </div>
                 </div>
 
                 <div style={styles.postContent}>{post.content}</div>
 
-                {/* Media rendering */}
                 {mediaUrls.length > 0 && (
                     <div style={styles.mediaContainer}>
                         {mediaUrls.length === 1 ? (
@@ -535,7 +530,6 @@ const PostManagement = () => {
                                     src={mediaUrls[0]}
                                     style={{
                                         ...styles.media,
-                                        aspectRatio: 'auto',
                                         maxHeight: '600px',
                                         width: '100%',
                                         objectFit: 'contain'
@@ -554,7 +548,6 @@ const PostManagement = () => {
                                     alt="Post media"
                                     style={{
                                         ...styles.media,
-                                        aspectRatio: 'auto',
                                         maxHeight: '600px',
                                         width: '100%',
                                         objectFit: 'contain'
@@ -599,11 +592,16 @@ const PostManagement = () => {
                     </div>
                 )}
 
-                {/* Meta info */}
-                <div style={getResponsiveStyles(styles.metaInfo, {
-                    flexDirection: isMobile ? 'column' : 'row',
-                    gap: isMobile ? '8px' : '15px',
-                    alignItems: 'flex-start'
+                <div style={getResponsiveStyles({
+                    display: 'flex',
+                    gap: '15px',
+                    alignItems: 'center',
+                    marginTop: '15px',
+                    flexWrap: 'wrap'
+                }, {
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    gap: '8px'
                 })}>
                     <div style={styles.metaItem}>
                         <Calendar size={14} />
@@ -620,12 +618,14 @@ const PostManagement = () => {
                     )}
                 </div>
 
-                {/* Stats row */}
-                <div style={getResponsiveStyles(styles.statsRow, {
-                    flexDirection: 'row',
+                <div style={getResponsiveStyles({
+                    display: 'flex',
                     justifyContent: 'space-between',
+                    marginTop: '15px',
                     flexWrap: 'wrap',
-                    gap: isMobile ? '10px' : '0'
+                    gap: '10px'
+                }, {
+                    flexDirection: 'row'
                 })}>
                     <div style={styles.statItem}>
                         <Heart size={16} />
@@ -641,10 +641,13 @@ const PostManagement = () => {
                     </div>
                 </div>
 
-                {/* Actions */}
-                <div style={getResponsiveStyles(styles.actions, {
-                    justifyContent: isMobile ? 'center' : 'flex-end',
+                <div style={getResponsiveStyles({
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    marginTop: '15px',
                     gap: '10px'
+                }, {
+                    justifyContent: 'center'
                 })}>
                     {isReported && (
                         <button
@@ -657,17 +660,19 @@ const PostManagement = () => {
                                 color: 'white'
                             }}
                             onClick={() => setShowReportActionModal({
-                                reportId: post.id, // Assuming this is the report ID - adjust based on your data structure
+                                reportId: reports[0]?.id || post.id,
                                 postId: post.id,
-                                postContent: post.content.substring(0, 100) + '...',
+                                postContent: post.content,
                                 author: author,
-                                reportCount: post.reportCount,
-                                reportReasons: post.reportReasons,
-                                reporterNames: post.reporterNames
+                                reportCount: reportCount,
+                                reportReasons: reportReasons,
+                                reporterNames: reporterNames,
+                                lastReportedAt: lastReportedAt
                             })}
+                            disabled={actionLoading[`${reports[0]?.id || post.id}_review`]}
                         >
                             <Shield size={16} />
-                            Review Report
+                            {actionLoading[`${reports[0]?.id || post.id}_review`] ? 'Processing...' : 'Review Report'}
                         </button>
                     )}
                     <button
@@ -677,9 +682,8 @@ const PostManagement = () => {
                         })}
                         onClick={() => setShowDeleteModal({
                             id: post.id,
-                            username: author.username || 'unknown',
-                            authorName: author.firstName && author.lastName ? 
-                                `${author.firstName} ${author.lastName}` : 'Unknown User'
+                            username: author.username,
+                            authorName: `${author.firstName} ${author.lastName}`
                         })}
                         disabled={deleteLoading[post.id]}
                         onMouseEnter={(e) => {
@@ -694,7 +698,7 @@ const PostManagement = () => {
                         }}
                     >
                         <Trash2 size={16} />
-                        Delete Post
+                        {deleteLoading[post.id] ? 'Deleting...' : 'Delete Post'}
                     </button>
                 </div>
             </div>
@@ -713,7 +717,6 @@ const PostManagement = () => {
                     </p>
                 </div>
 
-                {/* Tab navigation */}
                 <div style={tabStyles.container}>
                     <button
                         style={{
@@ -737,7 +740,6 @@ const PostManagement = () => {
                     </button>
                 </div>
 
-                {/* Stats card */}
                 <div style={styles.statsCard}>
                     <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem' }}>
                         {activeTab === 'all' ? `Total Posts: ${posts.length}` : `Reported Posts: ${reportedPosts.length}`}
@@ -750,7 +752,6 @@ const PostManagement = () => {
                     </p>
                 </div>
 
-                {/* Loading states */}
                 {((activeTab === 'all' && loading) || (activeTab === 'reported' && reportedLoading)) ? (
                     <div style={styles.loading}>Loading posts...</div>
                 ) : activeTab === 'all' ? (
@@ -777,7 +778,6 @@ const PostManagement = () => {
                     )
                 )}
 
-                {/* Delete Confirmation Modal */}
                 {showDeleteModal && (
                     <div style={modalStyles.overlay}>
                         <div style={modalStyles.modal}>
@@ -785,7 +785,6 @@ const PostManagement = () => {
                             <p style={modalStyles.text}>
                                 Are you sure you want to delete this post by "{showDeleteModal.authorName}" (@{showDeleteModal.username})? This action cannot be undone.
                             </p>
-
                             <div style={modalStyles.actions}>
                                 <button
                                     onClick={() => setShowDeleteModal(null)}
@@ -815,13 +814,11 @@ const PostManagement = () => {
                     </div>
                 )}
 
-                {/* Report Action Modal */}
                 {showReportActionModal && (
                     <div style={modalStyles.overlay}>
                         <div style={{...modalStyles.modal, maxWidth: isMobile ? '95vw' : '600px'}}>
                             <h3 style={modalStyles.title}>📋 Review Reported Post</h3>
                             
-                            {/* Post Information */}
                             <div style={{ 
                                 backgroundColor: '#f8fafc', 
                                 padding: '16px', 
@@ -859,12 +856,11 @@ const PostManagement = () => {
                                         fontStyle: 'italic',
                                         color: '#2d3748'
                                     }}>
-                                        "{showReportActionModal.postContent}"
+                                        {showReportActionModal.postContent}
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Report Information */}
                             <div style={{ 
                                 backgroundColor: '#fef5f5', 
                                 padding: '16px', 
@@ -875,7 +871,6 @@ const PostManagement = () => {
                                 <h4 style={{ margin: '0 0 12px 0', color: '#c53030', fontSize: '1rem' }}>
                                     🚨 Report Information
                                 </h4>
-                                
                                 <div style={{ marginBottom: '12px' }}>
                                     <strong style={{ color: '#c53030' }}>Total Reports:</strong> 
                                     <span style={{ 
@@ -890,7 +885,6 @@ const PostManagement = () => {
                                         {showReportActionModal.reportCount}
                                     </span>
                                 </div>
-
                                 <div style={{ marginBottom: '12px' }}>
                                     <strong style={{ color: '#c53030' }}>Report Reasons:</strong>
                                     <div style={{ marginTop: '6px' }}>
@@ -914,7 +908,12 @@ const PostManagement = () => {
                                         ))}
                                     </div>
                                 </div>
-
+                                <div style={{ marginBottom: '12px' }}>
+                                    <strong style={{ color: '#c53030' }}>Last Reported:</strong>
+                                    <span style={{ marginLeft: '8px' }}>
+                                        {showReportActionModal.lastReportedAt ? new Date(showReportActionModal.lastReportedAt).toLocaleString() : 'Unknown'}
+                                    </span>
+                                </div>
                                 <div style={{ marginBottom: '0' }}>
                                     <strong style={{ color: '#c53030' }}>Reported by:</strong>
                                     <div style={{ marginTop: '6px' }}>
@@ -941,7 +940,7 @@ const PostManagement = () => {
                             </div>
 
                             <p style={{...modalStyles.text, fontSize: '1rem', fontWeight: '500', color: '#2d3748'}}>
-                                Choose an appropriate action to take on this reported post:
+                                Choose an appropriate action:
                             </p>
 
                             <div style={{
