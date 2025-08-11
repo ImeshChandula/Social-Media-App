@@ -988,24 +988,6 @@ const PostManagement = () => {
                                     onClick={() => handleAcceptReport(
                                         showReportActionModal.reportId, 
                                         showReportActionModal.postId, 
-                                        'suspend_user'
-                                    )}
-                                    style={{
-                                        ...modalStyles.button,
-                                        backgroundColor: '#f56565',
-                                        color: 'white',
-                                        justifyContent: 'center'
-                                    }}
-                                    disabled={actionLoading[`${showReportActionModal.reportId}_suspend_user`]}
-                                >
-                                    <Ban size={16} />
-                                    {actionLoading[`${showReportActionModal.reportId}_suspend_user`] ? 'Processing...' : 'Suspend User'}
-                                </button>
-
-                                <button
-                                    onClick={() => handleAcceptReport(
-                                        showReportActionModal.reportId, 
-                                        showReportActionModal.postId, 
                                         'delete_post'
                                     )}
                                     style={{
