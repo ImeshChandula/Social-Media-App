@@ -6,7 +6,8 @@ const NotificationTypes = {
   REPLY: 'reply',
   LIKE_REPLY: 'like_reply',
   FRIEND_REQUEST: 'friend_request',
-  ACCEPT_REQUEST: 'accept_request'
+  ACCEPT_REQUEST: 'accept_request',
+  POST_WARNING: 'post_warning'
 };
 
 const NotificationEntityTypes = {

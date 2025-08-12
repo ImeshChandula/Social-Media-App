@@ -5,6 +5,7 @@ const { handleMediaUpload } = require('../utils/handleMediaUpload');
 const { areImagesUnchanged } = require('../utils/checkImagesAreSame');
 const notificationUtils = require('../utils/notificationUtils');
 const ReportService = require('../services/reportService');
+const notificationService = require('../services/notificationService');
 
 // Valid video categories
 const VALID_VIDEO_CATEGORIES = ['Music', 'Sports', 'Education', 'Entertainment', 'News'];
@@ -974,7 +975,7 @@ const getReportedPosts = async (req, res) => {
     }
 };
 
-//@desc     Accept a report (keep post hidden, can delete)
+//@desc     Accept a report (keep post hidden, can delete, or warn user)
 const acceptReport = async (req, res) => {
     try {
         const { reportId } = req.params;
@@ -990,11 +991,24 @@ const acceptReport = async (req, res) => {
             });
         }
 
+        // Get admin information for the notification
+        const admin = await UserService.findById(adminId);
+        const adminName = admin ? `${admin.firstName} ${admin.lastName}` : 'Administrator';
+
+        // Determine action based on reviewNote
+        let action = 'general';
+        if (reviewNote && reviewNote.toLowerCase().includes('warn')) {
+            action = 'warn_user';
+        } else if (reviewNote && reviewNote.toLowerCase().includes('delete')) {
+            action = 'delete_post';
+        }
+
         // Update report status
         const updateData = {
             status: 'accepted',
             reviewedBy: adminId,
-            reviewNote: reviewNote || null
+            reviewNote: reviewNote || null,
+            action: action // Track what action was taken
         };
 
         const updatedReport = await ReportService.updateById(reportId, updateData);
@@ -1005,18 +1019,90 @@ const acceptReport = async (req, res) => {
             });
         }
 
-        // Update post: remove from reported posts list, but keep hidden
-        await PostService.updateById(report.postId, {
-            isReported: false // Remove from reported posts list
-            // isHidden remains true (post stays hidden)
-        });
+        // Handle different actions
+        if (action === 'delete_post') {
+            // Delete the post entirely
+            const post = await PostService.findById(report.postId);
+            if (post) {
+                // Delete all comments associated with the post
+                await deleteAllComments(report.postId);
+                
+                // Delete the post
+                await PostService.deleteById(report.postId);
 
-        // Post remains hidden (already marked as hidden when reported)
+                // Send notification to post author about post deletion
+                try {
+                    const deletionMessage = `Your post has been removed due to a policy violation. Reason: ${report.reason}. If you believe this was a mistake, please contact support.`;
+                    
+                    await notificationService.createNotification(
+                        report.postAuthor, // recipient (post author)
+                        adminId, // sender (admin)
+                        'post_warning', // type
+                        report.postId, // entity ID
+                        'post', // entity type
+                        deletionMessage,
+                        {
+                            action: 'post_deleted',
+                            reportReason: report.reason,
+                            reviewNote: reviewNote,
+                            reportId: reportId
+                        }
+                    );
+                } catch (notificationError) {
+                    console.error('Error sending deletion notification:', notificationError);
+                }
+            }
+        } else if (action === 'warn_user') {
+            // Keep post hidden but send warning to user
+            await PostService.updateById(report.postId, {
+                isReported: false, // Remove from reported posts list
+                isHidden: true // Keep post hidden
+            });
+
+            // Send warning notification to post author
+            try {
+                const warningMessage = `Your post has received a warning due to a policy violation. Reason: ${report.reason}. Please review our community guidelines to avoid future issues.`;
+                
+                await notificationService.createNotification(
+                    report.postAuthor, // recipient (post author)
+                    adminId, // sender (admin)
+                    'post_warning', // type
+                    report.postId, // entity ID
+                    'post', // entity type
+                    warningMessage,
+                    {
+                        action: 'post_warning',
+                        reportReason: report.reason,
+                        reviewNote: reviewNote,
+                        reportId: reportId
+                    }
+                );
+                
+                console.log(`Warning notification sent to user ${report.postAuthor} for post ${report.postId}`);
+            } catch (notificationError) {
+                console.error('Error sending warning notification:', notificationError);
+                // Don't fail the entire operation if notification fails
+            }
+        } else {
+            // General acceptance - just hide the post
+            await PostService.updateById(report.postId, {
+                isReported: false, // Remove from reported posts list
+                isHidden: true // Keep post hidden
+            });
+        }
+
+        // Send success response with action details
+        const responseMessage = action === 'delete_post' 
+            ? 'Report accepted and post deleted successfully' 
+            : action === 'warn_user'
+            ? 'Report accepted and warning sent to user'
+            : 'Report accepted successfully';
 
         res.status(200).json({
             success: true,
-            message: "Report accepted successfully",
-            report: updatedReport
+            message: responseMessage,
+            report: updatedReport,
+            action: action
         });
     } catch (error) {
         console.error('Accept report error:', error.message);

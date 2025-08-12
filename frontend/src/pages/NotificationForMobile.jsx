@@ -123,8 +123,21 @@ function NotificationForMobile() {
       case 'accept_request': return '✅';
       case 'post': return '📝';
       case 'story': return '📷';
+      case 'post_warning': return '⚠️'; // New case for warning notifications
       default: return '🔔';
     }
+  };
+
+  const getNotificationCardClass = (notification) => {
+    let baseClass = "card mb-2 notification-card";
+    if (!notification.isRead) {
+      baseClass += " unread";
+    }
+    // Special styling for warning notifications
+    if (notification.type === 'post_warning') {
+      baseClass += " warning-notification";
+    }
+    return baseClass;
   };
 
   return (
@@ -148,14 +161,14 @@ function NotificationForMobile() {
           <div className="text-center py-5 text-muted">
             <div style={{ fontSize: '2rem' }}>🔔</div>
             <p>No notifications yet</p>
-            <small>When you get notifications, they’ll show up here.</small>
+            <small>When you get notifications, they'll show up here.</small>
           </div>
         ) : (
           <>
             {notifications.map(notification => (
               <div
                 key={notification.id}
-                className={`card mb-2 notification-card ${!notification.isRead ? 'unread' : ''}`}
+                className={getNotificationCardClass(notification)}
                 onClick={() => !notification.isRead && markAsRead(notification.id)}
               >
                 <div className="card-body d-flex align-items-center">
@@ -178,6 +191,14 @@ function NotificationForMobile() {
 
                   <div className="flex-grow-1">
                     <div className="fw-medium">{notification.message}</div>
+                    
+                    {/* Show additional info for warning notifications */}
+                    {notification.type === 'post_warning' && notification.data?.reportReason && (
+                      <div className="warning-details mt-1">
+                        <small className="text-muted">Reason: {notification.data.reportReason}</small>
+                      </div>
+                    )}
+                    
                     <small className="text-muted">{formatTime(notification.timestamp)}</small>
                   </div>
 

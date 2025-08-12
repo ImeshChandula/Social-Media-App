@@ -16,16 +16,22 @@ function NotificationPage() {
 
   // Initialize Socket.IO connection
   useEffect(() => {
-    // For Socket.IO, you might still need the token from cookie
-    // If your backend socket middleware reads from cookies, you can remove the auth object
     socketRef.current = io(import.meta.env.VITE_APP_BACKEND_URL, {
-      withCredentials: true // This will send cookies
+      withCredentials: true
     });
 
     // Listen for new notifications
     socketRef.current.on('new_notification', (notification) => {
       setNotifications(prev => [notification, ...prev]);
       setNotificationCount(prev => prev + 1);
+      
+      // Show different toasts based on notification type
+      if (notification.type === 'post_warning') {
+        toast.error('⚠️ You have received a warning about your post', {
+          duration: 5000,
+          icon: '⚠️'
+        });
+      }
     });
 
     // Listen for notification count updates
@@ -47,7 +53,6 @@ function NotificationPage() {
   // Fetch notification count on component mount
   useEffect(() => {
     fetchNotificationCount();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch notifications
@@ -132,7 +137,6 @@ function NotificationPage() {
   const toggleDropdown = () => {
     if (!isOpen) {
       fetchNotifications(true);
-      // Remove fetchNotificationCount() from here since it's now called on mount
     }
     setIsOpen(!isOpen);
   };
@@ -155,20 +159,16 @@ function NotificationPage() {
     
     let notifTime;
     
-    // Handle Firestore timestamp
     if (timestamp?._seconds) {
       notifTime = new Date(timestamp._seconds * 1000);
     } 
-    // Handle Firestore timestamp with toDate method
     else if (timestamp?.toDate && typeof timestamp.toDate === 'function') {
       notifTime = timestamp.toDate();
     }
-    // Handle regular timestamp string/number
     else {
       notifTime = new Date(timestamp);
     }
     
-    // Check if date is valid
     if (isNaN(notifTime.getTime())) {
       return 'Unknown time';
     }
@@ -203,9 +203,24 @@ function NotificationPage() {
         return '📝';
       case 'story': 
         return '📷';
+      case 'post_warning': // New case for warning notifications
+        return '⚠️';
       default: 
         return '🔔';
     }
+  };
+
+  // Get notification style based on type
+  const getNotificationStyle = (notification) => {
+    const baseStyle = "mt-2 notification-item";
+    const unreadStyle = !notification.isRead ? ' unread' : '';
+    
+    // Special styling for warning notifications
+    if (notification.type === 'post_warning') {
+      return `${baseStyle}${unreadStyle} warning-notification`;
+    }
+    
+    return `${baseStyle}${unreadStyle}`;
   };
 
   // Load more notifications
@@ -254,7 +269,7 @@ function NotificationPage() {
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`mt-2 notification-item ${!notification.isRead ? 'unread' : ''}`}
+                    className={getNotificationStyle(notification)}
                     onClick={() => !notification.isRead && markAsRead(notification.id)}
                   >
                     <div className="notification-avatar">
@@ -262,7 +277,6 @@ function NotificationPage() {
                         <img src={notification.senderProfilePicture} alt="" />
                       ) : (
                         <div className="avatar-placeholder">
-                          {/* Get first letter from sender's name from the message */}
                           {notification.message?.split(' ')[0]?.charAt(0) || '?'}
                         </div>
                       )}
@@ -273,8 +287,13 @@ function NotificationPage() {
                     
                     <div className="notification-content">
                       <div className="notification-text">
-                        {/* Display the full message without adding "Someone" */}
                         <span>{notification.message}</span>
+                        {/* Show additional info for warning notifications */}
+                        {notification.type === 'post_warning' && notification.data?.reportReason && (
+                          <div className="warning-details">
+                            <small>Reason: {notification.data.reportReason}</small>
+                          </div>
+                        )}
                       </div>
                       <div className="notification-time">
                         {formatTime(notification.timestamp)}
