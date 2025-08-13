@@ -19,7 +19,7 @@ import NotificationForMobile from "../pages/NotificationForMobile";
 import CreateMarketplaceItem from "../components/CreateMarketplaceItem";
 import StoryView from "../components/StoryView";
 import Favorites from "../components/Favorites";
-import ActivityLogsPage from "../components/ActivityLogsPage";
+import ActivityLogsPage from "../components/ActivityLogDashboard";
 
 const MainLayout = () => {
   const { checkAuth } = useAuthStore();
