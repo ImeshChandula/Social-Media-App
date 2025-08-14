@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 import { FaFacebookF, FaBars, FaTimes, FaSignOutAlt, FaFlag } from "react-icons/fa";
 import { FaUsersGear } from "react-icons/fa6";
 import { IoMdArrowRoundBack } from "react-icons/io";
-import { BsFileEarmarkPostFill } from "react-icons/bs";
+import { BsFileEarmarkPostFill, BsActivity } from "react-icons/bs"; // Add BsActivity here
 import { TbCategoryFilled } from "react-icons/tb";
 import { FaFacebookMessenger } from "react-icons/fa6";
 import { IoTicketSharp } from "react-icons/io5";
@@ -15,17 +15,18 @@ const SidebarDashboard = ({ collapsed, setCollapsed }) => {
     const [mobileVisible, setMobileVisible] = useState(false);
     const { authUser, logout } = useAuthStore();
 
-    const shortcuts = [
-        ...(authUser.role === "super_admin" ? [
-          { name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> }
-        ] : []),
-        { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
-        { name: "Manage Categories", path: "/dashboard/job-category", icon: <TbCategoryFilled /> },
-        { name: "Manage Marketplace", path: "/dashboard/manage-marketplace", icon: <SiMarketo /> },
-        { name: "Messages", path: "/dashboard/mails", icon: <FaFacebookMessenger /> },
-        { name: "Tickets / Appeals", path: "/dashboard/tickets", icon: <IoTicketSharp /> },
-        { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
-    ];
+const shortcuts = [
+    ...(authUser.role === "super_admin" ? [
+      { name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> },
+      { name: "Activity Management", path: "/dashboard/activities", icon: <BsActivity /> } // Fixed this line
+    ] : []),
+    { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
+    { name: "Manage Categories", path: "/dashboard/job-category", icon: <TbCategoryFilled /> },
+    { name: "Manage Marketplace", path: "/dashboard/manage-marketplace", icon: <SiMarketo /> },
+    { name: "Messages", path: "/dashboard/mails", icon: <FaFacebookMessenger /> },
+    { name: "Tickets / Appeals", path: "/dashboard/tickets", icon: <IoTicketSharp /> },
+    { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
+];
     
     const handleResize = () => {
         if (window.innerWidth >= 768) {

@@ -21,6 +21,7 @@ import StoryView from "../components/StoryView";
 import Favorites from "../components/Favorites";
 import ActivityLogsPage from "../components/ActivityLogDashboard";
 
+
 const MainLayout = () => {
   const { checkAuth } = useAuthStore();
 
@@ -66,6 +67,7 @@ const MainLayout = () => {
               <Route path="/stories/:id" element={<StoryView />} />
               <Route path="/favorites" element={<Favorites />} />
               <Route path="/activity-logs" element={<ActivityLogsPage/>} />
+              
             </Routes>
           </div>
         </div>
