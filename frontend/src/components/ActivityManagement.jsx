@@ -25,7 +25,12 @@ const ActivityManagement = () => {
     sortOrder: 'desc',
     period: 'month'
   });
-  const [pagination, setPagination] = useState({});
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    limit: 20,
+    total: 0
+  });
   const [activityTypes, setActivityTypes] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedActivity, setSelectedActivity] = useState(null);
@@ -50,19 +55,29 @@ const ActivityManagement = () => {
 
   const fetchActivityTypes = async () => {
     try {
-      const response = await fetch('/api/activities/types', {
+      const response = await fetch(`/activities/types?_t=${Date.now()}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
         }
       });
+      if (response.status === 304) {
+        console.warn('Received 304 for fetchActivityTypes, expected 200');
+      }
       const data = await response.json();
       if (data.success) {
-        setActivityTypes(data.data.activityTypes);
-        setCategories(data.data.categories);
+        setActivityTypes(data.data.activityTypes || []);
+        setCategories(data.data.categories || []);
+      } else {
+        setActivityTypes([]);
+        setCategories([]);
       }
     } catch (error) {
       console.error('Error fetching activity types:', error);
+      setActivityTypes([]);
+      setCategories([]);
     }
   };
 
@@ -77,23 +92,39 @@ const ActivityManagement = () => {
         ...(filters.category && { category: filters.category }),
         ...(filters.activityType && { activityType: filters.activityType }),
         ...(filters.startDate && { startDate: filters.startDate }),
-        ...(filters.endDate && { endDate: filters.endDate })
+        ...(filters.endDate && { endDate: filters.endDate }),
+        _t: Date.now()
       });
 
-      const response = await fetch(`/api/activities/admin/all-history?${queryParams}`, {
+      const response = await fetch(`/activities/admin/all-history?${queryParams}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
         }
       });
 
+      if (response.status === 304) {
+        console.warn('Received 304 for fetchAllActivities, expected 200');
+      }
       const data = await response.json();
       if (data.success) {
-        setActivities(data.data);
-        setPagination(data.pagination);
+        setActivities(data.data || []);
+        setPagination({
+          currentPage: data.pagination?.currentPage || 1,
+          totalPages: data.pagination?.totalPages || 1,
+          limit: data.pagination?.limit || filters.limit,
+          total: data.pagination?.total || 0
+        });
+      } else {
+        setActivities([]);
+        setPagination({ currentPage: 1, totalPages: 1, limit: filters.limit, total: 0 });
       }
     } catch (error) {
       console.error('Error fetching all activities:', error);
+      setActivities([]);
+      setPagination({ currentPage: 1, totalPages: 1, limit: filters.limit, total: 0 });
     } finally {
       setLoading(false);
     }
@@ -109,23 +140,39 @@ const ActivityManagement = () => {
         ...(filters.category && { category: filters.category }),
         ...(filters.activityType && { activityType: filters.activityType }),
         ...(filters.startDate && { startDate: filters.startDate }),
-        ...(filters.endDate && { endDate: filters.endDate })
+        ...(filters.endDate && { endDate: filters.endDate }),
+        _t: Date.now()
       });
 
-      const response = await fetch(`/api/activities/admin/user/${userId}?${queryParams}`, {
+      const response = await fetch(`/activities/admin/user/${userId}?${queryParams}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
         }
       });
 
+      if (response.status === 304) {
+        console.warn('Received 304 for fetchUserActivities, expected 200');
+      }
       const data = await response.json();
       if (data.success) {
-        setActivities(data.data);
-        setPagination(data.pagination);
+        setActivities(data.data || []);
+        setPagination({
+          currentPage: data.pagination?.currentPage || 1,
+          totalPages: data.pagination?.totalPages || 1,
+          limit: data.pagination?.limit || filters.limit,
+          total: data.pagination?.total || 0
+        });
+      } else {
+        setActivities([]);
+        setPagination({ currentPage: 1, totalPages: 1, limit: filters.limit, total: 0 });
       }
     } catch (error) {
       console.error('Error fetching user activities:', error);
+      setActivities([]);
+      setPagination({ currentPage: 1, totalPages: 1, limit: filters.limit, total: 0 });
     } finally {
       setLoading(false);
     }
@@ -134,53 +181,51 @@ const ActivityManagement = () => {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      let endpoint = '/api/activities/my-stats';
+      let endpoint = `/activities/my-stats?period=${filters.period}&_t=${Date.now()}`;
       if (selectedUser) {
-        endpoint = `/api/activities/admin/user/${selectedUser}/stats`;
+        endpoint = `/activities/admin/user/${selectedUser}/stats?period=${filters.period}&_t=${Date.now()}`;
       }
 
-      const response = await fetch(`${endpoint}?period=${filters.period}`, {
+      const response = await fetch(endpoint, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
         }
       });
 
+      if (response.status === 304) {
+        console.warn('Received 304 for fetchStats, expected 200');
+      }
       const data = await response.json();
       if (data.success) {
-        setStats(data.data);
+        setStats(data.data || {});
+      } else {
+        setStats({});
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
+      setStats({});
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value,
-      page: 1 // Reset to first page when filters change
-    }));
-  };
-
-  const handlePageChange = (newPage) => {
-    setFilters(prev => ({
-      ...prev,
-      page: newPage
-    }));
-  };
-
   const viewActivityDetails = async (activityId) => {
     try {
-      const response = await fetch(`/api/activities/${activityId}`, {
+      const response = await fetch(`/activities/${activityId}?_t=${Date.now()}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
         }
       });
 
+      if (response.status === 304) {
+        console.warn('Received 304 for viewActivityDetails, expected 200');
+      }
       const data = await response.json();
       if (data.success) {
         setSelectedActivity(data.data);
@@ -193,12 +238,17 @@ const ActivityManagement = () => {
 
   const exportActivities = async (format = 'json') => {
     try {
-      const response = await fetch(`/api/activities/export?format=${format}`, {
+      const response = await fetch(`/activities/export?format=${format}&_t=${Date.now()}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
         }
       });
 
+      if (response.status === 304) {
+        console.warn('Received 304 for exportActivities, expected 200');
+      }
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -221,15 +271,20 @@ const ActivityManagement = () => {
     }
 
     try {
-      const response = await fetch('/api/activities/admin/cleanup', {
+      const response = await fetch(`/activities/admin/cleanup?_t=${Date.now()}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
         },
         body: JSON.stringify({ daysOld: 365 })
       });
 
+      if (response.status === 304) {
+        console.warn('Received 304 for cleanupOldActivities, expected 200');
+      }
       const data = await response.json();
       if (data.success) {
         alert(`Successfully deleted ${data.deletedCount} old activities`);
@@ -237,6 +292,24 @@ const ActivityManagement = () => {
       }
     } catch (error) {
       console.error('Error cleaning up activities:', error);
+    }
+  };
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [key]: value,
+      page: 1 // Reset to first page when filters change
+    }));
+  };
+
+  const handlePageChange = (newPage) => {
+    // Ensure newPage is within valid bounds
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setFilters(prev => ({
+        ...prev,
+        page: newPage
+      }));
     }
   };
 
@@ -493,7 +566,7 @@ const ActivityManagement = () => {
                 </div>
 
                 {/* Pagination */}
-                {pagination.totalPages > 1 && (
+                {pagination.totalPages > 1 && pagination.currentPage && (
                   <div className="d-flex justify-content-between align-items-center mt-3">
                     <div>
                       Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to{' '}
@@ -506,6 +579,7 @@ const ActivityManagement = () => {
                           <button
                             className="page-link"
                             onClick={() => handlePageChange(pagination.currentPage - 1)}
+                            disabled={pagination.currentPage === 1}
                           >
                             Previous
                           </button>
@@ -528,6 +602,7 @@ const ActivityManagement = () => {
                           <button
                             className="page-link"
                             onClick={() => handlePageChange(pagination.currentPage + 1)}
+                            disabled={pagination.currentPage === pagination.totalPages}
                           >
                             Next
                           </button>

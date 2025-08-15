@@ -18,7 +18,7 @@ const SidebarDashboard = ({ collapsed, setCollapsed }) => {
 const shortcuts = [
     ...(authUser.role === "super_admin" ? [
       { name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> },
-      { name: "Activity Management", path: "/dashboard/activities", icon: <BsActivity /> } // Fixed this line
+      { name: "Activity Management", path: "/dashboard/activitymanagement", icon: <BsActivity /> } // Fixed this line
     ] : []),
     { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
     { name: "Manage Categories", path: "/dashboard/job-category", icon: <TbCategoryFilled /> },
