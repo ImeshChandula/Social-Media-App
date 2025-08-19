@@ -16,7 +16,7 @@ const ActivityManagement = () => {
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({});
   
-  // Simplified filters state
+  // Filters state
   const [filters, setFilters] = useState({
     page: 1,
     limit: 20,
@@ -42,18 +42,15 @@ const ActivityManagement = () => {
   const [showActivityModal, setShowActivityModal] = useState(false);
   
   // User search state
-  const [userSearchQuery, setUserSearchQuery] = useState('');
-  const [userSearchResults, setUserSearchResults] = useState([]);
-  const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [allUsers, setAllUsers] = useState([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest('.user-search-container')) {
-        setShowUserDropdown(false);
+        setShowSearchResults(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -63,7 +60,6 @@ const ActivityManagement = () => {
   // Fetch initial data
   useEffect(() => {
     fetchActivityTypes();
-    fetchAllUsers();
   }, []);
 
   // Fetch data when filters or tab changes
@@ -98,57 +94,66 @@ const ActivityManagement = () => {
 
   // User search functions
   const searchUsers = async (query) => {
-    if (!query || query.length < 2) {
-      setUserSearchResults([]);
-      setShowUserDropdown(false);
+    if (!query.trim() || query.length < 2) {
+      setSearchResults([]);
+      setShowSearchResults(false);
       return;
     }
 
     try {
+      setLoading(true);
       const response = await axiosInstance.get(`/users/admin/search?q=${encodeURIComponent(query)}&limit=10`);
       if (response.data.success) {
-        setUserSearchResults(response.data.data || []);
-        setShowUserDropdown(true);
+        setSearchResults(response.data.data || []);
+        setShowSearchResults(true);
+      } else {
+        setSearchResults([]);
+        setShowSearchResults(false);
+        toast.error('No users found');
       }
     } catch (error) {
       console.error('Error searching users:', error);
-      setUserSearchResults([]);
-      setShowUserDropdown(false);
+      if (error.response) {
+        if (error.response.status === 403) {
+          toast.error('You do not have permission to search users');
+        } else if (error.response.status === 400) {
+          toast.error('Invalid search query');
+        } else {
+          toast.error('Failed to search users. Please try again.');
+        }
+      } else {
+        toast.error('Network error. Please check your connection.');
+      }
+      setSearchResults([]);
+      setShowSearchResults(false);
+    } finally {
+      setLoading(false);
     }
   };
 
   const debouncedSearchUsers = debounce(searchUsers, 300);
 
-  const handleUserSearch = (query) => {
-    setUserSearchQuery(query);
-    if (query.length >= 2) {
-      debouncedSearchUsers(query);
-    } else {
-      setUserSearchResults([]);
-      setShowUserDropdown(false);
-    }
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchTerm(query);
+    debouncedSearchUsers(query);
   };
 
   const selectUser = (user) => {
-    setSelectedUser(user);
-    setUserSearchQuery(user.username);
-    setUserSearchResults([]);
-    setShowUserDropdown(false);
-    
-    // Update filters
     setFilters(prev => ({
       ...prev,
       userId: user.id,
       page: 1
     }));
+    setSearchTerm(user.username);
+    setSearchResults([]);
+    setShowSearchResults(false);
   };
 
-  const clearUserSelection = () => {
-    setSelectedUser(null);
-    setUserSearchQuery('');
-    setUserSearchResults([]);
-    setShowUserDropdown(false);
-    
+  const clearSearch = () => {
+    setSearchTerm('');
+    setSearchResults([]);
+    setShowSearchResults(false);
     setFilters(prev => ({
       ...prev,
       userId: '',
@@ -170,24 +175,6 @@ const ActivityManagement = () => {
     }
   };
 
-  const fetchAllUsers = async () => {
-    setLoadingUsers(true);
-    try {
-      const response = await axiosInstance.get('/users/getAllUsers');
-      if (response.data.success) {
-        const sortedUsers = (response.data.data || []).sort((a, b) => 
-          a.username.localeCompare(b.username)
-        );
-        setAllUsers(sortedUsers);
-      }
-    } catch (error) {
-      console.error('Error fetching all users:', error);
-      toast.error('Failed to fetch users list');
-    } finally {
-      setLoadingUsers(false);
-    }
-  };
-
   const fetchActivities = async () => {
     setLoading(true);
     try {
@@ -197,7 +184,6 @@ const ActivityManagement = () => {
         sortOrder: filters.sortOrder
       };
 
-      // Add filters only if they have values
       if (filters.userId) queryParams.userId = filters.userId;
       if (filters.category) queryParams.category = filters.category;
       if (filters.activityType) queryParams.activityType = filters.activityType;
@@ -206,7 +192,6 @@ const ActivityManagement = () => {
 
       const queryString = buildQueryString(queryParams);
       
-      // Choose endpoint based on whether we're filtering by user or getting all
       let endpoint;
       if (activeTab === 'user-activities' && filters.userId) {
         endpoint = `/activities/admin/user/${filters.userId}${queryString}`;
@@ -214,24 +199,40 @@ const ActivityManagement = () => {
         endpoint = `/activities/admin/all-history${queryString}`;
       }
       
+      console.log('Fetching activities from endpoint:', endpoint); // Debug log
       const response = await axiosInstance.get(endpoint);
+      console.log('API response:', response.data); // Debug log
 
       if (response.data.success) {
-        setActivities(response.data.data || []);
+        const activitiesData = response.data.data || [];
+        const paginationData = response.data.pagination || {};
+        setActivities(activitiesData);
         setPagination({
-          currentPage: response.data.pagination?.currentPage || 1,
-          totalPages: response.data.pagination?.totalPages || 1,
-          limit: response.data.pagination?.limit || filters.limit,
-          total: response.data.pagination?.total || 0
+          currentPage: paginationData.currentPage || 1,
+          totalPages: paginationData.totalPages || 1,
+          limit: paginationData.limit || filters.limit,
+          total: paginationData.total || activitiesData.length
         });
       } else {
+        console.warn('API returned success: false', response.data.message); // Debug log
         setActivities([]);
-        setPagination({ currentPage: 1, totalPages: 1, limit: filters.limit, total: 0 });
+        setPagination({
+          currentPage: 1,
+          totalPages: 1,
+          limit: filters.limit,
+          total: 0
+        });
+        toast.error('No activities found for the selected criteria');
       }
     } catch (error) {
       console.error('Error fetching activities:', error);
       setActivities([]);
-      setPagination({ currentPage: 1, totalPages: 1, limit: filters.limit, total: 0 });
+      setPagination({
+        currentPage: 1,
+        totalPages: 1,
+        limit: filters.limit,
+        total: 0
+      });
       toast.error(`Failed to fetch activities: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);
@@ -246,7 +247,9 @@ const ActivityManagement = () => {
         endpoint = `/activities/admin/user/${filters.userId}/stats?period=${filters.period}`;
       }
 
+      console.log('Fetching stats from endpoint:', endpoint); // Debug log
       const response = await axiosInstance.get(endpoint);
+      console.log('Stats API response:', response.data); // Debug log
       
       if (response.data.success) {
         setStats(response.data.data || {});
@@ -289,7 +292,7 @@ const ActivityManagement = () => {
       sortOrder: 'desc',
       period: 'month'
     });
-    clearUserSelection();
+    clearSearch();
   };
 
   const viewActivityDetails = async (activityId) => {
@@ -375,7 +378,7 @@ const ActivityManagement = () => {
   // Check if any filters are active
   const hasActiveFilters = () => {
     return filters.userId || filters.category || filters.activityType || 
-           filters.startDate || filters.endDate || selectedUser;
+           filters.startDate || filters.endDate;
   };
 
   return (
@@ -455,7 +458,7 @@ const ActivityManagement = () => {
                 >
                   <FaUser className="me-2" />
                   User Activities
-                  {selectedUser && <span className="badge bg-info ms-2">{selectedUser.username}</span>}
+                  {filters.userId && <span className="badge bg-info ms-2">{searchTerm}</span>}
                 </button>
                 <button
                   className={`nav-link py-3 px-4 ${activeTab === 'stats' ? 'active' : ''}`}
@@ -500,14 +503,12 @@ const ActivityManagement = () => {
             </div>
             <div className="card-body">
               <div className="row g-3">
-                {/* User Selection */}
+                {/* User Search */}
                 <div className="col-xl-3 col-lg-4 col-md-6">
                   <label className="form-label fw-semibold text-dark">
                     <FaUser className="me-1 text-primary" />
-                    Select User
+                    Search User
                   </label>
-                  
-                  {/* User Search Input */}
                   <div className="user-search-container position-relative mb-2">
                     <div className="input-group">
                       <span className="input-group-text bg-light border-end-0">
@@ -517,33 +518,27 @@ const ActivityManagement = () => {
                         type="text"
                         className="form-control border-start-0"
                         placeholder="Search by username..."
-                        value={userSearchQuery}
-                        onChange={(e) => handleUserSearch(e.target.value)}
-                        onFocus={() => {
-                          if (userSearchResults.length > 0) {
-                            setShowUserDropdown(true);
-                          }
-                        }}
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
                       />
-                      {selectedUser && (
+                      {searchTerm && (
                         <button
                           type="button"
                           className="btn btn-outline-secondary"
-                          onClick={clearUserSelection}
-                          title="Clear user selection"
+                          onClick={clearSearch}
+                          title="Clear search"
                         >
                           <FaTimes />
                         </button>
                       )}
                     </div>
-                    
-                    {/* Search Results Dropdown */}
-                    {showUserDropdown && userSearchResults.length > 0 && (
+                    {showSearchResults && (
                       <div 
                         className="dropdown-menu show position-absolute w-100 mt-1 shadow-lg border-0" 
                         style={{ zIndex: 1000, maxHeight: '250px', overflowY: 'auto' }}
                       >
-                        {userSearchResults.map((user) => (
+                        {searchResults.map((user) => (
                           <button
                             key={user.id}
                             type="button"
@@ -574,19 +569,22 @@ const ActivityManagement = () => {
                             <small className="text-muted">#{user.id}</small>
                           </button>
                         ))}
+                        {searchResults.length === 0 && searchTerm && (
+                          <div className="dropdown-item text-muted py-2 px-3">
+                            No users found matching "{searchTerm}"
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                  
-                  {/* Selected User Display */}
-                  {selectedUser && (
+                  {filters.userId && (
                     <div className="alert alert-info py-2 mb-2">
                       <div className="d-flex align-items-center">
                         <div className="me-2">
-                          {selectedUser.profilePicture ? (
+                          {searchResults.find(u => u.id === filters.userId)?.profilePicture ? (
                             <img
-                              src={selectedUser.profilePicture}
-                              alt={selectedUser.username}
+                              src={searchResults.find(u => u.id === filters.userId)?.profilePicture}
+                              alt={searchResults.find(u => u.id === filters.userId)?.username}
                               className="rounded-circle"
                               style={{ width: '24px', height: '24px', objectFit: 'cover' }}
                             />
@@ -595,41 +593,17 @@ const ActivityManagement = () => {
                               className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold"
                               style={{ width: '24px', height: '24px', fontSize: '12px' }}
                             >
-                              {selectedUser.username.charAt(0).toUpperCase()}
+                              {searchTerm.charAt(0).toUpperCase()}
                             </div>
                           )}
                         </div>
                         <div className="flex-grow-1">
-                          <div className="fw-semibold">{selectedUser.username}</div>
-                          <small>ID: {selectedUser.id}</small>
+                          <div className="fw-semibold">{searchTerm}</div>
+                          <small>ID: {filters.userId}</small>
                         </div>
                       </div>
                     </div>
                   )}
-                  
-                  {/* Quick User Select */}
-                  <select
-                    className="form-select"
-                    value={selectedUser?.id || ''}
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        const user = allUsers.find(u => u.id.toString() === e.target.value);
-                        if (user) selectUser(user);
-                      } else {
-                        clearUserSelection();
-                      }
-                    }}
-                    disabled={loadingUsers}
-                  >
-                    <option value="">
-                      {loadingUsers ? 'Loading users...' : 'Quick select from list'}
-                    </option>
-                    {allUsers.slice(0, 50).map(user => (
-                      <option key={user.id} value={user.id}>
-                        {user.username} ({user.email})
-                      </option>
-                    ))}
-                  </select>
                 </div>
 
                 {/* Category Filter */}
@@ -737,15 +711,15 @@ const ActivityManagement = () => {
                     <div className="bg-light rounded p-3">
                       <h6 className="text-muted mb-2">Active Filters:</h6>
                       <div className="d-flex flex-wrap gap-2">
-                        {selectedUser && (
+                        {filters.userId && (
                           <span className="badge bg-info fs-6 py-2 px-3">
                             <FaUser className="me-1" />
-                            {selectedUser.username}
+                            {searchTerm}
                             <button 
                               type="button" 
                               className="btn-close btn-close-white ms-2" 
                               style={{ fontSize: '10px' }}
-                              onClick={clearUserSelection}
+                              onClick={clearSearch}
                             ></button>
                           </span>
                         )}
@@ -812,12 +786,12 @@ const ActivityManagement = () => {
                 <div>
                   <h5 className="mb-1 text-dark">
                     {activeTab === 'all-activities' ? 'All Activities' : 'User Activities'}
-                    {selectedUser && activeTab === 'user-activities' && (
-                      <span className="text-muted ms-2">- {selectedUser.username}</span>
+                    {filters.userId && activeTab === 'user-activities' && (
+                      <span className="text-muted ms-2">- {searchTerm}</span>
                     )}
                   </h5>
                   <small className="text-muted">
-                    {pagination.total || 0} total activities found
+                    {pagination.total} total activities found
                   </small>
                 </div>
                 <div className="d-flex align-items-center gap-3">
@@ -996,7 +970,7 @@ const ActivityManagement = () => {
                       <div className="card-footer bg-white border-top">
                         <div className="d-flex justify-content-between align-items-center">
                           <div className="text-muted small">
-                            Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to{' '}
+                            Showing {Math.min((pagination.currentPage - 1) * pagination.limit + 1, pagination.total)} to{' '}
                             {Math.min(pagination.currentPage * pagination.limit, pagination.total)} of{' '}
                             {pagination.total} entries
                           </div>
@@ -1020,8 +994,6 @@ const ActivityManagement = () => {
                                   Previous
                                 </button>
                               </li>
-                              
-                              {/* Page numbers */}
                               {(() => {
                                 const pages = [];
                                 const start = Math.max(1, pagination.currentPage - 2);
@@ -1041,7 +1013,6 @@ const ActivityManagement = () => {
                                 }
                                 return pages;
                               })()}
-                              
                               <li className={`page-item ${pagination.currentPage === pagination.totalPages ? 'disabled' : ''}`}>
                                 <button
                                   className="page-link"
@@ -1209,7 +1180,7 @@ const ActivityManagement = () => {
                       <h4 className="text-muted mb-3">No statistics available</h4>
                       <p className="text-muted mb-4">
                         No activity data found for the selected period
-                        {selectedUser && ` for user ${selectedUser.username}`}.
+                        {filters.userId && ` for user ${searchTerm}`}.
                       </p>
                       <p className="text-muted small">
                         Try selecting a different time period or clearing your filters.
@@ -1341,7 +1312,7 @@ const ActivityManagement = () => {
                         <label className="text-muted small fw-bold mb-2">ADDITIONAL METADATA</label>
                         <div className="bg-dark rounded p-3">
                           <pre className="text-light mb-0 small" style={{ maxHeight: '200px', overflow: 'auto' }}>
-{JSON.stringify(selectedActivity.metadata, null, 2)}
+                            {JSON.stringify(selectedActivity.metadata, null, 2)}
                           </pre>
                         </div>
                       </div>

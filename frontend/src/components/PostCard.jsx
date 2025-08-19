@@ -404,7 +404,7 @@ const PostCard = ({
               className="btn btn-light"
               onClick={() => setShowComments((prev) => !prev)}
             >
-              <FaCommentAlt /> {post.comments?.length || 0} comments
+              <FaCommentAlt />  comments
             </button>
             <ShareButton postId={postId} />
           </div>

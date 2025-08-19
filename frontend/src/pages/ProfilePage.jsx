@@ -35,7 +35,7 @@ function ProfilePage() {
   const handleCreatePost = () => navigate("/create-post");
   const handleCreateStory = () => navigate("/create-story");
 
-  // ✅ Fetch favorite posts
+  // Fetch favorite posts
   const fetchFavorites = async () => {
     try {
       setLoadingFavorites(true);
@@ -56,6 +56,28 @@ function ProfilePage() {
   const handleToggleFavorites = () => {
     if (!showFavorites) fetchFavorites();
     setShowFavorites(!showFavorites);
+  };
+
+  // Handle like updates for favorites
+  const handleLikeUpdate = (postId, newLikeCount, newIsLiked) => {
+    setFavorites(prevFavorites =>
+      prevFavorites.map(post =>
+        post._id === postId || post.id === postId
+          ? {
+            ...post,
+            likeCount: newLikeCount,
+            isLiked: newIsLiked
+          }
+          : post
+      )
+    );
+  };
+
+  // Handle delete post from favorites
+  const handleDeletePost = (postId) => {
+    setFavorites(prevFavorites => 
+      prevFavorites.filter(post => post._id !== postId && post.id !== postId)
+    );
   };
 
   return (
@@ -116,8 +138,8 @@ function ProfilePage() {
                 Add to Story
               </button>
               <button className="btn btn-outline-info" onClick={() => navigate("/activity-logs")}>
-  Activity Logs
-</button>
+                Activity Logs
+              </button>
             </div>
           </div>
 
@@ -127,7 +149,7 @@ function ProfilePage() {
           {/* Bio */}
           <EnhancedBioSection user={user} />
 
-          {/* ✅ Favorites Toggle Button */}
+          {/* Favorites Toggle Button */}
           <div className="my-4">
             <button
               className={`btn ${showFavorites ? "btn-primary" : "btn-outline-primary"}`}
@@ -137,21 +159,46 @@ function ProfilePage() {
             </button>
           </div>
 
-          {/* ✅ Favorites or Posts */}
+          {/* Favorites or Posts */}
           {showFavorites ? (
             loadingFavorites ? (
-              <p className="text-center">Loading favorites...</p>
+              <div className="text-center my-4">
+                <div className="text-white normal-loading-spinner">
+                  Loading favorites<span className="dot-flash">.</span>
+                  <span className="dot-flash">.</span>
+                  <span className="dot-flash">.</span>
+                </div>
+              </div>
             ) : favorites.length === 0 ? (
-              <p className="text-center text-muted">No favorite posts yet</p>
+              <div className="text-center text-muted my-4">
+                <p>No favorite posts yet</p>
+              </div>
             ) : (
-              <div className="mt-4">
-                {favorites.map((post) => (
-                  <PostCard key={post._id || post.id} post={post} />
+              <div className="mt-4" style={{ textAlign: 'left' }}>
+                {favorites.map((post, index) => (
+                  <motion.div
+                    key={post._id || post.id || index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="mb-3"
+                    style={{ textAlign: 'left' }}
+                  >
+                    <PostCard
+                      post={post}
+                      isUserPost={false}
+                      onLikeUpdate={handleLikeUpdate}
+                      onDeletePost={handleDeletePost}
+                      disableNavigation={true}
+                      alignLeft={true}
+                      showAsFavorite={true}
+                    />
+                  </motion.div>
                 ))}
               </div>
             )
           ) : (
-            <div>
+            <div style={{ textAlign: 'left' }}>
               <UserPosts />
             </div>
           )}
@@ -161,4 +208,4 @@ function ProfilePage() {
   );
 }
 
-export default ProfilePage
+export default ProfilePage;

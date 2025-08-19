@@ -3,7 +3,7 @@ import { axiosInstance } from "../lib/axios";
 import { motion } from "framer-motion";
 import PostCard from "./PostCard";
 
-const favorites = () => {
+const Favorites = () => {
     const [posts, setPosts] = useState([]);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
@@ -15,7 +15,7 @@ const favorites = () => {
                 setPosts(res.data.posts || res.data);
             } catch (err) {
                 console.error(err);
-                setError(err.response?.data?.message || "Failed to fetch posts.");
+                setError(err.response?.data?.message || "Failed to fetch favorite posts.");
             } finally {
                 setLoading(false);
             }
@@ -42,34 +42,54 @@ const favorites = () => {
         setPosts(prevPosts => prevPosts.filter(post => post._id !== postId && post.id !== postId));
     };
 
+    const handleRemoveFromFavorites = (postId) => {
+        setPosts(prevPosts => prevPosts.filter(post => post._id !== postId && post.id !== postId));
+    };
+
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-40">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-white normal-loading-spinner">
-                    Loading<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
-                </div>
+            <div className="text-white text-center my-5 fs-5 normal-loading-spinner">
+                Loading Favorites<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
             </div>
         );
     }
 
-    if (error) return <div className="alert alert-warning">{error}</div>;
-    if (posts.length === 0) return <p className="text-center text-white">No posts to show.</p>;
+    if (error) {
+        return (
+            <div className="alert alert-warning text-start">
+                {error}
+            </div>
+        );
+    }
+
+    if (posts.length === 0) {
+        return (
+            <div className="text-white text-center my-5 fs-5">
+                No favorite posts to show.
+            </div>
+        );
+    }
 
     return (
-        <div className="my-3">
+        <div className="container my-4">
             {posts.map((post, index) => (
                 <motion.div
-                    key={post._id || index}
+                    key={post._id || post.id || index}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
+                    className="mb-3"
+                    style={{ textAlign: 'left' }}
                 >
                     <PostCard
                         post={post}
-                        isUserPost={true}
+                        isUserPost={false}
                         onLikeUpdate={handleLikeUpdate}
                         onDeletePost={handleDeletePost}
+                        onRemoveFromFavorites={handleRemoveFromFavorites}
                         disableNavigation={true}
+                        alignLeft={true}
+                        showAsFavorite={true}
                     />
                 </motion.div>
             ))}
@@ -77,4 +97,4 @@ const favorites = () => {
     );
 };
 
-export default favorites;
+export default Favorites;
