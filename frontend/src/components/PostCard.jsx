@@ -16,7 +16,7 @@ import { axiosInstance } from "../lib/axios";
 import useAuthStore from "../store/authStore";
 import ShareButton from "./ShareButton";
 import toast from "react-hot-toast";
-import "../styles/FavoriteAnimation.css"; // ✅ CSS for heart animation
+import "../styles/FavoriteAnimation.css";
 
 const PostCard = ({
   post,
@@ -68,7 +68,8 @@ const PostCard = ({
 
   // Favorite state
   const [isFavorited, setIsFavorited] = useState(post.isFavorited || false);
-  const [burstHearts, setBurstHearts] = useState([]); // for animation
+  const [burstHearts, setBurstHearts] = useState([]);
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
 
   useEffect(() => {
     setCurrentMediaIndex(0);
@@ -90,7 +91,6 @@ const PostCard = ({
     navigate(authorId === currentUserId ? "/profile" : `/profile/${authorId}`);
   };
 
-  // Navigate to videos page with category filter
   const handleCategoryClick = (category) => {
     navigate(`/videos?category=${category}`);
   };
@@ -127,7 +127,6 @@ const PostCard = ({
     }
   };
 
-  // ✅ Report functionality
   const handleReportClick = () => {
     if (isUserPost) {
       toast.error("You cannot report your own post");
@@ -136,7 +135,6 @@ const PostCard = ({
     setShowReportModal(true);
   };
 
-  // ✅ Fixed report submission to match backend endpoint
   const handleReportSubmit = async () => {
     if (!reportReason.trim()) {
       toast.error("Please select or enter a reason for reporting");
@@ -146,9 +144,8 @@ const PostCard = ({
     setReportSubmitting(true);
 
     try {
-      // ✅ Direct API call to match backend endpoint structure
       const response = await axiosInstance.post(`/posts/report/${postId}`, {
-        reason: reportReason.trim() // ✅ Send as 'reason' to match backend
+        reason: reportReason.trim()
       });
 
       if (response.data.success) {
@@ -156,7 +153,6 @@ const PostCard = ({
         setShowReportModal(false);
         setReportReason("");
         
-        // ✅ Call parent callback if provided
         if (onReportPost) {
           onReportPost(postId, reportReason);
         }
@@ -166,7 +162,6 @@ const PostCard = ({
     } catch (error) {
       console.error("Report submission error:", error);
       
-      // ✅ Handle specific error responses
       if (error.response?.data?.message) {
         toast.error(error.response.data.message);
       } else if (error.response?.status === 400) {
@@ -180,7 +175,7 @@ const PostCard = ({
   };
 
   const handleReportModalClose = () => {
-    if (reportSubmitting) return; // Prevent closing while submitting
+    if (reportSubmitting) return;
     setShowReportModal(false);
     setReportReason("");
   };
@@ -189,12 +184,13 @@ const PostCard = ({
     setReportReason(e.target.value);
   };
 
-  // ✅ Favorite click handler with API integration & animation
   const handleFavoriteClick = async () => {
+    if (isFavoriteLoading) return;
+
     const newState = !isFavorited;
+    setIsFavoriteLoading(true);
     setIsFavorited(newState); // Optimistic UI update
 
-    // Burst animation only when adding favorite
     if (newState) {
       const newHearts = Array.from({ length: 6 }).map(() => ({
         id: Math.random(),
@@ -206,18 +202,30 @@ const PostCard = ({
     }
 
     try {
-      if (newState) {
-        await axiosInstance.post(`/posts/favorites/add/${postId}`);
-      } else {
-        await axiosInstance.delete(`/posts/favorites/remove/${postId}`);
+      const response = await axiosInstance[newState ? 'post' : 'delete'](
+        `/posts/favorites/${newState ? 'add' : 'remove'}/${postId}`
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to update favorite status");
       }
+
+      setIsFavorited(newState);
+      toast.success(newState ? "Added to favorites" : "Removed from favorites");
     } catch (error) {
       console.error("Favorite toggle failed", error);
-      setIsFavorited(!newState); // rollback on error
+      setIsFavorited(!newState); // Rollback on error
+      const errorMessage = error.response?.data?.message || error.message || "Failed to update favorite status";
+      if (error.response?.status === 400 && errorMessage.includes("already in favorites")) {
+        toast.error("Post is already in favorites");
+      } else {
+        toast.error(errorMessage);
+      }
+    } finally {
+      setIsFavoriteLoading(false);
     }
   };
 
-  // Helper function to get category badge class
   const getCategoryBadgeClass = (category) => {
     const badgeClasses = {
       'Music': 'bg-purple text-white',
@@ -241,7 +249,6 @@ const PostCard = ({
     return isVideo ? (
       <div key={idx} className="position-relative">
         <video src={url} controls className="w-100" style={mediaStyles} />
-        {/* Video category badge */}
         {post.category && (
           <div className="position-absolute top-0 end-0 m-2">
             <span 
@@ -262,7 +269,6 @@ const PostCard = ({
   return (
     <div className="container px-0">
       <div className="card bg-white mb-4 shadow-sm rounded-4 mx-auto">
-        {/* Header */}
         <div className="card-header bg-white d-flex justify-content-between p-3 rounded-top-4">
           <div
             className="d-flex align-items-center gap-3"
@@ -284,7 +290,6 @@ const PostCard = ({
                 <small className="text-muted">
                   {post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}
                 </small>
-                {/* Show category for video posts in header */}
                 {post.mediaType === 'video' && post.category && (
                   <span 
                     className={`badge ${getCategoryBadgeClass(post.category)} badge-sm cursor-pointer`}
@@ -299,9 +304,7 @@ const PostCard = ({
             </div>
           </div>
           
-          {/* Action buttons */}
           <div className="d-flex align-items-center gap-2">
-            {/* Report button - only show for other users' posts */}
             {!isUserPost && (
               <button
                 className="btn btn-sm btn-outline-secondary"
@@ -319,16 +322,13 @@ const PostCard = ({
               </button>
             )}
             
-            {/* Post dropdown for user's own posts */}
             {isUserPost && <PostDropdown postId={postId} onDelete={handleDeletePost} />}
           </div>
         </div>
 
-        {/* Body */}
         <div className="card-body p-4">
           {post.content && <p className="mb-3">{post.content}</p>}
           
-          {/* Location */}
           {post.location && (
             <div className="mb-3">
               <small className="text-muted">
@@ -341,7 +341,6 @@ const PostCard = ({
             <div className="text-center">{renderMedia(mediaArray[currentMediaIndex], currentMediaIndex)}</div>
           )}
           
-          {/* Video category section (for better visibility) */}
           {post.mediaType === 'video' && post.category && (
             <div className="mt-3 d-flex align-items-center justify-content-between">
               <div 
@@ -360,10 +359,8 @@ const PostCard = ({
           )}
         </div>
 
-        {/* Footer */}
         <div className="card-footer px-4 bg-white d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center gap-3">
-            {/* Like */}
             <PostLikeButton
               postId={postId}
               initialIsLiked={localLikeData.isLiked}
@@ -377,11 +374,11 @@ const PostCard = ({
               style={{ cursor: "pointer" }}
             />
 
-            {/* ✅ Favorite Button */}
             <div className="favorite-container" onClick={handleFavoriteClick}>
               <FaHeart
                 className={`favorite-icon ${isFavorited ? "favorited" : ""}`}
                 title={isFavorited ? "Remove from favorites" : "Add to favorites"}
+                style={{ opacity: isFavoriteLoading ? 0.5 : 1 }}
               />
               {burstHearts.map((h) => (
                 <span
@@ -398,13 +395,12 @@ const PostCard = ({
             </div>
           </div>
 
-          {/* Comments & Share */}
           <div className="d-flex align-items-center gap-2">
             <button
               className="btn btn-light"
               onClick={() => setShowComments((prev) => !prev)}
             >
-              <FaCommentAlt />  comments
+              <FaCommentAlt /> comments
             </button>
             <ShareButton postId={postId} />
           </div>
@@ -412,7 +408,6 @@ const PostCard = ({
 
         {showComments && <PostComment postId={postId} />}
         
-        {/* Likes Popup */}
         <LikesPopup
           show={showLikesPopup}
           onClose={() => setShowLikesPopup(false)}
@@ -420,7 +415,6 @@ const PostCard = ({
           loading={loadingLikes}
         />
 
-        {/* ✅ Report Modal */}
         {showReportModal && (
           <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
             <div className="modal-dialog modal-dialog-centered">
@@ -446,7 +440,6 @@ const PostCard = ({
                   <div className="mb-3">
                     <label className="form-label">Reason for reporting:</label>
                     
-                    {/* Predefined reasons */}
                     {reportReasons.map((reason) => (
                       <div key={reason} className="form-check">
                         <input
@@ -466,7 +459,6 @@ const PostCard = ({
                     ))}
                   </div>
 
-                  {/* Custom reason input */}
                   <div className="mb-3">
                     <label className="form-label">Or specify your reason:</label>
                     <textarea
