@@ -418,6 +418,56 @@ const PostService = {
             console.error('Error finding reported posts:', error);
             throw error;
         }
+    },
+
+    // updated to create posts for pages
+    // Create post for page
+    async createPagePost(pageId, postData) {
+        try {
+            postData.author = pageId; // Page ID as author
+            postData.authorType = 'page'; // Distinguish from user posts
+            postData.createdAt = new Date().toISOString();
+
+            const docRef = await postCollection.add(postData);
+            return this._createPostSafely(docRef.id, postData);
+        } catch (error) {
+            console.error('Error creating page post:', error);
+            throw error;
+        }
+    },
+
+    // Find posts by page ID
+    async findByPageId(pageId) {
+        try {
+            const postRef = await postCollection
+                    .where('author', '==', pageId)
+                    .where('authorType', '==', 'page')
+                    .get();
+            
+            if (postRef.empty) {
+                return [];
+            }
+            
+            const posts = [];
+            postRef.docs.forEach(doc => {
+                const post = this._createPostSafely(doc.id, doc.data());
+                if (post) {
+                    posts.push(post);
+                }
+            });
+            
+            // Sort in memory
+            posts.sort((a, b) => {
+                const dateA = new Date(a.createdAt || 0);
+                const dateB = new Date(b.createdAt || 0);
+                return dateB - dateA;
+            });
+            
+            return posts;
+        } catch (error) {
+            console.error('Error finding posts by page ID:', error);
+            throw error;
+        }
     }
 };
 
