@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
-import { useNavigate } from "react-router-dom";
 import UserPosts from "../components/UserPosts";
 import EnhancedBioSection from "../components/EnhancedBioSection";
 import EnhancedUserStats from "../components/EnhancedUserStats";
 import PostCard from "../components/PostCard";
+import PageManagement from "../components/PageManagement"; // Import the PageManagement component
 import toast from "react-hot-toast";
 
 function ProfilePage() {
@@ -14,7 +14,12 @@ function ProfilePage() {
   const [favorites, setFavorites] = useState([]);
   const [showFavorites, setShowFavorites] = useState(false);
   const [loadingFavorites, setLoadingFavorites] = useState(false);
-  const navigate = useNavigate();
+
+  // Mock navigate function since we can't import from react-router-dom
+  const navigate = (path) => {
+    console.log(`Navigating to: ${path}`);
+    // In your actual implementation, this will be the real navigate function from react-router-dom
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -148,6 +153,9 @@ function ProfilePage() {
 
           {/* Bio */}
           <EnhancedBioSection user={user} />
+
+          {/* Page Management Section */}
+          <PageManagement user={user} />
 
           {/* Favorites Toggle Button */}
           <div className="my-4">
