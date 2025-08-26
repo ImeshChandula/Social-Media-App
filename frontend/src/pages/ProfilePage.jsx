@@ -1,3 +1,4 @@
+// ProfilePage.jsx
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
@@ -5,7 +6,8 @@ import UserPosts from "../components/UserPosts";
 import EnhancedBioSection from "../components/EnhancedBioSection";
 import EnhancedUserStats from "../components/EnhancedUserStats";
 import PostCard from "../components/PostCard";
-import PageManagement from "../components/PageManagement"; // Import the PageManagement component
+import PageManagement from "../components/PageManagement";
+import DiscoverPages from "../components/DiscoverPages"; // New component for discovering pages
 import toast from "react-hot-toast";
 
 function ProfilePage() {
@@ -15,10 +17,10 @@ function ProfilePage() {
   const [showFavorites, setShowFavorites] = useState(false);
   const [loadingFavorites, setLoadingFavorites] = useState(false);
 
-  // Mock navigate function since we can't import from react-router-dom
+  // Mock navigate function (replace with actual from react-router-dom)
   const navigate = (path) => {
     console.log(`Navigating to: ${path}`);
-    // In your actual implementation, this will be the real navigate function from react-router-dom
+    // In actual implementation: useNavigate() from react-router-dom
   };
 
   useEffect(() => {
@@ -40,7 +42,6 @@ function ProfilePage() {
   const handleCreatePost = () => navigate("/create-post");
   const handleCreateStory = () => navigate("/create-story");
 
-  // Fetch favorite posts
   const fetchFavorites = async () => {
     try {
       setLoadingFavorites(true);
@@ -63,22 +64,16 @@ function ProfilePage() {
     setShowFavorites(!showFavorites);
   };
 
-  // Handle like updates for favorites
   const handleLikeUpdate = (postId, newLikeCount, newIsLiked) => {
     setFavorites(prevFavorites =>
       prevFavorites.map(post =>
         post._id === postId || post.id === postId
-          ? {
-            ...post,
-            likeCount: newLikeCount,
-            isLiked: newIsLiked
-          }
+          ? { ...post, likeCount: newLikeCount, isLiked: newIsLiked }
           : post
       )
     );
   };
 
-  // Handle delete post from favorites
   const handleDeletePost = (postId) => {
     setFavorites(prevFavorites => 
       prevFavorites.filter(post => post._id !== postId && post.id !== postId)
@@ -87,13 +82,13 @@ function ProfilePage() {
 
   return (
     <motion.div
-      className="container text-center py-5 mt-5"
+      className="container text-center py-5 mt-5 bg-light"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       {loading ? (
-        <p className="text-white-50 normal-loading-spinner my-5">
+        <p className="text-muted normal-loading-spinner my-5">
           Loading<span className="dot-flash">.</span>
           <span className="dot-flash">.</span>
           <span className="dot-flash">.</span>
@@ -111,7 +106,7 @@ function ProfilePage() {
             <motion.img
               src={user?.profilePicture}
               alt="Profile"
-              className="rounded-circle border border-white shadow"
+              className="rounded-circle border border-secondary shadow"
               style={{
                 width: "120px",
                 height: "120px",
@@ -126,17 +121,17 @@ function ProfilePage() {
 
           {/* User Info */}
           <div className="mt-5 py-3">
-            <h4 className="fw-bold">
+            <h4 className="fw-bold text-dark">
               {user?.firstName && user?.lastName
                 ? `${user.firstName} ${user.lastName}`
                 : "Unnamed User"}
             </h4>
-            <p className="text-white-50 mb-3">{user?.email}</p>
+            <p className="text-muted mb-3">{user?.email}</p>
             <div className="d-flex justify-content-center flex-wrap gap-2">
-              <button className="btn btn-success" onClick={handleEditProfile}>
+              <button className="btn btn-primary" onClick={handleEditProfile}>
                 Edit Profile
               </button>
-              <button className="btn btn-success" onClick={handleCreatePost}>
+              <button className="btn btn-primary" onClick={handleCreatePost}>
                 Create Post
               </button>
               <button className="btn btn-secondary" onClick={handleCreateStory}>
@@ -157,6 +152,9 @@ function ProfilePage() {
           {/* Page Management Section */}
           <PageManagement user={user} />
 
+          {/* Discover Pages Section */}
+          <DiscoverPages />
+
           {/* Favorites Toggle Button */}
           <div className="my-4">
             <button
@@ -171,7 +169,7 @@ function ProfilePage() {
           {showFavorites ? (
             loadingFavorites ? (
               <div className="text-center my-4">
-                <div className="text-white normal-loading-spinner">
+                <div className="text-muted normal-loading-spinner">
                   Loading favorites<span className="dot-flash">.</span>
                   <span className="dot-flash">.</span>
                   <span className="dot-flash">.</span>
