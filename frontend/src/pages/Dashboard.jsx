@@ -11,6 +11,7 @@ import Mail from "./Mail";
 import Tickets from "./Tickets";
 import ManageMarketplace from "./ManageMarketplace";
 import ActivityManagement from "../components/ActivityManagement";
+import PageManagement from "../components/PageManagementDash";
 
 
 const Dashboard = () => {
@@ -63,6 +64,7 @@ const Dashboard = () => {
                 <Route path="/tickets" element={<Tickets />} />
                 <Route path="/manage-marketplace" element={<ManageMarketplace />} />
                 <Route path="/activitymanagement" element={<ActivityManagement/>} />
+                <Route path="/pagemanagement" element={<PageManagement/>} />
             </Routes>
           </div>
         </div>

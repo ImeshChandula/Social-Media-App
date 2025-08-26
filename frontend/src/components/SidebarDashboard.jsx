@@ -3,11 +3,12 @@ import { NavLink } from "react-router-dom";
 import { FaFacebookF, FaBars, FaTimes, FaSignOutAlt, FaFlag } from "react-icons/fa";
 import { FaUsersGear } from "react-icons/fa6";
 import { IoMdArrowRoundBack } from "react-icons/io";
-import { BsFileEarmarkPostFill, BsActivity } from "react-icons/bs"; // Add BsActivity here
+import { BsFileEarmarkPostFill, BsActivity } from "react-icons/bs";
 import { TbCategoryFilled } from "react-icons/tb";
 import { FaFacebookMessenger } from "react-icons/fa6";
 import { IoTicketSharp } from "react-icons/io5";
 import { SiMarketo } from "react-icons/si";
+import { MdPages } from "react-icons/md"; // Add this import
 import styles from "../styles/DashboardStyle";
 import useAuthStore from "../store/authStore";
 
@@ -18,8 +19,9 @@ const SidebarDashboard = ({ collapsed, setCollapsed }) => {
 const shortcuts = [
     ...(authUser.role === "super_admin" ? [
       { name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> },
-      { name: "Activity Management", path: "/dashboard/activitymanagement", icon: <BsActivity /> } // Fixed this line
+      { name: "Activity Management", path: "/dashboard/activitymanagement", icon: <BsActivity /> }
     ] : []),
+    { name: "Page Management", path: "/dashboard/pagemanagement", icon: <MdPages /> },
     { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
     { name: "Manage Categories", path: "/dashboard/job-category", icon: <TbCategoryFilled /> },
     { name: "Manage Marketplace", path: "/dashboard/manage-marketplace", icon: <SiMarketo /> },
@@ -74,8 +76,15 @@ const shortcuts = [
                     const isUsersPage = window.location.pathname.includes('/dashboard/users');
                     const isUsersLink = to === '/dashboard/users';
                     
+                    // Check if we're on the pagemanagement page and this is the pagemanagement link
+                    const isPageManagementPage = window.location.pathname.includes('/dashboard/pagemanagement');
+                    const isPageManagementLink = to === '/dashboard/pagemanagement';
+                    
                     // If we're on users page and this is the users link, show as active
-                    const shouldBeActive = isActive || (isUsersPage && isUsersLink);
+                    // If we're on pagemanagement page and this is the pagemanagement link, show as active
+                    const shouldBeActive = isActive || 
+                                         (isUsersPage && isUsersLink) || 
+                                         (isPageManagementPage && isPageManagementLink);
                     
                     return `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${
                         shouldBeActive ? "bg-dark text-white fw-bold" : "text-white"
