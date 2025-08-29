@@ -250,11 +250,66 @@ const publishPage = async (req, res) => {
     }
 };
 
+// //@desc     Get page by ID
+// const getPageById = async (req, res) => {
+//     try {
+//         const pageId = req.params.id;
+//         const currentUserId = req.user.id;
+
+//         const page = await PageService.findById(pageId);
+//         if (!page) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'Page not found'
+//             });
+//         }
+
+//         // Check if user is following this page
+//         const isFollowing = page.followers.includes(currentUserId);
+//         const isOwner = page.owner === currentUserId;
+
+//         // Get page posts
+//         const posts = await PostService.findByUserId(pageId); // Assuming posts are linked to page as author
+
+//         // Get owner information
+//         const owner = await UserService.findById(page.owner);
+
+//         const pageResponse = {
+//             ...page,
+//             isFollowing,
+//             isOwner,
+//             followersCount: page.followersCount,
+//             postsCount: posts.length,
+//             owner: owner ? {
+//                 id: owner.id,
+//                 firstName: owner.firstName,
+//                 lastName: owner.lastName,
+//                 username: owner.username,
+//                 profilePicture: owner.profilePicture
+//             } : null,
+//             posts: posts.slice(0, 10) // Return latest 10 posts
+//         };
+
+//         res.status(200).json({
+//             success: true,
+//             message: 'Page retrieved successfully',
+//             page: pageResponse
+//         });
+
+//     } catch (error) {
+//         console.error('Error getting page:', error);
+//         res.status(500).json({
+//             success: false,
+//             message: 'Server error'
+//         });
+//     }
+// };
+
 //@desc     Get page by ID
 const getPageById = async (req, res) => {
     try {
         const pageId = req.params.id;
-        const currentUserId = req.user.id;
+        const currentUserId = req.user?.id; // Use optional chaining to handle undefined req.user
 
         const page = await PageService.findById(pageId);
         if (!page) {
@@ -264,9 +319,9 @@ const getPageById = async (req, res) => {
             });
         }
 
-        // Check if user is following this page
-        const isFollowing = page.followers.includes(currentUserId);
-        const isOwner = page.owner === currentUserId;
+        // Check if user is following this page (only if user is authenticated)
+        const isFollowing = currentUserId ? page.followers.includes(currentUserId) : false;
+        const isOwner = currentUserId ? page.owner === currentUserId : false;
 
         // Get page posts
         const posts = await PostService.findByUserId(pageId); // Assuming posts are linked to page as author
@@ -304,6 +359,7 @@ const getPageById = async (req, res) => {
         });
     }
 };
+
 
 //@desc     Get current user's pages
 const getCurrentUserPages = async (req, res) => {
