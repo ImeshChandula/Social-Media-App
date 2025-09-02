@@ -7,17 +7,17 @@ const pageValidators = require('../middleware/pageValidator');
 // Valid page categories
 const VALID_PAGE_CATEGORIES = ['education', 'music', 'fashion', 'entertainment'];
 
-//@desc     Create a new page
+// Updated createPage function in pageController.js
 const createPage = async (req, res) => {
     try {
-        const { pageName, description, category, phone, email, address, username } = req.body;
+        const { pageName, description, category, phone, email, address, username, profilePicture } = req.body;
         const ownerId = req.user.id;
 
-        // Validate required fields
-        if (!pageName || !description || !category) {
+        // Validate ALL required fields
+        if (!pageName || !description || !category || !phone || !email || !address || !profilePicture) {
             return res.status(400).json({
                 success: false,
-                message: 'Page name, description, and category are required'
+                message: 'All fields are required: Page name, description, category, phone, email, address, and profile image'
             });
         }
 
@@ -40,27 +40,43 @@ const createPage = async (req, res) => {
             }
         }
 
-        // Create page data
+        // Handle profile picture upload
+        let profilePictureUrl = '';
+        if (profilePicture) {
+            try {
+                profilePictureUrl = await uploadImage(profilePicture);
+            } catch (error) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Failed to upload profile picture'
+                });
+            }
+        }
+
+        // Create page data - page starts as draft and pending approval
         const pageData = {
             pageName: pageName.trim(),
             username: username ? username.toLowerCase().trim() : '',
             description: description.trim(),
             category: category.toLowerCase(),
             owner: ownerId,
-            phone: phone || '',
-            email: email || '',
-            address: address || '',
+            phone: phone.trim(),
+            email: email.trim(),
+            address: address.trim(),
+            profilePicture: profilePictureUrl,
             followers: [],
             posts: [],
-            isPublished: false, // Will be published after complete setup
-            approvalStatus: 'pending'
+            isPublished: false, // Not published until admin approval and user publishes
+            approvalStatus: 'pending', // Pending admin approval
+            submittedForApproval: true,
+            submittedAt: new Date().toISOString()
         };
 
         const newPage = await PageService.createPage(pageData);
 
         res.status(201).json({
             success: true,
-            message: 'Page created successfully',
+            message: 'Page submitted for admin approval successfully',
             page: newPage
         });
 
@@ -72,6 +88,7 @@ const createPage = async (req, res) => {
         });
     }
 };
+
 
 //@desc     Update page details
 const updatePage = async (req, res) => {
@@ -202,7 +219,7 @@ const updatePage = async (req, res) => {
     }
 };
 
-//@desc     Complete page setup and publish
+// Update the publishPage function to check approval status
 const publishPage = async (req, res) => {
     try {
         const pageId = req.params.id;
@@ -223,8 +240,16 @@ const publishPage = async (req, res) => {
             });
         }
 
+        // Check if page is approved by admin
+        if (page.approvalStatus !== 'approved') {
+            return res.status(400).json({
+                success: false,
+                message: 'Page must be approved by admin before publishing'
+            });
+        }
+
         // Validate that all required fields are filled
-        if (!page.pageName || !page.description || !page.category) {
+        if (!page.pageName || !page.description || !page.category || !page.phone || !page.email || !page.address || !page.profilePicture) {
             return res.status(400).json({
                 success: false,
                 message: 'Please complete all required fields before publishing'
@@ -232,7 +257,8 @@ const publishPage = async (req, res) => {
         }
 
         const updatedPage = await PageService.updateById(pageId, {
-            isPublished: true
+            isPublished: true,
+            publishedAt: new Date().toISOString()
         });
 
         res.status(200).json({
@@ -248,62 +274,7 @@ const publishPage = async (req, res) => {
             message: 'Server error'
         });
     }
-};
-
-// //@desc     Get page by ID
-// const getPageById = async (req, res) => {
-//     try {
-//         const pageId = req.params.id;
-//         const currentUserId = req.user.id;
-
-//         const page = await PageService.findById(pageId);
-//         if (!page) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: 'Page not found'
-//             });
-//         }
-
-//         // Check if user is following this page
-//         const isFollowing = page.followers.includes(currentUserId);
-//         const isOwner = page.owner === currentUserId;
-
-//         // Get page posts
-//         const posts = await PostService.findByUserId(pageId); // Assuming posts are linked to page as author
-
-//         // Get owner information
-//         const owner = await UserService.findById(page.owner);
-
-//         const pageResponse = {
-//             ...page,
-//             isFollowing,
-//             isOwner,
-//             followersCount: page.followersCount,
-//             postsCount: posts.length,
-//             owner: owner ? {
-//                 id: owner.id,
-//                 firstName: owner.firstName,
-//                 lastName: owner.lastName,
-//                 username: owner.username,
-//                 profilePicture: owner.profilePicture
-//             } : null,
-//             posts: posts.slice(0, 10) // Return latest 10 posts
-//         };
-
-//         res.status(200).json({
-//             success: true,
-//             message: 'Page retrieved successfully',
-//             page: pageResponse
-//         });
-
-//     } catch (error) {
-//         console.error('Error getting page:', error);
-//         res.status(500).json({
-//             success: false,
-//             message: 'Server error'
-//         });
-//     }
-// };
+}; 
 
 //@desc     Get page by ID
 const getPageById = async (req, res) => {

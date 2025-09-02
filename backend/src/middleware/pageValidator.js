@@ -7,7 +7,7 @@ const pageValidators = {
       'string.max': 'Page name cannot exceed 100 characters',
       'any.required': 'Page name is required'
     }),
-    username: Joi.string().min(3).max(30).alphanum().optional().messages({
+    username: Joi.string().min(3).max(30).alphanum().optional().allow('').messages({
       'string.min': 'Username must be at least 3 characters',
       'string.max': 'Username cannot exceed 30 characters',
       'string.alphanum': 'Username must contain only alphanumeric characters'
@@ -21,16 +21,29 @@ const pageValidators = {
       'any.only': 'Invalid category selected',
       'any.required': 'Category is required'
     }),
-    phone: Joi.string().pattern(/^[\+]?[1-9][\d]{0,15}$/).optional().allow('').messages({
-      'string.pattern.base': 'Invalid phone number format'
+    // All contact fields are now required
+    phone: Joi.string().pattern(/^[\+]?[1-9][\d]{0,15}$/).required().messages({
+      'string.pattern.base': 'Invalid phone number format',
+      'any.required': 'Phone number is required'
     }),
-    email: Joi.string().email().optional().allow(''),
-    address: Joi.string().max(200).optional().allow('')
+    email: Joi.string().email().required().messages({
+      'string.email': 'Invalid email format',
+      'any.required': 'Email address is required'
+    }),
+    address: Joi.string().min(5).max(200).required().messages({
+      'string.min': 'Address must be at least 5 characters',
+      'string.max': 'Address cannot exceed 200 characters',
+      'any.required': 'Business address is required'
+    }),
+    // Profile picture is now required
+    profilePicture: Joi.string().required().messages({
+      'any.required': 'Profile picture is required'
+    })
   }),
 
   updatePage: Joi.object({
     pageName: Joi.string().min(3).max(100).optional(),
-    username: Joi.string().min(3).max(30).alphanum().optional(),
+    username: Joi.string().min(3).max(30).alphanum().optional().allow(''),
     description: Joi.string().min(10).max(500).optional(),
     category: Joi.string().valid('education', 'music', 'fashion', 'entertainment').optional(),
     coverPhoto: Joi.string().optional().allow(''),
@@ -114,4 +127,4 @@ module.exports = {
     validatePageQuery,
     validateAdminReview,
     validatePageBan
-}; 
+};
