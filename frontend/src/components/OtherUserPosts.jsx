@@ -66,3 +66,5 @@ const OtherUserPosts = ({ userId, type = "all" }) => {
 };
 
 export default OtherUserPosts;
+
+

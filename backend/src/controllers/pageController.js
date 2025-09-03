@@ -7,22 +7,40 @@ const pageValidators = require('../middleware/pageValidator');
 // Valid page categories
 const VALID_PAGE_CATEGORIES = ['education', 'music', 'fashion', 'entertainment'];
 
-// Updated createPage function in pageController.js
+// createPage function
 const createPage = async (req, res) => {
     try {
+        console.log('=== CREATE PAGE REQUEST ===');
+        console.log('Request body keys:', Object.keys(req.body));
+        console.log('Request body:', {
+            ...req.body,
+            profilePicture: req.body.profilePicture ? 'Base64 data present (length: ' + req.body.profilePicture.length + ')' : 'MISSING'
+        });
+        
         const { pageName, description, category, phone, email, address, username, profilePicture } = req.body;
         const ownerId = req.user.id;
 
-        // Validate ALL required fields
-        if (!pageName || !description || !category || !phone || !email || !address || !profilePicture) {
+        // Validate ALL required fields with detailed logging
+        const missingFields = [];
+        if (!pageName) missingFields.push('pageName');
+        if (!description) missingFields.push('description');
+        if (!category) missingFields.push('category');
+        if (!phone) missingFields.push('phone');
+        if (!email) missingFields.push('email');
+        if (!address) missingFields.push('address');
+        if (!profilePicture) missingFields.push('profilePicture');
+
+        if (missingFields.length > 0) {
+            console.log('Missing required fields:', missingFields);
             return res.status(400).json({
                 success: false,
-                message: 'All fields are required: Page name, description, category, phone, email, address, and profile image'
+                message: `Missing required fields: ${missingFields.join(', ')}. All fields are required: Page name, description, category, phone, email, address, and profile image`
             });
         }
 
         // Validate category
         if (!VALID_PAGE_CATEGORIES.includes(category.toLowerCase())) {
+            console.log('Invalid category:', category);
             return res.status(400).json({
                 success: false,
                 message: 'Invalid category. Valid categories are: ' + VALID_PAGE_CATEGORIES.join(', ')
@@ -33,6 +51,7 @@ const createPage = async (req, res) => {
         if (username) {
             const isAvailable = await PageService.isUsernameAvailable(username);
             if (!isAvailable) {
+                console.log('Username not available:', username);
                 return res.status(400).json({
                     success: false,
                     message: 'Username is already taken'
@@ -44,11 +63,14 @@ const createPage = async (req, res) => {
         let profilePictureUrl = '';
         if (profilePicture) {
             try {
+                console.log('Uploading profile picture...');
                 profilePictureUrl = await uploadImage(profilePicture);
+                console.log('Profile picture uploaded successfully:', profilePictureUrl);
             } catch (error) {
+                console.error('Profile picture upload failed:', error);
                 return res.status(400).json({
                     success: false,
-                    message: 'Failed to upload profile picture'
+                    message: 'Failed to upload profile picture: ' + error.message
                 });
             }
         }
@@ -72,7 +94,13 @@ const createPage = async (req, res) => {
             submittedAt: new Date().toISOString()
         };
 
+        console.log('Creating page with data:', {
+            ...pageData,
+            profilePicture: pageData.profilePicture ? 'URL present' : 'MISSING'
+        });
+
         const newPage = await PageService.createPage(pageData);
+        console.log('Page created successfully:', newPage.id);
 
         res.status(201).json({
             success: true,
@@ -82,13 +110,13 @@ const createPage = async (req, res) => {
 
     } catch (error) {
         console.error('Error creating page:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({
             success: false,
-            message: 'Server error'
+            message: 'Server error: ' + error.message
         });
     }
 };
-
 
 //@desc     Update page details
 const updatePage = async (req, res) => {
@@ -276,7 +304,7 @@ const publishPage = async (req, res) => {
     }
 }; 
 
-//@desc     Get page by ID
+//@desc     Get page by ID (Enhanced for web view)
 const getPageById = async (req, res) => {
     try {
         const pageId = req.params.id;
@@ -290,22 +318,49 @@ const getPageById = async (req, res) => {
             });
         }
 
+        // Only show published pages to non-owners
+        if (!page.isPublished && page.owner !== currentUserId) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
         // Check if user is following this page (only if user is authenticated)
         const isFollowing = currentUserId ? page.followers.includes(currentUserId) : false;
         const isOwner = currentUserId ? page.owner === currentUserId : false;
 
-        // Get page posts
-        const posts = await PostService.findByUserId(pageId); // Assuming posts are linked to page as author
+        // Get page posts (you can implement this later)
+        let posts = [];
+        let postsCount = 0;
+        try {
+            posts = await PostService.findByUserId(pageId); // Assuming posts are linked to page as author
+            postsCount = posts.length;
+        } catch (error) {
+            console.log('Could not fetch page posts:', error);
+        }
 
         // Get owner information
         const owner = await UserService.findById(page.owner);
 
         const pageResponse = {
-            ...page,
+            id: page.id,
+            pageName: page.pageName,
+            username: page.username,
+            description: page.description,
+            category: page.category,
+            profilePicture: page.profilePicture,
+            coverPhoto: page.coverPhoto,
+            phone: page.phone,
+            email: page.email,
+            address: page.address,
             isFollowing,
             isOwner,
             followersCount: page.followersCount,
-            postsCount: posts.length,
+            postsCount: postsCount,
+            isPublished: page.isPublished,
+            isVerified: page.isVerified || false,
+            createdAt: page.createdAt,
             owner: owner ? {
                 id: owner.id,
                 firstName: owner.firstName,
@@ -313,7 +368,7 @@ const getPageById = async (req, res) => {
                 username: owner.username,
                 profilePicture: owner.profilePicture
             } : null,
-            posts: posts.slice(0, 10) // Return latest 10 posts
+            recentPosts: posts.slice(0, 10) // Return latest 10 posts
         };
 
         res.status(200).json({
@@ -480,6 +535,87 @@ const unfollowPage = async (req, res) => {
         });
     }
 };
+
+//@desc     Update page profile (profile picture, cover photo, description)
+const updatePageProfile = async (req, res) => {
+    try {
+        const pageId = req.params.id;
+        const currentUserId = req.user.id;
+        const { description, profilePicture, coverPhoto } = req.body;
+
+        // Find the page
+        const page = await PageService.findById(pageId);
+        if (!page) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Check if user is the owner
+        if (page.owner !== currentUserId) {
+            return res.status(403).json({
+                success: false,
+                message: 'You are not authorized to update this page profile'
+            });
+        }
+
+        const updateData = {};
+
+        // Update description
+        if (description !== undefined) {
+            if (!description.trim()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Description cannot be empty'
+                });
+            }
+            updateData.description = description.trim();
+        }
+
+        // Handle profile picture upload
+        if (profilePicture) {
+            try {
+                const imageUrl = await uploadImage(profilePicture);
+                updateData.profilePicture = imageUrl;
+            } catch (error) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Failed to upload profile picture'
+                });
+            }
+        }
+
+        // Handle cover photo upload
+        if (coverPhoto) {
+            try {
+                const imageUrl = await uploadImage(coverPhoto);
+                updateData.coverPhoto = imageUrl;
+            } catch (error) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Failed to upload cover photo'
+                });
+            }
+        }
+
+        const updatedPage = await PageService.updateById(pageId, updateData);
+
+        res.status(200).json({
+            success: true,
+            message: 'Page profile updated successfully',
+            page: updatedPage
+        });
+
+    } catch (error) {
+        console.error('Error updating page profile:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
 
 //@desc     Delete page
 const deletePage = async (req, res) => {
@@ -903,6 +1039,7 @@ module.exports = {
     getAllPages,
     followPage,
     unfollowPage,
+    updatePageProfile,
     deletePage,
     getPageCategories,
     getPendingPages,

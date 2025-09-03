@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pageController = require('../controllers/pageController');
 const { authenticateUser, authorizeRoles, checkAccountStatus } = require('../middleware/authMiddleware');
-const { validatePage, validatePageQuery, validateAdminReview, validatePageBan } = require('../middleware/pageValidator');
+const { validatePage, validatePageQuery, validateAdminReview, validatePageBan, validatePageProfile } = require('../middleware/pageValidator');
 
 // Page management routes
 
@@ -20,6 +20,11 @@ router.put('/:id', authenticateUser, checkAccountStatus, validatePage, pageContr
 // @desc   Publish a page
 // @access Private (only authenticated users can publish their own pages)
 router.put('/:id/publish', authenticateUser, checkAccountStatus, pageController.publishPage);
+
+// @route  PUT /api/pages/:id/profile
+// @desc   Update page profile (profile picture, cover photo, description only)
+// @access Private (only authenticated users can update their own page profile)
+router.put('/:id/profile', authenticateUser, checkAccountStatus, validatePageProfile, pageController.updatePageProfile);
 
 // @route  GET /api/pages/my-pages
 // @desc   Get all pages created by the current user

@@ -13,6 +13,7 @@ import useAuthStore from "./store/authStore";
 import Support from "./routes/Support";
 import Request from "./routes/Request";
 import EditMarketPlaceItem from "./components/EditMarketPlaceItem";
+import PageWebView from "./pages/PageWebView";
 
 const App = () => {
 
@@ -113,6 +114,25 @@ const App = () => {
             }
           />
 
+          {/* FIXED: Move PageWebView route BEFORE the catch-all route */}
+          <Route
+            path="/page/:id"
+            element={
+              authUser && authUser.accountStatus === "active" ? (
+                <PageWebView />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+
+          <Route
+            path="/dashboard/*"
+            element={authUser && (authUser.role === "admin" || authUser.role === "super_admin") && authUser.accountStatus === "active" ?
+              <Dashboard /> : <Navigate to="/login" />}
+          />
+
+          {/* Catch-all route should be LAST */}
           <Route
             path="/*"
             element={
@@ -126,12 +146,6 @@ const App = () => {
                 <Navigate to="/login" />
               )
             }
-          />
-
-          <Route
-            path="/dashboard/*"
-            element={authUser && (authUser.role === "admin" || authUser.role === "super_admin") && authUser.accountStatus === "active" ?
-              <Dashboard /> : <Navigate to="/login" />}
           />
 
         </Routes>

@@ -41,6 +41,15 @@ const pageValidators = {
     })
   }),
 
+  updatePageProfile: Joi.object({
+    description: Joi.string().min(10).max(500).optional().messages({
+      'string.min': 'Description must be at least 10 characters',
+      'string.max': 'Description cannot exceed 500 characters'
+  }),
+    profilePicture: Joi.string().optional().allow(''),
+    coverPhoto: Joi.string().optional().allow('')
+  }),
+
   updatePage: Joi.object({
     pageName: Joi.string().min(3).max(100).optional(),
     username: Joi.string().min(3).max(30).alphanum().optional().allow(''),
@@ -121,10 +130,22 @@ const validatePageBan = (req, res, next) => {
     next();
 };
 
+const validatePageProfile = (req, res, next) => {
+    const { error } = pageValidators.updatePageProfile.validate(req.body);
+    if (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.details[0].message
+        });
+    }
+    next();
+};
+
 module.exports = {
     pageValidators,
     validatePage,
     validatePageQuery,
     validateAdminReview,
-    validatePageBan
+    validatePageBan,
+    validatePageProfile
 };

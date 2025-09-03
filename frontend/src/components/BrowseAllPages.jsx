@@ -1,8 +1,8 @@
-// BrowseAllPages.jsx - Component to browse all pages
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const BrowseAllPages = () => {
   const [pages, setPages] = useState([]);
@@ -11,6 +11,7 @@ const BrowseAllPages = () => {
   const [categories, setCategories] = useState([]);
   const [selectedPage, setSelectedPage] = useState(null);
   const [showPageDetail, setShowPageDetail] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCategories();
@@ -71,6 +72,11 @@ const BrowseAllPages = () => {
   const handleViewPage = (page) => {
     setSelectedPage(page);
     setShowPageDetail(true);
+  };
+
+  const handleViewPageWebsite = (page) => {
+    const pageId = page?.id || page?._id;
+    navigate(`/page/${pageId}`);
   };
 
   const handleFollowPage = async (pageId) => {
@@ -243,14 +249,25 @@ const BrowseAllPages = () => {
                     {/* Action Buttons */}
                     <div className="d-flex gap-2">
                       <button
-                        className="btn btn-outline-info btn-sm flex-fill"
+                        className="btn btn-primary btn-sm flex-fill"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewPageWebsite(page);
+                        }}
+                      >
+                        <i className="fas fa-globe me-1"></i>
+                        View Page
+                      </button>
+                      
+                      <button
+                        className="btn btn-outline-info btn-sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleViewPage(page);
                         }}
                       >
-                        <i className="fas fa-eye me-1"></i>
-                        View
+                        <i className="fas fa-info me-1"></i>
+                        Details
                       </button>
                       
                       {!page.isOwner && (

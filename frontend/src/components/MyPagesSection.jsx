@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom"; // Add this import
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 
@@ -9,6 +10,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedPage, setSelectedPage] = useState(null);
+  const navigate = useNavigate(); // Add this line
 
   useEffect(() => {
     fetchUserPages();
@@ -79,6 +81,12 @@ const MyPagesSection = ({ onViewPagePosts }) => {
       console.error('Error deleting page:', err);
       toast.error(err.response?.data?.message || "Failed to delete page");
     }
+  };
+
+  // Add this new function
+  const handleViewPage = (page) => {
+    const pageId = getPageId(page);
+    navigate(`/page/${pageId}`);
   };
 
   const getStatusBadge = (page) => {
@@ -284,17 +292,29 @@ const MyPagesSection = ({ onViewPagePosts }) => {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
+                  {/* Action Buttons - UPDATED */}
                   <div className="d-flex gap-2 flex-wrap">
                     {/* View Page Button - Only for published pages */}
                     {status === 'published' && (
                       <button
                         className="btn btn-outline-info btn-sm flex-fill"
-                        onClick={() => onViewPagePosts && onViewPagePosts(page)}
-                        title="View Page"
+                        onClick={() => handleViewPage(page)}
+                        title="View Page Webpage"
                       >
-                        <i className="fas fa-eye me-1"></i>
+                        <i className="fas fa-globe me-1"></i>
                         View Page
+                      </button>
+                    )}
+                    
+                    {/* Posts Management Button - For published pages */}
+                    {status === 'published' && (
+                      <button
+                        className="btn btn-outline-secondary btn-sm flex-fill"
+                        onClick={() => onViewPagePosts && onViewPagePosts(page)}
+                        title="Manage Posts"
+                      >
+                        <i className="fas fa-edit me-1"></i>
+                        Posts
                       </button>
                     )}
                     
@@ -378,7 +398,352 @@ const MyPagesSection = ({ onViewPagePosts }) => {
   );
 };
 
-// Updated Create Page Modal Component
+// // CreatePageModal Component
+// const CreatePageModal = ({ show, onClose, onPageCreated }) => {
+//   const [formData, setFormData] = useState({
+//     pageName: "",
+//     username: "",
+//     description: "",
+//     category: "",
+//     phone: "",
+//     email: "",
+//     address: "",
+//     profilePicture: ""
+//   });
+//   const [categories, setCategories] = useState([]);
+//   const [loading, setLoading] = useState(false);
+//   const [loadingCategories, setLoadingCategories] = useState(true);
+//   const [imageFile, setImageFile] = useState(null);
+//   const [imagePreview, setImagePreview] = useState("");
+
+//   useEffect(() => {
+//     if (show) {
+//       fetchCategories();
+//       // Reset form when modal opens
+//       setFormData({
+//         pageName: "",
+//         username: "",
+//         description: "",
+//         category: "",
+//         phone: "",
+//         email: "",
+//         address: "",
+//         profilePicture: ""
+//       });
+//       setImageFile(null);
+//       setImagePreview("");
+//     }
+//   }, [show]);
+
+//   const fetchCategories = async () => {
+//     setLoadingCategories(true);
+//     try {
+//       let res;
+//       try {
+//         res = await axiosInstance.get("/pages/categories");
+//       } catch (error) {
+//         res = await axiosInstance.get("/pages/categories/list");
+//       }
+      
+//       if (res?.data?.success) {
+//         setCategories(res.data.categories || []);
+//       }
+//     } catch (err) {
+//       console.error('Error fetching categories:', err);
+//       toast.error("Failed to load categories");
+//     } finally {
+//       setLoadingCategories(false);
+//     }
+//   };
+
+//   const handleImageChange = (e) => {
+//     const file = e.target.files[0];
+//     if (file) {
+//       if (file.size > 5 * 1024 * 1024) { // 5MB limit
+//         toast.error("Image size should be less than 5MB");
+//         return;
+//       }
+
+//       setImageFile(file);
+      
+//       // Create preview
+//       const reader = new FileReader();
+//       reader.onloadend = () => {
+//         setImagePreview(reader.result);
+//         setFormData(prev => ({...prev, profilePicture: reader.result}));
+//       };
+//       reader.readAsDataURL(file);
+//     }
+//   };
+
+//   const validateForm = () => {
+//     if (!formData.pageName.trim()) {
+//       toast.error("Page name is required");
+//       return false;
+//     }
+//     if (!formData.description.trim()) {
+//       toast.error("Description is required");
+//       return false;
+//     }
+//     if (!formData.category) {
+//       toast.error("Category is required");
+//       return false;
+//     }
+//     if (!formData.phone.trim()) {
+//       toast.error("Phone number is required");
+//       return false;
+//     }
+//     if (!formData.email.trim()) {
+//       toast.error("Email address is required");
+//       return false;
+//     }
+//     if (!formData.address.trim()) {
+//       toast.error("Business address is required");
+//       return false;
+//     }
+//     if (!formData.profilePicture) {
+//       toast.error("Profile image is required");
+//       return false;
+//     }
+//     return true;
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+    
+//     if (!validateForm()) {
+//       return;
+//     }
+
+//     setLoading(true);
+//     try {
+//       let res;
+//       try {
+//         res = await axiosInstance.post("/pages", formData);
+//       } catch (error) {
+//         res = await axiosInstance.put("/pages", formData);
+//       }
+      
+//       if (res?.data?.success) {
+//         toast.success("Page submitted for admin approval successfully!");
+//         onPageCreated(res.data.page);
+//         setFormData({
+//           pageName: "",
+//           username: "",
+//           description: "",
+//           category: "",
+//           phone: "",
+//           email: "",
+//           address: "",
+//           profilePicture: ""
+//         });
+//         setImageFile(null);
+//         setImagePreview("");
+//       }
+//     } catch (err) {
+//       console.error('Error creating page:', err);
+//       toast.error(err.response?.data?.message || "Failed to create page");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   if (!show) return null;
+
+//   return (
+//     <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+//       <div className="modal-dialog modal-lg">
+//         <div className="modal-content bg-dark text-white">
+//           <div className="modal-header border-secondary">
+//             <h5 className="modal-title">
+//               <i className="fas fa-plus-circle me-2 text-success"></i>
+//               Create New Page
+//             </h5>
+//             <button className="btn-close btn-close-white" onClick={onClose}></button>
+//           </div>
+          
+//           <form onSubmit={handleSubmit}>
+//             <div className="modal-body">
+//               {loadingCategories ? (
+//                 <div className="text-center py-4">
+//                   <div className="text-white normal-loading-spinner">
+//                     Loading categories<span className="dot-flash">.</span>
+//                     <span className="dot-flash">.</span>
+//                     <span className="dot-flash">.</span>
+//                   </div>
+//                 </div>
+//               ) : (
+//                 <>
+//                   <div className="alert alert-info bg-info bg-opacity-10 border border-info border-opacity-25 mb-4">
+//                     <small>
+//                       <i className="fas fa-info-circle me-2"></i>
+//                       All fields are required. Your page will be submitted for admin approval and cannot be published until approved.
+//                     </small>
+//                   </div>
+
+//                   <div className="row g-3">
+//                     {/* Profile Image Upload */}
+//                     <div className="col-12">
+//                       <label className="form-label">
+//                         Profile Image <span className="text-danger">*</span>
+//                       </label>
+//                       <div className="row align-items-center">
+//                         <div className="col-md-8">
+//                           <input
+//                             type="file"
+//                             className="form-control bg-dark text-white border-secondary"
+//                             accept="image/*"
+//                             onChange={handleImageChange}
+//                             required
+//                           />
+//                           <small className="text-white-50">Max file size: 5MB. Supported: JPG, PNG, GIF</small>
+//                         </div>
+//                         <div className="col-md-4">
+//                           {imagePreview && (
+//                             <img
+//                               src={imagePreview}
+//                               alt="Preview"
+//                               className="rounded-circle"
+//                               style={{ width: "80px", height: "80px", objectFit: "cover" }}
+//                             />
+//                           )}
+//                         </div>
+//                       </div>
+//                     </div>
+
+//                     <div className="col-md-6">
+//                       <label className="form-label">
+//                         Page Name <span className="text-danger">*</span>
+//                       </label>
+//                       <input
+//                         type="text"
+//                         className="form-control bg-dark text-white border-secondary"
+//                         value={formData.pageName}
+//                         onChange={(e) => setFormData(prev => ({...prev, pageName: e.target.value}))}
+//                         placeholder="Enter page name"
+//                         required
+//                       />
+//                     </div>
+                    
+//                     <div className="col-md-6">
+//                       <label className="form-label">Username (Optional)</label>
+//                       <div className="input-group">
+//                         <span className="input-group-text bg-dark text-white border-secondary">@</span>
+//                         <input
+//                           type="text"
+//                           className="form-control bg-dark text-white border-secondary"
+//                           value={formData.username}
+//                           onChange={(e) => setFormData(prev => ({...prev, username: e.target.value}))}
+//                           placeholder="optional-username"
+//                         />
+//                       </div>
+//                     </div>
+
+//                     <div className="col-12">
+//                       <label className="form-label">
+//                         Description <span className="text-danger">*</span>
+//                       </label>
+//                       <textarea
+//                         className="form-control bg-dark text-white border-secondary"
+//                         rows="3"
+//                         value={formData.description}
+//                         onChange={(e) => setFormData(prev => ({...prev, description: e.target.value}))}
+//                         placeholder="Tell people what your page is about..."
+//                         required
+//                       ></textarea>
+//                     </div>
+
+//                     <div className="col-md-6">
+//                       <label className="form-label">
+//                         Category <span className="text-danger">*</span>
+//                       </label>
+//                       <select
+//                         className="form-select bg-dark text-white border-secondary"
+//                         value={formData.category}
+//                         onChange={(e) => setFormData(prev => ({...prev, category: e.target.value}))}
+//                         required
+//                       >
+//                         <option value="">Choose category</option>
+//                         {categories.map((category) => (
+//                           <option key={category} value={category}>
+//                             {category.charAt(0).toUpperCase() + category.slice(1)}
+//                           </option>
+//                         ))}
+//                       </select>
+//                     </div>
+
+//                     <div className="col-md-6">
+//                       <label className="form-label">
+//                         Phone Number <span className="text-danger">*</span>
+//                       </label>
+//                       <input
+//                         type="tel"
+//                         className="form-control bg-dark text-white border-secondary"
+//                         value={formData.phone}
+//                         onChange={(e) => setFormData(prev => ({...prev, phone: e.target.value}))}
+//                         placeholder="+1 (555) 123-4567"
+//                         required
+//                       />
+//                     </div>
+
+//                     <div className="col-md-6">
+//                       <label className="form-label">
+//                         Email Address <span className="text-danger">*</span>
+//                       </label>
+//                       <input
+//                         type="email"
+//                         className="form-control bg-dark text-white border-secondary"
+//                         value={formData.email}
+//                         onChange={(e) => setFormData(prev => ({...prev, email: e.target.value}))}
+//                         placeholder="contact@example.com"
+//                         required
+//                       />
+//                     </div>
+
+//                     <div className="col-md-6">
+//                       <label className="form-label">
+//                         Business Address <span className="text-danger">*</span>
+//                       </label>
+//                       <input
+//                         type="text"
+//                         className="form-control bg-dark text-white border-secondary"
+//                         value={formData.address}
+//                         onChange={(e) => setFormData(prev => ({...prev, address: e.target.value}))}
+//                         placeholder="123 Business Street, City, State"
+//                         required
+//                       />
+//                     </div>
+//                   </div>
+//                 </>
+//               )}
+//             </div>
+
+//             <div className="modal-footer border-secondary">
+//               <button type="button" className="btn btn-secondary" onClick={onClose}>
+//                 Cancel
+//               </button>
+//               <button type="submit" className="btn btn-success" disabled={loading}>
+//                 {loading ? (
+//                   <>
+//                     <span className="spinner-border spinner-border-sm me-2"></span>
+//                     Submitting...
+//                   </>
+//                 ) : (
+//                   <>
+//                     <i className="fas fa-paper-plane me-2"></i>
+//                     Submit for Approval
+//                   </>
+//                 )}
+//               </button>
+//             </div>
+//           </form>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// Updated CreatePageModal Component with proper profilePicture handling
 const CreatePageModal = ({ show, onClose, onPageCreated }) => {
   const [formData, setFormData] = useState({
     pageName: "",
@@ -388,7 +753,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
     phone: "",
     email: "",
     address: "",
-    profilePicture: ""
+    profilePicture: "" // Make sure this is initialized
   });
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -408,7 +773,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
         phone: "",
         email: "",
         address: "",
-        profilePicture: ""
+        profilePicture: "" // Reset this too
       });
       setImageFile(null);
       setImagePreview("");
@@ -450,6 +815,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
+        // IMPORTANT: Update formData with the base64 string
         setFormData(prev => ({...prev, profilePicture: reader.result}));
       };
       reader.readAsDataURL(file);
@@ -491,22 +857,23 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    console.log("Form data being sent:", {
+      ...formData,
+      profilePicture: formData.profilePicture ? "Base64 data present" : "Missing"
+    }); // Debug log
+    
     if (!validateForm()) {
       return;
     }
 
     setLoading(true);
     try {
-      let res;
-      try {
-        res = await axiosInstance.post("/pages", formData);
-      } catch (error) {
-        res = await axiosInstance.put("/pages", formData);
-      }
+      const res = await axiosInstance.post("/pages", formData);
       
       if (res?.data?.success) {
         toast.success("Page submitted for admin approval successfully!");
         onPageCreated(res.data.page);
+        // Reset form
         setFormData({
           pageName: "",
           username: "",
@@ -522,6 +889,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
       }
     } catch (err) {
       console.error('Error creating page:', err);
+      console.error('Server response:', err.response?.data);
       toast.error(err.response?.data?.message || "Failed to create page");
     } finally {
       setLoading(false);
@@ -557,12 +925,12 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                   <div className="alert alert-info bg-info bg-opacity-10 border border-info border-opacity-25 mb-4">
                     <small>
                       <i className="fas fa-info-circle me-2"></i>
-                      All fields are required. Your page will be submitted for admin approval and cannot be published until approved.
+                      All fields marked with <span className="text-danger">*</span> are required. Your page will be submitted for admin approval and cannot be published until approved.
                     </small>
                   </div>
 
                   <div className="row g-3">
-                    {/* Profile Image Upload */}
+                    {/* Profile Image Upload - FIXED */}
                     <div className="col-12">
                       <label className="form-label">
                         Profile Image <span className="text-danger">*</span>
@@ -723,7 +1091,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
   );
 };
 
-// Updated Edit Page Modal Component
+// EditPageModal Component
 const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
   const [formData, setFormData] = useState({
     pageName: "",
@@ -993,4 +1361,3 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
 };
 
 export default MyPagesSection;
-
