@@ -26,17 +26,26 @@ const BrowseAllPages = () => {
   const fetchCategories = async () => {
     try {
       let res;
+      // Try multiple possible endpoints for categories
       try {
         res = await axiosInstance.get("/pages/categories");
       } catch (error) {
-        res = await axiosInstance.get("/pages/categories/list");
+        try {
+          res = await axiosInstance.get("/pages/categories/list");
+        } catch (error2) {
+          res = await axiosInstance.get("/categories");
+        }
       }
       
       if (res?.data?.success) {
-        setCategories(res.data.categories || []);
+        setCategories(res.data.categories || res.data.data || []);
+      } else if (res?.data) {
+        setCategories(res.data || []);
       }
     } catch (err) {
       console.error('Error fetching categories:', err);
+      // Set some default categories if API fails
+      setCategories(['business', 'entertainment', 'education', 'technology', 'sports', 'news']);
     }
   };
 
@@ -48,18 +57,32 @@ const BrowseAllPages = () => {
       if (filters.search) params.set("search", filters.search);
 
       let res;
+      // Try multiple possible endpoints for pages
       try {
         res = await axiosInstance.get(`/pages?${params.toString()}`);
       } catch (error) {
-        res = await axiosInstance.get(`/pages/list?${params.toString()}`);
+        try {
+          res = await axiosInstance.get(`/pages/list?${params.toString()}`);
+        } catch (error2) {
+          try {
+            res = await axiosInstance.get(`/pages/browse?${params.toString()}`);
+          } catch (error3) {
+            res = await axiosInstance.get(`/pages/all?${params.toString()}`);
+          }
+        }
       }
       
       if (res?.data?.success) {
-        setPages(res.data.pages || []);
+        setPages(res.data.pages || res.data.data || []);
+      } else if (res?.data) {
+        // Handle different response structures
+        const pageData = res.data.pages || res.data.data || res.data || [];
+        setPages(Array.isArray(pageData) ? pageData : []);
       }
     } catch (err) {
       console.error('Error fetching pages:', err);
-      toast.error("Failed to load pages");
+      console.error('Response:', err.response?.data);
+      toast.error(err.response?.data?.message || "Failed to load pages. Please check your internet connection.");
     } finally {
       setLoading(false);
     }
@@ -84,7 +107,6 @@ const BrowseAllPages = () => {
       const res = await axiosInstance.post(`/pages/${pageId}/follow`);
       if (res?.data?.success) {
         toast.success("Followed page successfully!");
-        // Update the page in the list
         setPages(prev => prev.map(page => 
           (page.id === pageId || page._id === pageId) 
             ? { ...page, isFollowing: true, followersCount: (page.followersCount || 0) + 1 }
@@ -102,7 +124,6 @@ const BrowseAllPages = () => {
       const res = await axiosInstance.post(`/pages/${pageId}/unfollow`);
       if (res?.data?.success) {
         toast.success("Unfollowed page successfully!");
-        // Update the page in the list
         setPages(prev => prev.map(page => 
           (page.id === pageId || page._id === pageId) 
             ? { ...page, isFollowing: false, followersCount: Math.max(0, (page.followersCount || 0) - 1) }
@@ -116,43 +137,45 @@ const BrowseAllPages = () => {
   };
 
   return (
-    <div>
+    <div className="container-fluid py-4" style={{ backgroundColor: "#00193143", minHeight: "100vh" }}>
       {/* Header */}
       <div className="mb-4">
-        <h5 className="text-white mb-2">Discover Pages</h5>
-        <p className="text-white-50 mb-0">Find and follow pages that interest you</p>
+        <h2 className="text-light mb-2 fw-bold">Discover Pages</h2>
+        <p className="text-muted-light mb-0">Find and follow pages that interest you</p>
       </div>
 
       {/* Filters */}
       <div className="row g-3 mb-4">
         <div className="col-md-6">
           <div className="position-relative">
-            <i className="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-white-50"></i>
+            <i className="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
             <input
               type="text"
-              className="form-control bg-dark text-white border-secondary ps-5"
+              className="form-control bg-white border-light ps-5 shadow-sm"
               name="search"
               value={filters.search}
               onChange={handleFilterChange}
               placeholder="Search pages..."
               style={{
-                background: "rgba(255, 255, 255, 0.1)",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255, 255, 255, 0.2)"
+                borderRadius: "12px",
+                border: "2px solid #e9ecef",
+                fontSize: "15px",
+                height: "48px"
               }}
             />
           </div>
         </div>
         <div className="col-md-6">
           <select
-            className="form-select bg-dark text-white border-secondary"
+            className="form-select bg-white border-light shadow-sm"
             name="category"
             value={filters.category}
             onChange={handleFilterChange}
             style={{
-              background: "rgba(255, 255, 255, 0.1)",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(255, 255, 255, 0.2)"
+              borderRadius: "12px",
+              border: "2px solid #e9ecef",
+              fontSize: "15px",
+              height: "48px"
             }}
           >
             <option value="">All Categories</option>
@@ -168,22 +191,21 @@ const BrowseAllPages = () => {
       {/* Content */}
       {loading ? (
         <div className="text-center py-5">
-          <div className="text-white normal-loading-spinner">
-            Loading pages<span className="dot-flash">.</span>
-            <span className="dot-flash">.</span>
-            <span className="dot-flash">.</span>
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
           </div>
+          <div className="text-muted mt-3">Loading pages...</div>
         </div>
       ) : pages.length === 0 ? (
         <div className="text-center py-5">
           <div className="mb-4">
-            <i className="fas fa-search text-white-50" style={{ fontSize: "3rem" }}></i>
+            <i className="fas fa-search text-muted" style={{ fontSize: "4rem" }}></i>
           </div>
-          <h5 className="text-white mb-3">No Pages Found</h5>
-          <p className="text-white-50">Try adjusting your search or filters to find more pages.</p>
+          <h4 className="text-dark mb-3">No Pages Found</h4>
+          <p className="text-muted">Try adjusting your search or filters to find more pages.</p>
         </div>
       ) : (
-        <div className="row g-4">
+        <div className="row g-1">
           {pages.map((page, index) => {
             const pageId = page?.id || page?._id;
             return (
@@ -192,100 +214,117 @@ const BrowseAllPages = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="card bg-dark border-secondary h-100 shadow-lg"
+                  className="card border-0 h-100 shadow-sm hover-shadow"
                   style={{
-                    background: "rgba(255, 255, 255, 0.1)",
-                    backdropFilter: "blur(10px)",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
-                    cursor: "pointer"
+                    borderRadius: "16px",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    backgroundColor: "#ffffff"
                   }}
                   onClick={() => handleViewPage(page)}
-                />
-                  <div className="card-body d-flex flex-column">
+                >
+                  <div className="card-body d-flex flex-column p-4">
                     {/* Page Header */}
                     <div className="d-flex align-items-center mb-3">
                       <img
                         src={page.profilePicture || "/default-page-avatar.png"}
                         alt={page.pageName}
-                        className="rounded-circle me-3"
+                        className="rounded-circle me-3 shadow-sm"
                         style={{ 
-                          width: "60px", 
-                          height: "60px", 
+                          width: "64px", 
+                          height: "64px", 
                           objectFit: "cover",
-                          border: "2px solid rgba(255, 255, 255, 0.3)"
+                          border: "3px solid #e9ecef"
                         }}
                       />
                       <div className="flex-grow-1 min-w-0">
-                        <h6 className="text-white fw-bold mb-1 text-truncate">
+                        <h5 className="text-dark fw-bold mb-1 text-truncate">
                           {page.pageName}
-                        </h6>
+                        </h5>
                         {page.username && (
-                          <p className="text-info mb-1 small">@{page.username}</p>
+                          <p className="text-primary mb-2 small fw-medium">@{page.username}</p>
                         )}
-                        <span className="badge bg-info">
+                        <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-1" 
+                              style={{ borderRadius: "20px", fontSize: "12px" }}>
                           {page.category ? page.category.charAt(0).toUpperCase() + page.category.slice(1) : 'Uncategorized'}
                         </span>
                       </div>
                     </div>
 
                     {/* Page Description */}
-                    <p className="text-white-50 small mb-3 flex-grow-1" 
+                    <p className="text-muted small mb-3 flex-grow-1" 
                        style={{
                          display: "-webkit-box",
                          WebkitLineClamp: "3",
                          WebkitBoxOrient: "vertical",
-                         overflow: "hidden"
+                         overflow: "hidden",
+                         lineHeight: "1.5"
                        }}>
                       {page.description || "No description available"}
                     </p>
 
                     {/* Page Stats */}
-                    <div className="text-center mb-3 py-2 px-3 rounded"
-                         style={{ backgroundColor: "rgba(255, 255, 255, 0.05)" }}>
-                      <div className="text-white fw-bold">{page.followersCount || 0}</div>
-                      <div className="text-white-50 small">Followers</div>
+                    <div className="text-center mb-3 py-3 px-3 rounded-3"
+                         style={{ backgroundColor: "#f8f9fa" }}>
+                      <div className="text-dark fw-bold fs-5">{page.followersCount || 0}</div>
+                      <div className="text-muted small">Followers</div>
                     </div>
 
                     {/* Action Buttons */}
                     <div className="d-flex gap-2">
                       <button
-                        className="btn btn-primary btn-sm flex-fill"
+                        className="btn btn-primary btn-sm flex-fill fw-medium"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleViewPageWebsite(page);
                         }}
+                        style={{ 
+                          borderRadius: "10px",
+                          height: "40px",
+                          fontSize: "14px"
+                        }}
                       >
-                        <i className="fas fa-globe me-1"></i>
+                        {/* <i className="fas fa-globe me-2"></i> */}
                         View Page
                       </button>
                       
                       <button
-                        className="btn btn-outline-info btn-sm"
+                        className="btn btn-outline-secondary btn-sm px-3"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleViewPage(page);
                         }}
+                        style={{ 
+                          borderRadius: "10px",
+                          height: "40px",
+                          width: "48px"
+                        }}
                       >
-                        <i className="fas fa-info me-1"></i>
-                        Details
+                        {/* <i className="fas fa-info"></i> */}
+                        Detils
                       </button>
                       
                       {!page.isOwner && (
                         <button
-                          className={`btn btn-sm ${page.isFollowing ? 'btn-outline-secondary' : 'btn-outline-success'}`}
+                          className={`btn btn-sm px-3 ${page.isFollowing ? 'btn-outline-danger' : 'btn-outline-success'}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             page.isFollowing ? handleUnfollowPage(pageId) : handleFollowPage(pageId);
                           }}
+                          style={{ 
+                            borderRadius: "10px",
+                            height: "40px",
+                            width: "48px"
+                          }}
                         >
-                          <i className={`fas ${page.isFollowing ? 'fa-user-minus' : 'fa-user-plus'} me-1`}></i>
-                          {page.isFollowing ? 'Unfollow' : 'Follow'}
+                          {/* <i className={`fas ${page.isFollowing ? 'fa-user-minus' : 'fa-user-plus'}`}></i> */}
+                          Follow
                         </button>
                       )}
                     </div>
                   </div>
-                </div>
-              //</div>
+                </motion.div>
+              </div>
             );
           })}
         </div>
@@ -299,6 +338,23 @@ const BrowseAllPages = () => {
         onFollow={handleFollowPage}
         onUnfollow={handleUnfollowPage}
       />
+
+      <style jsx>{`
+        .hover-shadow:hover {
+          box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+          transform: translateY(-2px);
+        }
+        
+        .form-control:focus,
+        .form-select:focus {
+          border-color: #0d6efd;
+          box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+        }
+        
+        .btn:hover {
+          transform: translateY(-1px);
+        }
+      `}</style>
     </div>
   );
 };
@@ -312,16 +368,21 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
   return (
     <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
       <div className="modal-dialog modal-lg modal-dialog-scrollable">
-        <div className="modal-content bg-dark text-white">
-          <div className="modal-header border-secondary">
-            <h5 className="modal-title">
-              <i className="fas fa-layer-group me-2 text-info"></i>
+        <div className="modal-content border-0" style={{ borderRadius: "16px" }}>
+          <div className="modal-header border-bottom border-light bg-light" 
+               style={{ borderTopLeftRadius: "16px", borderTopRightRadius: "16px" }}>
+            <h5 className="modal-title text-dark fw-bold">
+              <i className="fas fa-layer-group me-2 text-primary"></i>
               Page Details
             </h5>
-            <button className="btn-close btn-close-white" onClick={onClose}></button>
+            <button 
+              className="btn-close" 
+              onClick={onClose}
+              style={{ fontSize: "14px" }}
+            ></button>
           </div>
           
-          <div className="modal-body">
+          <div className="modal-body bg-white p-4">
             <div className="row">
               {/* Left Column - Basic Info */}
               <div className="col-lg-4">
@@ -329,34 +390,35 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
                   <img
                     src={page.profilePicture || "/default-page-avatar.png"}
                     alt={page.pageName}
-                    className="rounded-3 mb-3"
+                    className="rounded-3 mb-3 shadow-sm"
                     style={{ 
                       width: "120px", 
                       height: "120px", 
                       objectFit: "cover",
-                      border: "3px solid rgba(255, 255, 255, 0.3)"
+                      border: "3px solid #e9ecef"
                     }}
                   />
-                  <h5 className="text-white mb-2">{page.pageName}</h5>
+                  <h4 className="text-dark mb-2 fw-bold">{page.pageName}</h4>
                   {page.username && (
-                    <p className="text-info mb-3">@{page.username}</p>
+                    <p className="text-primary mb-3 fw-medium">@{page.username}</p>
                   )}
                   
-                  <div className="d-flex justify-content-center gap-4 mb-3">
+                  <div className="d-flex justify-content-center gap-4 mb-4">
                     <div className="text-center">
-                      <div className="text-white fw-bold fs-5">{page.followersCount || 0}</div>
-                      <div className="text-white-50 small">Followers</div>
+                      <div className="text-dark fw-bold fs-4">{page.followersCount || 0}</div>
+                      <div className="text-muted small">Followers</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-white fw-bold fs-5">{page.postsCount || 0}</div>
-                      <div className="text-white-50 small">Posts</div>
+                      <div className="text-dark fw-bold fs-4">{page.postsCount || 0}</div>
+                      <div className="text-muted small">Posts</div>
                     </div>
                   </div>
 
                   {!page.isOwner && (
                     <button
-                      className={`btn ${page.isFollowing ? 'btn-outline-secondary' : 'btn-success'} w-100`}
+                      className={`btn w-100 fw-medium ${page.isFollowing ? 'btn-outline-danger' : 'btn-primary'}`}
                       onClick={() => page.isFollowing ? onUnfollow(pageId) : onFollow(pageId)}
+                      style={{ borderRadius: "12px", height: "48px" }}
                     >
                       <i className={`fas ${page.isFollowing ? 'fa-user-minus' : 'fa-user-plus'} me-2`}></i>
                       {page.isFollowing ? 'Unfollow' : 'Follow'}
@@ -368,46 +430,46 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
               {/* Right Column - Details */}
               <div className="col-lg-8">
                 <div className="mb-4">
-                  <h6 className="text-info mb-3">
+                  <h6 className="text-primary mb-3 fw-bold">
                     <i className="fas fa-info-circle me-2"></i>
                     About
                   </h6>
-                  <div className="p-3 rounded" style={{ backgroundColor: "rgba(255, 255, 255, 0.05)" }}>
-                    <p className="text-white-50 mb-0">
+                  <div className="p-4 rounded-3 bg-light">
+                    <p className="text-muted mb-0" style={{ lineHeight: "1.6" }}>
                       {page.description || "No description available"}
                     </p>
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <h6 className="text-info mb-3">
+                  <h6 className="text-primary mb-3 fw-bold">
                     <i className="fas fa-tag me-2"></i>
                     Details
                   </h6>
-                  <div className="p-3 rounded" style={{ backgroundColor: "rgba(255, 255, 255, 0.05)" }}>
+                  <div className="p-4 rounded-3 bg-light">
                     <div className="row g-3">
                       <div className="col-sm-6">
-                        <strong className="text-white-50">Category:</strong>
-                        <div className="text-white">
+                        <strong className="text-dark">Category:</strong>
+                        <div className="text-muted mt-1">
                           {page.category ? page.category.charAt(0).toUpperCase() + page.category.slice(1) : 'Uncategorized'}
                         </div>
                       </div>
                       {page.phone && (
                         <div className="col-sm-6">
-                          <strong className="text-white-50">Phone:</strong>
-                          <div className="text-white">{page.phone}</div>
+                          <strong className="text-dark">Phone:</strong>
+                          <div className="text-muted mt-1">{page.phone}</div>
                         </div>
                       )}
                       {page.email && (
                         <div className="col-sm-6">
-                          <strong className="text-white-50">Email:</strong>
-                          <div className="text-white">{page.email}</div>
+                          <strong className="text-dark">Email:</strong>
+                          <div className="text-muted mt-1">{page.email}</div>
                         </div>
                       )}
                       {page.address && (
                         <div className="col-12">
-                          <strong className="text-white-50">Address:</strong>
-                          <div className="text-white">{page.address}</div>
+                          <strong className="text-dark">Address:</strong>
+                          <div className="text-muted mt-1">{page.address}</div>
                         </div>
                       )}
                     </div>
@@ -416,24 +478,24 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
 
                 {page.owner && (
                   <div className="mb-4">
-                    <h6 className="text-info mb-3">
+                    <h6 className="text-primary mb-3 fw-bold">
                       <i className="fas fa-user-circle me-2"></i>
                       Page Owner
                     </h6>
-                    <div className="p-3 rounded" style={{ backgroundColor: "rgba(255, 255, 255, 0.05)" }}>
+                    <div className="p-4 rounded-3 bg-light">
                       <div className="d-flex align-items-center">
                         <img
                           src={page.owner.profilePicture || "/default-avatar.png"}
                           alt={`${page.owner.firstName} ${page.owner.lastName}`}
-                          className="rounded-circle me-3"
-                          style={{ width: "50px", height: "50px", objectFit: "cover" }}
+                          className="rounded-circle me-3 shadow-sm"
+                          style={{ width: "56px", height: "56px", objectFit: "cover" }}
                         />
                         <div>
-                          <div className="text-white fw-bold">
+                          <div className="text-dark fw-bold">
                             {page.owner.firstName} {page.owner.lastName}
                           </div>
                           {page.owner.username && (
-                            <div className="text-info small">@{page.owner.username}</div>
+                            <div className="text-primary small">@{page.owner.username}</div>
                           )}
                         </div>
                       </div>
@@ -444,8 +506,13 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
             </div>
           </div>
 
-          <div className="modal-footer border-secondary">
-            <button className="btn btn-secondary" onClick={onClose}>
+          <div className="modal-footer border-top border-light bg-light" 
+               style={{ borderBottomLeftRadius: "16px", borderBottomRightRadius: "16px" }}>
+            <button 
+              className="btn btn-secondary fw-medium" 
+              onClick={onClose}
+              style={{ borderRadius: "10px", paddingLeft: "24px", paddingRight: "24px" }}
+            >
               Close
             </button>
           </div>

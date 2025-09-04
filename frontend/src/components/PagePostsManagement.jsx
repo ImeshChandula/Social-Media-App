@@ -1,6 +1,6 @@
 // PagePostsManagement.jsx – Professional Light Theme + resilient endpoints
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 
