@@ -3,8 +3,9 @@ const router = express.Router();
 const pageController = require('../controllers/pageController');
 const { authenticateUser, authorizeRoles, checkAccountStatus } = require('../middleware/authMiddleware');
 const { validatePage, validatePageQuery, validateAdminReview, validatePageBan, validatePageProfile } = require('../middleware/pageValidator');
+const { validatePost, validateStory } = require('../middleware/validator'); // Add these validators
 
-// Page management routes
+// Page management routes (existing)
 
 // @route :   POST /api/pages
 // @desc :   Create a new page
@@ -36,7 +37,30 @@ router.get('/my-pages', authenticateUser, checkAccountStatus, pageController.get
 // @access Public (anyone can view page categories)
 router.get('/categories', pageController.getPageCategories);
 
-// Admin routes 
+// NEW PAGE CONTENT ROUTES
+
+// @route  POST /api/pages/:pageId/posts
+// @desc   Create a post for a specific page
+// @access Private (only page owners can create posts for their pages)
+router.post('/:pageId/posts', authenticateUser, checkAccountStatus, validatePost, pageController.createPagePost);
+
+// @route  GET /api/pages/:pageId/posts
+// @desc   Get all posts for a specific page
+// @access Public (anyone can view posts from published pages)
+router.get('/:pageId/posts', pageController.getPagePosts);
+
+// @route  POST /api/pages/:pageId/stories
+// @desc   Create a story for a specific page
+// @access Private (only page owners can create stories for their pages)
+router.post('/:pageId/stories', authenticateUser, checkAccountStatus, validateStory, pageController.createPageStory);
+
+// @route  GET /api/pages/:pageId/stories
+// @desc   Get all active stories for a specific page
+// @access Public (anyone can view stories from published pages)
+router.get('/:pageId/stories', pageController.getPageStories);
+
+// Admin routes (existing)
+
 // @route  GET /api/pages/admin/all
 // @desc   Get all pages for admin management with owner details
 // @access Private (only super admins can view all pages for management)
@@ -72,7 +96,8 @@ router.put('/admin/:id/ban', authenticateUser, checkAccountStatus, authorizeRole
 // @access Private (only super admins can delete any page)
 router.delete('/admin/:id', authenticateUser, checkAccountStatus, authorizeRoles("super_admin"), pageController.deletePage);
 
-// General routes - These come after admin routes
+// General routes - These come after admin routes (existing)
+
 // @route  GET /api/pages
 // @desc   Get all pages with optional filters
 // @access Public (anyone can view pages)
@@ -88,7 +113,8 @@ router.get('/:id', pageController.getPageById);
 // @access Private (only the owner can delete their own page)
 router.delete('/:id', authenticateUser, checkAccountStatus, pageController.deletePage);
 
-// Follow/Unfollow routes
+// Follow/Unfollow routes (existing)
+
 // @route  POST /api/pages/:id/follow
 // @desc   Follow a page
 // @access Private (only authenticated users can follow pages)

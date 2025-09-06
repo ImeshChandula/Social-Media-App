@@ -468,7 +468,152 @@ const PostService = {
             console.error('Error finding posts by page ID:', error);
             throw error;
         }
-    }
+    },
+
+    // Enhanced feed method to include page posts
+    async findForFeed(currentUserId, userFriends = [], limit = 50) {
+        try {
+            const posts = [];
+        
+            // 1. Get all public posts (including page posts)
+            try {
+                const publicPostsRef = await postCollection
+                    .where('privacy', '==', 'public')
+                    .limit(limit * 2)
+                    .get();
+                
+                publicPostsRef.docs.forEach(doc => {
+                    const postData = doc.data();
+                    // Include both user and page posts, exclude hidden posts
+                    if (!postData.isHidden) {
+                        const post = this._createPostSafely(doc.id, postData);
+                        if (post) {
+                            posts.push(post);
+                        }
+                    }
+                });
+            } catch (publicError) {
+                console.error('Error fetching public posts:', publicError);
+            }
+            
+            // 2. Get friends-only posts from user friends
+            if (userFriends.length > 0) {
+                try {
+                    const friendsPostsRef = await postCollection
+                        .where('privacy', '==', 'friends')
+                        .limit(limit * 2)
+                        .get();
+                    
+                    friendsPostsRef.docs.forEach(doc => {
+                        const postData = doc.data();
+                        
+                        if (postData && postData.author && 
+                            userFriends.includes(postData.author) && 
+                            postData.author !== currentUserId &&
+                            !postData.isHidden &&
+                            postData.authorType !== 'page') { // Exclude page posts from friends feed
+                            
+                            const post = this._createPostSafely(doc.id, postData);
+                            if (post) {
+                                posts.push(post);
+                            }
+                        }
+                    });
+                } catch (friendsError) {
+                    console.error('Error fetching friends posts:', friendsError);
+                }
+            }
+            
+            // 3. Get user's own posts
+            try {
+                const userPostsRef = await postCollection
+                        .where('author', '==', currentUserId)
+                        .get();
+                
+                userPostsRef.docs.forEach(doc => {
+                    const postData = doc.data();
+                    
+                    if (postData && !postData.isHidden && postData.authorType !== 'page') {
+                        const post = this._createPostSafely(doc.id, postData);
+                        if (post) {
+                            posts.push(post);
+                        }
+                    }
+                });
+            } catch (userPostsError) {
+                console.error("Error fetching user's posts:", userPostsError);
+            }
+            
+            // 4. Sort all posts by creation date in memory
+            posts.sort((a, b) => {
+                const dateA = new Date(a.createdAt || 0);
+                const dateB = new Date(b.createdAt || 0);
+                return dateB - dateA;
+            });
+            
+            // 5. Remove duplicates and limit
+            const uniquePosts = posts.filter((post, index, self) => 
+                index === self.findIndex(p => p.id === post.id)
+            ).slice(0, limit);
+            
+            return uniquePosts;
+        } catch (error) {
+            console.error('Error in findForFeed:', error);
+            throw error;
+        }
+    },
+
+    // Find posts by page ID
+    async findByPageId(pageId) {
+        try {
+            const postRef = await postCollection
+                    .where('author', '==', pageId)
+                    .where('authorType', '==', 'page')
+                    .get();
+            
+            if (postRef.empty) {
+                return [];
+            }
+            
+            const posts = [];
+            postRef.docs.forEach(doc => {
+                const post = this._createPostSafely(doc.id, doc.data());
+                if (post) {
+                    posts.push(post);
+                }
+            });
+            
+            // Sort in memory
+            posts.sort((a, b) => {
+                const dateA = new Date(a.createdAt || 0);
+                const dateB = new Date(b.createdAt || 0);
+                return dateB - dateA;
+            });
+            
+            return posts;
+        } catch (error) {
+            console.error('Error finding posts by page ID:', error);
+            throw error;
+        }
+    },
+
+    // Create post for page
+    async createPagePost(pageId, postData) {
+        try {
+            postData.author = pageId;
+            postData.authorType = 'page';
+            postData.createdAt = new Date().toISOString();
+
+            const docRef = await postCollection.add(postData);
+            return this._createPostSafely(docRef.id, postData);
+        } catch (error) {
+            console.error('Error creating page post:', error);
+            throw error;
+        }
+    },
+
 };
+
+
 
 module.exports = PostService;

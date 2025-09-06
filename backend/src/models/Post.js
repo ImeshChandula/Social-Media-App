@@ -1,7 +1,6 @@
-// Post table
+// Post table - Updated to support page posts
 class Post {
     constructor(id, postData) {
-
         // Add safety check for postData
         if (!postData || typeof postData !== 'object') {
             console.warn(`Post constructor called with invalid data for ID ${id}:`, postData);
@@ -10,6 +9,7 @@ class Post {
 
         this.id = id;
         this.author = postData.author;
+        this.authorType = postData.authorType || 'user'; // 'user' or 'page'
         this.content = postData.content || '';
         this.media = postData.media || [];
         this.mediaType = postData.mediaType || '';
@@ -33,26 +33,32 @@ class Post {
 
         this.createdAt = postData.createdAt || new Date().toISOString();
         this.updatedAt = postData.updatedAt || new Date().toISOString();
-    };
-
+    }
 
     // get comment count
     get commentCount() {
         return this.comments.length;
-    };
+    }
 
     // get like count
     get likeCount() {
         return this.likes.length;
-    };
+    }
 
     // get share count
     get shareCount() {
         return this.shares.length;
-    };
+    }
 
+    // Check if this is a page post
+    get isPagePost() {
+        return this.authorType === 'page';
+    }
 
+    // Check if this is a user post
+    get isUserPost() {
+        return this.authorType === 'user';
+    }
 }
-
 
 module.exports = Post;

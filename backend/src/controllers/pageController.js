@@ -2,10 +2,16 @@ const PageService = require('../services/pageService');
 const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const { uploadImage } = require('../utils/uploadMedia');
+const { handleMediaUpload } = require('../utils/handleMediaUpload');
 const pageValidators = require('../middleware/pageValidator');
+const Story = require('../models/Story');
 
 // Valid page categories
 const VALID_PAGE_CATEGORIES = ['education', 'music', 'fashion', 'entertainment'];
+
+// Valid video categories for posts
+const VALID_VIDEO_CATEGORIES = ['Music', 'Sports', 'Education', 'Entertainment', 'News'];
+
 
 // createPage function
 const createPage = async (req, res) => {
@@ -310,6 +316,9 @@ const getPageById = async (req, res) => {
         const pageId = req.params.id;
         const currentUserId = req.user?.id; // Use optional chaining to handle undefined req.user
 
+        console.log('🔍 Getting page by ID:', pageId);
+        console.log('👤 Current User ID:', currentUserId);
+
         const page = await PageService.findById(pageId);
         if (!page) {
             return res.status(404).json({
@@ -317,6 +326,9 @@ const getPageById = async (req, res) => {
                 message: 'Page not found'
             });
         }
+
+        console.log('📄 Found page:', page.pageName);
+        console.log('🏠 Page owner:', page.owner);
 
         // Only show published pages to non-owners
         if (!page.isPublished && page.owner !== currentUserId) {
@@ -328,9 +340,18 @@ const getPageById = async (req, res) => {
 
         // Check if user is following this page (only if user is authenticated)
         const isFollowing = currentUserId ? page.followers.includes(currentUserId) : false;
-        const isOwner = currentUserId ? page.owner === currentUserId : false;
+        
+        //Properly calculate ownership
+        const isOwner = currentUserId && page.owner === currentUserId;
+        
+        console.log('✅ Is Owner Check:', {
+            currentUserId,
+            pageOwner: page.owner,
+            isOwner,
+            comparison: currentUserId === page.owner
+        });
 
-        // Get page posts (you can implement this later)
+        // Get page posts
         let posts = [];
         let postsCount = 0;
         try {
@@ -355,11 +376,12 @@ const getPageById = async (req, res) => {
             email: page.email,
             address: page.address,
             isFollowing,
-            isOwner,
-            followersCount: page.followersCount,
+            isOwner, // This is the critical field
+            followersCount: page.followersCount || page.followers?.length || 0,
             postsCount: postsCount,
             isPublished: page.isPublished,
             isVerified: page.isVerified || false,
+            approvalStatus: page.approvalStatus,
             createdAt: page.createdAt,
             owner: owner ? {
                 id: owner.id,
@@ -370,6 +392,8 @@ const getPageById = async (req, res) => {
             } : null,
             recentPosts: posts.slice(0, 10) // Return latest 10 posts
         };
+
+        console.log('📤 Sending response with isOwner:', pageResponse.isOwner);
 
         res.status(200).json({
             success: true,
@@ -385,7 +409,6 @@ const getPageById = async (req, res) => {
         });
     }
 };
-
 
 //@desc     Get current user's pages
 const getCurrentUserPages = async (req, res) => {
@@ -1030,6 +1053,409 @@ const getPageForAdmin = async (req, res) => {
     }
 };
 
+// Create post for page
+const createPagePost = async (req, res) => {
+    try {
+        const { pageId } = req.params;
+        const { content, media, mediaType, tags, privacy, location, category } = req.body;
+        const currentUserId = req.user.id;
+
+        console.log('📄 Creating post for page:', pageId);
+        console.log('👤 Current user:', currentUserId);
+
+        // Find the page and verify ownership
+        const page = await PageService.findById(pageId);
+        if (!page) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Check if user is the owner of the page
+        if (page.owner !== currentUserId) {
+            console.log('❌ Ownership check failed:', {
+                pageOwner: page.owner,
+                currentUser: currentUserId
+            });
+            return res.status(403).json({
+                success: false,
+                message: 'You are not authorized to create posts for this page'
+            });
+        }
+
+        // Check if page is published and approved
+        if (!page.isPublished || page.approvalStatus !== 'approved') {
+            return res.status(400).json({
+                success: false,
+                message: 'Page must be published and approved before creating posts'
+            });
+        }
+
+        // Validate required content
+        if (!content && !media) {
+            return res.status(400).json({ 
+                success: false,
+                message: "Either content or media is required." 
+            });
+        }
+
+        if (!mediaType) {
+            return res.status(400).json({ 
+                success: false,
+                message: "Media type is required." 
+            });
+        }
+
+        // Validate category for video posts
+        if (mediaType === 'video') {
+            if (!category) {
+                return res.status(400).json({ 
+                    success: false,
+                    error: "Category is required for video posts.",
+                    validCategories: VALID_VIDEO_CATEGORIES
+                });
+            }
+            
+            if (!VALID_VIDEO_CATEGORIES.includes(category)) {
+                return res.status(400).json({ 
+                    success: false,
+                    error: "Invalid category for video post.",
+                    receivedCategory: category,
+                    validCategories: VALID_VIDEO_CATEGORIES,
+                    message: `"${category}" is not allowed. Please select from: ${VALID_VIDEO_CATEGORIES.join(', ')}`
+                });
+            }
+        }
+        
+        const postData = {
+            tags,
+            mediaType,
+            privacy: privacy || 'public', // Pages typically use public posts
+            location,
+            authorType: 'page' // Mark as page post
+        };
+
+        // Add category only for video posts
+        if (mediaType === 'video' && category) {
+            postData.category = category;
+        }
+
+        if (content !== undefined) postData.content = content;
+
+        console.log('🚀 Creating post with data:', postData);
+
+        const newPost = await PostService.create(postData);
+        if (!newPost) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Failed to create post"
+            });
+        }
+
+        const updateData = { author: pageId }; // Use pageId as author
+        
+        // Handle media upload if provided
+        if (media) {
+            console.log('📸 Processing media upload...');
+            const result = await handleMediaUpload(media, mediaType);
+            if (!result.success) {
+                console.log('❌ Media upload failed:', result);
+                return res.status(result.code).json({
+                    success: false,
+                    error: result.error,
+                    message: result.message,
+                    ...(result.suggestion && { suggestion: result.suggestion }),
+                    ...(result.maxSize && { maxSize: result.maxSize })
+                });
+            }
+            updateData.media = result.imageUrl;
+            console.log('✅ Media uploaded successfully:', result.imageUrl);
+        }
+        
+        const populatedPost = await PostService.updateById(newPost.id, updateData);
+        if (!populatedPost) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Failed to update post with media"
+            });
+        }
+
+        console.log('✅ Page post created successfully:', populatedPost.id);
+
+        return res.status(201).json({ 
+            success: true,
+            message: "Page post created successfully", 
+            post: populatedPost 
+        });
+        
+    } catch (error) {
+        console.error('Page post creation error:', error.message);
+        console.error('Stack trace:', error.stack);
+        res.status(500).json({ 
+            success: false,
+            message: 'Server error' 
+        });
+    }
+};
+
+
+// Create story for page 
+const createPageStory = async (req, res) => {
+    try {
+        const { pageId } = req.params;
+        const { content, media, type, caption, privacy } = req.body;
+        const currentUserId = req.user.id;
+
+        console.log('📖 Creating story for page:', pageId);
+
+        // Find the page and verify ownership
+        const page = await PageService.findById(pageId);
+        if (!page) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Check if user is the owner of the page
+        if (page.owner !== currentUserId) {
+            return res.status(403).json({
+                success: false,
+                message: 'You are not authorized to create stories for this page'
+            });
+        }
+
+        // Check if page is published and approved
+        if (!page.isPublished || page.approvalStatus !== 'approved') {
+            return res.status(400).json({
+                success: false,
+                message: 'Page must be published and approved before creating stories'
+            });
+        }
+
+        if (!content && !media) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Content or media is required' 
+            });
+        }
+
+        // Create story object with timestamp
+        const storyData = {
+            userId: pageId, // Use pageId as userId for stories
+            authorType: 'page', // Mark as page story
+            content,
+            type,
+            caption,
+            privacy: privacy || 'public', // Pages typically use public stories
+            isActive: true,
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            createdAt: new Date().toISOString(),
+            viewers: [],
+            viewCount: 0
+        };
+
+        // Upload media if provided - FIXED: Use handleMediaUpload consistently
+        if (media) {
+            console.log('📸 Processing story media upload...');
+            const result = await handleMediaUpload(media, type || 'image');
+            if (!result.success) {
+                console.log('❌ Story media upload failed:', result);
+                return res.status(result.code).json({
+                    success: false,
+                    error: result.error,
+                    message: result.message,
+                    ...(result.suggestion && { suggestion: result.suggestion }),
+                    ...(result.maxSize && { maxSize: result.maxSize })
+                });
+            }
+            storyData.media = result.imageUrl;
+            console.log('✅ Story media uploaded successfully');
+        }
+
+        
+        const newStory = await Story.create(storyData);
+        
+
+        if (!newStory) {
+            return res.status(500).json({ 
+                success: false,
+                message: 'Failed to create story' 
+            });
+        }
+
+        // Add page data to story response
+        const populatedStory = {
+            ...newStory,
+            user: {
+                id: page.id,
+                firstName: '', // Pages don't have first/last names
+                lastName: '',
+                username: page.username || page.pageName,
+                profilePicture: page.profilePicture,
+                pageName: page.pageName, // Add page-specific data
+                isPage: true
+            },
+        };
+
+        console.log('✅ Page story created successfully');
+
+        res.status(201).json({
+            success: true,
+            message: 'Page story created successfully',
+            story: populatedStory
+        });
+
+    } catch (error) {
+        console.error('Page story creation error:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Server error' 
+        });
+    }
+};
+
+
+// Get page posts
+const getPagePosts = async (req, res) => {
+    try {
+        const { pageId } = req.params;
+        const currentUserId = req.user?.id;
+
+        const page = await PageService.findById(pageId);
+        if (!page) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Only show published pages to non-owners
+        if (!page.isPublished && page.owner !== currentUserId) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Get page posts
+        const posts = await PostService.findByPageId ? 
+            await PostService.findByPageId(pageId) : 
+            await PostService.findByUserId(pageId); // Fallback to existing method
+
+        // Populate with page data
+        const populatedPosts = posts.map(post => ({
+            ...post,
+            author: {
+                id: page.id,
+                username: page.username || page.pageName,
+                firstName: '',
+                lastName: '',
+                profilePicture: page.profilePicture,
+                pageName: page.pageName,
+                isPage: true
+            }
+        }));
+
+        res.status(200).json({
+            success: true,
+            count: populatedPosts.length,
+            message: 'Page posts retrieved successfully',
+            posts: populatedPosts
+        });
+
+    } catch (error) {
+        console.error('Get page posts error:', error.message);
+        res.status(500).json({ 
+            success: false,
+            message: 'Server error' 
+        });
+    }
+};
+
+
+// Enhanced Get page stories function with better error handling
+const getPageStories = async (req, res) => {
+    try {
+        const { pageId } = req.params;
+        const currentUserId = req.user?.id;
+
+        console.log('📖 Getting page stories for pageId:', pageId);
+
+        const page = await PageService.findById(pageId);
+        if (!page) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Only show published pages to non-owners
+        if (!page.isPublished && page.owner !== currentUserId) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Get page stories using the Story model
+        const allStories = await Story.findByUserIdSimple(pageId);
+
+        if (!allStories || allStories.length === 0) {
+            return res.status(200).json({ 
+                success: true,
+                message: 'No stories found for this page', 
+                stories: [] 
+            });
+        }
+
+        // Filter active and non-expired stories
+        const now = new Date();
+        const activeStories = allStories.filter(story => {
+            const expiresAt = new Date(story.expiresAt);
+            return story.isActive && expiresAt > now && story.authorType === 'page';
+        });
+
+        // Sort by creation date (newest first)
+        activeStories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        // Populate with page data
+        const populatedStories = activeStories.map(story => ({
+            ...story,
+            _id: story.id || story._id,
+            viewCount: story.viewCount || 0,
+            user: {
+                id: page.id,
+                firstName: '',
+                lastName: '',
+                username: page.username || page.pageName,
+                profilePicture: page.profilePicture,
+                pageName: page.pageName,
+                isPage: true,
+                type: 'page'
+            },
+            authorType: 'page'
+        }));
+
+        console.log('✅ Found', populatedStories.length, 'active page stories');
+
+        return res.status(200).json({
+            success: true,
+            count: populatedStories.length,
+            message: 'Page stories retrieved successfully',
+            stories: populatedStories
+        });
+
+    } catch (error) {
+        console.error('Get page stories error:', error.message);
+        return res.status(500).json({ 
+            success: false,
+            message: 'Server error' 
+        });
+    }
+};
+
 module.exports = {
     createPage,
     updatePage,
@@ -1047,5 +1473,9 @@ module.exports = {
     rejectPageContactDetails,
     getAllPagesForAdmin,
     togglePageBan,
-    getPageForAdmin
+    getPageForAdmin,
+    createPagePost,
+    createPageStory,
+    getPagePosts,
+    getPageStories
 };

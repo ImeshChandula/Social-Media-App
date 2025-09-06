@@ -130,14 +130,37 @@ const validatePageBan = (req, res, next) => {
     next();
 };
 
+const updatePageProfileValidator = Joi.object({
+  description: Joi.string().min(10).max(500).required().messages({
+    'string.min': 'Description must be at least 10 characters',
+    'string.max': 'Description cannot exceed 500 characters',
+    'any.required': 'Description is required'
+  }),
+  profilePicture: Joi.string().optional().allow('').messages({
+    'string.base': 'Profile picture must be a valid image'
+  }),
+  coverPhoto: Joi.string().optional().allow('').messages({
+    'string.base': 'Cover photo must be a valid image'
+  })
+});
+
 const validatePageProfile = (req, res, next) => {
-    const { error } = pageValidators.updatePageProfile.validate(req.body);
+    console.log('Validating page profile update:', {
+        ...req.body,
+        profilePicture: req.body.profilePicture ? 'Present' : 'Not provided',
+        coverPhoto: req.body.coverPhoto ? 'Present' : 'Not provided'
+    });
+
+    const { error } = updatePageProfileValidator.validate(req.body);
     if (error) {
+        console.log('Validation error:', error.details[0].message);
         return res.status(400).json({
             success: false,
             message: error.details[0].message
         });
     }
+    
+    console.log('Page profile validation passed');
     next();
 };
 
@@ -147,5 +170,6 @@ module.exports = {
     validatePageQuery,
     validateAdminReview,
     validatePageBan,
-    validatePageProfile
+    validatePageProfile,
+    updatePageProfileValidator
 };

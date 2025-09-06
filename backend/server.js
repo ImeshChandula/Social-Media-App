@@ -66,7 +66,8 @@ app.use("/api/marketplace", require("./src/routes/marketplaceRoutes"));
 app.use("/api/feed", require("./src/routes/feedRoutes"));
 app.use("/api/activities", require("./src/routes/activityRoutes")); // added activity routes
 app.use("/api/pages", require("./src/routes/pageRoutes")); // added page routes
-app.use("/api/pages/posts", require("./src/routes/pagePostRoutes")); // added page post routes
+//app.use("/api/pages/posts", require("./src/routes/pagePostRoutes")); // added page post routes
+//app.use("/api/pages/stories", require("./src/routes/pageStoryRoutes")); // added page story routes
 
 
 //  route handler for the root path
