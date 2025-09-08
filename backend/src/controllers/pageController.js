@@ -5,6 +5,7 @@ const { uploadImage } = require('../utils/uploadMedia');
 const { handleMediaUpload } = require('../utils/handleMediaUpload');
 const pageValidators = require('../middleware/pageValidator');
 const Story = require('../models/Story');
+const { generateWhatsAppURL, generatePageContactMessage } = require('../utils/whatsappHelper');
 
 // Valid page categories
 const VALID_PAGE_CATEGORIES = ['education', 'music', 'fashion', 'entertainment'];
@@ -1456,6 +1457,66 @@ const getPageStories = async (req, res) => {
     }
 };
 
+//@desc     Get WhatsApp contact URL for page
+const getPageWhatsAppContact = async (req, res) => {
+    try {
+        const pageId = req.params.id;
+        
+        const page = await PageService.findById(pageId);
+        if (!page) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Only allow contact for published and approved pages
+        if (!page.isPublished || page.approvalStatus !== 'approved') {
+            return res.status(400).json({
+                success: false,
+                message: 'Page is not available for contact'
+            });
+        }
+
+        // Check if page has a phone number
+        if (!page.phone) {
+            return res.status(400).json({
+                success: false,
+                message: 'Contact information not available for this page'
+            });
+        }
+
+        // Generate WhatsApp URL with default message
+        const defaultMessage = generatePageContactMessage(page.pageName);
+        const whatsappURL = generateWhatsAppURL(page.phone, defaultMessage);
+
+        if (!whatsappURL) {
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to generate contact link'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'WhatsApp contact link generated successfully',
+            data: {
+                whatsappURL,
+                pageName: page.pageName,
+                phone: page.phone,
+                message: defaultMessage
+            }
+        });
+
+    } catch (error) {
+        console.error('Error generating WhatsApp contact:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
 module.exports = {
     createPage,
     updatePage,
@@ -1477,5 +1538,6 @@ module.exports = {
     createPagePost,
     createPageStory,
     getPagePosts,
-    getPageStories
+    getPageStories,
+    getPageWhatsAppContact
 };
