@@ -378,7 +378,7 @@ const getPageById = async(req, res) => {
             isFollowing,
             isOwner, // This is the critical field
             followersCount: page.followersCount || page.followers ? .length || 0,
-            postsCount: page.postsCount || page.posts ? .length || 0,
+            postsCount: postsCount,
             isPublished: page.isPublished,
             isVerified: page.isVerified || false,
             approvalStatus: page.approvalStatus,
