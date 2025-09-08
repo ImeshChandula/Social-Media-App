@@ -282,7 +282,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
                   <div className="d-flex justify-content-between text-center mb-3 py-2 px-3 rounded"
                        style={{ backgroundColor: "rgba(255, 255, 255, 0.05)" }}>
                     <div>
-                      <div className="text-white fw-bold">{page.followersCount || 0}</div>
+                      <div className="text-white fw-bold">{page.followersCount || page.followers?.length || 0}</div>
                       <div className="text-white-50 small">Followers</div>
                     </div>
                     <div className="border-start border-secondary mx-2"></div>

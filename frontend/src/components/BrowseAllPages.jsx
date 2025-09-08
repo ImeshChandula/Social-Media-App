@@ -266,7 +266,7 @@ const BrowseAllPages = () => {
                     {/* Page Stats */}
                     <div className="text-center mb-3 py-3 px-3 rounded-3"
                          style={{ backgroundColor: "#f8f9fa" }}>
-                      <div className="text-dark fw-bold fs-5">{page.followersCount || 0}</div>
+                      <div className="text-dark fw-bold fs-5">{page.followersCount || page.followers?.length || 0}</div>
                       <div className="text-muted small">Followers</div>
                     </div>
 
