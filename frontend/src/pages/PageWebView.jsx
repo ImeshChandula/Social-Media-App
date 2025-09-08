@@ -714,30 +714,47 @@ const PageWebView = () => {
       </div>
 
       {/* Create Post Modal */}
-      {showCreatePost && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}>
-          <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div className="modal-content bg-dark text-white border-secondary">
-              <div className="modal-header border-secondary">
-                <h5 className="modal-title">Create Page Post</h5>
-                <button 
-                  className="btn-close btn-close-white" 
-                  onClick={() => setShowCreatePost(false)}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <CreatePagePost
-                  pageId={id}
-                  pageData={page}
-                  onPostCreated={handlePostCreated}
-                  onCancel={() => setShowCreatePost(false)}
-                  isModal={true}
-                />
-              </div>
-            </div>
-          </div>
+     {/* Create Post Modal */}
+{showCreatePost && (
+  <div
+    className="modal show d-block"
+    style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+  >
+    <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div className="modal-content border rounded-3 shadow-sm">
+        
+        {/* Header */}
+        <div className="modal-header bg-light border-0">
+          <h5 className="modal-title text-dark fw-semibold">
+            Create Page Post
+          </h5>
+          <button
+            className="btn-close"
+            onClick={() => setShowCreatePost(false)}
+          ></button>
         </div>
-      )}
+
+        {/* Body */}
+        <div className="modal-body bg-white text-dark">
+          <div className="mb-3">
+            <small className="text-muted">
+              Share an update, photo, or video with your followers
+            </small>
+          </div>
+
+          <CreatePagePost
+            pageId={id}
+            pageData={page}
+            onPostCreated={handlePostCreated}
+            onCancel={() => setShowCreatePost(false)}
+            isModal={true}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
 
       {/* Create Story Modal */}
       {showCreateStory && (
