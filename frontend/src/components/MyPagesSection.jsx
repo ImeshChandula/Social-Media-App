@@ -207,9 +207,9 @@ const MyPagesSection = ({ onViewPagePosts }) => {
     <div>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <div>
-          <h5 style={{ color: '#495057', marginBottom: '0.25rem' }}>My Pages</h5>
-          <p style={{ color: '#6c757d', marginBottom: '0' }}>Manage your pages and track their performance</p>
+        <div style={{ alignItems: 'center' }}>
+          <h5 style={{ color: '#E4E8EDFF', marginBottom: '0.25rem', alignItems: 'center'}}>My Pages</h5>
+          <p style={{ color: '#ACB6C0FF', marginBottom: '0' }}>Manage your pages and track their performance</p>
         </div>
         <button 
           style={{

@@ -205,7 +205,7 @@ const BrowseAllPages = () => {
           <p className="text-muted">Try adjusting your search or filters to find more pages.</p>
         </div>
       ) : (
-        <div className="row g-1">
+        <div className="row g-4">
           {pages.map((page, index) => {
             const pageId = page?.id || page?._id;
             return (
@@ -271,7 +271,7 @@ const BrowseAllPages = () => {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="d-flex gap-2">
+                    <div className="d-flex gap-1">
                       <button
                         className="btn btn-primary btn-sm flex-fill fw-medium"
                         onClick={(e) => {
@@ -281,6 +281,7 @@ const BrowseAllPages = () => {
                         style={{ 
                           borderRadius: "10px",
                           height: "40px",
+                          width: "40px",
                           fontSize: "14px"
                         }}
                       >
@@ -297,29 +298,31 @@ const BrowseAllPages = () => {
                         style={{ 
                           borderRadius: "10px",
                           height: "40px",
-                          width: "48px"
+                          width: "40px"
                         }}
                       >
                         {/* <i className="fas fa-info"></i> */}
-                        Detils
+                        Details
                       </button>
                       
                       {!page.isOwner && (
                         <button
-                          className={`btn btn-sm px-3 ${page.isFollowing ? 'btn-outline-danger' : 'btn-outline-success'}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            page.isFollowing ? handleUnfollowPage(pageId) : handleFollowPage(pageId);
-                          }}
-                          style={{ 
-                            borderRadius: "10px",
-                            height: "40px",
-                            width: "48px"
-                          }}
-                        >
-                          {/* <i className={`fas ${page.isFollowing ? 'fa-user-minus' : 'fa-user-plus'}`}></i> */}
-                          Follow
-                        </button>
+  className={`btn btn-sm ${page.isFollowing ? 'btn-outline-danger' : 'btn-outline-success'}`}
+  onClick={(e) => {
+    e.stopPropagation();
+    page.isFollowing ? handleUnfollowPage(pageId) : handleFollowPage(pageId);
+  }}
+  style={{ 
+    borderRadius: "10px",
+    height: "40px",
+    padding: "0 10px", // adjust side spacing
+    minWidth: "90px",  // optional, to keep it consistent
+    fontSize: "13px"   // makes text look neat
+  }}
+>
+  {page.isFollowing ? "Unfollow" : "Follow"}
+</button>
+
                       )}
                     </div>
                   </div>
