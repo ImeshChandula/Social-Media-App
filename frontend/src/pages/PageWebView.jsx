@@ -7,6 +7,7 @@ import PostCard from "../components/PostCard";
 import CreatePagePost from "../components/CreatePagePost";
 import CreatePageStory from "../components/CreatePageStory";
 import StoryViewer from "../components/StoryView";  
+import WhatsAppContactButton from "../components/WhatsAppContactButton";
 import useAuthStore from "../store/authStore";
 import '../styles/PageWebView.css';
 
@@ -116,7 +117,7 @@ const PageWebView = () => {
     }
   };
 
-  // NEW: Function to handle profile picture click for story viewing
+  // Function to handle profile picture click for story viewing
   const handleProfilePictureClick = async () => {
     try {
       console.log('📖 Profile picture clicked, fetching page stories...');
@@ -174,7 +175,7 @@ const PageWebView = () => {
     }
   };
 
-  // NEW: Check if page has active stories for profile picture indicator
+  // Check if page has active stories for profile picture indicator
   const hasActiveStories = () => {
     if (!stories || stories.length === 0) return false;
     
@@ -241,7 +242,7 @@ const PageWebView = () => {
     toast.success("Page story created successfully!");
   };
 
-  // NEW: Story management functions
+  // Story management functions
   const handleStoryDelete = (storyId) => {
     setStories(prev => prev.filter(story => story._id !== storyId));
     
@@ -475,7 +476,7 @@ const PageWebView = () => {
                       </div>
                     </motion.div>
 
-                    {/* Action Buttons */}
+                    {/* Action Buttons - Enhanced with WhatsApp Contact */}
                     <motion.div 
                       className="d-flex justify-content-center justify-content-md-start gap-2 flex-wrap"
                       initial={{ y: 20, opacity: 0 }}
@@ -483,15 +484,29 @@ const PageWebView = () => {
                       transition={{ delay: 0.4 }}
                     >
                       {!isOwner && (
-                        <button
-                          className={`btn ${isFollowing ? 'btn-outline-secondary' : 'btn-primary'} px-4`}
-                          onClick={handleFollow}
-                        >
-                          <i className={`fas ${isFollowing ? 'fa-user-minus' : 'fa-user-plus'} me-2`}></i>
-                          {isFollowing ? 'Following' : 'Follow'}
-                        </button>
+                        <>
+                          {/* Follow Button */}
+                          <button
+                            className={`btn ${isFollowing ? 'btn-outline-secondary' : 'btn-primary'} px-4`}
+                            onClick={handleFollow}
+                          >
+                            <i className={`fas ${isFollowing ? 'fa-user-minus' : 'fa-user-plus'} me-2`}></i>
+                            {isFollowing ? 'Following' : 'Follow'}
+                          </button>
+                          
+                          {/* WhatsApp Contact Button - Only show for non-owners if page has phone */}
+                          {page.phone && (
+                            <WhatsAppContactButton 
+                              pageId={id} 
+                              pageName={page.pageName}
+                              className="me-2"
+                              size="md"
+                            />
+                          )}
+                        </>
                       )}
                       
+                      {/* About Button */}
                       <button
                         className="btn btn-outline-light px-4"
                         onClick={() => setShowAbout(true)}
@@ -500,6 +515,7 @@ const PageWebView = () => {
                         About
                       </button>
 
+                      {/* Owner-only buttons */}
                       {isOwner && (
                         <>
                           <button
@@ -684,7 +700,7 @@ const PageWebView = () => {
 
               {/* About Tab */}
               {activeTab === 'about' && (
-                <AboutSection page={page} />
+                <AboutSection page={page} isOwner={isOwner} pageId={id} />
               )}
             </div>
           </div>
@@ -763,6 +779,7 @@ const PageWebView = () => {
         show={showAbout}
         onClose={() => setShowAbout(false)}
         page={page}
+        isOwner={isOwner}
       />
 
       {/* Edit Profile Modal */}
@@ -796,8 +813,8 @@ const PageWebView = () => {
   );
 };
 
-// About Section Component
-const AboutSection = ({ page }) => (
+// About Section Component - Updated with WhatsApp Contact
+const AboutSection = ({ page, isOwner, pageId }) => (
   <div className="row">
     <div className="col-lg-8">
       <div className="card bg-dark border-secondary mb-4">
@@ -832,9 +849,18 @@ const AboutSection = ({ page }) => (
           {page.phone && (
             <div className="mb-3">
               <strong className="text-white-50">Phone:</strong>
-              <div className="text-white">
-                <i className="fas fa-phone me-2"></i>
-                {page.phone}
+              <div className="text-white d-flex align-items-center justify-content-between">
+                <div>
+                  <i className="fas fa-phone me-2"></i>
+                  {page.phone}
+                </div>
+                {!isOwner && (
+                  <WhatsAppContactButton 
+                    pageId={pageId} 
+                    pageName={page.pageName}
+                    size="sm"
+                  />
+                )}
               </div>
             </div>
           )}
@@ -892,8 +918,8 @@ const AboutSection = ({ page }) => (
   </div>
 );
 
-// About Modal Component
-const AboutModal = ({ show, onClose, page }) => {
+// About Modal Component - Updated with WhatsApp Contact
+const AboutModal = ({ show, onClose, page, isOwner }) => {
   if (!show || !page) return null;
 
   return (
@@ -974,9 +1000,18 @@ const AboutModal = ({ show, onClose, page }) => {
               {page.phone && (
                 <div className="col-md-6">
                   <strong className="text-white-50">Phone:</strong>
-                  <div className="text-white">
-                    <i className="fas fa-phone me-2"></i>
-                    {page.phone}
+                  <div className="text-white d-flex align-items-center justify-content-between">
+                    <div>
+                      <i className="fas fa-phone me-2"></i>
+                      {page.phone}
+                    </div>
+                    {!isOwner && (
+                      <WhatsAppContactButton 
+                        pageId={page.id} 
+                        pageName={page.pageName}
+                        size="sm"
+                      />
+                    )}
                   </div>
                 </div>
               )}

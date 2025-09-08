@@ -125,4 +125,9 @@ router.post('/:id/follow', authenticateUser, checkAccountStatus, pageController.
 // @access Private (only authenticated users can unfollow pages)
 router.post('/:id/unfollow', authenticateUser, checkAccountStatus, pageController.unfollowPage);
 
+// @route  GET /api/pages/:id/whatsapp-contact
+// @desc   Get WhatsApp contact URL for a specific page
+// @access Public (anyone can view the WhatsApp contact URL of a published page)
+router.get('/:id/whatsapp-contact', pageController.getPageWhatsAppContact);
+
 module.exports = router;
