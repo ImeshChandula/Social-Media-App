@@ -10,6 +10,13 @@ import StoryViewer from "../components/StoryView";
 import WhatsAppContactButton from "../components/WhatsAppContactButton";
 import useAuthStore from "../store/authStore";
 import '../styles/PageWebView.css';
+import {
+  FaEdit,
+  FaImage,
+  FaUserCircle,
+  FaUndo,
+  FaSave,
+} from "react-icons/fa";
 
 const PageWebView = () => {
   const { id } = useParams();
@@ -20,7 +27,6 @@ const PageWebView = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
-  const [followersCount, setFollowersCount] = useState(0);
   const [isOwner, setIsOwner] = useState(false);
   
   // Content states
@@ -63,7 +69,7 @@ const PageWebView = () => {
         
         setPage(pageData);
         setIsFollowing(pageData.isFollowing || false);
-        setFollowersCount(pageData.followersCount || 0);
+        
         
         const ownershipCheck = pageData.isOwner || 
                               (authUser && (
@@ -195,7 +201,7 @@ const PageWebView = () => {
       
       if (res?.data?.success) {
         setIsFollowing(!isFollowing);
-        setFollowersCount(prev => isFollowing ? prev - 1 : prev + 1);
+        
         toast.success(isFollowing ? "Unfollowed page" : "Following page");
       }
     } catch (err) {
@@ -463,11 +469,11 @@ const PageWebView = () => {
                       transition={{ delay: 0.3 }}
                     >
                       <div className="text-center">
-                        <div className="text-white fw-bold fs-4">{followersCount}</div>
+                        <div className="text-white fw-bold fs-4">{page.followersCount || page.followers?.length || 0}</div>
                         <div className="text-white-50 small">Followers</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-white fw-bold fs-4">{posts.length}</div>
+                        <div className="text-white fw-bold fs-4">{page.postsCount || page.posts?.length || 0}</div>
                         <div className="text-white-50 small">Posts</div>
                       </div>
                       <div className="text-center">
@@ -511,8 +517,8 @@ const PageWebView = () => {
                         className="btn btn-outline-light px-4"
                         onClick={() => setShowAbout(true)}
                       >
-                        <i className="fas fa-info-circle me-2"></i>
-                        About
+                        
+                        👤 About
                       </button>
 
                       {/* Owner-only buttons */}
@@ -523,8 +529,8 @@ const PageWebView = () => {
                             onClick={handleCreatePost}
                             title="Create Post"
                           >
-                            <i className="fas fa-plus me-2"></i>
-                            Create Post
+                            
+                             + Create Post
                           </button>
                           
                           <button
@@ -532,15 +538,15 @@ const PageWebView = () => {
                             onClick={handleCreateStory}
                             title="Create Story"
                           >
-                            <i className="fas fa-plus-circle me-2"></i>
-                            Create Story
+                            
+                           + Create Story
                           </button>
                           
                           <button
                             className="btn btn-outline-success px-3"
                             onClick={() => setShowEditProfile(true)}
                           >
-                            <i className="fas fa-edit me-2"></i>
+                            
                             Edit
                           </button>
                         </>
@@ -574,7 +580,7 @@ const PageWebView = () => {
                   className={`nav-link ${activeTab === 'stories' ? 'active' : ''}`}
                   onClick={() => setActiveTab('stories')}
                 >
-                  <i className="fas fa-circle me-2"></i>
+                  
                   Stories ({stories.length})
                 </button>
               </li>
@@ -583,7 +589,7 @@ const PageWebView = () => {
                   className={`nav-link ${activeTab === 'about' ? 'active' : ''}`}
                   onClick={() => setActiveTab('about')}
                 >
-                  <i className="fas fa-info-circle me-2"></i>
+                  
                   About
                 </button>
               </li>
@@ -624,8 +630,8 @@ const PageWebView = () => {
                       </p>
                       {isOwner && (
                         <button className="btn btn-primary mt-3" onClick={handleCreatePost}>
-                          <i className="fas fa-plus me-2"></i>
-                          Create First Post
+                          
+                           + Create First Post
                         </button>
                       )}
                     </div>
@@ -682,15 +688,15 @@ const PageWebView = () => {
                     </div>
                   ) : (
                     <div className="text-center py-5">
-                      <i className="fas fa-circle text-white-50" style={{ fontSize: "4rem" }}></i>
+                      
                       <h5 className="text-white mt-3">No stories yet</h5>
                       <p className="text-white-50">
                         {isOwner ? "Share quick updates with your followers!" : "This page hasn't shared any stories yet."}
                       </p>
                       {isOwner && (
                         <button className="btn btn-info mt-3" onClick={handleCreateStory}>
-                          <i className="fas fa-plus-circle me-2"></i>
-                          Create First Story
+                          
+                           + Create First Story
                         </button>
                       )}
                     </div>
@@ -919,95 +925,113 @@ const AboutSection = ({ page, isOwner, pageId }) => (
 );
 
 // About Modal Component - Updated with WhatsApp Contact
+import { FaInfoCircle, FaAlignLeft, FaChartBar, FaAddressBook, FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
+
 const AboutModal = ({ show, onClose, page, isOwner }) => {
   if (!show || !page) return null;
 
   return (
-    <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.8)" }}>
+    <div
+      className="modal fade show d-block"
+      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+    >
       <div className="modal-dialog modal-lg modal-dialog-centered">
-        <div className="modal-content bg-dark text-white border-secondary">
-          <div className="modal-header border-secondary">
-            <h5 className="modal-title">
-              <i className="fas fa-info-circle me-2 text-info"></i>
+        <div className="modal-content border rounded-3 shadow-sm">
+          {/* Header */}
+          <div className="modal-header border-0 bg-light">
+            <h5 className="modal-title d-flex align-items-center text-dark">
+              <FaInfoCircle className="me-2 text-primary" />
               About {page.pageName}
             </h5>
-            <button className="btn-close btn-close-white" onClick={onClose}></button>
+            <button className="btn-close" onClick={onClose}></button>
           </div>
-          
-          <div className="modal-body">
+
+          {/* Body */}
+          <div className="modal-body bg-white">
             <div className="row g-4">
+              {/* Left column */}
               <div className="col-md-6">
-                <div className="text-center mb-4">
+                <div className="text-center mb-3">
                   <img
                     src={page.profilePicture || "/default-page-avatar.png"}
                     alt={page.pageName}
-                    className="rounded-3 mb-3"
-                    style={{ 
-                      width: "120px", 
-                      height: "120px", 
+                    className="rounded-circle mb-3"
+                    style={{
+                      width: "120px",
+                      height: "120px",
                       objectFit: "cover",
-                      border: "3px solid rgba(255, 255, 255, 0.3)"
+                      border: "3px solid #e0e0e0",
                     }}
                   />
-                  <h5 className="text-white">{page.pageName}</h5>
+                  <h5 className="text-dark fw-bold">{page.pageName}</h5>
                   {page.username && (
-                    <p className="text-info">@{page.username}</p>
+                    <p className="text-muted">@{page.username}</p>
                   )}
                 </div>
               </div>
 
+              {/* Right column */}
               <div className="col-md-6">
-                <h6 className="text-info mb-3">
-                  <i className="fas fa-align-left me-2"></i>
+                <h6 className="text-primary mb-2 d-flex align-items-center">
+                  <FaAlignLeft className="me-2" />
                   Description
                 </h6>
-                <p className="text-white-50 mb-4">
+                <p className="text-muted mb-4">
                   {page.description || "No description available"}
                 </p>
 
-                <h6 className="text-info mb-3">
-                  <i className="fas fa-chart-bar me-2"></i>
+                <h6 className="text-primary mb-2 d-flex align-items-center">
+                  <FaChartBar className="me-2" />
                   Statistics
                 </h6>
                 <div className="row text-center">
                   <div className="col-6">
-                    <div className="text-white fw-bold fs-5">{page.followersCount || 0}</div>
-                    <div className="text-white-50 small">Followers</div>
+                    <div className="fw-bold fs-5 text-dark">
+                      {page.followersCount || 0}
+                    </div>
+                    <div className="text-muted small">Followers</div>
                   </div>
                   <div className="col-6">
-                    <div className="text-white fw-bold fs-5">{page.postsCount || 0}</div>
-                    <div className="text-white-50 small">Posts</div>
+                    <div className="fw-bold fs-5 text-dark">
+                      {page.postsCount || 0}
+                    </div>
+                    <div className="text-muted small">Posts</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <hr className="border-secondary my-4" />
+            <hr className="my-4 text-muted" />
 
-            <h6 className="text-info mb-3">
-              <i className="fas fa-address-book me-2"></i>
+            {/* Contact Details */}
+            <h6 className="text-primary mb-3 d-flex align-items-center">
+              <FaAddressBook className="me-2" />
               Contact Details
             </h6>
             <div className="row g-3">
               <div className="col-md-6">
-                <strong className="text-white-50">Category:</strong>
-                <div className="text-white">
-                  <span className="badge bg-info">
-                    {page.category ? page.category.charAt(0).toUpperCase() + page.category.slice(1) : 'Uncategorized'}
+                <strong className="text-muted">Category:</strong>
+                <div>
+                  <span className="badge bg-primary-subtle text-dark border">
+                    {page.category
+                      ? page.category.charAt(0).toUpperCase() +
+                        page.category.slice(1)
+                      : "Uncategorized"}
                   </span>
                 </div>
               </div>
+
               {page.phone && (
                 <div className="col-md-6">
-                  <strong className="text-white-50">Phone:</strong>
-                  <div className="text-white d-flex align-items-center justify-content-between">
+                  <strong className="text-muted">Phone:</strong>
+                  <div className="d-flex align-items-center justify-content-between text-dark">
                     <div>
-                      <i className="fas fa-phone me-2"></i>
+                      <FaPhone className="me-2 text-secondary" />
                       {page.phone}
                     </div>
                     {!isOwner && (
-                      <WhatsAppContactButton 
-                        pageId={page.id} 
+                      <WhatsAppContactButton
+                        pageId={page.id}
                         pageName={page.pageName}
                         size="sm"
                       />
@@ -1015,20 +1039,22 @@ const AboutModal = ({ show, onClose, page, isOwner }) => {
                   </div>
                 </div>
               )}
+
               {page.email && (
                 <div className="col-md-6">
-                  <strong className="text-white-50">Email:</strong>
-                  <div className="text-white">
-                    <i className="fas fa-envelope me-2"></i>
+                  <strong className="text-muted">Email:</strong>
+                  <div className="text-dark">
+                    <FaEnvelope className="me-2 text-secondary" />
                     {page.email}
                   </div>
                 </div>
               )}
+
               {page.address && (
                 <div className="col-12">
-                  <strong className="text-white-50">Address:</strong>
-                  <div className="text-white">
-                    <i className="fas fa-map-marker-alt me-2"></i>
+                  <strong className="text-muted">Address:</strong>
+                  <div className="text-dark">
+                    <FaMapMarkerAlt className="me-2 text-secondary" />
                     {page.address}
                   </div>
                 </div>
@@ -1036,8 +1062,9 @@ const AboutModal = ({ show, onClose, page, isOwner }) => {
             </div>
           </div>
 
-          <div className="modal-footer border-secondary">
-            <button className="btn btn-secondary" onClick={onClose}>
+          {/* Footer */}
+          <div className="modal-footer bg-light border-0">
+            <button className="btn btn-outline-secondary" onClick={onClose}>
               Close
             </button>
           </div>
@@ -1047,28 +1074,30 @@ const AboutModal = ({ show, onClose, page, isOwner }) => {
   );
 };
 
+
+
 // Edit Profile Modal Component
 const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
   const [formData, setFormData] = useState({
-    description: '',
-    profilePicture: '',
-    coverPhoto: ''
+    description: "",
+    profilePicture: "",
+    coverPhoto: "",
   });
   const [loading, setLoading] = useState(false);
   const [profileImageFile, setProfileImageFile] = useState(null);
   const [coverImageFile, setCoverImageFile] = useState(null);
-  const [profilePreview, setProfilePreview] = useState('');
-  const [coverPreview, setCoverPreview] = useState('');
+  const [profilePreview, setProfilePreview] = useState("");
+  const [coverPreview, setCoverPreview] = useState("");
 
   useEffect(() => {
     if (show && page) {
       setFormData({
-        description: page.description || '',
-        profilePicture: page.profilePicture || '',
-        coverPhoto: page.coverPhoto || ''
+        description: page.description || "",
+        profilePicture: page.profilePicture || "",
+        coverPhoto: page.coverPhoto || "",
       });
-      setProfilePreview(page.profilePicture || '');
-      setCoverPreview(page.coverPhoto || '');
+      setProfilePreview(page.profilePicture || "");
+      setCoverPreview(page.coverPhoto || "");
     }
   }, [show, page]);
 
@@ -1083,14 +1112,14 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64 = reader.result;
-        if (type === 'profile') {
+        if (type === "profile") {
           setProfileImageFile(file);
           setProfilePreview(base64);
-          setFormData(prev => ({...prev, profilePicture: base64}));
+          setFormData((prev) => ({ ...prev, profilePicture: base64 }));
         } else {
           setCoverImageFile(file);
           setCoverPreview(base64);
-          setFormData(prev => ({...prev, coverPhoto: base64}));
+          setFormData((prev) => ({ ...prev, coverPhoto: base64 }));
         }
       };
       reader.readAsDataURL(file);
@@ -1099,7 +1128,7 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.description.trim()) {
       toast.error("Description is required");
       return;
@@ -1107,14 +1136,17 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
 
     setLoading(true);
     try {
-      const res = await axiosInstance.put(`/pages/${page.id || page._id}/profile`, formData);
-      
+      const res = await axiosInstance.put(
+        `/pages/${page.id || page._id}/profile`,
+        formData
+      );
+
       if (res?.data?.success) {
         onUpdate(res.data.page);
         toast.success("Page profile updated successfully!");
       }
     } catch (err) {
-      console.error('Error updating profile:', err);
+      console.error("Error updating profile:", err);
       toast.error(err.response?.data?.message || "Failed to update profile");
     } finally {
       setLoading(false);
@@ -1124,12 +1156,12 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
   const resetForm = () => {
     if (page) {
       setFormData({
-        description: page.description || '',
-        profilePicture: page.profilePicture || '',
-        coverPhoto: page.coverPhoto || ''
+        description: page.description || "",
+        profilePicture: page.profilePicture || "",
+        coverPhoto: page.coverPhoto || "",
       });
-      setProfilePreview(page.profilePicture || '');
-      setCoverPreview(page.coverPhoto || '');
+      setProfilePreview(page.profilePicture || "");
+      setCoverPreview(page.coverPhoto || "");
       setProfileImageFile(null);
       setCoverImageFile(null);
     }
@@ -1138,41 +1170,49 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
   if (!show || !page) return null;
 
   return (
-    <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.8)" }}>
+    <div
+      className="modal fade show d-block"
+      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+    >
       <div className="modal-dialog modal-lg modal-dialog-centered">
-        <div className="modal-content bg-dark text-white border-secondary">
-          <div className="modal-header border-secondary">
-            <h5 className="modal-title">
-              <i className="fas fa-edit me-2 text-success"></i>
+        <div className="modal-content border rounded-3 shadow-sm">
+          {/* Header */}
+          <div className="modal-header bg-light border-0">
+            <h5 className="modal-title d-flex align-items-center text-dark">
+              <FaEdit className="me-2 text-success" />
               Edit Page Profile
             </h5>
-            <button className="btn-close btn-close-white" onClick={onClose}></button>
+            <button className="btn-close" onClick={onClose}></button>
           </div>
-          
+
+          {/* Form */}
           <form onSubmit={handleSubmit}>
-            <div className="modal-body">
+            <div className="modal-body bg-white">
               <div className="alert alert-info bg-info bg-opacity-10 border border-info border-opacity-25 mb-4">
-                <small>
-                  <i className="fas fa-info-circle me-2"></i>
-                  Update your page's visual appearance and description. Images should be under 5MB.
+                <small className="d-flex align-items-center">
+                  <FaInfoCircle className="me-2 text-info" />
+                  Update your page’s visual appearance and description. Images
+                  should be under 5MB.
                 </small>
               </div>
 
-              {/* Cover Photo Upload */}
+              {/* Cover Photo */}
               <div className="mb-4">
-                <label className="form-label">
-                  <i className="fas fa-image me-2"></i>
+                <label className="form-label fw-semibold">
+                  <FaImage className="me-2 text-secondary" />
                   Cover Photo
                 </label>
                 <div className="row align-items-center">
                   <div className="col-md-8">
                     <input
                       type="file"
-                      className="form-control bg-dark text-white border-secondary"
+                      className="form-control"
                       accept="image/*"
-                      onChange={(e) => handleImageChange(e, 'cover')}
+                      onChange={(e) => handleImageChange(e, "cover")}
                     />
-                    <small className="text-white-50">Recommended: 1200x300px or similar wide format</small>
+                    <small className="text-muted">
+                      Recommended: 1200x300px or similar wide format
+                    </small>
                   </div>
                   <div className="col-md-4">
                     {coverPreview && (
@@ -1181,7 +1221,11 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
                           src={coverPreview}
                           alt="Cover Preview"
                           className="rounded"
-                          style={{ width: "100%", height: "60px", objectFit: "cover" }}
+                          style={{
+                            width: "100%",
+                            height: "60px",
+                            objectFit: "cover",
+                          }}
                         />
                         {coverImageFile && (
                           <span className="badge bg-success position-absolute top-0 end-0">
@@ -1194,21 +1238,23 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
                 </div>
               </div>
 
-              {/* Profile Picture Upload */}
+              {/* Profile Picture */}
               <div className="mb-4">
-                <label className="form-label">
-                  <i className="fas fa-user-circle me-2"></i>
+                <label className="form-label fw-semibold">
+                  <FaUserCircle className="me-2 text-secondary" />
                   Profile Picture
                 </label>
                 <div className="row align-items-center">
                   <div className="col-md-8">
                     <input
                       type="file"
-                      className="form-control bg-dark text-white border-secondary"
+                      className="form-control"
                       accept="image/*"
-                      onChange={(e) => handleImageChange(e, 'profile')}
+                      onChange={(e) => handleImageChange(e, "profile")}
                     />
-                    <small className="text-white-50">Recommended: Square image (500x500px or similar)</small>
+                    <small className="text-muted">
+                      Recommended: Square image (500x500px or similar)
+                    </small>
                   </div>
                   <div className="col-md-4">
                     {profilePreview && (
@@ -1217,7 +1263,11 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
                           src={profilePreview}
                           alt="Profile Preview"
                           className="rounded-circle"
-                          style={{ width: "80px", height: "80px", objectFit: "cover" }}
+                          style={{
+                            width: "80px",
+                            height: "80px",
+                            objectFit: "cover",
+                          }}
                         />
                         {profileImageFile && (
                           <span className="badge bg-success position-absolute top-0 end-0">
@@ -1232,34 +1282,52 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
 
               {/* Description */}
               <div className="mb-4">
-                <label className="form-label">
-                  <i className="fas fa-align-left me-2"></i>
+                <label className="form-label fw-semibold">
+                  <FaAlignLeft className="me-2 text-secondary" />
                   Page Description <span className="text-danger">*</span>
                 </label>
                 <textarea
-                  className="form-control bg-dark text-white border-secondary"
+                  className="form-control"
                   rows="4"
                   value={formData.description}
-                  onChange={(e) => setFormData(prev => ({...prev, description: e.target.value}))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   placeholder="Tell people what your page is about..."
                   required
                   maxLength={500}
                 />
-                <small className="text-white-50">
+                <small className="text-muted">
                   {formData.description.length}/500 characters
                 </small>
               </div>
             </div>
 
-            <div className="modal-footer border-secondary">
-              <button type="button" className="btn btn-outline-secondary" onClick={resetForm}>
-                <i className="fas fa-undo me-2"></i>
+            {/* Footer */}
+            <div className="modal-footer bg-light border-0">
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={resetForm}
+              >
+                <FaUndo className="me-2" />
                 Reset
               </button>
-              <button type="button" className="btn btn-secondary" onClick={onClose}>
+              <button
+                type="button"
+                className="btn btn-outline-dark"
+                onClick={onClose}
+              >
                 Cancel
               </button>
-              <button type="submit" className="btn btn-success" disabled={loading}>
+              <button
+                type="submit"
+                className="btn btn-success"
+                disabled={loading}
+              >
                 {loading ? (
                   <>
                     <span className="spinner-border spinner-border-sm me-2"></span>
@@ -1267,7 +1335,7 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
                   </>
                 ) : (
                   <>
-                    <i className="fas fa-save me-2"></i>
+                    <FaSave className="me-2" />
                     Save Changes
                   </>
                 )}
@@ -1279,5 +1347,6 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
     </div>
   );
 };
+
 
 export default PageWebView;

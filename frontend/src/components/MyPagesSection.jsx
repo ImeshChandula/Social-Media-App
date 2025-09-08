@@ -222,7 +222,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
           }}
           onClick={() => setShowCreateModal(true)}
         >
-          Create New Page
+          + Create New Page
         </button>
       </div>
 
@@ -321,7 +321,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
                   </div>
                   <div style={{ borderLeft: '1px solid #dee2e6', margin: '0 1rem' }}></div>
                   <div>
-                    <div style={{ color: '#495057', fontWeight: 'bold' }}>{page.postsCount || 0}</div>
+                    <div style={{ color: '#495057', fontWeight: 'bold' }}>{page.postsCount || page.posts?.length || 0}</div>
                     <div style={{ color: '#6c757d', fontSize: '0.75rem' }}>Posts</div>
                   </div>
                 </div>
@@ -361,7 +361,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
                         flex: 1,
                         fontSize: '0.875rem'
                       }}
-                      onClick={() => onViewPagePosts && onViewPagePosts(page)}
+                      onClick={() => handleViewPage(page)}
                       title="Manage Posts"
                     >
                       Posts

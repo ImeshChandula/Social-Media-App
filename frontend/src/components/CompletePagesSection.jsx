@@ -34,7 +34,7 @@ const CompletePagesSection = ({ onViewPagePosts }) => {
             className="btn btn-outline-secondary"
             onClick={handleBackToPages}
           >
-            <i className="fas fa-arrow-left me-2"></i>
+            
             Back to My Pages
           </button>
         </div>
@@ -56,14 +56,12 @@ const CompletePagesSection = ({ onViewPagePosts }) => {
             className={`btn ${activeView === 'my-pages' ? 'btn-primary' : 'btn-outline-primary'}`}
             onClick={() => setActiveView('my-pages')}
           >
-            <i className="fas fa-user me-2"></i>
             My Pages
           </button>
           <button
             className={`btn ${activeView === 'browse-all' ? 'btn-primary' : 'btn-outline-primary'}`}
             onClick={() => setActiveView('browse-all')}
           >
-            <i className="fas fa-globe me-2"></i>
             Browse All Pages
           </button>
         </div>

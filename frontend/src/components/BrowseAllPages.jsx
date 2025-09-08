@@ -148,14 +148,14 @@ const BrowseAllPages = () => {
       <div className="row g-3 mb-4">
         <div className="col-md-6">
           <div className="position-relative">
-            <i className="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+            
             <input
               type="text"
               className="form-control bg-white border-light ps-5 shadow-sm"
               name="search"
               value={filters.search}
               onChange={handleFilterChange}
-              placeholder="Search pages..."
+              placeholder="🔍Search pages..."
               style={{
                 borderRadius: "12px",
                 border: "2px solid #e9ecef",

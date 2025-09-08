@@ -262,7 +262,7 @@ function ProfilePage() {
                 className={`btn ${activeTab === 'posts' ? "btn-primary" : "btn-outline-primary"}`}
                 onClick={() => handleTabChange('posts')}
               >
-                <i className="fas fa-newspaper me-2"></i>
+                
                 My Posts
               </button>
               <button
@@ -273,14 +273,14 @@ function ProfilePage() {
                   setShowFavorites(true);
                 }}
               >
-                <i className="fas fa-heart me-2"></i>
-                Favorites
+                
+                ❤️ Favorites
               </button>
               <button
                 className={`btn ${activeTab === 'pages' ? "btn-primary" : "btn-outline-primary"}`}
                 onClick={() => handleTabChange('pages')}
               >
-                <i className="fas fa-layer-group me-2"></i>
+                
                 My Pages
               </button>
             </div>

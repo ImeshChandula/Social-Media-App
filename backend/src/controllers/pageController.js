@@ -15,7 +15,7 @@ const VALID_VIDEO_CATEGORIES = ['Music', 'Sports', 'Education', 'Entertainment',
 
 
 // createPage function
-const createPage = async (req, res) => {
+const createPage = async(req, res) => {
     try {
         console.log('=== CREATE PAGE REQUEST ===');
         console.log('Request body keys:', Object.keys(req.body));
@@ -23,7 +23,7 @@ const createPage = async (req, res) => {
             ...req.body,
             profilePicture: req.body.profilePicture ? 'Base64 data present (length: ' + req.body.profilePicture.length + ')' : 'MISSING'
         });
-        
+
         const { pageName, description, category, phone, email, address, username, profilePicture } = req.body;
         const ownerId = req.user.id;
 
@@ -126,7 +126,7 @@ const createPage = async (req, res) => {
 };
 
 //@desc     Update page details
-const updatePage = async (req, res) => {
+const updatePage = async(req, res) => {
     try {
         const pageId = req.params.id;
         const currentUserId = req.user.id;
@@ -238,9 +238,8 @@ const updatePage = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: needsApproval 
-                ? 'Page updated successfully. Contact details changes are pending admin approval.'
-                : 'Page updated successfully',
+            message: needsApproval ?
+                'Page updated successfully. Contact details changes are pending admin approval.' : 'Page updated successfully',
             page: updatedPage,
             needsApproval
         });
@@ -255,7 +254,7 @@ const updatePage = async (req, res) => {
 };
 
 // Update the publishPage function to check approval status
-const publishPage = async (req, res) => {
+const publishPage = async(req, res) => {
     try {
         const pageId = req.params.id;
         const currentUserId = req.user.id;
@@ -309,13 +308,13 @@ const publishPage = async (req, res) => {
             message: 'Server error'
         });
     }
-}; 
+};
 
 //@desc     Get page by ID (Enhanced for web view)
-const getPageById = async (req, res) => {
+const getPageById = async(req, res) => {
     try {
         const pageId = req.params.id;
-        const currentUserId = req.user?.id; // Use optional chaining to handle undefined req.user
+        const currentUserId = req.user ? .id; // Use optional chaining to handle undefined req.user
 
         console.log('🔍 Getting page by ID:', pageId);
         console.log('👤 Current User ID:', currentUserId);
@@ -341,10 +340,10 @@ const getPageById = async (req, res) => {
 
         // Check if user is following this page (only if user is authenticated)
         const isFollowing = currentUserId ? page.followers.includes(currentUserId) : false;
-        
+
         //Properly calculate ownership
         const isOwner = currentUserId && page.owner === currentUserId;
-        
+
         console.log('✅ Is Owner Check:', {
             currentUserId,
             pageOwner: page.owner,
@@ -378,8 +377,8 @@ const getPageById = async (req, res) => {
             address: page.address,
             isFollowing,
             isOwner, // This is the critical field
-            followersCount: page.followersCount || page.followers?.length || 0,
-            postsCount: postsCount,
+            followersCount: page.followersCount || page.followers ? .length || 0,
+            postsCount: page.postsCount || page.posts ? .length || 0,
             isPublished: page.isPublished,
             isVerified: page.isVerified || false,
             approvalStatus: page.approvalStatus,
@@ -412,10 +411,10 @@ const getPageById = async (req, res) => {
 };
 
 //@desc     Get current user's pages
-const getCurrentUserPages = async (req, res) => {
+const getCurrentUserPages = async(req, res) => {
     try {
         const userId = req.user.id;
-        
+
         const pages = await PageService.findByOwner(userId);
 
         res.status(200).json({
@@ -435,7 +434,7 @@ const getCurrentUserPages = async (req, res) => {
 };
 
 //@desc     Get all pages with filtering
-const getAllPages = async (req, res) => {
+const getAllPages = async(req, res) => {
     try {
         const { category, search, limit = 20, page = 1 } = req.query;
 
@@ -476,7 +475,7 @@ const getAllPages = async (req, res) => {
 };
 
 //@desc     Follow a page
-const followPage = async (req, res) => {
+const followPage = async(req, res) => {
     try {
         const pageId = req.params.id;
         const userId = req.user.id;
@@ -522,7 +521,7 @@ const followPage = async (req, res) => {
 };
 
 //@desc     Unfollow a page
-const unfollowPage = async (req, res) => {
+const unfollowPage = async(req, res) => {
     try {
         const pageId = req.params.id;
         const userId = req.user.id;
@@ -561,7 +560,7 @@ const unfollowPage = async (req, res) => {
 };
 
 //@desc     Update page profile (profile picture, cover photo, description)
-const updatePageProfile = async (req, res) => {
+const updatePageProfile = async(req, res) => {
     try {
         const pageId = req.params.id;
         const currentUserId = req.user.id;
@@ -642,7 +641,7 @@ const updatePageProfile = async (req, res) => {
 
 
 //@desc     Delete page
-const deletePage = async (req, res) => {
+const deletePage = async(req, res) => {
     try {
         const pageId = req.params.id;
         const currentUserId = req.user.id;
@@ -680,7 +679,7 @@ const deletePage = async (req, res) => {
 };
 
 //@desc     Get page categories
-const getPageCategories = async (req, res) => {
+const getPageCategories = async(req, res) => {
     try {
         res.status(200).json({
             success: true,
@@ -699,7 +698,7 @@ const getPageCategories = async (req, res) => {
 // Admin functions
 
 //@desc     Get pages pending approval (Admin only)
-const getPendingPages = async (req, res) => {
+const getPendingPages = async(req, res) => {
     try {
         if (req.user.role !== 'super_admin' && req.user.role !== 'admin') {
             return res.status(403).json({
@@ -712,7 +711,7 @@ const getPendingPages = async (req, res) => {
 
         // Get owner information for each page
         const populatedPages = await Promise.all(
-            pendingPages.map(async (page) => {
+            pendingPages.map(async(page) => {
                 const owner = await UserService.findById(page.owner);
                 return {
                     ...page,
@@ -744,7 +743,7 @@ const getPendingPages = async (req, res) => {
 };
 
 //@desc     Approve page contact details (Admin only)
-const approvePageContactDetails = async (req, res) => {
+const approvePageContactDetails = async(req, res) => {
     try {
         const pageId = req.params.id;
         const { reviewNote } = req.body;
@@ -795,7 +794,7 @@ const approvePageContactDetails = async (req, res) => {
 };
 
 //@desc     Reject page contact details (Admin only)
-const rejectPageContactDetails = async (req, res) => {
+const rejectPageContactDetails = async(req, res) => {
     try {
         const pageId = req.params.id;
         const { reviewNote } = req.body;
@@ -842,7 +841,7 @@ const rejectPageContactDetails = async (req, res) => {
 
 
 //@desc     Get all pages for admin management (Super Admin only)
-const getAllPagesForAdmin = async (req, res) => {
+const getAllPagesForAdmin = async(req, res) => {
     try {
         if (req.user.role !== 'super_admin') {
             return res.status(403).json({
@@ -856,7 +855,7 @@ const getAllPagesForAdmin = async (req, res) => {
 
         // Get owner information for each page
         const populatedPages = await Promise.all(
-            pages.map(async (page) => {
+            pages.map(async(page) => {
                 try {
                     const owner = await UserService.findById(page.owner);
                     return {
@@ -922,7 +921,7 @@ const getAllPagesForAdmin = async (req, res) => {
 };
 
 //@desc     Ban/Unban a page (Super Admin only)
-const togglePageBan = async (req, res) => {
+const togglePageBan = async(req, res) => {
     try {
         const pageId = req.params.id;
         const { banReason } = req.body;
@@ -975,7 +974,7 @@ const togglePageBan = async (req, res) => {
 };
 
 //@desc     Get page details for admin (Super Admin only)
-const getPageForAdmin = async (req, res) => {
+const getPageForAdmin = async(req, res) => {
     try {
         const pageId = req.params.id;
 
@@ -1055,7 +1054,7 @@ const getPageForAdmin = async (req, res) => {
 };
 
 // Create post for page
-const createPagePost = async (req, res) => {
+const createPagePost = async(req, res) => {
     try {
         const { pageId } = req.params;
         const { content, media, mediaType, tags, privacy, location, category } = req.body;
@@ -1095,31 +1094,31 @@ const createPagePost = async (req, res) => {
 
         // Validate required content
         if (!content && !media) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                message: "Either content or media is required." 
+                message: "Either content or media is required."
             });
         }
 
         if (!mediaType) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                message: "Media type is required." 
+                message: "Media type is required."
             });
         }
 
         // Validate category for video posts
         if (mediaType === 'video') {
             if (!category) {
-                return res.status(400).json({ 
+                return res.status(400).json({
                     success: false,
                     error: "Category is required for video posts.",
                     validCategories: VALID_VIDEO_CATEGORIES
                 });
             }
-            
+
             if (!VALID_VIDEO_CATEGORIES.includes(category)) {
-                return res.status(400).json({ 
+                return res.status(400).json({
                     success: false,
                     error: "Invalid category for video post.",
                     receivedCategory: category,
@@ -1128,7 +1127,7 @@ const createPagePost = async (req, res) => {
                 });
             }
         }
-        
+
         const postData = {
             tags,
             mediaType,
@@ -1148,14 +1147,14 @@ const createPagePost = async (req, res) => {
 
         const newPost = await PostService.create(postData);
         if (!newPost) {
-            return res.status(400).json({ 
-                success: false, 
+            return res.status(400).json({
+                success: false,
                 message: "Failed to create post"
             });
         }
 
         const updateData = { author: pageId }; // Use pageId as author
-        
+
         // Handle media upload if provided
         if (media) {
             console.log('📸 Processing media upload...');
@@ -1173,36 +1172,36 @@ const createPagePost = async (req, res) => {
             updateData.media = result.imageUrl;
             console.log('✅ Media uploaded successfully:', result.imageUrl);
         }
-        
+
         const populatedPost = await PostService.updateById(newPost.id, updateData);
         if (!populatedPost) {
-            return res.status(400).json({ 
-                success: false, 
+            return res.status(400).json({
+                success: false,
                 message: "Failed to update post with media"
             });
         }
 
         console.log('✅ Page post created successfully:', populatedPost.id);
 
-        return res.status(201).json({ 
+        return res.status(201).json({
             success: true,
-            message: "Page post created successfully", 
-            post: populatedPost 
+            message: "Page post created successfully",
+            post: populatedPost
         });
-        
+
     } catch (error) {
         console.error('Page post creation error:', error.message);
         console.error('Stack trace:', error.stack);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Server error' 
+            message: 'Server error'
         });
     }
 };
 
 
 // Create story for page 
-const createPageStory = async (req, res) => {
+const createPageStory = async(req, res) => {
     try {
         const { pageId } = req.params;
         const { content, media, type, caption, privacy } = req.body;
@@ -1236,9 +1235,9 @@ const createPageStory = async (req, res) => {
         }
 
         if (!content && !media) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 success: false,
-                message: 'Content or media is required' 
+                message: 'Content or media is required'
             });
         }
 
@@ -1275,14 +1274,14 @@ const createPageStory = async (req, res) => {
             console.log('✅ Story media uploaded successfully');
         }
 
-        
+
         const newStory = await Story.create(storyData);
-        
+
 
         if (!newStory) {
-            return res.status(500).json({ 
+            return res.status(500).json({
                 success: false,
-                message: 'Failed to create story' 
+                message: 'Failed to create story'
             });
         }
 
@@ -1310,19 +1309,19 @@ const createPageStory = async (req, res) => {
 
     } catch (error) {
         console.error('Page story creation error:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Server error' 
+            message: 'Server error'
         });
     }
 };
 
 
 // Get page posts
-const getPagePosts = async (req, res) => {
+const getPagePosts = async(req, res) => {
     try {
         const { pageId } = req.params;
-        const currentUserId = req.user?.id;
+        const currentUserId = req.user ? .id;
 
         const page = await PageService.findById(pageId);
         if (!page) {
@@ -1341,8 +1340,8 @@ const getPagePosts = async (req, res) => {
         }
 
         // Get page posts
-        const posts = await PostService.findByPageId ? 
-            await PostService.findByPageId(pageId) : 
+        const posts = await PostService.findByPageId ?
+            await PostService.findByPageId(pageId) :
             await PostService.findByUserId(pageId); // Fallback to existing method
 
         // Populate with page data
@@ -1368,19 +1367,19 @@ const getPagePosts = async (req, res) => {
 
     } catch (error) {
         console.error('Get page posts error:', error.message);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Server error' 
+            message: 'Server error'
         });
     }
 };
 
 
 // Enhanced Get page stories function with better error handling
-const getPageStories = async (req, res) => {
+const getPageStories = async(req, res) => {
     try {
         const { pageId } = req.params;
-        const currentUserId = req.user?.id;
+        const currentUserId = req.user ? .id;
 
         console.log('📖 Getting page stories for pageId:', pageId);
 
@@ -1404,10 +1403,10 @@ const getPageStories = async (req, res) => {
         const allStories = await Story.findByUserIdSimple(pageId);
 
         if (!allStories || allStories.length === 0) {
-            return res.status(200).json({ 
+            return res.status(200).json({
                 success: true,
-                message: 'No stories found for this page', 
-                stories: [] 
+                message: 'No stories found for this page',
+                stories: []
             });
         }
 
@@ -1450,18 +1449,18 @@ const getPageStories = async (req, res) => {
 
     } catch (error) {
         console.error('Get page stories error:', error.message);
-        return res.status(500).json({ 
+        return res.status(500).json({
             success: false,
-            message: 'Server error' 
+            message: 'Server error'
         });
     }
 };
 
 //@desc     Get WhatsApp contact URL for page
-const getPageWhatsAppContact = async (req, res) => {
+const getPageWhatsAppContact = async(req, res) => {
     try {
         const pageId = req.params.id;
-        
+
         const page = await PageService.findById(pageId);
         if (!page) {
             return res.status(404).json({
