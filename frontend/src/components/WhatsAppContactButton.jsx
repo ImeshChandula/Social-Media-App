@@ -84,7 +84,7 @@ const WhatsAppContactButton = ({ pageId, pageName, className = '', size = 'md' }
           {loading ? (
             <span className="spinner-border spinner-border-sm me-2"></span>
           ) : (
-            <i className={`fab fa-whatsapp me-2 ${getIconSize()}`}></i>
+            <i></i>
           )}
           Contact Us
         </button>

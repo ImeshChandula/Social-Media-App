@@ -496,7 +496,7 @@ const PageWebView = () => {
                             className={`btn ${isFollowing ? 'btn-outline-secondary' : 'btn-primary'} px-4`}
                             onClick={handleFollow}
                           >
-                            <i className={`fas ${isFollowing ? 'fa-user-minus' : 'fa-user-plus'} me-2`}></i>
+                            
                             {isFollowing ? 'Following' : 'Follow'}
                           </button>
                           
@@ -571,7 +571,7 @@ const PageWebView = () => {
                   className={`nav-link ${activeTab === 'posts' ? 'active' : ''}`}
                   onClick={() => setActiveTab('posts')}
                 >
-                  <i className="fas fa-images me-2"></i>
+                  
                   Posts ({posts.length})
                 </button>
               </li>
@@ -712,8 +712,6 @@ const PageWebView = () => {
           </div>
         </div>
       </div>
-
-      {/* Create Post Modal */}
      {/* Create Post Modal */}
 {showCreatePost && (
   <div
@@ -843,7 +841,7 @@ const AboutSection = ({ page, isOwner, pageId }) => (
       <div className="card bg-dark border-secondary mb-4">
         <div className="card-body">
           <h5 className="card-title text-white mb-3">
-            <i className="fas fa-align-left me-2 text-primary"></i>
+           
             Description
           </h5>
           <p className="text-white-50 mb-0" style={{ lineHeight: "1.6" }}>
@@ -856,7 +854,7 @@ const AboutSection = ({ page, isOwner, pageId }) => (
       <div className="card bg-dark border-secondary mb-4">
         <div className="card-body">
           <h5 className="card-title text-white mb-3">
-            <i className="fas fa-info me-2 text-primary"></i>
+            
             Page Info
           </h5>
           
@@ -874,7 +872,7 @@ const AboutSection = ({ page, isOwner, pageId }) => (
               <strong className="text-white-50">Phone:</strong>
               <div className="text-white d-flex align-items-center justify-content-between">
                 <div>
-                  <i className="fas fa-phone me-2"></i>
+                  
                   {page.phone}
                 </div>
                 {!isOwner && (
@@ -892,7 +890,7 @@ const AboutSection = ({ page, isOwner, pageId }) => (
             <div className="mb-3">
               <strong className="text-white-50">Email:</strong>
               <div className="text-white">
-                <i className="fas fa-envelope me-2"></i>
+                
                 {page.email}
               </div>
             </div>
@@ -902,7 +900,7 @@ const AboutSection = ({ page, isOwner, pageId }) => (
             <div className="mb-0">
               <strong className="text-white-50">Address:</strong>
               <div className="text-white">
-                <i className="fas fa-map-marker-alt me-2"></i>
+                
                 {page.address}
               </div>
             </div>
@@ -915,7 +913,7 @@ const AboutSection = ({ page, isOwner, pageId }) => (
         <div className="card bg-dark border-secondary">
           <div className="card-body">
             <h5 className="card-title text-white mb-3">
-              <i className="fas fa-user-circle me-2 text-primary"></i>
+              
               Page Owner
             </h5>
             <div className="d-flex align-items-center">

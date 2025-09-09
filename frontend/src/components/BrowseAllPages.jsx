@@ -415,7 +415,7 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
                        borderRadius: '20px 20px 0 0'
                      }}>
                   <h5 className="modal-title fw-bold mb-0">
-                    <i className="fas fa-info-circle me-2"></i>
+                    
                     Page Details
                   </h5>
                   <button 
@@ -445,7 +445,7 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
                       {page.isVerified && (
                         <div className="position-absolute bottom-0 end-0 bg-primary rounded-circle p-1"
                              style={{ width: '28px', height: '28px' }}>
-                          <i className="fas fa-check text-white" style={{ fontSize: '12px' }}></i>
+                          
                         </div>
                       )}
                     </div>
@@ -462,7 +462,7 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
                               borderRadius: '25px',
                               fontSize: '13px'
                             }}>
-                        <i className="fas fa-tag me-2"></i>
+                        
                         {page.category ? page.category.charAt(0).toUpperCase() + page.category.slice(1) : 'Uncategorized'}
                       </span>
                     </div>
@@ -491,7 +491,7 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
                   {/* Description */}
                   <div className="p-4 border-bottom">
                     <h6 className="text-primary fw-bold mb-3">
-                      <i className="fas fa-align-left me-2"></i>About
+                      About
                     </h6>
                     <p className="text-muted mb-0" style={{ lineHeight: '1.6' }}>
                       {page.description || "No description available"}
@@ -502,13 +502,13 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
                   {(page.phone || page.email || page.address) && (
                     <div className="p-4 border-bottom">
                       <h6 className="text-primary fw-bold mb-3">
-                        <i className="fas fa-address-card me-2"></i>Contact Information
+                        Contact Information
                       </h6>
                       <div className="row g-3">
                         {page.phone && (
                           <div className="col-12">
                             <div className="d-flex align-items-center">
-                              <i className="fas fa-phone text-muted me-3" style={{ width: '20px' }}></i>
+                              
                               <div>
                                 <strong className="text-dark">Phone:</strong>
                                 <div className="text-muted">{page.phone}</div>
@@ -519,7 +519,7 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
                         {page.email && (
                           <div className="col-12">
                             <div className="d-flex align-items-center">
-                              <i className="fas fa-envelope text-muted me-3" style={{ width: '20px' }}></i>
+                              
                               <div>
                                 <strong className="text-dark">Email:</strong>
                                 <div className="text-muted">{page.email}</div>
@@ -530,7 +530,7 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
                         {page.address && (
                           <div className="col-12">
                             <div className="d-flex align-items-start">
-                              <i className="fas fa-map-marker-alt text-muted me-3 mt-1" style={{ width: '20px' }}></i>
+                             
                               <div>
                                 <strong className="text-dark">Address:</strong>
                                 <div className="text-muted">{page.address}</div>
@@ -546,7 +546,7 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
                   {page.owner && (
                     <div className="p-4">
                       <h6 className="text-primary fw-bold mb-3">
-                        <i className="fas fa-user me-2"></i>Page Owner
+                       Page Owner
                       </h6>
                       <div className="d-flex align-items-center p-3 rounded-3 bg-light">
                         <img
@@ -587,7 +587,7 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
                           height: '48px'
                         }}
                       >
-                        <i className={`fas ${page.isFollowing ? 'fa-user-minus' : 'fa-user-plus'} me-2`}></i>
+                       
                         {page.isFollowing ? 'Unfollow' : 'Follow'}
                       </button>
                     )}
