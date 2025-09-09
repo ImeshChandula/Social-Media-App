@@ -375,8 +375,8 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
           <div className="modal-header border-bottom border-light bg-light" 
                style={{ borderTopLeftRadius: "16px", borderTopRightRadius: "16px" }}>
             <h5 className="modal-title text-dark fw-bold">
-              <i className="fas fa-layer-group me-2 text-primary"></i>
-              Page Details
+              
+              📘Page Details
             </h5>
             <button 
               className="btn-close" 
@@ -434,8 +434,8 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
               <div className="col-lg-8">
                 <div className="mb-4">
                   <h6 className="text-primary mb-3 fw-bold">
-                    <i className="fas fa-info-circle me-2"></i>
-                    About
+                    
+                     ℹ️About
                   </h6>
                   <div className="p-4 rounded-3 bg-light">
                     <p className="text-muted mb-0" style={{ lineHeight: "1.6" }}>
@@ -446,8 +446,8 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
 
                 <div className="mb-4">
                   <h6 className="text-primary mb-3 fw-bold">
-                    <i className="fas fa-tag me-2"></i>
-                    Details
+                    
+                   🏷️Details
                   </h6>
                   <div className="p-4 rounded-3 bg-light">
                     <div className="row g-3">
@@ -482,8 +482,8 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
                 {page.owner && (
                   <div className="mb-4">
                     <h6 className="text-primary mb-3 fw-bold">
-                      <i className="fas fa-user-circle me-2"></i>
-                      Page Owner
+                    
+                       👤Page Owner
                     </h6>
                     <div className="p-4 rounded-3 bg-light">
                       <div className="d-flex align-items-center">
