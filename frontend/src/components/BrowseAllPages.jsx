@@ -26,7 +26,6 @@ const BrowseAllPages = () => {
   const fetchCategories = async () => {
     try {
       let res;
-      // Try multiple possible endpoints for categories
       try {
         res = await axiosInstance.get("/pages/categories");
       } catch (error) {
@@ -44,7 +43,6 @@ const BrowseAllPages = () => {
       }
     } catch (err) {
       console.error('Error fetching categories:', err);
-      // Set some default categories if API fails
       setCategories(['business', 'entertainment', 'education', 'technology', 'sports', 'news']);
     }
   };
@@ -57,7 +55,6 @@ const BrowseAllPages = () => {
       if (filters.search) params.set("search", filters.search);
 
       let res;
-      // Try multiple possible endpoints for pages
       try {
         res = await axiosInstance.get(`/pages?${params.toString()}`);
       } catch (error) {
@@ -75,7 +72,6 @@ const BrowseAllPages = () => {
       if (res?.data?.success) {
         setPages(res.data.pages || res.data.data || []);
       } else if (res?.data) {
-        // Handle different response structures
         const pageData = res.data.pages || res.data.data || res.data || [];
         setPages(Array.isArray(pageData) ? pageData : []);
       }
@@ -112,6 +108,14 @@ const BrowseAllPages = () => {
             ? { ...page, isFollowing: true, followersCount: (page.followersCount || 0) + 1 }
             : page
         ));
+        // Update selected page if it's the same page
+        if (selectedPage && (selectedPage.id === pageId || selectedPage._id === pageId)) {
+          setSelectedPage(prev => ({
+            ...prev,
+            isFollowing: true,
+            followersCount: (prev.followersCount || 0) + 1
+          }));
+        }
       }
     } catch (err) {
       console.error('Error following page:', err);
@@ -129,6 +133,14 @@ const BrowseAllPages = () => {
             ? { ...page, isFollowing: false, followersCount: Math.max(0, (page.followersCount || 0) - 1) }
             : page
         ));
+        // Update selected page if it's the same page
+        if (selectedPage && (selectedPage.id === pageId || selectedPage._id === pageId)) {
+          setSelectedPage(prev => ({
+            ...prev,
+            isFollowing: false,
+            followersCount: Math.max(0, (prev.followersCount || 0) - 1)
+          }));
+        }
       }
     } catch (err) {
       console.error('Error unfollowing page:', err);
@@ -148,7 +160,6 @@ const BrowseAllPages = () => {
       <div className="row g-3 mb-4">
         <div className="col-md-6">
           <div className="position-relative">
-            
             <input
               type="text"
               className="form-control bg-white border-light ps-5 shadow-sm"
@@ -271,7 +282,7 @@ const BrowseAllPages = () => {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="d-flex gap-1">
+                    <div className="d-flex gap-2">
                       <button
                         className="btn btn-primary btn-sm flex-fill fw-medium"
                         onClick={(e) => {
@@ -281,16 +292,14 @@ const BrowseAllPages = () => {
                         style={{ 
                           borderRadius: "10px",
                           height: "40px",
-                          width: "40px",
                           fontSize: "14px"
                         }}
                       >
-                        {/* <i className="fas fa-globe me-2"></i> */}
                         View Page
                       </button>
                       
                       <button
-                        className="btn btn-outline-secondary btn-sm px-3"
+                        className="btn btn-outline-secondary btn-sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleViewPage(page);
@@ -298,31 +307,28 @@ const BrowseAllPages = () => {
                         style={{ 
                           borderRadius: "10px",
                           height: "40px",
-                          width: "40px"
+                          minWidth: "50px"
                         }}
                       >
-                        {/* <i className="fas fa-info"></i> */}
                         Details
                       </button>
                       
                       {!page.isOwner && (
                         <button
-  className={`btn btn-sm ${page.isFollowing ? 'btn-outline-danger' : 'btn-outline-success'}`}
-  onClick={(e) => {
-    e.stopPropagation();
-    page.isFollowing ? handleUnfollowPage(pageId) : handleFollowPage(pageId);
-  }}
-  style={{ 
-    borderRadius: "10px",
-    height: "40px",
-    padding: "0 10px", // adjust side spacing
-    minWidth: "90px",  // optional, to keep it consistent
-    fontSize: "13px"   // makes text look neat
-  }}
->
-  {page.isFollowing ? "Unfollow" : "Follow"}
-</button>
-
+                          className={`btn btn-sm ${page.isFollowing ? 'btn-outline-danger' : 'btn-outline-success'}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            page.isFollowing ? handleUnfollowPage(pageId) : handleFollowPage(pageId);
+                          }}
+                          style={{ 
+                            borderRadius: "10px",
+                            height: "40px",
+                            minWidth: "90px",
+                            fontSize: "13px"
+                          }}
+                        >
+                          {page.isFollowing ? "Unfollow" : "Follow"}
+                        </button>
                       )}
                     </div>
                   </div>
@@ -362,140 +368,199 @@ const BrowseAllPages = () => {
   );
 };
 
-// Page Detail Modal Component
+// IMPROVED AND RESPONSIVE Page Detail Modal Component
 const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
   if (!show || !page) return null;
 
   const pageId = page?.id || page?._id;
 
   return (
-    <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-      <div className="modal-dialog modal-lg modal-dialog-scrollable">
-        <div className="modal-content border-0" style={{ borderRadius: "16px" }}>
-          <div className="modal-header border-bottom border-light bg-light" 
-               style={{ borderTopLeftRadius: "16px", borderTopRightRadius: "16px" }}>
-            <h5 className="modal-title text-dark fw-bold">
-              
-              📘Page Details
-            </h5>
-            <button 
-              className="btn-close" 
-              onClick={onClose}
-              style={{ fontSize: "14px" }}
-            ></button>
-          </div>
+    <AnimatePresence>
+      {show && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="modal-backdrop fade show"
+            style={{ 
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              zIndex: 1050
+            }}
+            onClick={onClose}
+          />
           
-          <div className="modal-body bg-white p-4">
-            <div className="row">
-              {/* Left Column - Basic Info */}
-              <div className="col-lg-4">
-                <div className="text-center mb-4">
-                  <img
-                    src={page.profilePicture || "/default-page-avatar.png"}
-                    alt={page.pageName}
-                    className="rounded-3 mb-3 shadow-sm"
-                    style={{ 
-                      width: "120px", 
-                      height: "120px", 
-                      objectFit: "cover",
-                      border: "3px solid #e9ecef"
-                    }}
+          {/* Modal */}
+          <div className="modal fade show d-block" style={{ zIndex: 1055 }}>
+            <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable" 
+                 style={{ maxWidth: '600px', margin: '1rem' }}>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: 50 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="modal-content border-0 shadow-lg"
+                style={{ borderRadius: "20px", overflow: 'hidden' }}
+              >
+                {/* Header */}
+                <div className="modal-header border-0 bg-gradient-primary text-white px-4 py-3"
+                     style={{ 
+                       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                       borderRadius: '20px 20px 0 0'
+                     }}>
+                  <h5 className="modal-title fw-bold mb-0">
+                    <i className="fas fa-info-circle me-2"></i>
+                    Page Details
+                  </h5>
+                  <button 
+                    type="button"
+                    className="btn-close btn-close-white"
+                    onClick={onClose}
                   />
-                  <h4 className="text-dark mb-2 fw-bold">{page.pageName}</h4>
-                  {page.username && (
-                    <p className="text-primary mb-3 fw-medium">@{page.username}</p>
-                  )}
-                  
-                  <div className="d-flex justify-content-center gap-4 mb-4">
-                    <div className="text-center">
-                      <div className="text-dark fw-bold fs-4">{page.followersCount || 0}</div>
-                      <div className="text-muted small">Followers</div>
+                </div>
+                
+                {/* Body */}
+                <div className="modal-body p-0 bg-white">
+                  {/* Profile Section */}
+                  <div className="text-center p-4 border-bottom">
+                    <div className="position-relative d-inline-block">
+                      <img
+                        src={page.profilePicture || "/default-page-avatar.png"}
+                        alt={page.pageName}
+                        className="rounded-circle shadow-lg mb-3"
+                        style={{ 
+                          width: "100px", 
+                          height: "100px", 
+                          objectFit: "cover",
+                          border: "4px solid #fff",
+                          boxShadow: "0 8px 24px rgba(0,0,0,0.15)"
+                        }}
+                      />
+                      {page.isVerified && (
+                        <div className="position-absolute bottom-0 end-0 bg-primary rounded-circle p-1"
+                             style={{ width: '28px', height: '28px' }}>
+                          <i className="fas fa-check text-white" style={{ fontSize: '12px' }}></i>
+                        </div>
+                      )}
                     </div>
-                    <div className="text-center">
-                      <div className="text-dark fw-bold fs-4">{page.postsCount || 0}</div>
-                      <div className="text-muted small">Posts</div>
+                    
+                    <h4 className="fw-bold text-dark mb-1">{page.pageName}</h4>
+                    {page.username && (
+                      <p className="text-primary mb-3 fw-medium">@{page.username}</p>
+                    )}
+                    
+                    <div className="d-inline-block">
+                      <span className="badge px-3 py-2 text-white fw-medium"
+                            style={{ 
+                              backgroundColor: '#667eea',
+                              borderRadius: '25px',
+                              fontSize: '13px'
+                            }}>
+                        <i className="fas fa-tag me-2"></i>
+                        {page.category ? page.category.charAt(0).toUpperCase() + page.category.slice(1) : 'Uncategorized'}
+                      </span>
                     </div>
                   </div>
 
-                  {!page.isOwner && (
-                    <button
-                      className={`btn w-100 fw-medium ${page.isFollowing ? 'btn-outline-danger' : 'btn-primary'}`}
-                      onClick={() => page.isFollowing ? onUnfollow(pageId) : onFollow(pageId)}
-                      style={{ borderRadius: "12px", height: "48px" }}
-                    >
-                      <i className={`fas ${page.isFollowing ? 'fa-user-minus' : 'fa-user-plus'} me-2`}></i>
-                      {page.isFollowing ? 'Unfollow' : 'Follow'}
-                    </button>
-                  )}
-                </div>
-              </div>
+                  {/* Stats Section */}
+                  <div className="px-4 py-3 bg-light">
+                    <div className="row text-center">
+                      <div className="col-4">
+                        <div className="text-primary fw-bold fs-4">{page.followersCount || 0}</div>
+                        <div className="text-muted small">Followers</div>
+                      </div>
+                      <div className="col-4">
+                        <div className="text-primary fw-bold fs-4">{page.postsCount || 0}</div>
+                        <div className="text-muted small">Posts</div>
+                      </div>
+                      <div className="col-4">
+                        <div className="text-primary fw-bold fs-4">
+                          {page.isPublished ? 'Live' : 'Draft'}
+                        </div>
+                        <div className="text-muted small">Status</div>
+                      </div>
+                    </div>
+                  </div>
 
-              {/* Right Column - Details */}
-              <div className="col-lg-8">
-                <div className="mb-4">
-                  <h6 className="text-primary mb-3 fw-bold">
-                    
-                     ℹ️About
-                  </h6>
-                  <div className="p-4 rounded-3 bg-light">
-                    <p className="text-muted mb-0" style={{ lineHeight: "1.6" }}>
+                  {/* Description */}
+                  <div className="p-4 border-bottom">
+                    <h6 className="text-primary fw-bold mb-3">
+                      <i className="fas fa-align-left me-2"></i>About
+                    </h6>
+                    <p className="text-muted mb-0" style={{ lineHeight: '1.6' }}>
                       {page.description || "No description available"}
                     </p>
                   </div>
-                </div>
 
-                <div className="mb-4">
-                  <h6 className="text-primary mb-3 fw-bold">
-                    
-                   🏷️Details
-                  </h6>
-                  <div className="p-4 rounded-3 bg-light">
-                    <div className="row g-3">
-                      <div className="col-sm-6">
-                        <strong className="text-dark">Category:</strong>
-                        <div className="text-muted mt-1">
-                          {page.category ? page.category.charAt(0).toUpperCase() + page.category.slice(1) : 'Uncategorized'}
-                        </div>
+                  {/* Contact Information */}
+                  {(page.phone || page.email || page.address) && (
+                    <div className="p-4 border-bottom">
+                      <h6 className="text-primary fw-bold mb-3">
+                        <i className="fas fa-address-card me-2"></i>Contact Information
+                      </h6>
+                      <div className="row g-3">
+                        {page.phone && (
+                          <div className="col-12">
+                            <div className="d-flex align-items-center">
+                              <i className="fas fa-phone text-muted me-3" style={{ width: '20px' }}></i>
+                              <div>
+                                <strong className="text-dark">Phone:</strong>
+                                <div className="text-muted">{page.phone}</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {page.email && (
+                          <div className="col-12">
+                            <div className="d-flex align-items-center">
+                              <i className="fas fa-envelope text-muted me-3" style={{ width: '20px' }}></i>
+                              <div>
+                                <strong className="text-dark">Email:</strong>
+                                <div className="text-muted">{page.email}</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {page.address && (
+                          <div className="col-12">
+                            <div className="d-flex align-items-start">
+                              <i className="fas fa-map-marker-alt text-muted me-3 mt-1" style={{ width: '20px' }}></i>
+                              <div>
+                                <strong className="text-dark">Address:</strong>
+                                <div className="text-muted">{page.address}</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      {page.phone && (
-                        <div className="col-sm-6">
-                          <strong className="text-dark">Phone:</strong>
-                          <div className="text-muted mt-1">{page.phone}</div>
-                        </div>
-                      )}
-                      {page.email && (
-                        <div className="col-sm-6">
-                          <strong className="text-dark">Email:</strong>
-                          <div className="text-muted mt-1">{page.email}</div>
-                        </div>
-                      )}
-                      {page.address && (
-                        <div className="col-12">
-                          <strong className="text-dark">Address:</strong>
-                          <div className="text-muted mt-1">{page.address}</div>
-                        </div>
-                      )}
                     </div>
-                  </div>
-                </div>
+                  )}
 
-                {page.owner && (
-                  <div className="mb-4">
-                    <h6 className="text-primary mb-3 fw-bold">
-                    
-                       👤Page Owner
-                    </h6>
-                    <div className="p-4 rounded-3 bg-light">
-                      <div className="d-flex align-items-center">
+                  {/* Owner Information */}
+                  {page.owner && (
+                    <div className="p-4">
+                      <h6 className="text-primary fw-bold mb-3">
+                        <i className="fas fa-user me-2"></i>Page Owner
+                      </h6>
+                      <div className="d-flex align-items-center p-3 rounded-3 bg-light">
                         <img
                           src={page.owner.profilePicture || "/default-avatar.png"}
-                          alt={`${page.owner.firstName} ${page.owner.lastName}`}
+                          alt={`${page.owner.firstName || ''} ${page.owner.lastName || ''}`}
                           className="rounded-circle me-3 shadow-sm"
-                          style={{ width: "56px", height: "56px", objectFit: "cover" }}
+                          style={{ width: "50px", height: "50px", objectFit: "cover" }}
                         />
-                        <div>
+                        <div className="flex-grow-1">
                           <div className="text-dark fw-bold">
-                            {page.owner.firstName} {page.owner.lastName}
+                            {page.owner.firstName && page.owner.lastName 
+                              ? `${page.owner.firstName} ${page.owner.lastName}`
+                              : 'Page Owner'
+                            }
                           </div>
                           {page.owner.username && (
                             <div className="text-primary small">@{page.owner.username}</div>
@@ -503,25 +568,49 @@ const PageDetailModal = ({ show, onClose, page, onFollow, onUnfollow }) => {
                         </div>
                       </div>
                     </div>
+                  )}
+                </div>
+
+                {/* Footer */}
+                <div className="modal-footer border-0 bg-light px-4 py-3">
+                  <div className="d-flex gap-2 w-100">
+                    {!page.isOwner && (
+                      <button
+                        className={`btn flex-grow-1 fw-medium ${
+                          page.isFollowing 
+                            ? 'btn-outline-danger' 
+                            : 'btn-primary'
+                        }`}
+                        onClick={() => page.isFollowing ? onUnfollow(pageId) : onFollow(pageId)}
+                        style={{ 
+                          borderRadius: '12px',
+                          height: '48px'
+                        }}
+                      >
+                        <i className={`fas ${page.isFollowing ? 'fa-user-minus' : 'fa-user-plus'} me-2`}></i>
+                        {page.isFollowing ? 'Unfollow' : 'Follow'}
+                      </button>
+                    )}
+                    <button 
+                      className="btn btn-secondary fw-medium"
+                      onClick={onClose}
+                      style={{ 
+                        borderRadius: '12px',
+                        height: '48px',
+                        paddingLeft: '24px',
+                        paddingRight: '24px'
+                      }}
+                    >
+                      Close
+                    </button>
                   </div>
-                )}
-              </div>
+                </div>
+              </motion.div>
             </div>
           </div>
-
-          <div className="modal-footer border-top border-light bg-light" 
-               style={{ borderBottomLeftRadius: "16px", borderBottomRightRadius: "16px" }}>
-            <button 
-              className="btn btn-secondary fw-medium" 
-              onClick={onClose}
-              style={{ borderRadius: "10px", paddingLeft: "24px", paddingRight: "24px" }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+        </>
+      )}
+    </AnimatePresence>
   );
 };
 
