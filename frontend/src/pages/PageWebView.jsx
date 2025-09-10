@@ -513,13 +513,13 @@ const PageWebView = () => {
                       )}
                       
                       {/* About Button */}
-                      <button
+                      {/* <button
                         className="btn btn-outline-light px-4"
                         onClick={() => setShowAbout(true)}
                       >
                         
                         👤 About
-                      </button>
+                      </button> */}
 
                       {/* Owner-only buttons */}
                       {isOwner && (
@@ -876,11 +876,13 @@ const AboutSection = ({ page, isOwner, pageId }) => (
                   {page.phone}
                 </div>
                 {!isOwner && (
+                  <div className= "col-md-6 align-items-center justify-content-betweens">
                   <WhatsAppContactButton 
                     pageId={pageId} 
                     pageName={page.pageName}
                     size="sm"
                   />
+                  </div>
                 )}
               </div>
             </div>
@@ -1045,11 +1047,13 @@ const AboutModal = ({ show, onClose, page, isOwner }) => {
                       {page.phone}
                     </div>
                     {!isOwner && (
+                      <div className= "col-md-6 align-items-center justify-content-betweens">
                       <WhatsAppContactButton
                         pageId={page.id}
                         pageName={page.pageName}
                         size="sm"
                       />
+                      </div>
                     )}
                   </div>
                 </div>

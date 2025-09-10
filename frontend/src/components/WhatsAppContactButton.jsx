@@ -75,29 +75,19 @@ const WhatsAppContactButton = ({ pageId, pageName, className = '', size = 'md' }
     <>
       {/* Quick Contact Button */}
       <div className="btn-group">
-        <button
-          className={`btn btn-success ${getSizeClasses()} ${className}`}
-          onClick={handleQuickContact}
-          disabled={loading}
-          title="Contact via WhatsApp"
-        >
-          {loading ? (
-            <span className="spinner-border spinner-border-sm me-2"></span>
-          ) : (
-            <i></i>
-          )}
-          Contact Us
-        </button>
-        
-        <button
-          className={`btn btn-success dropdown-toggle dropdown-toggle-split ${getSizeClasses()}`}
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-          disabled={loading}
-        >
-          <span className="visually-hidden">Toggle Dropdown</span>
-        </button>
-        
+                  <button
+              className={`btn btn-success btn-sm flex-fill fw-medium rounded-pill ${getSizeClasses()} ${className}`}
+              onClick={handleQuickContact}
+              disabled={loading}
+              title="Contact via WhatsApp"
+            >
+            {loading ? (
+                <span className="spinner-border spinner-border-sm me-2"></span>
+            ) : (
+                <i className="bi bi-whatsapp me-2"></i>
+              )}
+                Contact Us
+                </button>
         <ul className="dropdown-menu bg-dark border-secondary">
           <li>
             <button 
