@@ -16,6 +16,7 @@ import {
   FaUserCircle,
   FaUndo,
   FaSave,
+  FaArrowLeft,
 } from "react-icons/fa";
 
 const PageWebView = () => {
@@ -332,6 +333,20 @@ const PageWebView = () => {
     }
   };
 
+  const handleGoBack = () => {
+    // Check if we came from profile page (specifically from pages section)
+    const referrer = document.referrer;
+    const currentOrigin = window.location.origin;
+    
+    // If we have a referrer from the same origin, use browser back
+    if (referrer && referrer.startsWith(currentOrigin)) {
+      navigate(-1);
+    } else {
+      // Otherwise, navigate to profile page with pages tab active
+      navigate('/profile', { state: { activeTab: 'pages' } });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-vh-100 d-flex justify-content-center align-items-center">
@@ -359,6 +374,43 @@ const PageWebView = () => {
 
   return (
     <div className="min-vh-100" style={{ backgroundColor: "#1a1a1a" }}>
+      {/* Back Button - Clean and Minimal */}
+      <motion.div
+        className="position-fixed"
+        style={{
+          top: "20px",
+          left: "20px",
+          zIndex: 1050,
+        }}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <button
+          className="btn btn-dark border-0 shadow-sm d-flex align-items-center justify-content-center"
+          onClick={handleGoBack}
+          style={{
+            width: "0px",
+            height: "0px",
+            borderRadius: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            backdropFilter: "blur(0px)",
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = "rgba(0, 0, 0, 0)";
+            e.target.style.transform = "scale(1)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = "rgba(0, 0, 0, 0)";
+            e.target.style.transform = "scale(1)";
+          }}
+          title="Go back"
+        >
+          <FaArrowLeft className="text-white" size={16} />
+        </button>
+      </motion.div>
+
       {/* Cover Photo Section */}
       <div className="position-relative">
         <div
@@ -1210,7 +1262,7 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
               <div className="alert alert-info bg-info bg-opacity-10 border border-info border-opacity-25 mb-4">
                 <small className="d-flex align-items-center">
                   <FaInfoCircle className="me-2 text-info" />
-                  Update your page’s visual appearance and description. Images
+                  Update your page's visual appearance and description. Images
                   should be under 5MB.
                 </small>
               </div>

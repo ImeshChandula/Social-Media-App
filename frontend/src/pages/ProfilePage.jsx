@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { axiosInstance } from "../lib/axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import UserPosts from "../components/UserPosts";
 import EnhancedBioSection from "../components/EnhancedBioSection";
 import EnhancedUserStats from "../components/EnhancedUserStats";
@@ -20,6 +20,7 @@ function ProfilePage() {
   const [selectedPage, setSelectedPage] = useState(null);
   const [showPagePosts, setShowPagePosts] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -35,6 +36,15 @@ function ProfilePage() {
     };
     fetchUser();
   }, []);
+
+  // Handle navigation state when coming back from page view
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+      // Clear the state to prevent it from persisting
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleEditProfile = () => navigate("/edit-profile");
   const handleCreatePost = () => navigate("/create-post");
