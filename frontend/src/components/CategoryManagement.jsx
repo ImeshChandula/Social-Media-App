@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import CategoryHeader from './CategoryHeader ';
 import CategoryListJobRole from './CategoryListJobRole ';
 import CategoryListMarketplace from './CategoryListMarketplace';
+import CategoryListPages from './CategoryListPages';
 import '../styles/CategoryManagement.css';
 
 const CategoryManagement = () => {
@@ -27,11 +28,18 @@ const CategoryManagement = () => {
                         >
                             Marketplace
                         </button>
+                        <button
+                            className={`tab-button ${activeTab === 'pages' ? 'tab-active' : ''}`}
+                            onClick={() => setActiveTab('pages')}
+                        >
+                            Pages
+                        </button>
                     </div>
                 )}
 
                 {showButtons && activeTab === 'jobRole' && <CategoryListJobRole />}
                 {showButtons && activeTab === 'marketplace' && <CategoryListMarketplace />}
+                {showButtons && activeTab === 'pages' && <CategoryListPages />}
             </div>
         </div>
   )

@@ -2,16 +2,32 @@ const PageService = require('../services/pageService');
 const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const { uploadImage } = require('../utils/uploadMedia');
+const CategoryService = require('../services/categoryService');
 const { handleMediaUpload } = require('../utils/handleMediaUpload');
 const pageValidators = require('../middleware/pageValidator');
 const Story = require('../models/Story');
 const { generateWhatsAppURL, generatePageContactMessage } = require('../utils/whatsappHelper');
 
 // Valid page categories
-const VALID_PAGE_CATEGORIES = ['education', 'music', 'fashion', 'entertainment'];
+//const VALID_PAGE_CATEGORIES = ['education', 'music', 'fashion', 'entertainment'];
+
+// Initialize category service
+const categoryService = new CategoryService();
 
 // Valid video categories for posts
 const VALID_VIDEO_CATEGORIES = ['Music', 'Sports', 'Education', 'Entertainment', 'News'];
+
+// Helper function to get valid page categories
+const getValidPageCategories = async () => {
+    try {
+        const categories = await categoryService.findAllActiveByField('pages');
+        return categories.map(cat => cat.name.toLowerCase());
+    } catch (error) {
+        console.error('Error fetching page categories:', error);
+        // Fallback to hardcoded categories if database fetch fails
+        return ['education', 'music', 'fashion', 'entertainment'];
+    }
+};
 
 // createPage function
 const createPage = async(req, res) => {
@@ -44,12 +60,15 @@ const createPage = async(req, res) => {
             });
         }
 
+        // Get valid categories from database
+        const validCategories = await getValidPageCategories();
+        
         // Validate category
-        if (!VALID_PAGE_CATEGORIES.includes(category.toLowerCase())) {
+        if (!validCategories.includes(category.toLowerCase())) {
             console.log('Invalid category:', category);
             return res.status(400).json({
                 success: false,
-                message: 'Invalid category. Valid categories are: ' + VALID_PAGE_CATEGORIES.join(', ')
+                message: 'Invalid category. Valid categories are: ' + validCategories.join(', ')
             });
         }
 
@@ -124,6 +143,7 @@ const createPage = async(req, res) => {
     }
 };
 
+
 //@desc     Update page details
 const updatePage = async(req, res) => {
     try {
@@ -164,7 +184,10 @@ const updatePage = async(req, res) => {
         if (pageName !== undefined) updateData.pageName = pageName.trim();
         if (description !== undefined) updateData.description = description.trim();
         if (category !== undefined) {
-            if (!VALID_PAGE_CATEGORIES.includes(category.toLowerCase())) {
+            // Get valid categories from database
+            const validCategories = await getValidPageCategories();
+            
+            if (!validCategories.includes(category.toLowerCase())) {
                 return res.status(400).json({
                     success: false,
                     message: 'Invalid category'
@@ -731,22 +754,31 @@ const deletePage = async(req, res) => {
     }
 };
 
-//@desc     Get page categories
+//@desc     Get page categories (Updated to fetch from database)
 const getPageCategories = async(req, res) => {
     try {
+        // Fetch categories from database
+        const categories = await categoryService.findAllActiveByField('pages');
+        const categoryNames = categories.map(cat => cat.name.toLowerCase());
+        
         res.status(200).json({
             success: true,
-            categories: VALID_PAGE_CATEGORIES,
+            categories: categoryNames,
             message: 'Page categories retrieved successfully'
         });
     } catch (error) {
         console.error('Error getting page categories:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error'
+        
+        // Fallback to hardcoded categories if database fetch fails
+        const fallbackCategories = ['education', 'music', 'fashion', 'entertainment'];
+        res.status(200).json({
+            success: true,
+            categories: fallbackCategories,
+            message: 'Page categories retrieved successfully (fallback)'
         });
     }
 };
+
 
 // Admin functions
 

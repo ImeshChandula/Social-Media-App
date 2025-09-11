@@ -128,6 +128,7 @@ const CategoryHeader  = ({ setShowButtons }) => {
                                     <option value="">Select category type</option>
                                     <option value="job_role">Job Role</option>
                                     <option value="marketplace">Marketplace</option>
+                                    <option value="pages">Pages</option>
                                 </select>
                                 {errors.categoryFor && <span className="ct-error-text">{errors.categoryFor}</span>}
                             </div>
@@ -182,4 +183,4 @@ const CategoryHeader  = ({ setShowButtons }) => {
 }
 
 
-export default CategoryHeader 
+export default CategoryHeader

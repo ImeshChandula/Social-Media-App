@@ -106,8 +106,9 @@ const categorySummery = async (req, res) => {
 	try {
         const jobCategories = await categoryService.findAllActiveByField("job_role");
         const marketCategories = await categoryService.findAllActiveByField("marketplace");
+        const pageCategories = await categoryService.findAllActiveByField("pages");
 
-        if (!jobCategories || !marketCategories) {
+        if (!jobCategories || !marketCategories || !pageCategories) {
             return res.status(400).json({ success: false, message: "Failed to fetch categories"});
         }
 
@@ -121,12 +122,18 @@ const categorySummery = async (req, res) => {
             name: category.name
         }));
 
+        const simplifiedPageCategories = pageCategories.map(category => ({
+            id: category.id,
+            name: category.name
+        }));
+
         return res.status(200).json({ 
             success: true, 
             message: "Categories received successfully", 
             data: {
                 simplifiedJobCategories, 
-                simplifiedMarketCategories
+                simplifiedMarketCategories,
+                simplifiedPageCategories
             }
         });
     } catch (error) {

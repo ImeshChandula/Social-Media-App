@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, ShoppingBag, Users, TrendingUp } from 'lucide-react';
+import { Briefcase, ShoppingBag, Users, TrendingUp, FileText } from 'lucide-react';
 import { axiosInstance } from "../lib/axios";
 import toast from 'react-hot-toast';
 import '../styles/CategoryHead.css';
@@ -28,32 +28,6 @@ const CategoryHead = () => {
             setLoading(false);
         }
     };
-
-    /*
-    const getJobIcon = (jobName) => {
-        const icons = {
-        'Engineer': '⚙️',
-        'Farmer': '🌾',
-        'Teacher': '📚',
-        'Doctor': '⚕️',
-        'Developer': '💻',
-        'Designer': '🎨'
-        };
-        return icons[jobName] || '💼';
-    };
-
-    const getMarketIcon = (marketName) => {
-        const icons = {
-        'Electronic': '📱',
-        'Fashion': '👕',
-        'Food': '🍕',
-        'Books': '📖',
-        'Sports': '⚽',
-        'Home': '🏠'
-        };
-        return icons[marketName] || '🛍️';
-    };
-    */
 
     if (loading) {
         return (
@@ -94,7 +68,7 @@ const CategoryHead = () => {
             Category Dashboard
           </h1>
           <p className="cg-subtitle">
-            Overview of job categories and market segments
+            Overview of job categories, market segments, and page categories
           </p>
         </div>
         <div className="cg-stats">
@@ -109,6 +83,12 @@ const CategoryHead = () => {
               {data?.simplifiedMarketCategories?.length || 0}
             </span>
             <span className="cg-stat-label">Market Categories</span>
+          </div>
+          <div className="cg-stat">
+            <span className="cg-stat-number">
+              {data?.simplifiedPageCategories?.length || 0}
+            </span>
+            <span className="cg-stat-label">Page Categories</span>
           </div>
         </div>
       </div>
@@ -130,9 +110,6 @@ const CategoryHead = () => {
             {data?.simplifiedJobCategories?.map((job) => (
               <div key={job.id} className="cg-card cg-job-card">
                 <div className="cg-card-header">
-                  {/*<span className="cg-card-emoji">
-                    {getJobIcon(job.name)}
-                  </span>*/}
                   <h3 className="cg-card-title">{job.name}</h3>
                   <div className="cg-card-actions">
                     <button className="cg-action-btn">
@@ -140,15 +117,6 @@ const CategoryHead = () => {
                     </button>
                   </div>
                 </div>
-                {/*<div className="cg-card-content">
-                  <h3 className="cg-card-title">{job.name}</h3>
-                  <p className="cg-card-id">ID: {job.id}</p>
-                </div>*/}
-                {/*<div className="cg-card-footer">
-                  <button className="cg-view-btn">
-                    View Details
-                  </button>
-                </div>*/}
               </div>
             ))}
           </div>
@@ -170,9 +138,6 @@ const CategoryHead = () => {
             {data?.simplifiedMarketCategories?.map((market) => (
               <div key={market.id} className="cg-card cg-market-card">
                 <div className="cg-card-header">
-                  {/*<span className="cg-card-emoji">
-                    {getMarketIcon(market.name)}
-                  </span>*/}
                   <h3 className="cg-card-title">{market.name}</h3>
                   <div className="cg-card-actions">
                     <button className="cg-action-btn">
@@ -180,15 +145,34 @@ const CategoryHead = () => {
                     </button>
                   </div>
                 </div>
-                {/*<div className="cg-card-content">
-                  <h3 className="cg-card-title">{market.name}</h3>
-                  <p className="cg-card-id">ID: {market.id}</p>
-                </div>*/}
-                {/*<div className="cg-card-footer">
-                  <button className="cg-view-btn">
-                    View Details
-                  </button>
-                </div>*/}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Page Categories Section */}
+        <div className="cg-section">
+          <div className="cg-section-header">
+            <div className="cg-section-title">
+              <FileText className="cg-section-icon" />
+              <h2>Page Categories</h2>
+            </div>
+            <div className="cg-badge">
+              {data?.simplifiedPageCategories?.length || 0} Categories
+            </div>
+          </div>
+          
+          <div className="cg-cards">
+            {data?.simplifiedPageCategories?.map((page) => (
+              <div key={page.id} className="cg-card cg-page-card">
+                <div className="cg-card-header">
+                  <h3 className="cg-card-title">{page.name}</h3>
+                  <div className="cg-card-actions">
+                    <button className="cg-action-btn">
+                      <FileText size={16} />
+                    </button>
+                  </div>
+                </div>
               </div>
             ))}
           </div>

@@ -175,10 +175,11 @@ const validateStory = (req, res, next) => {
   next();
 }; 
 
+
 // Validate category creation
 const validateCategory = (req, res, next) => {
   const schema = Joi.object({
-    categoryFor: Joi.string().valid('job_role', 'marketplace', 'other').required(),
+    categoryFor: Joi.string().valid('job_role', 'marketplace', 'pages').required(),
     name: Joi.string().required(),
     description: Joi.string().allow('').optional(),
     author: Joi.string().optional(),

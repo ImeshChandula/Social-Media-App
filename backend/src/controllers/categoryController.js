@@ -45,11 +45,12 @@ const createCategory = async (req, res) => {
     }
 };
 
+
 // Get all active categories (for users)
 const getAllActiveCategories = async (req, res) => {
     try {
         const field = req.params.fieldName;
-        if (field !== "job_role" && field !== "marketplace" && field !== "other"){
+        if (field !== "job_role" && field !== "marketplace" && field !== "pages"){
             return res.status(400).json({success: false, message: "Invalid field name"});
         }
 
@@ -81,17 +82,18 @@ const getAllActiveCategories = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Error fetching job categories',
+            message: 'Error fetching categories',
             error: error.message
       });
     }
 };
 
+
 // Get all categories (for admin)
 const getAllCategories = async (req, res) => {
     try {
         const field = req.params.fieldName;
-        if (field !== "job_role" && field !== "marketplace" && field !== "other"){
+        if (field !== "job_role" && field !== "marketplace" && field !== "pages"){
             return res.status(400).json({success: false, message: "Invalid field name"});
         }
 
@@ -114,7 +116,7 @@ const getAllCategories = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: 'Error fetching job categories',
+            message: 'Error fetching categories',
             error: error.message
       });
     }
