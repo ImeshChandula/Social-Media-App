@@ -132,7 +132,7 @@ const getAllPostsInFeed = async (req, res) => {
     }
 };
 
-// ENHANCED: Stories feed with comprehensive page stories support
+// Stories feed with comprehensive page stories support
 const getStoriesFeedWithPages = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -170,6 +170,8 @@ const getStoriesFeedWithPages = async (req, res) => {
         let userStories = [];
         if (userIdsToFetch.length > 0) {
             userStories = await Story.getFriendsStoriesSimple(userIdsToFetch);
+            // Filter to only include user stories
+            userStories = userStories.filter(story => !story.authorType || story.authorType === 'user');
         }
 
         // Get page stories (followed pages + owned pages)
@@ -180,8 +182,20 @@ const getStoriesFeedWithPages = async (req, res) => {
             pageStories = pageStories.filter(story => story.authorType === 'page');
         }
 
+        // Apply privacy filtering for page stories
+        const filteredPageStories = pageStories.filter(story => {
+            if (story.privacy === 'public') {
+                return true; // Public page stories visible to all
+            }
+            if (story.privacy === 'friends') {
+                // Check if user follows this page OR owns this page
+                return pageIds.includes(story.userId) || ownedPageIds.includes(story.userId);
+            }
+            return false;
+        });
+
         // Combine all stories
-        const allStories = [...userStories, ...pageStories];
+        const allStories = [...userStories, ...filteredPageStories];
 
         if (!allStories.length) {
             return res.status(200).json({ 

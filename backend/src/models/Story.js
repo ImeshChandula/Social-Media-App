@@ -1,5 +1,4 @@
 const { connectFirebase } = require('../config/firebase');
-
 const {db} = connectFirebase();
 const storiesCollection = db.collection('stories');
 
@@ -63,6 +62,186 @@ class Story {
     }));
   }
 
+  // Enhanced method to get stories for feed with proper privacy filtering
+  static async getStoriesForFeedWithPrivacy(userIds, pageIds, requestingUserId, followedPageIds = []) {
+    if ((!userIds || userIds.length === 0) && (!pageIds || pageIds.length === 0)) {
+        return [];
+    }
+
+    let allStories = [];
+
+    // Get user stories
+    if (userIds && userIds.length > 0) {
+        const userStories = await Story.getFriendsStoriesSimple(userIds);
+        // Filter user stories - only include user type stories
+        const filteredUserStories = userStories.filter(story => 
+            !story.authorType || story.authorType === 'user'
+        );
+        allStories.push(...filteredUserStories);
+    }
+
+    // Get page stories with privacy filtering
+    if (pageIds && pageIds.length > 0) {
+        const pageStories = await Story.getFriendsStoriesSimple(pageIds);
+        // Filter page stories with privacy rules
+        const filteredPageStories = pageStories.filter(story => {
+            // Only include stories marked as page stories
+            if (story.authorType !== 'page') return false;
+            
+            // Apply privacy filtering
+            if (story.privacy === 'public') {
+                return true; // Public stories visible to everyone
+            }
+            
+            if (story.privacy === 'friends') {
+                // For pages, "friends" means followers
+                // Allow if user follows the page or owns the page
+                return followedPageIds.includes(story.userId) || pageIds.includes(story.userId);
+            }
+            
+            return false;
+        });
+        allStories.push(...filteredPageStories);
+    }
+
+    // Sort by creation date (newest first)
+    return allStories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+
+  // Method to get all stories by page ID with proper filtering
+  static async findByPageIdWithPrivacy(pageId, requestingUserId = null, isFollower = false) {
+    const snapshot = await db.collection('stories')
+        .where('userId', '==', pageId)
+        .where('authorType', '==', 'page')
+        .orderBy('createdAt', 'desc')
+        .get();
+    
+    const stories = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    }));
+    
+    // Apply privacy filtering if requesting user is provided
+    if (requestingUserId) {
+        return stories.filter(story => {
+            if (story.privacy === 'public') return true;
+            if (story.privacy === 'friends') {
+                // Check if requesting user follows this page or owns it
+                return isFollower || story.userId === requestingUserId;
+            }
+            return false;
+        });
+    }
+    
+    return stories;
+  }
+
+  // Enhanced method to get user stories with author type filtering
+  static async findUserStoriesByIds(userIds) {
+    if (!userIds || userIds.length === 0) {
+        return [];
+    }
+
+    const stories = await Story.getFriendsStoriesSimple(userIds);
+    
+    // Filter to only include user stories
+    return stories.filter(story => !story.authorType || story.authorType === 'user');
+  }
+
+  // Enhanced method to get page stories with author type filtering
+  static async findPageStoriesByIds(pageIds) {
+    if (!pageIds || pageIds.length === 0) {
+        return [];
+    }
+
+    const stories = await Story.getFriendsStoriesSimple(pageIds);
+    
+    // Filter to only include page stories
+    return stories.filter(story => story.authorType === 'page');
+  }
+
+  // Get combined feed stories with proper separation and privacy
+  static async getCombinedFeedStories(userId, friendIds, followedPageIds, ownedPageIds) {
+    const userIdsToFetch = [...friendIds, userId];
+    const allPageIds = [...new Set([...followedPageIds, ...ownedPageIds])];
+
+    let userStories = [];
+    let pageStories = [];
+
+    // Get user stories
+    if (userIdsToFetch.length > 0) {
+        userStories = await Story.findUserStoriesByIds(userIdsToFetch);
+    }
+
+    // Get page stories with privacy filtering
+    if (allPageIds.length > 0) {
+        const allPageStories = await Story.findPageStoriesByIds(allPageIds);
+        
+        // Apply privacy filtering
+        pageStories = allPageStories.filter(story => {
+            if (story.privacy === 'public') {
+                return true; // Public stories visible to all
+            }
+            if (story.privacy === 'friends') {
+                // For pages, "friends" means followers
+                // Allow if user follows the page OR owns the page
+                return followedPageIds.includes(story.userId) || ownedPageIds.includes(story.userId);
+            }
+            return false;
+        });
+    }
+
+    // Combine and sort
+    const allStories = [...userStories, ...pageStories];
+    return allStories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+
+  // Filter active stories (non-expired and active)
+  static filterActiveStories(stories) {
+    const now = new Date();
+    return stories.filter(story => {
+        const expiresAt = new Date(story.expiresAt);
+        return story.isActive && expiresAt > now;
+    });
+  }
+
+  // Group stories by author with proper user/page data handling
+  static groupStoriesByAuthor(stories, userMap, pageMap) {
+    return stories.reduce((acc, story) => {
+        const storyUserId = story.userId;
+        const isPageStory = story.authorType === 'page';
+        
+        if (!acc[storyUserId]) {
+            acc[storyUserId] = {
+                user: isPageStory ? pageMap[storyUserId] : userMap[storyUserId],
+                stories: []
+            };
+            
+            // Fallback if author data not found
+            if (!acc[storyUserId].user) {
+                acc[storyUserId].user = {
+                    id: storyUserId,
+                    firstName: isPageStory ? '' : '',
+                    lastName: isPageStory ? '' : '',
+                    username: `${isPageStory ? 'page' : 'user'}_${storyUserId}`,
+                    profilePicture: 'https://via.placeholder.com/40',
+                    type: isPageStory ? 'page' : 'user',
+                    isPage: isPageStory,
+                    pageName: isPageStory ? `Page ${storyUserId}` : undefined
+                };
+            }
+        }
+        
+        acc[storyUserId].stories.push({
+            ...story,
+            _id: story.id || story._id,
+            user: acc[storyUserId].user
+        });
+
+        return acc;
+    }, {});
+  }
+
   // save story to database
   static async create(storyData) {
     try {
@@ -75,28 +254,28 @@ class Story {
   }
 
   // Update Story
-    static async updateById(id, updateData) {
-        try {
-            updateData.updatedAt = new Date().toISOString();
-        
-            await storiesCollection.doc(id).update(updateData);
-        
-            const updatedStory = await Story.findById(id);
-            return updatedStory;
-        } catch (error) {
-            throw error;
-        }
+  static async updateById(id, updateData) {
+    try {
+        updateData.updatedAt = new Date().toISOString();
+    
+        await storiesCollection.doc(id).update(updateData);
+    
+        const updatedStory = await Story.findById(id);
+        return updatedStory;
+    } catch (error) {
+        throw error;
     }
+  }
 
   // delete story
-    static async deleteById(id) {
-        try {
-            await storiesCollection.doc(id).delete();
-            return true;
-        } catch (error) {
-            throw error;
-        }
+  static async deleteById(id) {
+    try {
+        await storiesCollection.doc(id).delete();
+        return true;
+    } catch (error) {
+        throw error;
     }
+  }
   
   // Add a viewer to the story
   async addViewer(userId) {
@@ -225,6 +404,60 @@ class Story {
     } catch (error) {
       throw error;
     }
+  }
+
+  // Get story statistics
+  static async getStoryStats(storyId) {
+    try {
+      const story = await Story.findById(storyId);
+      if (!story) return null;
+
+      return {
+        viewCount: story.viewCount || 0,
+        viewerCount: story.viewers ? story.viewers.length : 0,
+        isActive: story.isActive,
+        expiresAt: story.expiresAt,
+        authorType: story.authorType,
+        privacy: story.privacy
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Check if story has expired
+  isExpired() {
+    const now = new Date();
+    const expiresAt = new Date(this.expiresAt);
+    return now > expiresAt;
+  }
+
+  // Check if user can view this story based on privacy settings
+  canUserView(userId, isFollower = false, isOwner = false) {
+    // Owner can always view
+    if (isOwner || this.userId === userId) return true;
+
+    // Check if story is active and not expired
+    if (!this.isActive || this.isExpired()) return false;
+
+    // Apply privacy rules
+    if (this.privacy === 'public') return true;
+    
+    if (this.privacy === 'friends') {
+      if (this.authorType === 'page') {
+        // For pages, "friends" means followers
+        return isFollower;
+      } else {
+        // For users, "friends" means actual friends - this would need friend check
+        return isFollower; // Assuming isFollower represents friend status for users
+      }
+    }
+
+    if (this.privacy === 'private') {
+      return false; // Only owner can see private stories
+    }
+
+    return false;
   }
 }
 

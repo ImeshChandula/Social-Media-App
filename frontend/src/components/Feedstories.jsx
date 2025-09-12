@@ -32,16 +32,23 @@ const Feedstories = ({ type = "all" }) => {
         setLoading(true);
         setError(null);
 
-        console.log(`Fetching stories from endpoint: ${type === "me" ? "/stories/me" : "/stories/feed"}`);
+        let endpoint;
+        if (type === "me") {
+          endpoint = "/stories/me";
+        } else {
+          // Use the new combined feed endpoint that includes both user and page stories
+          endpoint = "/feed/stories";
+        }
 
-        const endpoint = type === "me" ? "/stories/me" : "/stories/feed";
+        console.log(`Fetching stories from endpoint: ${endpoint}`);
+
         const res = await axiosInstance.get(endpoint);
 
         console.log('Raw API response:', res.data);
 
         let processedStories = [];
         if (type === "me") {
-          // Handle "me" endpoint response
+          // Handle "me" endpoint response (user's own stories only)
           const userStories = Array.isArray(res.data.stories) ? res.data.stories : [];
           processedStories = userStories.map(story => ({
             ...story,
@@ -60,7 +67,7 @@ const Feedstories = ({ type = "all" }) => {
           setGroupedStories(grouped);
           console.log('Processed user stories:', processedStories);
         } else {
-          // Handle "feed" endpoint response
+          // Handle combined feed endpoint response (users + pages)
           const feedStories = Array.isArray(res.data.stories) ? res.data.stories : [];
           
           // Enhanced handling of user data from backend for both users and pages
@@ -98,10 +105,10 @@ const Feedstories = ({ type = "all" }) => {
           
           // Flatten for individual story processing if needed
           processedStories = grouped.flatMap(group => group.stories);
-          console.log('Processed feed stories:', processedStories);
+          console.log('Processed combined feed stories:', processedStories);
           
           // Debug logging for user data
-          console.log('User data in grouped stories:', grouped.map(g => ({
+          console.log('User/Page data in grouped stories:', grouped.map(g => ({
             userId: g.user.id,
             username: g.user.username,
             firstName: g.user.firstName,
@@ -109,6 +116,7 @@ const Feedstories = ({ type = "all" }) => {
             pageName: g.user.pageName,
             isPage: g.user.isPage,
             type: g.user.type,
+            authorType: g.stories[0]?.authorType,
             displayName: getDisplayName(g.user)
           })));
         }
@@ -311,7 +319,9 @@ const Feedstories = ({ type = "all" }) => {
 
       {!loading && !error && groupedStories.length > 0 && (
         <>
-          <h2 className="text-white mb-3 fs-4">{type === "me" ? "Your Stories" : "Stories"}</h2>
+          <h2 className="text-white mb-3 fs-4">
+            {type === "me" ? "Your Stories" : "Stories"}
+          </h2>
           <div
             className="d-flex overflow-x-auto pb-3"
             style={{
@@ -325,6 +335,7 @@ const Feedstories = ({ type = "all" }) => {
             {groupedStories.map((group, index) => {
               const latestStory = group.stories[0]; // Get the latest story for preview
               const storyPreview = getStoryPreview(latestStory);
+              const isPage = group.user?.isPage || group.user?.type === 'page';
               
               return (
                 <div
@@ -346,7 +357,7 @@ const Feedstories = ({ type = "all" }) => {
                             backgroundImage: `url(${storyPreview})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
-                            border: '3px solid #1877f2'
+                            border: isPage ? '3px solid #1877f2' : '3px solid #e91e63'
                           }}
                         />
                       ) : (
@@ -356,8 +367,10 @@ const Feedstories = ({ type = "all" }) => {
                             width: '80px',
                             height: '80px',
                             borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            border: '3px solid #1877f2',
+                            background: isPage 
+                              ? 'linear-gradient(135deg, #1877f2 0%, #0d47a1 100%)'
+                              : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            border: isPage ? '3px solid #1877f2' : '3px solid #e91e63',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center'
@@ -392,10 +405,13 @@ const Feedstories = ({ type = "all" }) => {
                           bottom: '0',
                           right: '0'
                         }}
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/30';
+                        }}
                       />
                       
                       {/* Page indicator */}
-                      {(group.user?.isPage || group.user?.type === 'page') && (
+                      {isPage && (
                         <div
                           className="page-indicator"
                           style={{
@@ -414,6 +430,7 @@ const Feedstories = ({ type = "all" }) => {
                             fontWeight: 'bold',
                             border: '2px solid white'
                           }}
+                          title="Page Story"
                         >
                           P
                         </div>
@@ -426,7 +443,7 @@ const Feedstories = ({ type = "all" }) => {
                       </p>
                       <p className="text-muted text-center mb-0" style={{ fontSize: '10px' }}>
                         {group.stories.length} {group.stories.length === 1 ? 'story' : 'stories'}
-                        {(group.user?.isPage || group.user?.type === 'page') && (
+                        {isPage && (
                           <span className="text-info"> • Page</span>
                         )}
                       </p>
@@ -481,6 +498,65 @@ const Feedstories = ({ type = "all" }) => {
         
         .page-indicator {
           box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Responsive design for smaller screens */
+        @media (max-width: 768px) {
+          .story-group {
+            width: 100px !important;
+          }
+          
+          .story-background {
+            width: 70px !important;
+            height: 70px !important;
+          }
+          
+          .story-profile-overlay {
+            width: 20px !important;
+            height: 20px !important;
+          }
+          
+          .page-indicator {
+            width: 18px !important;
+            height: 18px !important;
+            font-size: 8px !important;
+          }
+          
+          .story-info p {
+            font-size: 10px !important;
+          }
+          
+          .story-info p:last-child {
+            font-size: 8px !important;
+          }
+        }
+
+        /* Loading animation for story rings */
+        .story-ring.loading {
+          opacity: 0.7;
+        }
+
+        /* Enhanced hover effects */
+        .story-group:hover .page-indicator {
+          background: #0d47a1;
+        }
+
+        .story-group:active .story-ring {
+          transform: scale(0.95);
+        }
+
+        /* Better text truncation */
+        .story-info p {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 120px;
+        }
+
+        @media (max-width: 768px) {
+          .story-info p {
+            max-width: 100px;
+          }
         }
       `}</style>
     </div>

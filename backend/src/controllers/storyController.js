@@ -87,59 +87,6 @@ const createStory = async(req, res) => {
 };
 
 
-// Get current user's active and non-expired stories
-// const getCurrentUserStories = async (req, res) => {
-//   try {
-//     const userId = req.user.id;
-
-//     // Fetch the user
-//     const user = await UserService.findById(userId);
-//     if (!user) {
-//       return res.status(404).json({ message: 'User not found' });
-//     }
-
-//     // Fetch all stories by the user
-//     const allStories = await Story.findByUserId(userId);
-//     if (!allStories || allStories.length === 0) {
-//       return res.status(200).json({ message: 'No stories found for this user', stories: [] });
-//     }
-
-//     const now = new Date();
-
-//     // Filter out expired or inactive stories
-//     const activeStories = allStories.filter(story => {
-//       const expiresAt = new Date(story.expiresAt);
-//       return story.isActive && expiresAt > now;
-//     });
-
-//     // Construct minimal user info
-//     const userData = {
-//       id: user.id,
-//       firstName: user.firstName,
-//       lastName: user.lastName,
-//       username: user.username,
-//       profilePicture: user.profilePicture
-//     };
-
-//     // Populate each story with user info
-//     const populatedStories = activeStories.map(story => ({
-//       ...story,
-//       viewCount: story.viewCount,
-//       user: userData
-//     }));
-
-//     return res.status(200).json({
-//       count: populatedStories.length,
-//       message: 'User stories retrieved successfully',
-//       stories: populatedStories
-//     });
-
-//   } catch (error) {
-//     console.error('Error getting current user stories:', error.message);
-//     return res.status(500).json({ message: 'Server error' });
-//   }
-// };
-
 // Option A: Simplify the Firestore query and filter in application code
 const getCurrentUserStories = async (req, res) => {
   try {
@@ -209,10 +156,7 @@ const getCurrentUserStories = async (req, res) => {
   }
 };
  
-
-
-//updated code for getStoriesFeed function
-// Optimized approach to reduce index requirements
+// Enhanced getStoriesFeed function with page story integration
 const getStoriesFeed = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -226,42 +170,75 @@ const getStoriesFeed = async (req, res) => {
         // Get user's friends
         const friendIds = user.friends || [];
 
-        // If user has no friends, return empty story feed
-        if (friendIds.length === 0) {
+        // Get pages the user follows
+        const PageService = require('../services/pageService');
+        const followedPages = await getUserFollowedPages(userId);
+        const pageIds = followedPages.map(page => page.id);
+
+        // Get pages owned by the user
+        const ownedPages = await PageService.findByOwner(userId);
+        const ownedPageIds = ownedPages.map(page => page.id);
+
+        // Combine all page IDs (followed + owned)
+        const allPageIds = [...new Set([...pageIds, ...ownedPageIds])];
+
+        // If user has no friends and no pages, return empty story feed
+        if (friendIds.length === 0 && allPageIds.length === 0) {
             return res.status(200).json({ 
-                message: 'You have no friends to fetch stories from.', 
+                message: 'You have no friends or followed pages to fetch stories from.', 
                 stories: [] 
             });
         }
 
         // Create array of user IDs to fetch stories from (friends + current user)
-        const userIdsToFetch = [...friendIds, userId];//new
+        const userIdsToFetch = [...friendIds, userId];
 
-        // Get all stories from friends AND current user
-        const allFriendStories = await Story.getFriendsStoriesSimple(userIdsToFetch);//new
-        /*
-        Note: Here allFriendStories is defined as an array of stories for all stories. Not only for friend's stories but also for
-        user's stories + friend's stories.
-        */
+        console.log('Enhanced Stories Feed Debug:', {
+            userId,
+            friendIds: friendIds.length,
+            followedPages: pageIds.length,
+            ownedPages: ownedPageIds.length,
+            totalPageIds: allPageIds.length
+        });
 
-        //new
+        // Get user stories
+        let userStories = [];
+        if (userIdsToFetch.length > 0) {
+            userStories = await Story.getFriendsStoriesSimple(userIdsToFetch);
+            // Filter to only include user stories
+            userStories = userStories.filter(story => !story.authorType || story.authorType === 'user');
+        }
+
+        // Get page stories
+        let pageStories = [];
+        if (allPageIds.length > 0) {
+            pageStories = await Story.getFriendsStoriesSimple(allPageIds);
+            // Filter to only include page stories
+            pageStories = pageStories.filter(story => story.authorType === 'page');
+            
+            // Apply privacy filtering for page stories
+            pageStories = pageStories.filter(story => {
+                if (story.privacy === 'public') {
+                    return true; // Public stories visible to all
+                }
+                if (story.privacy === 'friends') {
+                    // For pages, "friends" means followers
+                    // Allow if user follows the page OR owns the page
+                    return pageIds.includes(story.userId) || ownedPageIds.includes(story.userId);
+                }
+                return false;
+            });
+        }
+
+        // Combine user and page stories
+        const allFriendStories = [...userStories, ...pageStories];
+
         if (!allFriendStories.length) {
             return res.status(200).json({ 
                 message: 'No stories found in your feed', 
                 stories: [] 
             });
         }
-
-        // // OPTION A: Simplified query approach
-        // // Get all stories from friends with minimal filtering in Firestore
-        // const allFriendStories = await Story.getFriendsStoriesSimple(friendIds);
-
-        // if (!allFriendStories.length) {
-        //     return res.status(200).json({ 
-        //         message: 'No stories found in your feed', 
-        //         stories: [] 
-        //     });
-        // }
 
         // Filter active and non-expired stories in application code
         const now = new Date();
@@ -280,117 +257,158 @@ const getStoriesFeed = async (req, res) => {
         // Sort stories by creation date (newest first)
         activeStories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-        // Get unique user IDs from the stories
-        const uniqueUserIds = [...new Set(activeStories.map(story => story.userId))];
+        // Get unique user IDs and page IDs from the stories
+        const userStoryIds = activeStories.filter(story => !story.authorType || story.authorType !== 'page').map(story => story.userId);
+        const pageStoryIds = activeStories.filter(story => story.authorType === 'page').map(story => story.userId);
 
-        // Create a map to store user details
+        const uniqueUserIds = [...new Set(userStoryIds)];
+        const uniquePageIds = [...new Set(pageStoryIds)];
+
+        // Create a map to store user and page details
         const userMap = {};
+        const pageMap = {};
 
         // Fetch user details for each unique user ID
         for (const id of uniqueUserIds) {
             try {
                 if (!id) continue;
-                
-                //const friend = await User.findById(id);
-                
-                const friend = await UserService.findById(id);// new 16/07
+                const friend = await UserService.findById(id);
                 if (friend) {
                     userMap[id] = {
                         id: friend.id,
                         firstName: friend.firstName || '',
                         lastName: friend.lastName || '',
-                        username: friend.username || `User${id}`,//added || `User${id}`
-                        profilePicture: friend.profilePicture || 'https://via.placeholder.com/40' // added || 'https://via.placeholder.com/40'
+                        username: friend.username || `user_${id}`,
+                        profilePicture: friend.profilePicture || 'https://via.placeholder.com/40',
+                        type: 'user'
                     };
-                }else { //new 16/07
-                    // FIX 5: Add fallback user data when user is not found
+                } else {
+                    // Fallback user data when user is not found
                     console.warn(`User ${id} not found, using fallback data`);
                     userMap[id] = {
                         id: id,
                         firstName: '',
                         lastName: '',
                         username: `user_${id}`,
-                        profilePicture: 'https://via.placeholder.com/40'
+                        profilePicture: 'https://via.placeholder.com/40',
+                        type: 'user'
                     };
                 }
             } catch (userError) {
                 console.error(`Error fetching user ${id}:`, userError.message);
-
-                //new 16/07
-                // FIX 6: Provide fallback data even when there's an error
+                // Provide fallback data even when there's an error
                 userMap[id] = {
                     id: id,
                     firstName: '',
                     lastName: '',
                     username: `user_${id}`,
-                    profilePicture: 'https://via.placeholder.com/40'
+                    profilePicture: 'https://via.placeholder.com/40',
+                    type: 'user'
                 };
             }
         }
 
-        // Group stories by user
-        const storiesByUser = activeStories.reduce((acc, story) => {
-            const storyUserId = story.userId;
-            if (!acc[storyUserId]) {
-                acc[storyUserId] = {
-                    //user: userMap[storyUserId] || { id: storyUserId }, old
-                    user: userMap[storyUserId] || { // new 16/07
-                        id: storyUserId,
+        // Fetch page details for each unique page ID
+        for (const id of uniquePageIds) {
+            try {
+                if (!id) continue;
+                const page = await PageService.findById(id);
+                if (page) {
+                    pageMap[id] = {
+                        id: page.id,
                         firstName: '',
                         lastName: '',
-                        username: `user_${storyUserId}`,
-                        profilePicture: 'https://via.placeholder.com/40'
-                    },
-                    stories: []
+                        username: page.username || page.pageName,
+                        profilePicture: page.profilePicture || 'https://via.placeholder.com/40',
+                        pageName: page.pageName,
+                        type: 'page',
+                        isPage: true
+                    };
+                } else {
+                    // Fallback page data when page is not found
+                    console.warn(`Page ${id} not found, using fallback data`);
+                    pageMap[id] = {
+                        id: id,
+                        firstName: '',
+                        lastName: '',
+                        username: `page_${id}`,
+                        profilePicture: 'https://via.placeholder.com/40',
+                        pageName: `Page ${id}`,
+                        type: 'page',
+                        isPage: true
+                    };
+                }
+            } catch (pageError) {
+                console.error(`Error fetching page ${id}:`, pageError.message);
+                // Provide fallback data even when there's an error
+                pageMap[id] = {
+                    id: id,
+                    firstName: '',
+                    lastName: '',
+                    username: `page_${id}`,
+                    profilePicture: 'https://via.placeholder.com/40',
+                    pageName: `Page ${id}`,
+                    type: 'page',
+                    isPage: true
                 };
             }
-            //acc[storyUserId].stories.push(story);
+        }
 
-            //newly added line 15/7
+        // Group stories by user/page
+        const storiesByAuthor = activeStories.reduce((acc, story) => {
+            const storyUserId = story.userId;
+            const isPageStory = story.authorType === 'page';
+            
+            if (!acc[storyUserId]) {
+                acc[storyUserId] = {
+                    user: isPageStory ? pageMap[storyUserId] : userMap[storyUserId],
+                    stories: []
+                };
+                
+                // Ensure we have user/page data
+                if (!acc[storyUserId].user) {
+                    acc[storyUserId].user = {
+                        id: storyUserId,
+                        firstName: isPageStory ? '' : '',
+                        lastName: isPageStory ? '' : '',
+                        username: `${isPageStory ? 'page' : 'user'}_${storyUserId}`,
+                        profilePicture: 'https://via.placeholder.com/40',
+                        type: isPageStory ? 'page' : 'user',
+                        isPage: isPageStory,
+                        pageName: isPageStory ? `Page ${storyUserId}` : undefined
+                    };
+                }
+            }
+            
             // Add story with proper _id field for frontend compatibility
             acc[storyUserId].stories.push({
                 ...story,
                 _id: story.id || story._id,
-                //user: userMap[storyUserId] || { id: storyUserId } old
-                user: userMap[storyUserId] || { // new 16/07
-                    id: storyUserId,
-                    firstName: '',
-                    lastName: '',
-                    username: `user_${storyUserId}`,
-                    profilePicture: 'https://via.placeholder.com/40'
-                }
+                user: acc[storyUserId].user
             });
 
             return acc;
         }, {});
 
-        // // Convert to array format for response
-        // const feedStories = Object.values(storiesByUser);
-
-        //newly added line 15/7
         // Convert to array format and sort user groups by most recent story
-        const feedStories = Object.values(storiesByUser).map(userGroup => {
-            // Sort stories within each user group by creation date (newest first)
-            userGroup.stories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            return userGroup;
+        const feedStories = Object.values(storiesByAuthor).map(authorGroup => {
+            // Sort stories within each author group by creation date (newest first)
+            authorGroup.stories.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            return authorGroup;
         }).sort((a, b) => {
-            // Sort user groups by their most recent story
+            // Sort author groups by their most recent story
             const aLatest = new Date(a.stories[0].createdAt);
             const bLatest = new Date(b.stories[0].createdAt);
             return bLatest - aLatest;
         });
 
-        //new 16/07
-        // FIX 7: Add debug logging to help identify issues
-        console.log('Feed stories with user data:', JSON.stringify(feedStories.map(group => ({
-            userId: group.user.id,
-            username: group.user.username,
-            firstName: group.user.firstName,
-            lastName: group.user.lastName,
-            storiesCount: group.stories.length
-        })), null, 2));
-
-
+        // Add debug logging
+        console.log('Enhanced Feed stories result:', {
+            totalActiveStories: activeStories.length,
+            userGroups: feedStories.filter(g => g.user.type === 'user').length,
+            pageGroups: feedStories.filter(g => g.user.type === 'page').length,
+            totalGroups: feedStories.length
+        });
 
         res.status(200).json({
             message: 'Stories feed retrieved successfully',
@@ -398,12 +416,27 @@ const getStoriesFeed = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error fetching stories feed:', error);
+        console.error('Error fetching enhanced stories feed:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
 
-
+// Helper function to get pages a user follows
+const getUserFollowedPages = async (userId) => {
+    try {
+        const PageService = require('../services/pageService');
+        const allPages = await PageService.findAll();
+        return allPages.filter(page => 
+            page.followers && 
+            page.followers.includes(userId) && 
+            page.isPublished && 
+            page.approvalStatus === 'approved'
+        );
+    } catch (error) {
+        console.error('Error getting followed pages:', error);
+        return [];
+    }
+};
 
 
 
