@@ -5,6 +5,10 @@ require('dotenv').config();
 const connectFirebase = () => {
   try {
     if (admin.apps.length === 0) {
+      if (!process.env.FIREBASE_PRIVATE_KEY) {
+        throw new Error('Firebase private key is missing');
+      }
+
       // Use environment variables (.env)
       admin.initializeApp({
         credential: admin.credential.cert({
@@ -13,14 +17,18 @@ const connectFirebase = () => {
           privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
         }),
         // Add database URL for full Realtime Database access (optional)
-        databaseURL: process.env.FIREBASE_DATABASE_URL
+        databaseURL: process.env.FIREBASE_DATABASE_URL,
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET
       });
       
       console.log('Firebase Connected!');
     }
     return {
       db: admin.firestore(),
-      messaging: admin.messaging()
+      auth: admin.auth(),
+      storage: admin.storage(),
+      messaging: admin.messaging(),
+      admin
     };
   } catch (error) {
     console.error(`Error: ${error.message}`);
