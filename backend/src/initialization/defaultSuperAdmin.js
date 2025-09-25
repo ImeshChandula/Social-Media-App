@@ -51,14 +51,14 @@ const createDefaultSuperAdmin = async (req, res) => {
             };
     
             await UserService.create(superAdminData);
-            console.log(`Default Super Admin created...`);
+            console.log(`✅ Default Super Admin created...`);
         } else {
-            console.log(`Default Super Admin already exists...`);
+            console.log(`✅ Default Super Admin already exists...`);
         }
     } catch (error) {
         console.error(error.message);
         if (req && res) {
-            res.status(500).send('Server error while default account creating');
+            res.status(500).send('❌ Server error while default account creating');
         }
     }
 };
@@ -68,9 +68,9 @@ const createDefaultSuperAdmin = async (req, res) => {
 const initializeDefaultSuperAdmin = async () => {
     try {
         await createDefaultSuperAdmin();
-        console.log("Super admin initialization completed");
+        console.log("✅ Super admin initialization completed...");
     } catch (error) {
-        console.error("Failed to initialize super admin:", error.message);
+        console.error("❌ Failed to initialize super admin:", error.message);
     }
 };
 

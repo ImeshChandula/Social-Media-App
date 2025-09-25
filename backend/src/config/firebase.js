@@ -13,7 +13,7 @@ const validateEnvVars = () => {
   const missingVars = requiredVars.filter(varName => !process.env[varName]);
   
   if (missingVars.length > 0) {
-    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+    throw new Error(`❌ Missing required environment variables: ${missingVars.join(', ')}`);
   }
 };
 
@@ -37,7 +37,7 @@ const connectFirebase = () => {
         storageBucket: process.env.FIREBASE_STORAGE_BUCKET
       });
       
-      console.log('Firebase Connected!');
+      console.log('✅ Firebase Connected!');
     }
     return {
       db: admin.firestore(),
@@ -47,7 +47,7 @@ const connectFirebase = () => {
       admin
     };
   } catch (error) {
-    console.error(`Error: ${error.message}`);
+    console.error(`❌ Error: ${error.message}`);
     process.exit(1);
   }
 };

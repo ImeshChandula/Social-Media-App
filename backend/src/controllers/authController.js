@@ -1,5 +1,5 @@
 const UserService = require('../services/userService');
-const { generateToken } = require("../utils/jwtToken");
+const { generateToken, removeToken } = require("../utils/jwtToken");
 require('dotenv').config();
 
 //@desc    Register user
@@ -138,7 +138,7 @@ const logout = async (req, res) => {
 
         await UserService.updateById(req.user.id, updateData);
 
-        res.cookie("jwt", "", {maxAge: 0});
+        removeToken(res);
         res.status(200).json({
             message: 'Logout successful'
         });
