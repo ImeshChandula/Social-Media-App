@@ -32,8 +32,8 @@ class User {
     this.isPublic = userData.isPublic; // Profile visibility
     this.lastLogin = userData.lastLogin || new Date().toISOString();
 
-    this.role = userData.role || ROLES.USER;
-    this.accountStatus = userData.accountStatus || "active";
+    this.role = userData.role; // user, admin, super_admin
+    this.accountStatus = userData.accountStatus || "active";  // active, inactive, banned
     this.notificationCount = userData.notificationCount || '';
     
     // Timestamps
