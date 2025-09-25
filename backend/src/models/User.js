@@ -11,7 +11,7 @@ class User {
     this.password = userData.password;
     this.firstName = userData.firstName;
     this.lastName = userData.lastName;
-    this._isPasswordModified = false;
+    this._isPasswordModified = userData._isPasswordModified || false;
 
     this.profilePicture = userData.profilePicture;
     this.coverPhoto = userData.coverPhoto;

@@ -1,5 +1,7 @@
 const { default: DEFAULT_COVER_PHOTO } = require('../data/AppInfo');
 const { default: SUPER_ADMIN_DATA } = require('../data/SuperAdmin');
+const ACCOUNT_STATUS = require('../enums/account_status');
+const USER_ROLES = require('../enums/roles');
 const UserService = require('../services/userService');
 require('dotenv').config();
 
@@ -19,12 +21,33 @@ const createDefaultSuperAdmin = async (req, res) => {
             const superAdminData = {
                 username: SUPER_ADMIN_DATA.USER_NAME,
                 email: SUPER_ADMIN_DATA.EMAIL,
+                phone: SUPER_ADMIN_DATA.PHONE,
                 password: SUPER_ADMIN_DATA.PASSWORD,
                 firstName: SUPER_ADMIN_DATA.FIRST_NAME,
                 lastName: SUPER_ADMIN_DATA.LAST_NAME,
-                role: "super_admin",
+                _isPasswordModified: false,
+
                 profilePicture: randomAvatar,
-                coverPhoto: defaultCover
+                coverPhoto: defaultCover,
+                bio: '',
+                location: '',
+                birthday: null,
+                jobCategory: "None",
+
+                friends: [],
+                friendRequests: [],
+                favorites: [],
+
+                resetOtp: '',
+                resetOtpExpiredAt: new Date().toISOString(),
+
+                isActive: true,
+                isPublic: true,
+                lastLogin: new Date().toISOString(),
+
+                role: USER_ROLES.SUPER_ADMIN,
+                accountStatus: ACCOUNT_STATUS.ACTIVE,
+                notificationCount: 0
             };
     
             await UserService.create(superAdminData);
