@@ -1,13 +1,29 @@
 const admin = require('firebase-admin');
 require('dotenv').config();
 
+// Validate required environment variables
+const validateEnvVars = () => {
+  const requiredVars = [
+    'FIREBASE_PROJECT_ID',
+    'FIREBASE_CLIENT_EMAIL', 
+    'FIREBASE_PRIVATE_KEY',
+    'FIREBASE_STORAGE_BUCKET'
+  ];
+  
+  const missingVars = requiredVars.filter(varName => !process.env[varName]);
+  
+  if (missingVars.length > 0) {
+    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+  }
+};
+
 // Initialize Firebase with service account credentials
 const connectFirebase = () => {
   try {
+    // Validate environment variables
+    validateEnvVars();
+
     if (admin.apps.length === 0) {
-      if (!process.env.FIREBASE_PRIVATE_KEY) {
-        throw new Error('Firebase private key is missing');
-      }
 
       // Use environment variables (.env)
       admin.initializeApp({
