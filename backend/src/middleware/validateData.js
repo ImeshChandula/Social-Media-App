@@ -1,5 +1,6 @@
 const Joi = require('joi');
 const { APPEAL_STATUS, APPEAL_PRIORITY } = require('../enums/appeal');
+const { optionalImageSchema, requiredImageSchema } = require('./schemas/image.firebase.schema');
 
 // Validate user registration
 const validateUserData = (req, res, next) => {
@@ -11,8 +12,8 @@ const validateUserData = (req, res, next) => {
     phone: Joi.string().pattern(/^(?:\+?\d{9,15})$/).min(9).trim().optional(),
 
     // Profile fields
-    profilePicture: Joi.string().uri().optional(), // assuming it's a URL
-    coverPhoto: Joi.string().uri().optional(),
+    profilePicture: optionalImageSchema,
+    coverPhoto: optionalImageSchema,
     bio: Joi.string().allow('').optional(),
     location: Joi.string().allow('').optional(),
     birthday: Joi.date().iso().allow(null).optional(),
@@ -157,20 +158,7 @@ const validateMarketPlace = (req, res, next) => {
             postalCode: Joi.string().allow('').default('')
         }).optional(),
         conditionType: Joi.string().valid('new', 'like_new', 'good', 'fair', 'poor').default('new'),
-        images: Joi.alternatives().try(
-              Joi.string().uri(),                         // media link
-              Joi.string().pattern(/^data:.*;base64,.*/), // base64 image/video
-              Joi.array().items(
-                Joi.alternatives().try(
-                  Joi.string().uri(),                         // media URL in array
-                  Joi.string().pattern(/^data:.*;base64,.*/), // base64 in array
-                  Joi.object({                                // file object from multer
-                    path: Joi.string().required()
-                  })
-                )
-              ),
-              Joi.valid(null)
-            ).required(),
+        images: requiredImageSchema,
         quantity: Joi.number().integer().min(1).default(1),
         isNegotiable: Joi.boolean().default(false),
         isAvailable: Joi.boolean().default(true),
@@ -224,20 +212,7 @@ const validateMarketPlaceUpdate = (req, res, next) => {
             postalCode: Joi.string().allow('').optional()
         }).optional(),
         conditionType: Joi.string().valid('new', 'like_new', 'good', 'fair', 'poor').optional(),
-        images: Joi.alternatives().try(
-              Joi.string().uri(),                         // media link
-              Joi.string().pattern(/^data:.*;base64,.*/), // base64 image/video
-              Joi.array().items(
-                Joi.alternatives().try(
-                  Joi.string().uri(),                         // media URL in array
-                  Joi.string().pattern(/^data:.*;base64,.*/), // base64 in array
-                  Joi.object({                                // file object from multer
-                    path: Joi.string().required()
-                  })
-                )
-              ),
-              Joi.valid(null)
-            ).optional(),
+        images: optionalImageSchema,
         quantity: Joi.number().integer().min(1).optional(),
         isNegotiable: Joi.boolean().optional(),
         isAvailable: Joi.boolean().optional(),

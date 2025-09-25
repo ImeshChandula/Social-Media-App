@@ -1,5 +1,6 @@
 const Joi = require('joi');
 const CategoryService = require('../services/categoryService');
+const { requiredImageSchema, optionalImageSchema } = require('./schemas/image.firebase.schema');
 
 // Initialize category service
 const categoryService = new CategoryService();
@@ -55,9 +56,7 @@ const createPageValidationSchema = async () => {
             'any.required': 'Business address is required'
         }),
         // Profile picture is required
-        profilePicture: Joi.string().required().messages({
-            'any.required': 'Profile picture is required'
-        })
+        profilePicture: requiredImageSchema
     });
 };
 
@@ -69,8 +68,8 @@ const createUpdatePageValidationSchema = async () => {
         username: Joi.string().min(3).max(30).alphanum().optional().allow(''),
         description: Joi.string().min(10).max(500).optional(),
         category: Joi.string().valid(...validCategories).optional(),
-        coverPhoto: Joi.string().optional().allow(''),
-        profilePicture: Joi.string().optional().allow(''),
+        coverPhoto: optionalImageSchema,
+        profilePicture: optionalImageSchema,
         phone: Joi.string().pattern(/^[\+]?[1-9][\d]{0,15}$/).optional().allow(''),
         email: Joi.string().email().optional().allow(''),
         address: Joi.string().max(200).optional().allow('')
@@ -84,8 +83,8 @@ const pageValidators = {
             'string.min': 'Description must be at least 10 characters',
             'string.max': 'Description cannot exceed 500 characters'
         }),
-        profilePicture: Joi.string().optional().allow(''),
-        coverPhoto: Joi.string().optional().allow('')
+        profilePicture: optionalImageSchema,
+        coverPhoto: optionalImageSchema
     }),
 
     pageQuery: Joi.object({
@@ -172,12 +171,8 @@ const updatePageProfileValidator = Joi.object({
         'string.max': 'Description cannot exceed 500 characters',
         'any.required': 'Description is required'
     }),
-    profilePicture: Joi.string().optional().allow('').messages({
-        'string.base': 'Profile picture must be a valid image'
-    }),
-    coverPhoto: Joi.string().optional().allow('').messages({
-        'string.base': 'Cover photo must be a valid image'
-    })
+    profilePicture: optionalImageSchema,
+    coverPhoto: optionalImageSchema
 });
 
 const validatePageProfile = (req, res, next) => {

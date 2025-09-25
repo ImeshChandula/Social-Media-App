@@ -1,11 +1,10 @@
 const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const {deleteAllComments} = require('../services/userDeletionService');
-const { handleMediaUpload } = require('../utils/handleMediaUpload');
-const { areImagesUnchanged } = require('../utils/checkImagesAreSame');
 const notificationUtils = require('../utils/notificationUtils');
 const ReportService = require('../services/reportService');
 const notificationService = require('../services/notificationService');
+const { uploadImages, deleteImages } = require('../storage/firebaseStorage');
 
 // Valid video categories
 const VALID_VIDEO_CATEGORIES = ['Music', 'Sports', 'Education', 'Entertainment', 'News'];
@@ -81,18 +80,8 @@ const createPost = async (req, res) => {
 
         const updateData = { author: req.user.id, }
         if (media) {
-            const result = await handleMediaUpload(media, mediaType);
-            if (!result.success) {
-                return res.status(result.code).json({
-                    success: false,
-                    error: result.error,
-                    message: result.message,
-                    ...(result.suggestion && { suggestion: result.suggestion }),
-                    ...(result.maxSize && { maxSize: result.maxSize })
-                });
-            }
-
-            updateData.media = result.imageUrl;
+            const resultURLs = await uploadImages(media, 'post_images');
+            updateData.media = resultURLs;
         }
         
         const populatedPost = await PostService.updateById(newPost.id, updateData);
@@ -664,19 +653,10 @@ const updatePostByPostId = async (req, res) => {
             return res.status(404).json({ message: 'Failed to update post' });
         }
 
-        if (media !== undefined && !areImagesUnchanged(media, existingPost.media)) {
-            const result = await handleMediaUpload(media, mediaType);
-            if (!result.success) {
-                return res.status(result.code).json({
-                    success: false,
-                    error: result.error,
-                    message: result.message,
-                    ...(result.suggestion && { suggestion: result.suggestion }),
-                    ...(result.maxSize && { maxSize: result.maxSize })
-                });
-            }
+        if (media !== undefined) {
+            const resultURLs = await uploadImages(media, 'post_images');
 
-            updatedPost = await PostService.updateById(postId, { media: result.imageUrl });
+            updatedPost = await PostService.updateById(postId, { media: resultURLs });
             if (!updatedPost) {
                 return res.status(404).json({ message: 'Failed to update post' });
             }
@@ -713,6 +693,7 @@ const deletePostByPostId = async (req, res) => {
 
         // Delete all comments associated with the post
         await deleteAllComments(postId);
+        await deleteImages(existingPost.media);
         
         // Delete the post
         const deleteResult = await PostService.deleteById(postId);

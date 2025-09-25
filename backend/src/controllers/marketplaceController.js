@@ -1,8 +1,7 @@
 const MarketPlaceService = require('../services/marketplaceService');
 const MarketplaceFeedAlgorithm = require('../algorithms/MarketFeedAlgorithm');
-const { handleMediaUpload } = require('../utils/handleMediaUpload');
-const { areImagesUnchanged } = require('../utils/checkImagesAreSame');
 const populateAuthor = require('../utils/populateAuthor');
+const { uploadImages, deleteImages } = require('../storage/firebaseStorage');
 
 const marketplaceService = new MarketPlaceService();
 const feedAlgorithm = new MarketplaceFeedAlgorithm();
@@ -23,20 +22,8 @@ const createItem = async (req, res) => {
 
         const updateData = { author: req.user.id };
         if (images) {
-            const mediaType = "image";
-
-            const result = await handleMediaUpload(images, mediaType);
-            if (!result.success) {
-                return res.status(result.code).json({
-                    success: false,
-                    error: result.error,
-                    message: result.message,
-                    ...(result.suggestion && { suggestion: result.suggestion }),
-                    ...(result.maxSize && { maxSize: result.maxSize })
-                });
-            }
-
-            updateData.images = result.imageUrl;
+            const resultURLs = await uploadImages(images, 'marketplace');
+            updateData.images = resultURLs;
         }
 
         const updatedItem = await marketplaceService.updateById(item.id, updateData);
@@ -200,33 +187,17 @@ const updateItem = async (req, res) => {
             return res.status(403).json({ success: false, message: "Unauthorized: You can not update isAvailable field" });
         }
 
-        let updatedItem = await marketplaceService.updateById(itemId, rest);
-        if (!updatedItem) {
-            return res.status(400).json({ success: false, message: "Failed to update item data"});
-        }
+        const updateData = { ...rest };
 
         // Handle images only if they have changed
-        if (images != undefined && !areImagesUnchanged(images, item.images)) {
-            const mediaType = "image";
+        if (images != undefined) {
+            const resultURLs = await uploadImages(images, 'marketplace');
+            updateData.images = resultURLs;
+        }
 
-            const result = await handleMediaUpload(images, mediaType);
-            if (!result.success) {
-                return res.status(result.code).json({
-                    success: false,
-                    error: result.error,
-                    message: result.message,
-                    ...(result.suggestion && { suggestion: result.suggestion }),
-                    ...(result.maxSize && { maxSize: result.maxSize })
-                });
-            }
-
-            const updateData = {};
-            updateData.images = result.imageUrl;
-            
-            updatedItem = await marketplaceService.updateById(itemId, updateData);
-            if (!updatedItem) {
-                return res.status(400).json({ success: false, message: "Failed to update item images"});
-            }
+        const updatedItem = await marketplaceService.updateById(itemId, updateData);
+        if (!updatedItem) {
+            return res.status(400).json({ success: false, message: "Failed to update item data"});
         }
 
         return res.status(200).json({ success: true, message: "Item updated successfully", data: updatedItem});
@@ -248,6 +219,8 @@ const deleteItem = async (req, res) => {
         if (req.user.role !== 'super_admin' && item.author !== currentUserId) {
             return res.status(403).json({ success: false, message: 'Unauthorized: You can only delete your own posts' });
         }
+
+        await deleteImages(item.images);
 
         const deleteResult = await marketplaceService.deleteById(itemId);
         

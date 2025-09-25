@@ -1,3 +1,5 @@
+const { optionalImageSchema } = require("./schemas/image.firebase.schema");
+
 // validators/groupValidator.js
 const groupValidators = {
   createGroup: Joi.object({
@@ -12,8 +14,8 @@ const groupValidators = {
       'any.required': 'Description is required'
     }),
     privacy: Joi.string().valid('Public', 'Private', 'Secret').default('Public'),
-    coverPhoto: Joi.string().uri().optional().allow(''),
-    profilePicture: Joi.string().uri().optional().allow(''),
+    coverPhoto: optionalImageSchema,
+    profilePicture: optionalImageSchema,
     rules: Joi.array().items(Joi.string().max(200)).max(10).optional(),
     tags: Joi.array().items(Joi.string().max(30)).max(5).optional(),
     location: Joi.string().max(100).optional().allow('')
@@ -23,7 +25,7 @@ const groupValidators = {
     name: Joi.string().min(3).max(100).optional(),
     description: Joi.string().min(10).max(1000).optional(),
     privacy: Joi.string().valid('Public', 'Private', 'Secret').optional(),
-    coverPhoto: Joi.string().uri().optional().allow(''),
+    coverPhoto: optionalImageSchema,
     profilePicture: Joi.string().uri().optional().allow(''),
     rules: Joi.array().items(Joi.string().max(200)).max(10).optional(),
     tags: Joi.array().items(Joi.string().max(30)).max(5).optional(),

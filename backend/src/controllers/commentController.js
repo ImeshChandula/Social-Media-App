@@ -2,8 +2,7 @@ const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const CommentService = require('../services/commentService');
 const notificationUtils = require('../utils/notificationUtils');
-const { handleMediaUpload } = require('../utils/handleMediaUpload');
-const { areImagesUnchanged } = require('../utils/checkImagesAreSame');
+const { uploadImages } = require('../storage/firebaseStorage');
 
 
 //@desc     Add comment to post
@@ -34,20 +33,9 @@ const addComment = async(req, res) => {
 
         // upload media
         if (media !== undefined) {
-            const mediaType = "image";
 
-            const result = await handleMediaUpload(media, mediaType);
-            if (!result.success) {
-                return res.status(result.code).json({
-                    success: false,
-                    error: result.error,
-                    message: result.message,
-                    ...(result.suggestion && { suggestion: result.suggestion }),
-                    ...(result.maxSize && { maxSize: result.maxSize })
-                });
-            }
-
-            commentData.media = result.imageUrl;
+            const mediaURL = await uploadImages(media, 'comments');
+            commentData.media = mediaURL;
         }
 
         const newComment = await CommentService.create(commentData);
@@ -134,18 +122,9 @@ const addReply = async(req, res) => {
         // Create reply object
         let mediaUrl = null;
         if (media) {
-            const mediaType = "image";
-            const result = await handleMediaUpload(media, mediaType);
-            if (!result.success) {
-                return res.status(result.code).json({
-                    success: false,
-                    error: result.error,
-                    message: result.message,
-                    ...(result.suggestion && { suggestion: result.suggestion }),
-                    ...(result.maxSize && { maxSize: result.maxSize })
-                });
-            }
-            mediaUrl = result.imageUrl;
+            const resultURL = await uploadImages(media, 'comments');
+            
+            mediaUrl = resultURL;
         }
 
         const reply = {
@@ -349,21 +328,10 @@ const updateComment = async(req, res) => {
         const updateData = {};
 
         if (text !== undefined) updateData.text = text;
-        if (media !== undefined && !areImagesUnchanged(media, comment.media)) {
-            const mediaType = "image";
+        if (media !== undefined ) {
 
-            const result = await handleMediaUpload(media, mediaType);
-            if (!result.success) {
-                return res.status(result.code).json({
-                    success: false,
-                    error: result.error,
-                    message: result.message,
-                    ...(result.suggestion && { suggestion: result.suggestion }),
-                    ...(result.maxSize && { maxSize: result.maxSize })
-                });
-            }
-
-            updateData.media = result.imageUrl;
+            const resultURL = await uploadImages(media, 'comments');
+            updateData.media = resultURL;
         };
 
         try {

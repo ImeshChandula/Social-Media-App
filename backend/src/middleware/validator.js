@@ -1,5 +1,6 @@
 
 const Joi = require('joi');
+const { optionalImageSchema } = require('./schemas/image.firebase.schema');
 
 // Valid video categories
 const VALID_VIDEO_CATEGORIES = ['Music', 'Sports', 'Education', 'Entertainment', 'News'];
@@ -16,8 +17,8 @@ const validateUser = (req, res, next) => {
     lastName: Joi.string().trim().required(),
 
     // Optional fields
-    profilePicture: Joi.string().uri().optional(), // assuming it's a URL
-    coverPhoto: Joi.string().uri().optional(),
+    profilePicture: optionalImageSchema, // assuming it's a URL
+    coverPhoto: optionalImageSchema,
     bio: Joi.string().allow('').optional(),
     location: Joi.string().allow('').optional(),
     birthday: Joi.date().iso().allow(null).optional(),
@@ -48,20 +49,7 @@ const validatePost = (req, res, next) => {
     author: Joi.string().optional(), // typically user ID
     content: Joi.string().optional(),
     // Accept base64 string OR URL OR null
-    media: Joi.alternatives().try(
-      Joi.string().uri(),                         // media link
-      Joi.string().pattern(/^data:.*;base64,.*/), // base64 image/video
-      Joi.array().items(
-        Joi.alternatives().try(
-          Joi.string().uri(),                         // media URL in array
-          Joi.string().pattern(/^data:.*;base64,.*/), // base64 in array
-          Joi.object({                                // file object from multer
-            path: Joi.string().required()
-          })
-        )
-      ),
-      Joi.valid(null)
-    ).optional(),
+    media: optionalImageSchema,
     mediaType: Joi.when('media', {
       is: Joi.exist().not(null),
       then: Joi.string().valid('image', 'video').required(),
@@ -109,8 +97,7 @@ const validateComment = (req, res, next) => {
     post: Joi.string().optional(),              // ID of the post the comment belongs to
     user: Joi.string().optional(),              // ID of the user making the comment
     text: Joi.string().optional().allow(null, ''),              // Text content of the comment
-    media: Joi.string().uri().allow(null, ''),  // Optional media (URL)
-    //     likes: Joi.array().items(Joi.string()).optional(),     // Array of user IDs who liked
+    media: optionalImageSchema,  
     replies: Joi.array().items(Joi.object()).optional(),   // Array of replies (optional objects)
     createdAt: Joi.date().optional(),
     updatedAt: Joi.date().optional(),
@@ -130,18 +117,7 @@ const validateStory = (req, res, next) => {
     content: Joi.string().allow('', null).optional(),
     
     // Media validation - supports multiple formats for Cloudinary upload
-    media: Joi.alternatives().try(
-      Joi.string().uri(),                         // media link
-      Joi.string().pattern(/^data:.;base64,./), // base64 image/video
-      Joi.object({ path: Joi.string().required() }), // multer-style file
-      Joi.valid(null),
-      Joi.array().items(
-        Joi.alternatives().try(
-          Joi.string(),
-          Joi.object({ path: Joi.string().required() })
-        )
-      )
-    ).optional(),
+    media: optionalImageSchema,
 
     type: Joi.when('media', {
       is: Joi.exist().not(null),

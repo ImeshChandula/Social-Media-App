@@ -1,12 +1,11 @@
 const PageService = require('../services/pageService');
 const UserService = require('../services/userService');
 const PostService = require('../services/postService');
-const { uploadImage } = require('../utils/uploadMedia');
 const CategoryService = require('../services/categoryService');
-const { handleMediaUpload } = require('../utils/handleMediaUpload');
 const pageValidators = require('../middleware/pageValidator');
 const Story = require('../models/Story');
 const { generateWhatsAppURL, generatePageContactMessage } = require('../utils/whatsappHelper');
+const { uploadSingleImage, deleteImages, uploadImages } = require('../storage/firebaseStorage');
 
 // Valid page categories
 //const VALID_PAGE_CATEGORIES = ['education', 'music', 'fashion', 'entertainment'];
@@ -89,7 +88,7 @@ const createPage = async(req, res) => {
         if (profilePicture) {
             try {
                 console.log('Uploading profile picture...');
-                profilePictureUrl = await uploadImage(profilePicture);
+                profilePictureUrl = await uploadSingleImage(profilePicture, 'page_profile_pictures');
                 console.log('Profile picture uploaded successfully:', profilePictureUrl);
             } catch (error) {
                 console.error('Profile picture upload failed:', error);
@@ -228,7 +227,7 @@ const updatePage = async(req, res) => {
         // Handle media uploads
         if (profilePicture) {
             try {
-                const imageUrl = await uploadImage(profilePicture);
+                const imageUrl = await uploadSingleImage(profilePicture, 'page_profile_pictures');
                 updateData.profilePicture = imageUrl;
             } catch (error) {
                 return res.status(400).json({
@@ -240,7 +239,7 @@ const updatePage = async(req, res) => {
 
         if (coverPhoto) {
             try {
-                const imageUrl = await uploadImage(coverPhoto);
+                const imageUrl = await uploadSingleImage(coverPhoto, 'page_cover_photos');
                 updateData.coverPhoto = imageUrl;
             } catch (error) {
                 return res.status(400).json({
@@ -676,7 +675,7 @@ const updatePageProfile = async(req, res) => {
         // Handle profile picture upload
         if (profilePicture) {
             try {
-                const imageUrl = await uploadImage(profilePicture);
+                const imageUrl = await uploadSingleImage(profilePicture, 'page_profile_pictures');
                 updateData.profilePicture = imageUrl;
             } catch (error) {
                 return res.status(400).json({
@@ -689,7 +688,7 @@ const updatePageProfile = async(req, res) => {
         // Handle cover photo upload
         if (coverPhoto) {
             try {
-                const imageUrl = await uploadImage(coverPhoto);
+                const imageUrl = await uploadSingleImage(coverPhoto, 'page_cover_photos');
                 updateData.coverPhoto = imageUrl;
             } catch (error) {
                 return res.status(400).json({
@@ -738,6 +737,8 @@ const deletePage = async(req, res) => {
             });
         }
 
+        await deleteImages(page.profilePicture);
+        await deleteImages(page.coverPhoto);
         await PageService.deleteById(pageId);
 
         res.status(200).json({
@@ -1242,19 +1243,9 @@ const createPagePost = async(req, res) => {
         // Handle media upload if provided
         if (media) {
             console.log('📸 Processing media upload...');
-            const result = await handleMediaUpload(media, mediaType);
-            if (!result.success) {
-                console.log('❌ Media upload failed:', result);
-                return res.status(result.code).json({
-                    success: false,
-                    error: result.error,
-                    message: result.message,
-                    ...(result.suggestion && { suggestion: result.suggestion }),
-                    ...(result.maxSize && { maxSize: result.maxSize })
-                });
-            }
-            updateData.media = result.imageUrl;
-            console.log('✅ Media uploaded successfully:', result.imageUrl);
+            const resultURLs = await uploadImages(media, 'page_post_images');
+            updateData.media = resultURLs;
+            console.log('✅ Media uploaded successfully:', resultURLs);
         }
 
         const populatedPost = await PostService.updateById(newPost.id, updateData);
@@ -1342,18 +1333,8 @@ const createPageStory = async(req, res) => {
         // Upload media if provided - FIXED: Use handleMediaUpload consistently
         if (media) {
             console.log('📸 Processing story media upload...');
-            const result = await handleMediaUpload(media, type || 'image');
-            if (!result.success) {
-                console.log('❌ Story media upload failed:', result);
-                return res.status(result.code).json({
-                    success: false,
-                    error: result.error,
-                    message: result.message,
-                    ...(result.suggestion && { suggestion: result.suggestion }),
-                    ...(result.maxSize && { maxSize: result.maxSize })
-                });
-            }
-            storyData.media = result.imageUrl;
+            const resultURLs = await uploadImages(media, 'page_post_images');
+            storyData.media = resultURLs;
             console.log('✅ Story media uploaded successfully');
         }
 

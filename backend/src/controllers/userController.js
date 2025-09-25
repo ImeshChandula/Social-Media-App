@@ -2,10 +2,10 @@ const UserService = require('../services/userService');
 const PostService = require('../services/postService');
 const ReportService = require('../services/reportService');
 const { performUserDeletion } = require('../services/userDeletionService');
-const {uploadImage} = require('../utils/uploadMedia');
 const { generateToken } = require("../utils/jwtToken");
 const ROLES = require("../enums/roles");
 const bcrypt = require('bcrypt');
+const { uploadSingleImage } = require('../storage/firebaseStorage');
 require('dotenv').config();
 
 
@@ -309,7 +309,7 @@ const updateUserProfileImage = async (req, res) => {
         const updatedData = { };
 
         try {
-            const imageUrl = await uploadImage(profilePicture);
+            const imageUrl = await uploadSingleImage(profilePicture, 'profile_images');
             updatedData.profilePicture = imageUrl;
         } catch (error) {
             return res.status(400).json({error: "Failed to upload profile picture", message: error.message});
@@ -350,7 +350,7 @@ const updateUserProfileCoverPhoto = async (req, res) => {
         const updatedData = { };
 
         try {
-            const imageUrl = await uploadImage(coverPhoto);
+            const imageUrl = await uploadSingleImage(coverPhoto, 'cover_photos');
             updatedData.coverPhoto = imageUrl;
         } catch (error) {
             return res.status(400).json({error: "Failed to upload coverPhoto", message: error.message});

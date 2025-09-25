@@ -3,7 +3,7 @@ const User = require('../models/User');
 const cloudinary = require('../config/cloudinary');
 const { count } = require('console');
 const UserService = require('../services/userService');
-const { uploadMedia } = require('../utils/uploadMedia'); // Assuming you have a media upload utility
+const { uploadSingleImage, deleteImages } = require('../storage/firebaseStorage');
 
 
 // Create a new story (updated)
@@ -34,7 +34,7 @@ const createStory = async(req, res) => {
         // Only upload media if provided
         if (media) {
             try {
-                const imageUrl = await uploadMedia(media);
+                const imageUrl = await uploadSingleImage(media, 'story_media');
                 storyData.media = imageUrl;
             } catch (error) {
                 return res.status(400).json({ error: "Failed to upload media", message: error.message });
@@ -591,7 +591,7 @@ const updateStoryByStoryId = async(req, res) => {
         // Upload new media if provided
         if (media) {
             try {
-                const mediaUrl = await uploadMedia(media);
+                const mediaUrl = await uploadSingleImage(media, 'story_media');
                 updateData.media = mediaUrl;
             } catch (error) {
                 return res.status(400).json({ error: 'Failed to upload media', message: error.message });
@@ -667,6 +667,8 @@ const deleteStoryByStoryId = async(req, res) => {
         if (!isAdmin && !isOwner) {
             return res.status(403).json({ message: 'Unauthorized: Only the owner or an admin can delete the story' });
         }
+
+        await deleteImages(existingStory.media);
 
         // Perform the deletion
         const deleted = await Story.deleteById(storyId);
