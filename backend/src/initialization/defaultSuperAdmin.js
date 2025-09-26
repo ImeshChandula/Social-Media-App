@@ -1,5 +1,5 @@
-const { default: DEFAULT_COVER_PHOTO } = require('../data/AppInfo');
-const { default: SUPER_ADMIN_DATA } = require('../data/SuperAdmin');
+const DEFAULT_COVER_PHOTO = require('../data/AppInfo');
+const SUPER_ADMIN_DATA = require('../data/SuperAdmin');
 const ACCOUNT_STATUS = require('../enums/account_status');
 const USER_ROLES = require('../enums/roles');
 const UserService = require('../services/userService');

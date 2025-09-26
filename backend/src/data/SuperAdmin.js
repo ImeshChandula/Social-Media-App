@@ -7,4 +7,4 @@ const SUPER_ADMIN_DATA = {
     LAST_NAME: process.env.SUPER_ADMIN_LAST_NAME || "Admin",
 };
 
-export default SUPER_ADMIN_DATA;
+module.exports = SUPER_ADMIN_DATA;
