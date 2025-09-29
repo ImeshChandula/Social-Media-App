@@ -83,10 +83,10 @@ function SearchPopup({ show, onClose }) {
                         transition={{ type: "spring", stiffness: 260, damping: 20 }}
                     >
                         {/* Header */}
-                        <div className="flex justify-between items-center pt-2 px-2">
+                        <div className="flex justify-between items-center py-2 px-2">
                             <h5 className="font-bold text-lg">Search Users</h5>
                             <button
-                                className="p-2 rounded-full hover:bg-red-500/20 transition-colors"
+                                className="p-2 rounded-full hover:bg-red-500/50 transition-colors"
                                 onClick={handleClose}
                                 aria-label="Close"
                             >
@@ -102,7 +102,7 @@ function SearchPopup({ show, onClose }) {
                                     placeholder="Search by username..."
                                     value={query}
                                     onChange={(e) => setQuery(e.target.value)}
-                                    className={`w-full h-11 pl-10 pr-3 rounded-xl border text-sm focus:outline-none focus:ring-2 transition 
+                                    className={`w-full h-11 px-2 rounded-xl border text-sm focus:outline-none focus:ring-2 transition 
                     ${isDarkMode
                                             ? "bg-gray-800 border-gray-700 placeholder-gray-400 text-white focus:border-blue-500 focus:ring-blue-500"
                                             : "bg-gray-100 border-gray-300 placeholder-gray-500 text-gray-900 focus:border-blue-500 focus:ring-blue-500"
@@ -136,7 +136,7 @@ function SearchPopup({ show, onClose }) {
 
                         {/* Results */}
                         {!loading && results.length > 0 && (
-                            <div className="max-h-80 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                            <div className="max-h-80 overflow-y-auto space-y-2 pb-2 px-2 custom-scrollbar">
                                 {results.map((user) => (
                                     <motion.div
                                         key={user.id}
