@@ -20,13 +20,14 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 import useAuthStore from "../store/authStore";
+import useThemeStore from "../store/themeStore";
 import SearchPopup from "./SearchPopup";
 
 function Sidebar() {
   const { authUser, logout } = useAuthStore();
+  const { isDarkMode, toggleTheme } = useThemeStore();
   const [showMore, setShowMore] = useState(false);
   const [showSearchPopup, setShowSearchPopup] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
   const moreRef = useRef(null);
   const navigate = useNavigate();
 
@@ -44,10 +45,6 @@ function Sidebar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMore]);
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
   const handleLogout = async () => {
     const result = await MySwal.fire({
       title: "Are you sure?",
@@ -60,18 +57,10 @@ function Sidebar() {
       cancelButtonText: "Cancel",
       background: isDarkMode ? "#1f2937" : "#ffffff",
       color: isDarkMode ? "#f9fafb" : "#1f2937",
-      customClass: {
-        popup: "swal2-popup-custom",
-        title: "swal2-title-custom",
-        htmlContainer: "swal2-html-custom",
-        confirmButton: "swal2-confirm-custom",
-        cancelButton: "swal2-cancel-custom",
-      },
       heightAuto: false,
     });
 
     if (!result.isConfirmed) return;
-
     try {
       await logout();
     } catch (error) {
@@ -97,11 +86,12 @@ function Sidebar() {
 
   // Theme classes
   const bgClass = isDarkMode ? "bg-black" : "bg-white";
-  const textClass = isDarkMode ? "text-white" : "text-gray-900";
+  const textClass = isDarkMode ? "text-white" : "text-black";
   const bgSecondaryClass = isDarkMode ? "bg-gray-900" : "bg-gray-100";
   const borderClass = isDarkMode ? "border-gray-700" : "border-gray-300";
   const activeBgClass = isDarkMode ? "bg-gray-800" : "bg-gray-200";
   const shadowClass = isDarkMode ? "shadow-lg" : "shadow-md";
+  const hoverClass = isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-300";
 
   return (
     <>
@@ -130,7 +120,7 @@ function Sidebar() {
             >
               {isDarkMode ? <FaSun size={18} /> : <FaMoon size={18} />}
             </button>
-            
+
             {/* Search Button */}
             <button
               className={`nav-link d-flex align-items-center justify-content-center rounded-circle p-2 ${bgSecondaryClass} ${textClass}`}
@@ -149,7 +139,8 @@ function Sidebar() {
               <NavLink
                 to={path}
                 className={({ isActive }) =>
-                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? `${activeBgClass} ${textClass} fw-bold` : textClass}`
+                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${hoverClass} ${isActive ? `${activeBgClass} ${textClass} fw-bold` : textClass
+                  }`
                 }
                 style={{ fontSize: "1rem" }}
               >
@@ -159,7 +150,7 @@ function Sidebar() {
           ))}
           <li className="nav-item mb-2">
             <button
-              className={`nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${textClass} bg-transparent border-0 w-100 text-start`}
+              className={`nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${hoverClass} ${textClass} bg-transparent border-0 w-100 text-start`}
               onClick={handleLogout}
               style={{ fontSize: "1rem" }}
             >
@@ -178,7 +169,8 @@ function Sidebar() {
               <NavLink
                 to={path}
                 className={({ isActive }) =>
-                  `d-flex align-items-center gap-2 py-1 px-2 rounded ${textClass} ${isActive ? `${activeBgClass} fw-bold` : ""}`
+                  `d-flex align-items-center gap-2 py-1 px-2 rounded ${hoverClass} ${textClass} ${isActive ? `${activeBgClass} fw-bold` : ""
+                  }`
                 }
                 onClick={() => setShowMore(false)}
                 style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
@@ -208,7 +200,7 @@ function Sidebar() {
             >
               {isDarkMode ? <FaSun size={18} /> : <FaMoon size={18} />}
             </button>
-            
+
             {/* Search Button */}
             <button
               className={`bg-transparent border-0 ${textClass} d-flex align-items-center justify-content-center p-2`}
