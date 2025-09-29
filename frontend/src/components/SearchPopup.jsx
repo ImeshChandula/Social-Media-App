@@ -94,7 +94,7 @@ function SearchPopup({ show, onClose }) {
                             </button>
                         </div>
 
-                        {/* Input + Theme toggle */}
+                        {/* Input + Theme Toggle*/}
                         <div className="flex gap-2 mb-4 px-2">
                             <div className="relative flex-1">
                                 <input
@@ -111,6 +111,7 @@ function SearchPopup({ show, onClose }) {
                                 />
                                 <FaSearch className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400" />
                             </div>
+                            {/* 
                             <button
                                 className={`w-11 h-11 flex items-center justify-center rounded-xl border transition 
                   ${isDarkMode
@@ -122,6 +123,7 @@ function SearchPopup({ show, onClose }) {
                             >
                                 {isDarkMode ? <FaSun /> : <FaMoon />}
                             </button>
+                            */}
                         </div>
 
                         {/* Loading */}
