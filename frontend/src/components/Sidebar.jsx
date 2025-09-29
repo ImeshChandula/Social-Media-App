@@ -10,6 +10,8 @@ import {
   FaSearch,
   FaSignOutAlt,
   FaEllipsisH,
+  FaSun,
+  FaMoon,
 } from "react-icons/fa";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { MdContactSupport } from "react-icons/md";
@@ -24,6 +26,7 @@ function Sidebar() {
   const { authUser, logout } = useAuthStore();
   const [showMore, setShowMore] = useState(false);
   const [showSearchPopup, setShowSearchPopup] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const moreRef = useRef(null);
   const navigate = useNavigate();
 
@@ -41,6 +44,10 @@ function Sidebar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMore]);
 
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
   const handleLogout = async () => {
     const result = await MySwal.fire({
       title: "Are you sure?",
@@ -51,8 +58,8 @@ function Sidebar() {
       cancelButtonColor: "#6b7280",
       confirmButtonText: "Logout",
       cancelButtonText: "Cancel",
-      background: "#1f2937",
-      color: "#f9fafb",
+      background: isDarkMode ? "#1f2937" : "#ffffff",
+      color: isDarkMode ? "#f9fafb" : "#1f2937",
       customClass: {
         popup: "swal2-popup-custom",
         title: "swal2-title-custom",
@@ -88,6 +95,14 @@ function Sidebar() {
     { name: "Market Place", path: "/market", icon: <FaShoppingBag /> },
   ];
 
+  // Theme classes
+  const bgClass = isDarkMode ? "bg-black" : "bg-white";
+  const textClass = isDarkMode ? "text-white" : "text-gray-900";
+  const bgSecondaryClass = isDarkMode ? "bg-gray-900" : "bg-gray-100";
+  const borderClass = isDarkMode ? "border-gray-700" : "border-gray-300";
+  const activeBgClass = isDarkMode ? "bg-gray-800" : "bg-gray-200";
+  const shadowClass = isDarkMode ? "shadow-lg" : "shadow-md";
+
   return (
     <>
       {/* Search Popup */}
@@ -95,10 +110,10 @@ function Sidebar() {
 
       {/* Desktop Sidebar */}
       <div
-        className="bg-black text-white p-3 flex-column position-fixed top-0 start-0 d-none d-md-flex"
+        className={`${bgClass} ${textClass} p-3 flex-column position-fixed top-0 start-0 d-none d-md-flex`}
         style={{ width: "250px", height: "100vh", overflowY: "auto", zIndex: 999 }}
       >
-        {/* Logo and Search */}
+        {/* Logo, Search and Theme Toggle */}
         <div className="d-flex align-items-center mb-4 justify-content-between">
           <FaFacebookF
             size={28}
@@ -106,13 +121,25 @@ function Sidebar() {
             className="me-3 cursor-pointer"
             onClick={() => navigate("/")}
           />
-          <button
-            className="nav-link d-flex align-items-center justify-content-center rounded-circle p-2"
-            onClick={() => setShowSearchPopup(true)}
-            title="Search"
-          >
-            <FaSearch className="text-white" size={19} />
-          </button>
+          <div className="d-flex align-items-center gap-2">
+            {/* Theme Toggle Button */}
+            <button
+              className={`nav-link d-flex align-items-center justify-content-center rounded-circle p-2 ${bgSecondaryClass} ${textClass}`}
+              onClick={toggleTheme}
+              title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {isDarkMode ? <FaSun size={18} /> : <FaMoon size={18} />}
+            </button>
+            
+            {/* Search Button */}
+            <button
+              className={`nav-link d-flex align-items-center justify-content-center rounded-circle p-2 ${bgSecondaryClass} ${textClass}`}
+              onClick={() => setShowSearchPopup(true)}
+              title="Search"
+            >
+              <FaSearch size={19} />
+            </button>
+          </div>
         </div>
 
         {/* Nav Links */}
@@ -122,7 +149,7 @@ function Sidebar() {
               <NavLink
                 to={path}
                 className={({ isActive }) =>
-                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"}`
+                  `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${isActive ? `${activeBgClass} ${textClass} fw-bold` : textClass}`
                 }
                 style={{ fontSize: "1rem" }}
               >
@@ -132,7 +159,7 @@ function Sidebar() {
           ))}
           <li className="nav-item mb-2">
             <button
-              className="nav-link d-flex align-items-center gap-3 px-2 py-2 rounded text-white bg-transparent border-0 w-100 text-start"
+              className={`nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${textClass} bg-transparent border-0 w-100 text-start`}
               onClick={handleLogout}
               style={{ fontSize: "1rem" }}
             >
@@ -142,7 +169,7 @@ function Sidebar() {
         </ul>
 
         {/* Shortcuts */}
-        <h6 className="text-uppercase px-2 text-white mb-3 border-bottom border-secondary" style={{ fontSize: "0.9rem" }}>
+        <h6 className={`text-uppercase px-2 ${textClass} mb-3 border-bottom ${borderClass}`} style={{ fontSize: "0.9rem" }}>
           Your Shortcuts
         </h6>
         <ul className="nav flex-column">
@@ -151,7 +178,7 @@ function Sidebar() {
               <NavLink
                 to={path}
                 className={({ isActive }) =>
-                  `d-flex align-items-center gap-2 py-1 px-2 rounded text-white ${isActive ? "bg-secondary fw-bold" : ""}`
+                  `d-flex align-items-center gap-2 py-1 px-2 rounded ${textClass} ${isActive ? `${activeBgClass} fw-bold` : ""}`
                 }
                 onClick={() => setShowMore(false)}
                 style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
@@ -165,20 +192,33 @@ function Sidebar() {
 
       {/* Mobile Topbar */}
       <div
-        className="mobile-topbar bg-black text-white d-flex d-md-none flex-column fixed-top w-100 py-2"
+        className={`mobile-topbar ${bgClass} ${textClass} d-flex d-md-none flex-column fixed-top w-100 py-2`}
         style={{ zIndex: 999 }}
       >
-        {/* Logo and Search - New Section */}
+        {/* Logo, Search and Theme Toggle - New Section */}
         <div className="d-flex justify-content-between align-items-center px-3 mb-2">
           <FaFacebookF size={28} color="#1ecb73" className="cursor-pointer" onClick={() => navigate("/")} />
-          <button
-            className="bg-transparent border-0 text-white d-flex align-items-center justify-content-center p-2"
-            onClick={() => setShowSearchPopup(true)}
-            title="Search"
-            aria-label="Search"
-          >
-            <FaSearch size={20} />
-          </button>
+          <div className="d-flex align-items-center gap-2">
+            {/* Theme Toggle Button */}
+            <button
+              className={`bg-transparent border-0 ${textClass} d-flex align-items-center justify-content-center p-2`}
+              onClick={toggleTheme}
+              title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+              aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {isDarkMode ? <FaSun size={18} /> : <FaMoon size={18} />}
+            </button>
+            
+            {/* Search Button */}
+            <button
+              className={`bg-transparent border-0 ${textClass} d-flex align-items-center justify-content-center p-2`}
+              onClick={() => setShowSearchPopup(true)}
+              title="Search"
+              aria-label="Search"
+            >
+              <FaSearch size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Navigation Tabs */}
@@ -191,7 +231,7 @@ function Sidebar() {
                 key={item.name}
                 to={item.path}
                 className={({ isActive }) =>
-                  `text-white d-flex flex-column align-items-center py-2 px-1 rounded ${isActive ? "bg-dark text-white fw-bold" : "text-white"}`
+                  `${textClass} d-flex flex-column align-items-center py-2 px-1 rounded ${isActive ? `${activeBgClass} ${textClass} fw-bold` : textClass}`
                 }
                 style={{ fontSize: "1rem", textDecoration: "none" }}
               >
@@ -204,7 +244,7 @@ function Sidebar() {
           {/* More Dropdown */}
           <div className="position-relative" ref={moreRef}>
             <button
-              className="bg-transparent border-0 text-white d-flex flex-column align-items-center py-2 px-1"
+              className={`bg-transparent border-0 ${textClass} d-flex flex-column align-items-center py-2 px-1`}
               onClick={() => setShowMore((prev) => !prev)}
               style={{ fontSize: "1rem" }}
             >
@@ -213,7 +253,7 @@ function Sidebar() {
             </button>
             {showMore && (
               <div
-                className="position-absolute bg-black text-white rounded shadow p-2"
+                className={`position-absolute ${bgClass} ${textClass} rounded ${shadowClass} p-2`}
                 style={{ top: "100%", right: 0, zIndex: 1000, minWidth: "160px" }}
               >
                 {navItems
@@ -223,7 +263,7 @@ function Sidebar() {
                       key={name}
                       to={path}
                       className={({ isActive }) =>
-                        `d-flex align-items-center gap-2 py-1 px-2 rounded text-white ${isActive ? "bg-secondary fw-bold" : ""}`
+                        `d-flex align-items-center gap-2 py-1 px-2 rounded ${textClass} ${isActive ? `${activeBgClass} fw-bold` : ""}`
                       }
                       onClick={() => setShowMore(false)}
                       style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
@@ -232,13 +272,13 @@ function Sidebar() {
                     </NavLink>
                   ))}
 
-                {shortcuts.length > 0 && <hr className="text-white my-2" />}
+                {shortcuts.length > 0 && <hr className={`${textClass} my-2`} />}
                 {shortcuts.map(({ name, path, icon }) => (
                   <NavLink
                     key={name}
                     to={path}
                     className={({ isActive }) =>
-                      `d-flex align-items-center gap-2 py-1 px-2 rounded text-white ${isActive ? "bg-secondary fw-bold" : ""}`
+                      `d-flex align-items-center gap-2 py-1 px-2 rounded ${textClass} ${isActive ? `${activeBgClass} fw-bold` : ""}`
                     }
                     onClick={() => setShowMore(false)}
                     style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
@@ -247,13 +287,13 @@ function Sidebar() {
                   </NavLink>
                 ))}
 
-                <hr className="text-white my-2" />
+                <hr className={`${textClass} my-2`} />
                 <button
                   onClick={() => {
                     handleLogout();
                     setShowMore(false);
                   }}
-                  className="d-flex align-items-center gap-2 py-1 px-2 text-white bg-transparent border-0 w-100 text-start"
+                  className={`d-flex align-items-center gap-2 py-1 px-2 ${textClass} bg-transparent border-0 w-100 text-start`}
                   style={{ fontSize: "1rem", whiteSpace: "nowrap" }}
                 >
                   <FaSignOutAlt /> Logout
