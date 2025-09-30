@@ -1,3 +1,5 @@
+import { color } from "framer-motion";
+
 const LoginStyle = {
   page: {
     minHeight: '100vh',
@@ -56,7 +58,8 @@ const LoginStyle = {
     backgroundColor: '#f8f9fa',
     outline: 'none',
     boxSizing: 'border-box',
-    marginBottom: '20px'
+    marginBottom: '20px',
+    color: '#000'
   },
 
   inputFocus: {
@@ -81,7 +84,8 @@ const LoginStyle = {
     transition: 'all 0.3s ease',
     backgroundColor: '#f8f9fa',
     outline: 'none',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    color: '#000'
   },
 
   eyeIcon: {

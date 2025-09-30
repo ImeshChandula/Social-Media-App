@@ -1,3 +1,5 @@
+import { color } from "framer-motion";
+
 const RegisterStyle = {
   container: {
     minHeight: '100vh',
@@ -73,7 +75,8 @@ const RegisterStyle = {
     transition: 'all 0.3s ease',
     backgroundColor: '#f8f9fa',
     outline: 'none',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    color: '#000'
   },
 
   inputFocus: {
@@ -124,7 +127,8 @@ const RegisterStyle = {
     transition: 'all 0.3s ease',
     backgroundColor: '#f8f9fa',
     outline: 'none',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    color: '#000'
   },
 
   passwordGroup: {
@@ -142,13 +146,14 @@ const RegisterStyle = {
     transition: 'all 0.3s ease',
     backgroundColor: '#f8f9fa',
     outline: 'none',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box', 
+    color: '#000'
   },
 
   eyeIcon: {
     position: 'absolute',
     right: '15px',
-    top: '50%',
+    top: '65%',
     transform: 'translateY(-50%)',
     cursor: 'pointer',
     color: '#667eea',
