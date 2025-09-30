@@ -70,7 +70,7 @@ const Videos = () => {
 
   if (loading) {
     return (
-      <div className="text-white text-center my-5 fs-5 normal-loading-spinner">
+      <div className="text-secondary text-center my-5 fs-5 normal-loading-spinner">
         Loading Videos<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
       </div>
     );
@@ -99,7 +99,7 @@ const Videos = () => {
         
         {/* Category Description */}
         {selectedCategory !== 'All' && (
-          <div className="text-center text-muted mb-3">
+          <div className="text-center text-secondary mb-3">
             <small>Showing videos in "{selectedCategory}" category</small>
           </div>
         )}
@@ -108,7 +108,7 @@ const Videos = () => {
       {/* Video Count */}
       {videos.length > 0 && (
         <div className="text-center mb-3">
-          <small className="text-muted">
+          <small className="text-secondary">
             {videos.length} video{videos.length !== 1 ? 's' : ''} found
             {selectedCategory !== 'All' && ` in ${selectedCategory}`}
           </small>
@@ -119,7 +119,7 @@ const Videos = () => {
       <div className="row">
         {videos.length === 0 ? (
           <div className="col-12 text-center py-5">
-            <div className="text-muted">
+            <div className="text-secondary">
               <h5>No videos found</h5>
               <p>
                 {selectedCategory === 'All' 
