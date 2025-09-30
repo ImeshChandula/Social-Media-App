@@ -46,7 +46,6 @@ const validateMails = (req, res, next) => {
     email: Joi.string().email().required(),
     subject: Joi.string().min(1).required(),
     message: Joi.string().min(1).required(),
-    author: Joi.string().min(1).required(),
     isRead: Joi.boolean().optional(),
     createdAt: Joi.string().isoDate().optional()
   });
