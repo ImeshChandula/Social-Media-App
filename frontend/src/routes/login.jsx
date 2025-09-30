@@ -76,6 +76,7 @@ const Login = () => {
               ...LoginStyle.input,
               ...(focusedInputs.email ? LoginStyle.inputFocus : {})
             }}
+            className="placeholder-gray-400"
             required
           />
 
@@ -92,6 +93,7 @@ const Login = () => {
                 ...LoginStyle.passwordInput,
                 ...(focusedInputs.password ? LoginStyle.inputFocus : {})
               }}
+              className="placeholder-gray-400"
               required
             />
             <span

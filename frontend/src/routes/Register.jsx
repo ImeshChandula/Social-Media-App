@@ -67,8 +67,8 @@ const Register = () => {
     } catch (err) {
       const errorMsg =
         err.response?.data?.message || JSON.stringify(err.response?.data) || err.message;
-        console.error('Registration failed:', errorMsg);
-        toast.error(errorMsg);
+      console.error('Registration failed:', errorMsg);
+      toast.error(errorMsg);
     }
   };
 
@@ -96,6 +96,7 @@ const Register = () => {
                 ...RegisterStyle.input,
                 ...(focusedInputs.username ? RegisterStyle.inputFocus : {})
               }}
+              className="placeholder-gray-400"
             />
           </div>
 
@@ -115,6 +116,7 @@ const Register = () => {
                   ...RegisterStyle.input,
                   ...(focusedInputs.firstName ? RegisterStyle.inputFocus : {})
                 }}
+                className="placeholder-gray-400"
               />
             </div>
 
@@ -133,6 +135,7 @@ const Register = () => {
                   ...RegisterStyle.input,
                   ...(focusedInputs.lastName ? RegisterStyle.inputFocus : {})
                 }}
+                className="placeholder-gray-400"
               />
             </div>
           </div>
@@ -152,6 +155,7 @@ const Register = () => {
                 ...RegisterStyle.input,
                 ...(focusedInputs.email ? RegisterStyle.inputFocus : {})
               }}
+            className="placeholder-gray-400"
             />
           </div>
 
@@ -165,6 +169,7 @@ const Register = () => {
                   onChange={handleChange}
                   style={RegisterStyle.countrySelect}
                   required
+                  className="text-black"
                 >
                   {countryOptions.map((country) => (
                     <option key={country.iso2} value={country.dialCode}>
@@ -189,6 +194,7 @@ const Register = () => {
                     ...RegisterStyle.phoneInput,
                     ...(focusedInputs.phone ? RegisterStyle.inputFocus : {})
                   }}
+                  className="placeholder-gray-400"
                 />
               </div>
             </div>
@@ -209,6 +215,7 @@ const Register = () => {
                 ...RegisterStyle.passwordInput,
                 ...(focusedInputs.password ? RegisterStyle.inputFocus : {})
               }}
+              className="placeholder-gray-400"
             />
             <span
               style={{
@@ -224,8 +231,8 @@ const Register = () => {
             </span>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             style={{
               ...RegisterStyle.submitButton,
               ...(hoveredButton ? RegisterStyle.submitButtonHover : {})

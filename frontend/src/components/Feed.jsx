@@ -330,7 +330,7 @@ const Feed = () => {
 
     if (loading && posts.length === 0) {
         return (
-            <div className="text-white text-center my-5 fs-5 normal-loading-spinner">
+            <div className="text-secondary text-center my-5 fs-5 normal-loading-spinner">
                 Loading Feeds<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
             </div>
         );

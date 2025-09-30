@@ -298,7 +298,7 @@ const Feedstories = ({ type = "all" }) => {
           <div className="spinner-border text-light me-3" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
-          <span className="text-white fs-5">Loading stories...</span>
+          <span className="text-secondary fs-5">Loading stories...</span>
         </div>
       )}
 
@@ -311,7 +311,7 @@ const Feedstories = ({ type = "all" }) => {
 
       {!loading && !error && groupedStories.length === 0 && (
         <div className="text-center my-3">
-          <p className="text-white fs-5">
+          <p className="text-secondary fs-5">
             {type === "me" ? "You haven't posted any stories yet" : "No stories to show"}
           </p>
         </div>
