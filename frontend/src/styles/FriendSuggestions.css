@@ -21,12 +21,6 @@
   margin-bottom: 0.5rem !important;
 }
 
-.subtitle {
-  font-size: 1.1rem !important;
-  color: #6b7280 !important;
-  margin: 0 !important;
-}
-
 .loading-spinner, .error-message, .empty-state {
   text-align: center !important;
   padding: 4rem 2rem !important;

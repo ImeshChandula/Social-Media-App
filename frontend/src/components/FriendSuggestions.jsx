@@ -3,12 +3,14 @@ import { axiosInstance } from "../lib/axios";
 import toast from 'react-hot-toast';
 import "../styles/FriendSuggestions.css";
 import { useNavigate } from 'react-router-dom';
+import useThemeStore from '../store/themeStore';
 
 const FriendSuggestions = () => {
   const [suggestedFriends, setSuggestedFriends] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState({});
   const [error, setError] = useState(null);
+  const { isDarkMode } = useThemeStore();
 
   const navigate = useNavigate()
 
@@ -119,7 +121,7 @@ const FriendSuggestions = () => {
     <div className="suggested-friends-container">
       <div className="header">
         <h2>People You May Know</h2>
-        <p className="subtitle">Connect with friends and expand your network</p>
+        <p className={`subtitle ${isDarkMode?"":"subtitle-light"}`}>Connect with friends and expand your network</p>
       </div>
 
       {/* Add additional safety check here */}

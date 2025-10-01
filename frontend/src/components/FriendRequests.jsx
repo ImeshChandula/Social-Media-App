@@ -3,12 +3,14 @@ import { axiosInstance } from "../lib/axios";
 import toast from 'react-hot-toast';
 import "../styles/FriendRequests.css";
 import { useNavigate } from 'react-router-dom';
+import useThemeStore from '../store/themeStore';
 
 const FriendRequests = () => {
   const [friendRequests, setFriendRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState({});
   const [error, setError] = useState(null);
+  const { isDarkMode } = useThemeStore();
 
   const navigate = useNavigate()
 
@@ -118,7 +120,7 @@ const FriendRequests = () => {
     <div className="friend-requests-container">
       <div className="header">
         <h2>Friend Requests</h2>
-        <p className="subtitle">
+        <p className={`subtitle ${isDarkMode?"":"subtitle-light"}`}>
           {friendRequests.length > 0
             ? `You have ${friendRequests.length} pending request${friendRequests.length > 1 ? 's' : ''}`
             : 'No pending requests'

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { axiosInstance } from "../lib/axios";
 import toast from 'react-hot-toast';
 import "../styles/FriendsList.css";
+import useThemeStore from '../store/themeStore';
 
 const Friends = () => {
   const [friends, setFriends] = useState([]);
@@ -12,6 +13,7 @@ const Friends = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [friendToRemove, setFriendToRemove] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const { isDarkMode } = useThemeStore();
 
   const navigate = useNavigate()
 
@@ -90,8 +92,8 @@ const Friends = () => {
   if (loading) {
     return (
       <div className="friends-list-container">
-          <div className="spinner"></div>
-          <p className='text-center'>Loading your friends...</p>
+        <div className="spinner"></div>
+        <p className='text-center'>Loading your friends...</p>
       </div>
     );
   }
@@ -119,7 +121,7 @@ const Friends = () => {
     <div className="friends-list-container">
       <div className="header">
         <h2>My Friends</h2>
-        <p className="subtitle">
+        <p className={`subtitle ${isDarkMode ? "" : "subtitle-light"}`}>
           {friends.length > 0
             ? `You have ${friends.length} friend${friends.length > 1 ? 's' : ''}`
             : 'No friends yet'

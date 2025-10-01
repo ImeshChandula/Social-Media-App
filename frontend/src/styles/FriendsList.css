@@ -29,13 +29,6 @@
   background-clip: text !important;
 }
 
-.subtitle {
-  margin: 0 !important;
-  font-size: 1rem !important;
-  color: #6b7280 !important;
-  font-weight: 500 !important;
-}
-
 /* Search Section */
 .search-section {
   margin-bottom: 30px !important;
@@ -558,10 +551,6 @@
   
   .header h2 {
     font-size: 1.6rem;
-  }
-  
-  .subtitle {
-    font-size: 0.9rem;
   }
   
   .friend-card {
