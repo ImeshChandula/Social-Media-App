@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
+import useThemeStore from "../store/themeStore";
 
 const CreateStory = () => {
   const [content, setContent] = useState("");
@@ -13,6 +14,7 @@ const CreateStory = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
+  const { isDarkMode } = useThemeStore();
 
   /* helper: convert File → base-64 */
   const toBase64 = (file) =>
@@ -27,7 +29,7 @@ const CreateStory = () => {
   const handleFile = async (e) => {
     const chosen = e.target.files[0];
     if (!chosen) return;
-    
+
     // Validate file size (optional, can adjust based on backend limits)
     if (chosen.size > 10 * 1024 * 1024) { // 10MB limit
       setError("File size exceeds 10MB limit");
@@ -80,7 +82,7 @@ const CreateStory = () => {
       setSaving(true);
       const response = await axiosInstance.post("/stories/createStory", payload);
       setSuccess(response.data.message || "Story created successfully!");
-      
+
       // Reset form
       setContent("");
       setCaption("");
@@ -103,94 +105,92 @@ const CreateStory = () => {
 
   return (
     <div className="container mt-5" style={{ maxWidth: '720px' }}>
-       <div className="card shadow-lg rounded-4 border border-light">
-        <div className="card-body p-4 bg-white text-dark">
-       <h3 className="text-center mb-4">📝 Create a Story</h3>
-      {error && <div className="alert alert-danger">{error}</div>}
-      {success && <div className="alert alert-success">{success}</div>}
+      <div className={`createpost-bg card-body p-4 text-dark rounded-4 ${isDarkMode ? "" : "createpost-bg-light"}`}>
+        <h3 className={`text-center mb-4 fw-bold ${isDarkMode ? "text-white" : "text-black"}`}>📝 Create a Story</h3>
+        {error && <div className="alert alert-danger">{error}</div>}
+        {success && <div className="alert alert-success">{success}</div>}
 
-      <form onSubmit={handleSubmit}>
-        {/* story text */}
-        <div className="mb-3">
-          <label className="form-label">Story text</label>
-          <textarea
-            className="form-control"
-            rows={3}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="What's happening?"
-            disabled={saving}
-          />
-        </div>
+        <form onSubmit={handleSubmit}>
+          {/* story text */}
+          <div className="mb-3">
+            <label className={`form-label fw-semibold ${isDarkMode ? "" : "form-label-light"}`}>Story text</label>
+            <textarea
+              className="form-control"
+              rows={3}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="What's happening?"
+              disabled={saving}
+            />
+          </div>
 
-        {/* media type selector */}
-        <div className="mb-3">
-          <label className="form-label">Media type</label>
-          <select
-            className="form-select"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
+          {/* media type selector */}
+          <div className="mb-3">
+            <label className={`form-label fw-semibold ${isDarkMode ? "" : "form-label-light"}`}>Media type</label>
+            <select
+              className="form-select"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              disabled={saving}
+            >
+              <option value="image">Image</option>
+              <option value="video">Video</option>
+            </select>
+          </div>
+
+          {/* file picker */}
+          <div className="mb-3">
+            <label className={`form-label fw-semibold ${isDarkMode ? "" : "form-label-light"}`}>
+              {type === "image" ? "Choose image" : "Choose video"}
+            </label>
+            <input
+              className="form-control"
+              type="file"
+              accept={type === "image" ? "image/*" : "video/*"}
+              onChange={handleFile}
+              disabled={saving}
+            />
+            {file && (
+              <small className="text-info d-block mt-1">✔ {file.name}</small>
+            )}
+          </div>
+
+          {/* caption */}
+          <div className="mb-3">
+            <label className={`form-label fw-semibold ${isDarkMode ? "" : "form-label-light"}`}>Caption (optional)</label>
+            <input
+              className="form-control"
+              type="text"
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder="Nice sunset!"
+              disabled={saving}
+            />
+          </div>
+
+          {/* privacy */}
+          <div className="mb-3">
+            <label className={`form-label fw-semibold ${isDarkMode ? "" : "form-label-light"}`}>Privacy</label>
+            <select
+              className="form-select"
+              value={privacy}
+              onChange={(e) => setPrivacy(e.target.value)}
+              disabled={saving}
+            >
+              <option value="friends">Friends</option>
+              <option value="public">Public</option>
+            </select>
+          </div>
+
+          <button
+            className="btn btn-primary"
+            type="submit"
             disabled={saving}
           >
-            <option value="image">Image</option>
-            <option value="video">Video</option>
-          </select>
-        </div>
-
-        {/* file picker */}
-        <div className="mb-3">
-          <label className="form-label">
-            {type === "image" ? "Choose image" : "Choose video"}
-          </label>
-          <input
-            className="form-control"
-            type="file"
-            accept={type === "image" ? "image/*" : "video/*"}
-            onChange={handleFile}
-            disabled={saving}
-          />
-          {file && (
-            <small className="text-info d-block mt-1">✔ {file.name}</small>
-          )}
-        </div>
-
-        {/* caption */}
-        <div className="mb-3">
-          <label className="form-label">Caption (optional)</label>
-          <input
-            className="form-control"
-            type="text"
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            placeholder="Nice sunset!"
-            disabled={saving}
-          />
-        </div>
-
-        {/* privacy */}
-        <div className="mb-3">
-          <label className="form-label">Privacy</label>
-          <select
-            className="form-select"
-            value={privacy}
-            onChange={(e) => setPrivacy(e.target.value)}
-            disabled={saving}
-          >
-            <option value="friends">Friends</option>
-            <option value="public">Public</option>
-          </select>
-        </div>
-
-        <button 
-          className="btn btn-primary" 
-          type="submit"
-          disabled={saving}
-        >
-          {saving ? "Posting…" : "Post Story"}
-        </button>
-      </form>
-    </div>
-    </div>
+            {saving ? "Posting…" : "Post Story"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

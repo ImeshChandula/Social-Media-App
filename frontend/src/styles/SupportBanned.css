@@ -437,6 +437,9 @@
   .form-label {
     color: #cbd5e0;
   }
+  .form-label-light {
+    color: #000000;
+  }
   
   .form-input, .form-textarea {
     background: rgba(45, 55, 72, 0.8) !important;

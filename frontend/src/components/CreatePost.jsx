@@ -3,6 +3,7 @@ import { axiosInstance } from '../lib/axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { BsTrash } from "react-icons/bs";
+import useThemeStore from '../store/themeStore';
 
 const CreatePost = () => {
     const initialState = {
@@ -19,6 +20,7 @@ const CreatePost = () => {
     const navigate = useNavigate()
     const [formData, setFormData] = useState(initialState);
     const [loading, setLoading] = useState(false);
+    const { isDarkMode } = useThemeStore();
 
     //video category matching backend model
     const VIDEO_CATEGORIES = ['Music', 'Sports', 'Education', 'Entertainment', 'News'];
@@ -146,12 +148,12 @@ const CreatePost = () => {
 
     return (
         <div className="container mt-5" style={{ maxWidth: '720px' }}>
-            <div className="createpost-bg card-body p-4 text-dark rounded-4">
-                <h3 className="text-center mb-4 text-primary fw-bold">📝 Create a Post</h3>
+            <div className={`createpost-bg card-body p-4 text-dark rounded-4 ${isDarkMode ? "" : "createpost-bg-light"}`}>
+                <h3 className={`text-center mb-4 fw-bold ${isDarkMode ? "text-white" : "text-black"}`}>📝 Create a Post</h3>
 
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3">
-                        <label className="form-label fw-semibold">Content</label>
+                        <label className={`form-label fw-semibold ${isDarkMode ? "" : "form-label-light"}`}>Content</label>
                         <textarea
                             className="form-control"
                             name="content"
@@ -165,11 +167,11 @@ const CreatePost = () => {
 
                     <div className="mb-3">
                         <div className="d-flex justify-content-between align-items-center">
-                            <label className="form-label fw-semibold mb-0">Upload Media</label>
+                            <label className={`form-label fw-semibold mb-0 ${isDarkMode ? "" : "form-label-light"}`}>Upload Media</label>
                             {formData.media && (
                                 <button
                                     type="button"
-                                    className="btn btn-sm btn-outline-danger m-1"
+                                    className="btn btn-sm p-2 m-1 btn-outline-danger border border-danger"
                                     onClick={handleRemoveMedia}
                                 >
                                     Remove All
@@ -259,7 +261,7 @@ const CreatePost = () => {
                     {/* Category Selection - Only show for videos */}
                     {formData.mediaType === 'video' && (
                         <div className="mb-3">
-                            <label className="form-label fw-semibold">
+                            <label className={`form-label fw-semibold ${isDarkMode ? "" : "form-label-light"}`}>
                                 Video Category <span className="text-danger">*</span>
                             </label>
                             <select
@@ -289,7 +291,7 @@ const CreatePost = () => {
 
 
                     <div className="mb-3">
-                        <label className="form-label fw-semibold">Tags (comma separated)</label>
+                        <label className={`form-label fw-semibold ${isDarkMode ? "" : "form-label-light"}`}>Tags (comma separated)</label>
                         <input
                             type="text"
                             className="form-control"
@@ -301,7 +303,7 @@ const CreatePost = () => {
                     </div>
 
                     <div className="mb-3">
-                        <label className="form-label fw-semibold">Privacy</label>
+                        <label className={`form-label fw-semibold ${isDarkMode ? "" : "form-label-light"}`}>Privacy</label>
                         <select
                             className="form-select"
                             name="privacy"
@@ -315,7 +317,7 @@ const CreatePost = () => {
                     </div>
 
                     <div className="mb-4">
-                        <label className="form-label fw-semibold">Location</label>
+                        <label className={`form-label fw-semibold ${isDarkMode ? "" : "form-label-light"}`}>Location</label>
                         <input
                             type="text"
                             className="form-control"
