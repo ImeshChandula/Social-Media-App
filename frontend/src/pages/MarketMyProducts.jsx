@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
 import MarketplaceCard from "../components/MarketplaceCard";
+import useThemeStore from "../store/themeStore";
 
 const MarketMyProducts = () => {
     const [myItems, setMyItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const navigate = useNavigate();
+    const { isDarkMode } = useThemeStore();
 
     useEffect(() => {
         const fetchItems = async () => {
@@ -34,7 +36,7 @@ const MarketMyProducts = () => {
 
     if (loading) {
         return (
-            <div className="normal-loading-spinner">
+            <div className="normal-loading-spinner text-secondary">
                 Loading<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
             </div>
         );
@@ -49,14 +51,14 @@ const MarketMyProducts = () => {
     return (
         <div className="container">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="text-light">My Products</h2>
+                <h2 className={`${isDarkMode ? "text-white" : "text-black"}`}>My Products</h2>
                 <button className="create-item-button" onClick={handleCreate}>
                     <span className="plus-icon">+</span> Add Item
                 </button>
             </div>
             <div className="row">
                 {myItems.length === 0 ? (
-                    <div className="col-12 text-center marketplace-text-muted">No items found.</div>
+                    <div className="col-12 text-center marketplace-text-secondary">No items found.</div>
                 ) : (
                     myItems.map(item => (
                         <MarketplaceCard

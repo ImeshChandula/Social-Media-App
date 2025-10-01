@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useCallback  } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { axiosInstance } from "../lib/axios";
 import MarketplaceCard from "../components/MarketplaceCard";
 import useAuthStore from "../store/authStore";
 import toast from "react-hot-toast";
+import useThemeStore from "../store/themeStore";
 
 const MarketProducts = () => {
   const [items, setItems] = useState([]);
@@ -10,34 +11,35 @@ const MarketProducts = () => {
   const [error, setError] = useState("");
   const [strategy, setStrategy] = useState("hybrid");
   const [meta, setMeta] = useState(null);
+  const { isDarkMode } = useThemeStore();
 
   const { authUser } = useAuthStore();
 
   const fetchItems = useCallback(async (refresh = false) => {
-      try {
-        const params = new URLSearchParams();
-        params.append('strategy', strategy);
-        if (refresh) params.append('refresh', 'true');
-        
-        const userId = authUser.id;
-        if (userId) params.append('userId', userId);
-        
-        const response = await axiosInstance.get(`/marketplace/activeItems?${params}`);
-          
-        if (response.data.success) {
-            setItems(response.data.data || []);
-            setMeta(response.data.meta || null);
-        } else {
-          setError(response.data.message || "Failed to fetch items.");
-        }
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch items.");
-        toast.error(err.response?.data?.message || "Failed to fetch items.")
-      } finally {
-        setLoading(false);
+    try {
+      const params = new URLSearchParams();
+      params.append('strategy', strategy);
+      if (refresh) params.append('refresh', 'true');
+
+      const userId = authUser.id;
+      if (userId) params.append('userId', userId);
+
+      const response = await axiosInstance.get(`/marketplace/activeItems?${params}`);
+
+      if (response.data.success) {
+        setItems(response.data.data || []);
+        setMeta(response.data.meta || null);
+      } else {
+        setError(response.data.message || "Failed to fetch items.");
       }
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to fetch items.");
+      toast.error(err.response?.data?.message || "Failed to fetch items.")
+    } finally {
+      setLoading(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [strategy]);
+  }, [strategy]);
 
   // Track user interactions with items
   const trackInteraction = useCallback(async (itemId, action) => {
@@ -50,7 +52,7 @@ const MarketProducts = () => {
         itemId,
         action
       });
-      
+
       // If using personalized strategy, refresh feed after interaction
       if (strategy === 'personalized') {
         setTimeout(() => fetchItems(), 1000);
@@ -58,7 +60,7 @@ const MarketProducts = () => {
     } catch (err) {
       console.error('Failed to track interaction:', err);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [strategy, fetchItems]);
 
   // Handle item interactions (pass this to MarketplaceCard if it supports callbacks)
@@ -83,7 +85,7 @@ const MarketProducts = () => {
 
   if (loading) {
     return (
-      <div className="normal-loading-spinner">
+      <div className="normal-loading-spinner text-secondary">
         Loading<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
       </div>
     )
@@ -93,8 +95,8 @@ const MarketProducts = () => {
     return (
       <div className="alert alert-danger text-center mt-4">
         Error: {error}
-        <button 
-          className="btn btn-outline-danger btn-sm ms-2" 
+        <button
+          className="btn btn-outline-danger btn-sm ms-2"
           onClick={() => fetchItems(true)}
         >
           Retry
@@ -107,8 +109,8 @@ const MarketProducts = () => {
     <div className="container">
       {/* Header with controls */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="text-light mb-0">Marketplace</h2>
-        
+        <h2 className={`${isDarkMode ? "text-white" : "text-black"}`}>Marketplace</h2>
+
         <div className="d-flex align-items-center gap-3">
           {/* Strategy Selector */}
           <div className="d-flex align-items-center gap-2">
@@ -135,7 +137,7 @@ const MarketProducts = () => {
           {/* Refresh Button */}
           <button
             onClick={handleRefresh}
-            className="btn btn-outline-light btn-sm"
+            className={`btn btn-sm border ${isDarkMode ? "btn-outline-light border-light" : "btn-outline-dark border-black"}`}
             title="Refresh feed"
           >
             <i className="fas fa-sync-alt"></i> Refresh
@@ -146,7 +148,7 @@ const MarketProducts = () => {
       {/* Meta Info */}
       {meta && (
         <div className="mb-3">
-          <small className="text-muted">
+          <small className={`text-${isDarkMode ? "secondary" : "muted"}`}>
             {items.length} items • {meta.strategy} • Updated {new Date(meta.timestamp).toLocaleTimeString()}
           </small>
         </div>
@@ -172,7 +174,7 @@ const MarketProducts = () => {
             <div className="alert alert-info text-center">
               <h4>No items found</h4>
               <p>Try refreshing or check back later for new listings.</p>
-              <button 
+              <button
                 className="btn btn-primary"
                 onClick={handleRefresh}
               >
@@ -187,8 +189,8 @@ const MarketProducts = () => {
       {import.meta.VITE_NODE_ENV === 'development' && meta && (
         <div className="mt-4 p-3 bg-dark text-light rounded">
           <small>
-            <strong>Debug Info:</strong> Strategy: {meta.strategy} | 
-            Items: {items.length} | 
+            <strong>Debug Info:</strong> Strategy: {meta.strategy} |
+            Items: {items.length} |
             Timestamp: {meta.timestamp}
           </small>
         </div>

@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import MarketMyProducts from './MarketMyProducts';
 import MarketProducts from './MarketProducts';
 import "../styles/Marketplace.css"
+import useThemeStore from '../store/themeStore';
 
 const MarketPlace = () => {
   const [activeComponent, setActiveComponent] = useState('UserManagement');
+  const { isDarkMode } = useThemeStore();
 
   const renderComponent = () => {
     switch (activeComponent) {
@@ -22,13 +24,13 @@ const MarketPlace = () => {
       <div className="dashboard-nav text-center my-3">
         <div className="d-flex flex-row justify-content-center gap-2">
           <button
-            className={`btn text-white rounded-pill w-50 w-md-auto ${activeComponent === 'MarketProducts' ? 'btn-success' : 'btn-outline-success'}`}
+            className={`btn rounded-pill w-50 w-md-auto ${activeComponent === 'MarketProducts' ? 'btn-success text-white' : 'btn-outline-success'} ${isDarkMode ? "text-white" : "text-black"} `}
             onClick={() => setActiveComponent('MarketProducts')}
           >
             Products
           </button>
           <button
-            className={`btn text-white rounded-pill w-50 w-md-auto ${activeComponent === 'MarketMyProducts' ? 'btn-success' : 'btn-outline-success'}`}
+            className={`btn rounded-pill w-50 w-md-auto ${activeComponent === 'MarketMyProducts' ? 'btn-success text-white' : 'btn-outline-success'} ${isDarkMode ? "text-white" : "text-black"}`}
             onClick={() => setActiveComponent('MarketMyProducts')}
           >
             My Products
