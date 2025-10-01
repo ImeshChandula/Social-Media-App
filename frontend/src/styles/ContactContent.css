@@ -214,6 +214,14 @@
   font-size: 0.9rem;
 }
 
+.contact-form-group-light label {
+  display: block;
+  font-weight: 600;
+  color: #000 !important;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
 .contact-form-group input,
 .contact-form-group select,
 .contact-form-group textarea {
@@ -225,6 +233,12 @@
   transition: all 0.3s ease;
   font-family: inherit;
   background: #718096 !important;
+}
+
+.contact-form-group-light input,
+.contact-form-group-light select,
+.contact-form-group-light textarea {
+  background: #ffffff !important;
 }
 
 .contact-form-group input:focus,
@@ -244,6 +258,11 @@
 .contact-form-group input::placeholder,
 .contact-form-group textarea::placeholder {
   color: #a0aec0 !important;
+}
+
+.contact-form-group-light input::placeholder,
+.contact-form-group-light textarea::placeholder {
+  color: #555555 !important;
 }
 
 /* Submit Button */
@@ -434,6 +453,10 @@
 
   .contact-form {
     background: #2d3748;
+  }
+
+  .contact-form-light {
+    background: #ffffff;
   }
 
   .form-group label {

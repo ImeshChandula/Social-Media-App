@@ -130,10 +130,10 @@ const ContactContent = () => {
           </div>
 
           <div className="contact-form-section">
-            <form className="contact-form" onSubmit={handleSubmit}>
-              <h2 className="section-title">Send us a Message</h2>
+            <form className={`contact-form ${isDarkMode?"":"contact-form-light"}`} onSubmit={handleSubmit}>
+              <h2 className={`section-title ${isDarkMode ? "" : "text-black"}`}>Send us a Message</h2>
 
-              <div className="contact-form-group">
+              <div className={`contact-form-group ${isDarkMode ? "" : "contact-form-group-light"}`}>
                 <label htmlFor="name">Full Name</label>
                 <input
                   type="text"
@@ -146,7 +146,7 @@ const ContactContent = () => {
                 />
               </div>
 
-              <div className="contact-form-group">
+              <div className={`contact-form-group ${isDarkMode ? "" : "contact-form-group-light"}`}>
                 <label htmlFor="email">Email Address</label>
                 <input
                   type="email"
@@ -159,7 +159,7 @@ const ContactContent = () => {
                 />
               </div>
 
-              <div className="contact-form-group">
+              <div className={`contact-form-group ${isDarkMode ? "" : "contact-form-group-light"}`}>
                 <label htmlFor="subject">Subject</label>
                 <select
                   id="subject"
@@ -177,7 +177,7 @@ const ContactContent = () => {
                 </select>
               </div>
 
-              <div className="contact-form-group">
+              <div className={`contact-form-group ${isDarkMode ? "" : "contact-form-group-light"}`}>
                 <label htmlFor="message">Message</label>
                 <textarea
                   id="message"
