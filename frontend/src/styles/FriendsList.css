@@ -38,7 +38,7 @@
   position: relative !important;
   max-width: 400px !important;
   margin: 0 auto !important;
-  background: transparent  !important;
+  background: transparent !important;
   border-radius: 15px !important;
   padding: 4px !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
@@ -64,6 +64,10 @@
   background: transparent !important;
   color: #ffffff !important;
   outline: none !important;
+}
+
+.search-input-light {
+  color: #000000 !important;
 }
 
 .search-input::placeholder {
@@ -118,8 +122,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-spinner p {
@@ -396,6 +405,7 @@
     opacity: 0;
     transform: scale(0.9) translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -476,7 +486,8 @@
   padding: 0 24px 24px 24px !important;
 }
 
-.cancel-btn, .confirm-remove-btn {
+.cancel-btn,
+.confirm-remove-btn {
   flex: 1 !important;
   padding: 12px 20px !important;
   border: none !important;
@@ -514,7 +525,8 @@
   box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
 }
 
-.cancel-btn:disabled, .confirm-remove-btn:disabled {
+.cancel-btn:disabled,
+.confirm-remove-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
   transform: none;
@@ -525,20 +537,20 @@
   .friends-list-container {
     padding: 16px;
   }
-  
+
   .header h2 {
     font-size: 1.8rem;
   }
-  
+
   .friends-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
-  
+
   .friend-card {
     padding: 20px;
   }
-  
+
   .search-box {
     max-width: none;
   }
@@ -548,38 +560,39 @@
   .header {
     padding: 16px;
   }
-  
+
   .header h2 {
     font-size: 1.6rem;
   }
-  
+
   .friend-card {
     padding: 16px;
   }
-  
+
   .friend-avatar img,
   .avatar-placeholder {
     width: 70px;
     height: 70px;
   }
-  
+
   .avatar-placeholder {
     font-size: 1.7rem;
   }
-  
+
   .friend-name {
     font-size: 1.2rem;
   }
-  
+
   .modal-content {
     width: 95%;
   }
-  
+
   .modal-actions {
     flex-direction: column;
   }
-  
-  .cancel-btn, .confirm-remove-btn {
+
+  .cancel-btn,
+  .confirm-remove-btn {
     width: 100%;
   }
 }

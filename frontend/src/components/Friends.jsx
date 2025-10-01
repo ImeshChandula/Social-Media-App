@@ -138,7 +138,7 @@ const Friends = () => {
               placeholder="Search friends..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
+              className={`search-input ${isDarkMode ? "" : "search-input-light"}`}
             />
             {searchQuery && (
               <button
