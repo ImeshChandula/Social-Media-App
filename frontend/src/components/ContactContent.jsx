@@ -2,57 +2,60 @@ import React, { useState } from 'react';
 import { axiosInstance } from '../lib/axios';
 import toast from 'react-hot-toast';
 import '../styles/ContactContent.css';
+import useThemeStore from '../store/themeStore';
 
 const ContactContent = () => {
-    const ADDRESS = {
-      street: import.meta.env.VITE_APP_ADDRESS_STREET,
-      city: import.meta.env.VITE_APP_ADDRESS_CITY,
-      state: import.meta.env.VITE_APP_ADDRESS_STATE,
-      zip: import.meta.env.VITE_APP_ADDRESS_ZIP,
-    };
+  const { isDarkMode } = useThemeStore();
 
-    const PHONE = import.meta.env.VITE_APP_PHONE;
-    const EMAIL = import.meta.env.VITE_APP_EMAIL;
-    const ACTIVE_WEEK = import.meta.env.VITE_APP_SUPPORT_WEEK;
-    const ACTIVE_WEEKEND = import.meta.env.VITE_APP_SUPPORT_WEEKEND;
+  const ADDRESS = {
+    street: import.meta.env.VITE_APP_ADDRESS_STREET,
+    city: import.meta.env.VITE_APP_ADDRESS_CITY,
+    state: import.meta.env.VITE_APP_ADDRESS_STATE,
+    zip: import.meta.env.VITE_APP_ADDRESS_ZIP,
+  };
+
+  const PHONE = import.meta.env.VITE_APP_PHONE;
+  const EMAIL = import.meta.env.VITE_APP_EMAIL;
+  const ACTIVE_WEEK = import.meta.env.VITE_APP_SUPPORT_WEEK;
+  const ACTIVE_WEEKEND = import.meta.env.VITE_APP_SUPPORT_WEEKEND;
 
 
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        subject: '',
-        message: ''
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
     });
+  };
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-    const handleChange = (e) => {
-        setFormData({
-        ...formData,
-        [e.target.name]: e.target.value
-        });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        
-        try {
-          const response = await axiosInstance.post('/support/sendMail', formData);
-          if (response.data.success) {
-            setTimeout(() => {
-              toast.success(response.data.message || 'Message sent successfully!');
-              setFormData({ name: '', email: '', subject: '', message: '' });
-            }, 1500);
-          }
-        } catch (error) {
-          console.error('Reactivation error:', error);
-          const errorMessage = error.response?.data?.message || 'Failed to sent message';
-          toast.error(errorMessage);
-        } finally {
-          setIsSubmitting(false);
-        }
-    };
+    try {
+      const response = await axiosInstance.post('/support/sendMail', formData);
+      if (response.data.success) {
+        setTimeout(() => {
+          toast.success(response.data.message || 'Message sent successfully!');
+          setFormData({ name: '', email: '', subject: '', message: '' });
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Reactivation error:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to sent message';
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
 
   return (
@@ -71,54 +74,54 @@ const ContactContent = () => {
         </div>
       </div>
 
-      <div className="contact-content">
+      <div className={`contact-content ${isDarkMode ? "" : "contact-content-light"}`}>
         <div className="contact-grid">
           <div className="contact-info">
-            <h2 className="section-title">Contact Information</h2>
+            <h2 className={`section-title ${isDarkMode ? "" : "text-black"}`}>Contact Information</h2>
             <div className="info-cards">
-              <div className="info-card">
+              <div className={`info-card ${isDarkMode ? "" : "info-card-light"}`}>
                 <div className="info-icon">
                   <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                   </svg>
                 </div>
-                <div className="info-content">
+                <div className={`info-content ${isDarkMode ? "" : "info-content-light"}`}>
                   <h3>Address</h3>
                   <p>{ADDRESS.street}<br />{ADDRESS.city}, {ADDRESS.state} {ADDRESS.zip}</p>
                 </div>
               </div>
 
-              <div className="info-card">
+              <div className={`info-card ${isDarkMode ? "" : "info-card-light"}`}>
                 <div className="info-icon">
                   <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                    <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
                   </svg>
                 </div>
-                <div className="info-content">
+                <div className={`info-content ${isDarkMode ? "" : "info-content-light"}`}>
                   <h3>Phone</h3>
                   <p>{PHONE}</p>
                 </div>
               </div>
 
-              <div className="info-card">
+              <div className={`info-card ${isDarkMode ? "" : "info-card-light"}`}>
                 <div className="info-icon">
                   <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                    <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
                   </svg>
                 </div>
-                <div className="info-content">
+                <div className={`info-content ${isDarkMode ? "" : "info-content-light"}`}>
                   <h3>Email</h3>
                   <p>{EMAIL}</p>
                 </div>
               </div>
 
-              <div className="info-card">
+              <div className={`info-card ${isDarkMode ? "" : "info-card-light"}`}>
                 <div className="info-icon">
                   <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                   </svg>
                 </div>
-                <div className="info-content">
+                <div className={`info-content ${isDarkMode ? "" : "info-content-light"}`}>
                   <h3>Support Hours</h3>
                   <p>{ACTIVE_WEEK}<br />{ACTIVE_WEEKEND}</p>
                 </div>
@@ -129,7 +132,7 @@ const ContactContent = () => {
           <div className="contact-form-section">
             <form className="contact-form" onSubmit={handleSubmit}>
               <h2 className="section-title">Send us a Message</h2>
-              
+
               <div className="contact-form-group">
                 <label htmlFor="name">Full Name</label>
                 <input
@@ -187,8 +190,8 @@ const ContactContent = () => {
                 ></textarea>
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className={`submit-btn ${isSubmitting ? 'submitting' : ''}`}
                 disabled={isSubmitting}
                 onClick={handleSubmit}
