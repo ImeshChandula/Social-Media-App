@@ -24,13 +24,11 @@ const styles = {
   },
   statNumber: {
     fontSize: '1.5rem',
-    color: '#ffffff',
     fontWeight: 'bold',
     marginBottom: '0.25rem'
   },
   statLabel: {
     fontSize: '0.85rem',
-    color: 'rgba(255, 255, 255, 0.7)'
   }
 };
 

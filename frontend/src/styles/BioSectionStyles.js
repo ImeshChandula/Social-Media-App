@@ -85,13 +85,11 @@ const styles = {
     flexShrink: 0
   },
   cardTitle: {
-    color: 'white',
     marginBottom: '0.5rem',
     fontWeight: 600,
     fontSize: '1rem'
   },
   cardText: {
-    color: 'rgba(255,255,255,0.7)',
     margin: 0,
     lineHeight: 1.5
   },

@@ -4,9 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { MapPin, Calendar, User, Shield, Info, Briefcase, Eye, EyeOff } from 'lucide-react';
 import styles from '../styles/BioSectionStyles';
+import useThemeStore from "../store/themeStore";
+
 
 const EnhancedBioSection = ({ user }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { isDarkMode } = useThemeStore();
+
 
   return (
     <motion.div
@@ -18,8 +22,8 @@ const EnhancedBioSection = ({ user }) => {
         <div style={styles.iconBox}>
           <User size={20} color="white" />
         </div>
-        <h5 style={styles.title} className='px-2'>About Me</h5>
-        {isOpen ? <ChevronUp size={18} color="white" /> : <ChevronDown size={18} color="white" />}
+        <h5 style={styles.title} className={`px-2 ${isDarkMode ? "text-white" : "text-black"}`}>About Me</h5>
+        {isOpen ? <ChevronUp size={18} className={`${isDarkMode ? "text-white" : "text-black"}`} /> : <ChevronDown size={18} className={`${isDarkMode ? "text-white" : "text-black"}`} />}
       </div>
 
       <AnimatePresence initial={false}>
@@ -44,10 +48,10 @@ const EnhancedBioSection = ({ user }) => {
                 >
                   <div style={{ ...styles.infoCard, borderLeft: '4px solid #667eea' }}>
                     <div style={styles.rowStart}>
-                      <Info size={18} color="white" style={styles.iconSpacing} />
+                      <Info size={18} style={styles.iconSpacing} className={`${isDarkMode ? "text-white" : "text-black"}`} />
                       <div>
-                        <h6 style={styles.cardTitle}>Bio</h6>
-                        <p style={styles.cardText}>{user.bio}</p>
+                        <h6 style={styles.cardTitle} className={`${isDarkMode ? "text-white" : "text-black"}`}>Bio</h6>
+                        <p style={styles.cardText} className={`${isDarkMode ? "text-white" : "text-black"}`}>{user.bio}</p>
                       </div>
                     </div>
                   </div>
@@ -64,12 +68,12 @@ const EnhancedBioSection = ({ user }) => {
                   <div style={{ ...styles.infoCard, borderLeft: '4px solid #00d4aa' }}>
                     <div style={styles.rowBetween}>
                       <div style={styles.rowCenter}>
-                        <Briefcase size={18} color="white" style={styles.iconSpacing} />
+                        <Briefcase size={18} className={`${isDarkMode ? "text-white" : "text-black"}`} style={styles.iconSpacing} />
                         <div>
-                          <h6 style={styles.cardTitle}>Job Category</h6>
-                          <p style={styles.cardText}>
-                            {typeof user.jobCategory === 'object' 
-                              ? user.jobCategory.name 
+                          <h6 style={styles.cardTitle} className={`${isDarkMode ? "text-white" : "text-black"}`}>Job Category</h6>
+                          <p style={styles.cardText} className={`${isDarkMode ? "text-white" : "text-black"}`}>
+                            {typeof user.jobCategory === 'object'
+                              ? user.jobCategory.name
                               : user.jobCategory
                             }
                           </p>
@@ -104,10 +108,10 @@ const EnhancedBioSection = ({ user }) => {
                 >
                   <div style={{ ...styles.infoCard, borderLeft: '4px solid #f093fb' }}>
                     <div style={styles.rowCenter}>
-                      <MapPin size={18} color="white" style={styles.iconSpacing} />
+                      <MapPin size={18} className={`${isDarkMode ? "text-white" : "text-black"}`} style={styles.iconSpacing} />
                       <div>
-                        <h6 style={styles.cardTitle}>Location</h6>
-                        <p style={styles.cardText}>{user.location}</p>
+                        <h6 style={styles.cardTitle} className={`${isDarkMode ? "text-white" : "text-black"}`}>Location</h6>
+                        <p style={styles.cardText} className={`${isDarkMode ? "text-white" : "text-black"}`}>{user.location}</p>
                       </div>
                     </div>
                   </div>
@@ -123,10 +127,10 @@ const EnhancedBioSection = ({ user }) => {
                 >
                   <div style={{ ...styles.infoCard, borderLeft: '4px solid #a8edea' }}>
                     <div style={styles.rowCenter}>
-                      <Calendar size={18} color="white" style={styles.iconSpacing} />
+                      <Calendar size={18} className={`${isDarkMode ? "text-white" : "text-black"}`} style={styles.iconSpacing} />
                       <div>
-                        <h6 style={styles.cardTitle}>Birthday</h6>
-                        <p style={styles.cardText}>
+                        <h6 style={styles.cardTitle} className={`${isDarkMode ? "text-white" : "text-black"}`}>Birthday</h6>
+                        <p style={styles.cardText} className={`${isDarkMode ? "text-white" : "text-black"}`}>
                           {new Date(user.birthday).toLocaleDateString('en-US', {
                             month: 'long',
                             day: 'numeric',
@@ -157,10 +161,10 @@ const EnhancedBioSection = ({ user }) => {
                   >
                     <div style={styles.rowBetween}>
                       <div style={styles.rowCenter}>
-                        <Shield size={18} color="white" style={styles.iconSpacing} />
+                        <Shield size={18} className={`${isDarkMode ? "text-white" : "text-black"}`} style={styles.iconSpacing} />
                         <div>
-                          <h6 style={styles.cardTitle}>Account Status</h6>
-                          <p style={styles.cardText}>{user.accountStatus}</p>
+                          <h6 style={styles.cardTitle} className={`${isDarkMode ? "text-white" : "text-black"}`}>Account Status</h6>
+                          <p style={styles.cardText} className={`${isDarkMode ? "text-white" : "text-black"}`}>{user.accountStatus}</p>
                         </div>
                       </div>
                       <span
@@ -201,13 +205,13 @@ const EnhancedBioSection = ({ user }) => {
                     <div style={styles.rowBetween}>
                       <div style={styles.rowCenter}>
                         {user.isPublic ? (
-                          <Eye size={18} color="white" style={styles.iconSpacing} />
+                          <Eye size={18} className={`${isDarkMode ? "text-white" : "text-black"}`} style={styles.iconSpacing} />
                         ) : (
-                          <EyeOff size={18} color="white" style={styles.iconSpacing} />
+                          <EyeOff size={18} className={`${isDarkMode ? "text-white" : "text-black"}`} style={styles.iconSpacing} />
                         )}
                         <div>
-                          <h6 style={styles.cardTitle}>Privacy</h6>
-                          <p style={styles.cardText}>
+                          <h6 style={styles.cardTitle} className={`${isDarkMode ? "text-white" : "text-black"}`}>Privacy</h6>
+                          <p style={styles.cardText} className={`${isDarkMode ? "text-white" : "text-black"}`}>
                             {user.isPublic ? 'Public Profile' : 'Private Profile'}
                           </p>
                         </div>

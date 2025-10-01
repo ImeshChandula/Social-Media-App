@@ -1,8 +1,11 @@
 // eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import styles from '../styles/UserStatesStyles';
+import useThemeStore from "../store/themeStore";
 
 const EnhancedUserStats = ({ user, isOwnProfile }) => {
+  const { isDarkMode } = useThemeStore();
+
   return (
     <motion.div
       style={styles.statsContainer}
@@ -10,22 +13,22 @@ const EnhancedUserStats = ({ user, isOwnProfile }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.7, duration: 0.5 }}
     >
-      <div style={styles.statBox}>
-        <div style={styles.statNumber}>{user?.friendsCount || 0}</div>
-        <div style={styles.statLabel}>Friends</div>
+      <div style={styles.statBox} className={`${isDarkMode ? "" : "border border-black"}`}>
+        <div style={styles.statNumber} className={`${isDarkMode ? "text-white" : "text-black"}`}>{user?.friendsCount || 0}</div>
+        <div style={styles.statLabel} className={`${isDarkMode ? "text-white" : "text-black"}`}>Friends</div>
       </div>
 
       {/* Show only for own profile */}
       {isOwnProfile && (
-        <div style={styles.statBox}>
-          <div style={styles.statNumber}>{user?.friendRequestCount || 0}</div>
-          <div style={styles.statLabel}>Friend Requests</div>
+        <div style={styles.statBox} className={`${isDarkMode ? "" : "border border-black"}`}>
+          <div style={styles.statNumber} className={`${isDarkMode ? "text-white" : "text-black"}`}>{user?.friendRequestCount || 0}</div>
+          <div style={styles.statLabel} className={`${isDarkMode ? "text-white" : "text-black"}`}>Friend Requests</div>
         </div>
       )}
 
-      <div style={styles.statBox}>
-        <div style={styles.statNumber}>{user?.postsCount || 0}</div>
-        <div style={styles.statLabel}>Posts</div>
+      <div style={styles.statBox} className={`${isDarkMode ? "" : "border border-black"}`}>
+        <div style={styles.statNumber} className={`${isDarkMode ? "text-white" : "text-black"}`}>{user?.postsCount || 0}</div>
+        <div style={styles.statLabel} className={`${isDarkMode ? "text-white" : "text-black"}`}>Posts</div>
       </div>
     </motion.div>
   );

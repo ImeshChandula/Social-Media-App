@@ -151,7 +151,7 @@ const UserPosts = () => {
 
     if (loading && posts.length === 0) {
         return (
-            <div className="text-white text-center my-5 fs-5 normal-loading-spinner">
+            <div className="text-secondary text-center my-5 fs-5 normal-loading-spinner">
                 Loading<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
             </div>
         );
@@ -159,7 +159,7 @@ const UserPosts = () => {
 
     if (refreshing && posts.length === 0) {
         return (
-            <div className="text-white text-center my-5 fs-5 normal-loading-spinner">
+            <div className="text-secondary text-center my-5 fs-5 normal-loading-spinner">
                 Refreshing Posts<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
             </div>
         );
@@ -183,7 +183,7 @@ const UserPosts = () => {
 
     if (posts.length === 0 && !loading) {
         return (
-            <div className="text-white text-center my-5 fs-5">
+            <div className="text-secondary text-center my-5 fs-5">
                 No posts to show.
                 <div className="mt-3">
                     <button 

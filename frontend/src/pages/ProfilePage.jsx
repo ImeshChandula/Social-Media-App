@@ -90,7 +90,7 @@ function ProfilePage() {
 
   // Handle delete post from favorites
   const handleDeletePost = (postId) => {
-    setFavorites(prevFavorites => 
+    setFavorites(prevFavorites =>
       prevFavorites.filter(post => post._id !== postId && post.id !== postId)
     );
   };
@@ -142,7 +142,7 @@ function ProfilePage() {
           <div className="mt-4">
             {loadingFavorites ? (
               <div className="text-center my-4">
-                <div className="text-white normal-loading-spinner">
+                <div className="text-secondary normal-loading-spinner">
                   Loading favorites<span className="dot-flash">.</span>
                   <span className="dot-flash">.</span>
                   <span className="dot-flash">.</span>
@@ -198,13 +198,13 @@ function ProfilePage() {
 
   return (
     <motion.div
-      className="container text-center py-5 mt-5"
+      className="text-center py-5 py-md-0 mt-5 mt-md-0"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       {loading ? (
-        <p className="text-white-50 normal-loading-spinner my-5">
+        <p className="text-secondary normal-loading-spinner my-5">
           Loading<span className="dot-flash">.</span>
           <span className="dot-flash">.</span>
           <span className="dot-flash">.</span>
@@ -212,7 +212,7 @@ function ProfilePage() {
       ) : (
         <>
           {/* Cover Photo */}
-          <div className="position-relative mb-5 pt-3">
+          <div className="position-relative mb-5 ">
             <motion.img
               src={user?.coverPhoto}
               alt="Cover"
@@ -242,7 +242,7 @@ function ProfilePage() {
                 ? `${user.firstName} ${user.lastName}`
                 : "Unnamed User"}
             </h4>
-            <p className="text-white-50 mb-3">{user?.email}</p>
+            <p className="text-secondary mb-3">{user?.email}</p>
             <div className="d-flex justify-content-center flex-wrap gap-2">
               <button className="btn btn-success" onClick={handleEditProfile}>
                 Edit Profile
@@ -272,7 +272,7 @@ function ProfilePage() {
                 className={`btn ${activeTab === 'posts' ? "btn-primary" : "btn-outline-primary"}`}
                 onClick={() => handleTabChange('posts')}
               >
-                
+
                 My Posts
               </button>
               <button
@@ -283,14 +283,14 @@ function ProfilePage() {
                   setShowFavorites(true);
                 }}
               >
-                
+
                 ❤️ Favorites
               </button>
               <button
                 className={`btn ${activeTab === 'pages' ? "btn-primary" : "btn-outline-primary"}`}
                 onClick={() => handleTabChange('pages')}
               >
-                
+
                 My Pages
               </button>
             </div>

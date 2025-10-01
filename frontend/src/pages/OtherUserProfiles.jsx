@@ -11,6 +11,7 @@ import FriendActionButton from "../components/FriendActionButton";
 import UserInPrivateStatus from "../components/UserInPrivateStatus";
 import ReportProfileModal from "../components/ReportProfileModal";
 import useAuthStore from "../store/authStore";
+import useThemeStore from "../store/themeStore";
 
 const OtherUserProfiles = () => {
   const { id } = useParams();
@@ -21,6 +22,7 @@ const OtherUserProfiles = () => {
   const [friendStatus, setFriendStatus] = useState(null);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const { isDarkMode } = useThemeStore();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,45 +30,45 @@ const OtherUserProfiles = () => {
       await fetchUser();
     };
     fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchUser = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const res = await axiosInstance.get(`/users/getUserById/${id}`);
-        const fetchedUser = res.data.user || res.data;
-        setUser(fetchedUser);
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to load user profile");
-      } finally {
-        setLoading(false);
-      }
-    };
+    setLoading(true);
+    setError("");
+    try {
+      const res = await axiosInstance.get(`/users/getUserById/${id}`);
+      const fetchedUser = res.data.user || res.data;
+      setUser(fetchedUser);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to load user profile");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchStatus = async () => {
     try {
-        const res = await axiosInstance.get(`/friends/friend-status/${id}`);
-        if (res.data.success) {
-            setFriendStatus(res.data.data.friendStatus);
-        }
+      const res = await axiosInstance.get(`/friends/friend-status/${id}`);
+      if (res.data.success) {
+        setFriendStatus(res.data.data.friendStatus);
+      }
     } catch (err) {
-        console.log("Error: " + err);
-        toast.error("Failed to get friend status");
-    } 
+      console.log("Error: " + err);
+      toast.error("Failed to get friend status");
+    }
   };
 
   if (loading) {
     return (
-      <p className="text-white-50 text-center mt-5 normal-loading-spinner">
+      <p className="text-secondary text-center mt-5 normal-loading-spinner">
         Loading user profile<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
       </p>
     );
   }
 
   if (error) return <div className="alert alert-danger mt-5">{error}</div>;
-  if (!user) return <p className="text-white-50 text-center mt-5">User not found.</p>;
+  if (!user) return <p className="text-secondary-50 text-center mt-5">User not found.</p>;
 
   // Helper function to determine if content should be shown
   const shouldShowContent = () => {
@@ -133,7 +135,7 @@ const OtherUserProfiles = () => {
 
   return (
     <motion.div
-      className="container text-center py-5 py-md-0 mt-5 mt-md-0"
+      className="text-center py-5 py-md-0 mt-5 mt-md-0"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
@@ -152,7 +154,7 @@ const OtherUserProfiles = () => {
         <motion.img
           src={user.profilePicture}
           alt="Profile"
-          className="rounded-circle border border-white shadow profile-pic-animate"
+          className={`rounded-circle border shadow profile-pic-animate ${isDarkMode ? "border-white" : "border-black"}`}
           whileHover={{ scale: 1.05 }}
           style={{
             width: "120px",
@@ -174,12 +176,12 @@ const OtherUserProfiles = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <h4 className="fw-bold text-white">
+        <h4 className={`fw-bold ${isDarkMode ? "text-white" : "text-black"}`}>
           {user.firstName || user.lastName
             ? `${user.firstName} ${user.lastName}`
             : "Unnamed User"}
         </h4>
-        <p className="text-white-50">@{user.username}</p>
+        <p className="text-secondary">@{user.username}</p>
 
         <div className="d-flex justify-content-center align-items-center gap-3">
           <FriendActionButton userId={id} />
@@ -199,11 +201,11 @@ const OtherUserProfiles = () => {
               >
                 <MoreVertical size={20} />
               </button>
-              
+
               {showOptionsMenu && (
                 <div style={optionsMenuStyles.menu}>
                   <button
-                    style={{...optionsMenuStyles.menuItem, ...optionsMenuStyles.reportItem}}
+                    style={{ ...optionsMenuStyles.menuItem, ...optionsMenuStyles.reportItem }}
                     onClick={() => {
                       setShowReportModal(true);
                       setShowOptionsMenu(false);
