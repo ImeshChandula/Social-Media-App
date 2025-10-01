@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { BsTrash } from "react-icons/bs";
+import useThemeStore from "../store/themeStore";
 
 const detectMediaType = (media) => {
   if (!media) return "";
@@ -20,6 +21,7 @@ const detectMediaType = (media) => {
 const EditPost = () => {
   const { postId } = useParams();
   const navigate = useNavigate();
+  const { isDarkMode } = useThemeStore();
 
   const [isUpdating, setIsUpdating] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -266,18 +268,25 @@ const EditPost = () => {
   }
 
   return (
-    <div className="container my-4" style={{ maxWidth: 650 }}>
-      <div className="createpost-bg card-body p-4 rounded-4">
-        <h2 className="mb-4 text-center fw-bold">Edit Post</h2>
+    <div
+      className={`container my-4 ${isDarkMode ? "text-white" : "text-black"}`}
+      style={{ maxWidth: 650 }}
+    >
+      <div
+        className={`card-body p-4 rounded-4 shadow ${isDarkMode ? "bg-gray-900 border border-gray-700" : "bg-white border border-gray-200"
+          }`}
+      >
+        <h2 className="mb-4 text-center fw-bold" >Edit Post</h2>
 
         <form onSubmit={handleSubmit}>
           {/* Content */}
           <div className="mb-3">
-            <label className="form-label fw-semibold">Content</label>
+            <label className={`form-label fw-semibold ${isDarkMode ? "text-white" : "text-black"}`}>Content</label>
             <textarea
               name="content"
               rows={4}
-              className="form-control"
+              className={`form-control ${isDarkMode ? "bg-gray-800 text-gray-100 border-gray-600" : "bg-white text-gray-900"
+                }`}
               value={form.content}
               onChange={handleChange}
               placeholder="Write something..."
@@ -287,7 +296,7 @@ const EditPost = () => {
           {/* Media Upload */}
           <div className="mb-3">
             <div className="d-flex justify-content-between align-items-center">
-              <label className="form-label fw-semibold mb-0">Upload Images or Videos</label>
+              <label className={`form-label fw-semibold mb-0 ${isDarkMode ? "text-white" : "text-black"}`}>Upload Images or Videos</label>
               {form.media.length > 0 && (
                 <button
                   type="button"
@@ -298,11 +307,11 @@ const EditPost = () => {
                 </button>
               )}
             </div>
-
             <input
               type="file"
               accept="image/*,video/*"
-              className="form-control"
+              className={`form-control ${isDarkMode ? "bg-gray-800 text-gray-100 border-gray-600" : "bg-white text-gray-900"
+                }`}
               multiple
               onChange={handleFileChange}
             />
@@ -315,37 +324,27 @@ const EditPost = () => {
                 <div key={idx} className="position-relative" style={{ width: 120 }}>
                   <button
                     type="button"
-                    className="bg-danger text-white position-absolute top-0 end-0 m-1 p-1 d-flex align-items-center justify-content-center"
-                    style={{ borderRadius: "50%", width: 28, height: 28, zIndex: 10 }}
-                    aria-label="Remove media"
+                    className="bg-red-600 text-white position-absolute top-0 end-0 m-1 p-1 d-flex align-items-center justify-content-center rounded-circle"
+                    style={{ width: 28, height: 28, zIndex: 10 }}
                     onClick={() => handleRemoveMediaItem(idx)}
                   >
                     <BsTrash size={16} />
                   </button>
-
                   {form.mediaType === "video" ? (
                     <video
                       src={preview}
                       controls
-                      className="rounded shadow-sm border"
-                      style={{
-                        width: "120px",
-                        height: "90px",
-                        objectFit: "cover",
-                        userSelect: "none",
-                      }}
+                      className={`rounded shadow-sm border ${isDarkMode ? "border-gray-600" : "border-gray-300"
+                        }`}
+                      style={{ width: "120px", height: "90px", objectFit: "cover" }}
                     />
                   ) : (
                     <img
                       src={preview}
                       alt={`preview-${idx}`}
-                      className="rounded shadow-sm border"
-                      style={{
-                        width: "120px",
-                        height: "120px",
-                        objectFit: "contain",
-                        userSelect: "none",
-                      }}
+                      className={`rounded shadow-sm border ${isDarkMode ? "border-gray-600" : "border-gray-300"
+                        }`}
+                      style={{ width: "120px", height: "120px", objectFit: "contain" }}
                       loading="lazy"
                     />
                   )}
@@ -356,11 +355,12 @@ const EditPost = () => {
 
           {/* Tags */}
           <div className="mb-3">
-            <label className="form-label fw-semibold">Tags (comma separated)</label>
+            <label className={`form-label fw-semibold ${isDarkMode ? "text-white" : "text-black"}`}>Tags (comma separated)</label>
             <input
               type="text"
               name="tags"
-              className="form-control"
+              className={`form-control ${isDarkMode ? "bg-gray-800 text-gray-100 border-gray-600" : "bg-white text-gray-900"
+                }`}
               value={form.tags}
               onChange={handleTagsChange}
               placeholder="e.g. travel, fun"
@@ -369,10 +369,11 @@ const EditPost = () => {
 
           {/* Privacy */}
           <div className="mb-3">
-            <label className="form-label fw-semibold">Privacy</label>
+            <label className={`form-label fw-semibold ${isDarkMode ? "text-white" : "text-black"}`}>Privacy</label>
             <select
               name="privacy"
-              className="form-select"
+              className={`form-select ${isDarkMode ? "bg-gray-800 text-gray-100 border-gray-600" : "bg-white text-gray-900"
+                }`}
               value={form.privacy}
               onChange={handleChange}
             >
@@ -384,11 +385,12 @@ const EditPost = () => {
 
           {/* Location */}
           <div className="mb-4">
-            <label className="form-label fw-semibold">Location</label>
+            <label className={`form-label fw-semibold ${isDarkMode ? "text-white" : "text-black"}`}>Location</label>
             <input
               type="text"
               name="location"
-              className="form-control"
+              className={`form-control ${isDarkMode ? "bg-gray-800 text-gray-100 border-gray-600" : "bg-white text-gray-900"
+                }`}
               value={form.location}
               onChange={handleChange}
               placeholder="Add a location"

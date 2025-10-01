@@ -10,5 +10,5 @@ const { isDarkMode } = useThemeStore();
 {/* 
     Prompt for chatGPT
     
-    Use tailwindcss to only change the parts that are related to darkmoode lightmood (text colors, background colors). Do not change any other design. Also, provide a toggle next to the search button.
+    Use tailwindcss to only change the parts that are related to darkmode lightmod (text colors, background colors). Do not change any other design. Also, provide a toggle next to the search button.
 */}

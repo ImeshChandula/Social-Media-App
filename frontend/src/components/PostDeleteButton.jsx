@@ -4,9 +4,11 @@ import withReactContent from "sweetalert2-react-content";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { FiTrash2 } from "react-icons/fi";
+import useThemeStore from "../store/themeStore";
 
 const PostDeleteButton = ({ postId, onDeleteSuccess }) => {
   const MySwal = withReactContent(Swal);
+  const { isDarkMode } = useThemeStore();
 
   const handleDelete = async () => {
     const result = await MySwal.fire({
@@ -18,8 +20,8 @@ const PostDeleteButton = ({ postId, onDeleteSuccess }) => {
       cancelButtonColor: "#6b7280",
       confirmButtonText: "Delete",
       cancelButtonText: "Cancel",
-      background: "#1f2937",
-      color: "#f9fafb",
+      background: isDarkMode ? "#1f2937" : "#ffffff", // dark: gray-800 | light: white
+      color: isDarkMode ? "#f9fafb" : "#111827", // dark: gray-50 | light: gray-900
       customClass: {
         popup: "swal2-popup-custom",
         title: "swal2-title-custom",
@@ -44,7 +46,8 @@ const PostDeleteButton = ({ postId, onDeleteSuccess }) => {
 
   return (
     <button
-      className="dropdown-item text-danger d-flex align-items-center gap-2"
+      className={`dropdown-item d-flex align-items-center gap-2 ${isDarkMode ? "text-red-400 hover:text-red-300" : "text-red-600 hover:text-red-500"
+        }`}
       onClick={handleDelete}
       type="button"
     >
