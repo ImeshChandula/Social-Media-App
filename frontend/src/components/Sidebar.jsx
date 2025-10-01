@@ -8,7 +8,6 @@ import {
   FaBell,
   FaFacebookF,
   FaSearch,
-  FaSignOutAlt,
   FaEllipsisH,
   FaSun,
   FaMoon,
@@ -16,22 +15,19 @@ import {
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { MdContactSupport } from "react-icons/md";
 import { FaShoppingBag } from "react-icons/fa";
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
 
 import useAuthStore from "../store/authStore";
 import useThemeStore from "../store/themeStore";
 import SearchPopup from "./SearchPopup";
+import LogoutButton from "./LogoutButton";
 
 function Sidebar() {
-  const { authUser, logout } = useAuthStore();
+  const { authUser } = useAuthStore();
   const { isDarkMode, toggleTheme } = useThemeStore();
   const [showMore, setShowMore] = useState(false);
   const [showSearchPopup, setShowSearchPopup] = useState(false);
   const moreRef = useRef(null);
   const navigate = useNavigate();
-
-  const MySwal = withReactContent(Swal);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -44,29 +40,6 @@ function Sidebar() {
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMore]);
-
-  const handleLogout = async () => {
-    const result = await MySwal.fire({
-      title: "Are you sure?",
-      text: "You will be logged out from your account.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Logout",
-      cancelButtonText: "Cancel",
-      background: isDarkMode ? "#1f2937" : "#ffffff",
-      color: isDarkMode ? "#f9fafb" : "#1f2937",
-      heightAuto: false,
-    });
-
-    if (!result.isConfirmed) return;
-    try {
-      await logout();
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
 
   const navItems = [
     { name: "Home", path: "/", icon: <FaHome /> },
@@ -148,14 +121,10 @@ function Sidebar() {
               </NavLink>
             </li>
           ))}
+
+          {/* ✅ Logout Button (desktop) */}
           <li className="nav-item mb-2">
-            <button
-              className={`nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${hoverClass} ${textClass} bg-transparent border-0 w-100 text-start`}
-              onClick={handleLogout}
-              style={{ fontSize: "1rem" }}
-            >
-              <FaSignOutAlt /> Logout
-            </button>
+            <LogoutButton className={`${hoverClass} ${textClass}`} />
           </li>
         </ul>
 
@@ -187,11 +156,11 @@ function Sidebar() {
         className={`mobile-topbar ${bgClass} ${textClass} d-flex d-md-none flex-column fixed-top w-100 py-2`}
         style={{ zIndex: 999 }}
       >
-        {/* Logo, Search and Theme Toggle - New Section */}
+        {/* Logo, Search and Theme Toggle */}
         <div className="d-flex justify-content-between align-items-center px-3 mb-2">
           <FaFacebookF size={28} color="#1ecb73" className="cursor-pointer" onClick={() => navigate("/")} />
           <div className="d-flex align-items-center gap-2">
-            {/* Theme Toggle Button */}
+            {/* Theme Toggle */}
             <button
               className={`bg-transparent border-0 ${textClass} d-flex align-items-center justify-content-center p-2`}
               onClick={toggleTheme}
@@ -201,7 +170,7 @@ function Sidebar() {
               {isDarkMode ? <FaSun size={18} /> : <FaMoon size={18} />}
             </button>
 
-            {/* Search Button */}
+            {/* Search */}
             <button
               className={`bg-transparent border-0 ${textClass} d-flex align-items-center justify-content-center p-2`}
               onClick={() => setShowSearchPopup(true)}
@@ -280,16 +249,11 @@ function Sidebar() {
                 ))}
 
                 <hr className={`${textClass} my-2`} />
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setShowMore(false);
-                  }}
-                  className={`d-flex align-items-center gap-2 py-1 px-2 ${textClass} bg-transparent border-0 w-100 text-start`}
-                  style={{ fontSize: "1rem", whiteSpace: "nowrap" }}
-                >
-                  <FaSignOutAlt /> Logout
-                </button>
+                {/* ✅ Logout Button (mobile dropdown) */}
+                <LogoutButton
+                  className={textClass}
+                  onAfterLogout={() => setShowMore(false)}
+                />
               </div>
             )}
           </div>
