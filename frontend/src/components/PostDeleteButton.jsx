@@ -20,8 +20,8 @@ const PostDeleteButton = ({ postId, onDeleteSuccess }) => {
       cancelButtonColor: "#6b7280",
       confirmButtonText: "Delete",
       cancelButtonText: "Cancel",
-      background: isDarkMode ? "#1f2937" : "#ffffff", // dark: gray-800 | light: white
-      color: isDarkMode ? "#f9fafb" : "#111827", // dark: gray-50 | light: gray-900
+      background: isDarkMode ? "#1f2937" : "#ffffff",
+      color: isDarkMode ? "#f9fafb" : "#111827",
       customClass: {
         popup: "swal2-popup-custom",
         title: "swal2-title-custom",

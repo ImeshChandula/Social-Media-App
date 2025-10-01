@@ -214,7 +214,7 @@ function NotificationPage() {
 
   // Get notification style based on type
   const getNotificationStyle = (notification) => {
-    const baseStyle = "mt-2 notification-item";
+    const baseStyle = `mt-2 notification-item ${isDarkMode ? "" : "notification-item-light"}`;
     const unreadStyle = !notification.isRead ? ' unread' : '';
 
     // Special styling for warning notifications
@@ -244,7 +244,7 @@ function NotificationPage() {
       </button>
 
       {isOpen && (
-        <div className="notifications-dropdown">
+        <div className={`notifications-dropdown ${isDarkMode ? "" : "notifications-dropdown-light"}`}>
           <div className={`${isDarkMode ? "notifications-header-dark text-white" : "notifications-header-light text-black"}`}>
             <h3>Notifications</h3>
             {notificationCount > 0 && (
@@ -274,11 +274,11 @@ function NotificationPage() {
                     className={getNotificationStyle(notification)}
                     onClick={() => !notification.isRead && markAsRead(notification.id)}
                   >
-                    <div className="notification-avatar">
+                    <div className={`notification-avatar ${isDarkMode ? "" : "notification-avatar-light"}`}>
                       {notification.senderProfilePicture ? (
                         <img src={notification.senderProfilePicture} alt="" />
                       ) : (
-                        <div className="avatar-placeholder">
+                        <div className="avatar-placeholder" >
                           {notification.message?.split(' ')[0]?.charAt(0) || '?'}
                         </div>
                       )}
@@ -288,7 +288,7 @@ function NotificationPage() {
                     </div>
 
                     <div className="notification-content">
-                      <div className="notification-text">
+                      <div className={`notification-text ${isDarkMode ? "" : "text-black"}`}>
                         <span>{notification.message}</span>
                         {/* Show additional info for warning notifications */}
                         {notification.type === 'post_warning' && notification.data?.reportReason && (
@@ -297,7 +297,7 @@ function NotificationPage() {
                           </div>
                         )}
                       </div>
-                      <div className="notification-time">
+                      <div className={`notification-time ${isDarkMode ? "" : "notification-time-light"}`}>
                         {formatTime(notification.timestamp)}
                       </div>
                     </div>

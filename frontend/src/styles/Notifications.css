@@ -135,6 +135,10 @@
   animation: dropdown-appear 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.notifications-dropdown-light {
+  background: linear-gradient(135deg, #ffffff 0%, #e2e2e2 100%);
+}
+
 @keyframes dropdown-appear {
   from {
     opacity: 0;
@@ -182,7 +186,7 @@
 
 .mark-all-read {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white !important;
+  color: white;
   border: none;
   padding: 8px 16px;
   border-radius: 8px;
@@ -237,6 +241,10 @@
   overflow: hidden;
 }
 
+.notification-item-light {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.397);
+}
+
 .notification-item::before {
   content: '';
   position: absolute;
@@ -247,6 +255,10 @@
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
   opacity: 0;
   transition: opacity 0.2s ease;
+}
+
+.notification-item-light::before {
+  background: rgba(207, 205, 205, 0.527);
 }
 
 .notification-item:hover::before {
@@ -260,6 +272,11 @@
 .notification-item.unread {
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
   border-left: 3px solid #3b82f6;
+}
+
+.notification-item-light.unread {
+  background: linear-gradient(135deg, rgb(156, 162, 255) 0%, rgba(112, 138, 255, 0.438) 100%);
+  border-left: 3px solid #0044ff;
 }
 
 .notification-item.unread::before {
@@ -347,6 +364,11 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+.notification-avatar-light img {
+  border: 2px solid rgba(0, 0, 0, 0.308);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.315);
+}
+
 .avatar-placeholder {
   width: 44px;
   height: 44px;
@@ -398,6 +420,12 @@
 
 .notification-time {
   color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.notification-time-light {
+  color: #4b525c;
   font-size: 12px;
   font-weight: 500;
 }
