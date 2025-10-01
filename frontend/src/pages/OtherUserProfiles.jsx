@@ -80,59 +80,6 @@ const OtherUserProfiles = () => {
   // Check if this is the current user's own profile
   const isOwnProfile = authUser?.id === id;
 
-  const optionsMenuStyles = {
-    container: {
-      position: 'relative',
-      display: 'inline-block'
-    },
-    button: {
-      background: 'rgba(255, 255, 255, 0.1)',
-      border: '1px solid rgba(255, 255, 255, 0.2)',
-      borderRadius: '50%',
-      width: '40px',
-      height: '40px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      cursor: 'pointer',
-      color: '#fff',
-      transition: 'all 0.2s ease'
-    },
-    menu: {
-      position: 'absolute',
-      top: '100%',
-      right: '0',
-      backgroundColor: '#1f1f1f',
-      border: '1px solid #333',
-      borderRadius: '8px',
-      padding: '8px 0',
-      minWidth: '180px',
-      zIndex: 1000,
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-      marginTop: '4px'
-    },
-    menuItem: {
-      padding: '12px 16px',
-      color: '#fff',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      fontSize: '14px',
-      transition: 'background-color 0.2s ease',
-      border: 'none',
-      background: 'none',
-      width: '100%',
-      textAlign: 'left'
-    },
-    menuItemHover: {
-      backgroundColor: '#333'
-    },
-    reportItem: {
-      color: '#ef4444'
-    }
-  };
-
   return (
     <motion.div
       className="text-center py-5 py-md-0 mt-5 mt-md-0"
@@ -188,34 +135,33 @@ const OtherUserProfiles = () => {
 
           {/* Options Menu - Only show for other users, not own profile */}
           {!isOwnProfile && (
-            <div style={optionsMenuStyles.container}>
+            <div className="relative inline-block text-left">
               <button
-                style={optionsMenuStyles.button}
                 onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                }}
+                className={`w-10 h-10 flex items-center justify-center rounded-full border transition
+        ${isDarkMode
+                    ? "bg-white/10 border-white/20 text-white hover:bg-white/20"
+                    : "bg-black/5 border-black/10 text-black hover:bg-black/10"}`}
               >
                 <MoreVertical size={20} />
               </button>
 
               {showOptionsMenu && (
-                <div style={optionsMenuStyles.menu}>
+                <div
+                  className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50 
+          ${isDarkMode
+                      ? "bg-neutral-900 border border-neutral-700"
+                      : "bg-white border border-gray-200"}`}
+                >
                   <button
-                    style={{ ...optionsMenuStyles.menuItem, ...optionsMenuStyles.reportItem }}
                     onClick={() => {
                       setShowReportModal(true);
                       setShowOptionsMenu(false);
                     }}
-                    onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = '#333';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = 'transparent';
-                    }}
+                    className={`w-full px-4 py-2 text-left flex items-center gap-2 rounded-md transition
+            ${isDarkMode
+                        ? "text-red-400 hover:bg-neutral-800"
+                        : "text-red-600 hover:bg-gray-100"}`}
                   >
                     <Flag size={16} />
                     Report Profile
