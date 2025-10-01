@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
-import { axiosInstance } from '../lib/axios'; 
+import { axiosInstance } from '../lib/axios';
 import '../styles/Notifications.css';
+import useThemeStore from '../store/themeStore';
 
 function NotificationPage() {
   const [notifications, setNotifications] = useState([]);
@@ -13,6 +14,7 @@ function NotificationPage() {
   const [offset, setOffset] = useState(0);
   const socketRef = useRef(null);
   const dropdownRef = useRef(null);
+  const { isDarkMode } = useThemeStore();
 
   // Initialize Socket.IO connection
   useEffect(() => {
@@ -24,7 +26,7 @@ function NotificationPage() {
     socketRef.current.on('new_notification', (notification) => {
       setNotifications(prev => [notification, ...prev]);
       setNotificationCount(prev => prev + 1);
-      
+
       // Show different toasts based on notification type
       if (notification.type === 'post_warning') {
         toast.error('⚠️ You have received a warning about your post', {
@@ -48,7 +50,7 @@ function NotificationPage() {
         socketRef.current.disconnect();
       }
     };
-  }, []); 
+  }, []);
 
   // Fetch notification count on component mount
   useEffect(() => {
@@ -60,7 +62,7 @@ function NotificationPage() {
     try {
       setLoading(true);
       const currentOffset = reset ? 0 : offset;
-      
+
       const response = await axiosInstance.get('/notifications/me', {
         params: {
           limit: 10,
@@ -89,7 +91,7 @@ function NotificationPage() {
   const fetchNotificationCount = async () => {
     try {
       const response = await axiosInstance.get('/notifications/count');
-      
+
       if (response.data.success) {
         if (response.data.data.count > notificationCount) {
           toast.success("You have new Notifications")
@@ -156,23 +158,23 @@ function NotificationPage() {
   // Format notification time
   const formatTime = (timestamp) => {
     if (!timestamp) return 'Unknown time';
-    
+
     let notifTime;
-    
+
     if (timestamp?._seconds) {
       notifTime = new Date(timestamp._seconds * 1000);
-    } 
+    }
     else if (timestamp?.toDate && typeof timestamp.toDate === 'function') {
       notifTime = timestamp.toDate();
     }
     else {
       notifTime = new Date(timestamp);
     }
-    
+
     if (isNaN(notifTime.getTime())) {
       return 'Unknown time';
     }
-    
+
     const now = new Date();
     const diffMs = now - notifTime;
     const diffMins = Math.floor(diffMs / 60000);
@@ -190,22 +192,22 @@ function NotificationPage() {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'like_post':
-      case 'like_reply': 
+      case 'like_reply':
         return '❤️';
       case 'comment':
-      case 'reply': 
+      case 'reply':
         return '💬';
-      case 'friend_request': 
+      case 'friend_request':
         return '👤';
-      case 'accept_request': 
+      case 'accept_request':
         return '✅';
-      case 'post': 
+      case 'post':
         return '📝';
-      case 'story': 
+      case 'story':
         return '📷';
       case 'post_warning': // New case for warning notifications
         return '⚠️';
-      default: 
+      default:
         return '🔔';
     }
   };
@@ -214,12 +216,12 @@ function NotificationPage() {
   const getNotificationStyle = (notification) => {
     const baseStyle = "mt-2 notification-item";
     const unreadStyle = !notification.isRead ? ' unread' : '';
-    
+
     // Special styling for warning notifications
     if (notification.type === 'post_warning') {
       return `${baseStyle}${unreadStyle} warning-notification`;
     }
-    
+
     return `${baseStyle}${unreadStyle}`;
   };
 
@@ -232,18 +234,18 @@ function NotificationPage() {
 
   return (
     <div className="notifications-container" ref={dropdownRef}>
-      <button className="notifications-bell" onClick={toggleDropdown}>
-        <svg className="bell-icon" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 19V20H3V19L5 17V11C5 7.9 7 5.2 9.9 4.4C10.1 4.2 10 4 10 4C10 2.9 10.9 2 12 2S14 2.9 14 4C14 4 13.9 4.2 14.1 4.4C17 5.2 19 7.9 19 11V17L21 19ZM7 19H17V18L15 16V11C15 8.2 13.4 6 12 6S9 8.2 9 11V16L7 18V19Z"/>
+      <button className={` ${isDarkMode ? "notifications-bell-dark" : "notifications-bell-light bg-white"}`} onClick={toggleDropdown}>
+        <svg className={`bell-icon ${isDarkMode ? "" : "text-black"}`} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 19V20H3V19L5 17V11C5 7.9 7 5.2 9.9 4.4C10.1 4.2 10 4 10 4C10 2.9 10.9 2 12 2S14 2.9 14 4C14 4 13.9 4.2 14.1 4.4C17 5.2 19 7.9 19 11V17L21 19ZM7 19H17V18L15 16V11C15 8.2 13.4 6 12 6S9 8.2 9 11V16L7 18V19Z" />
         </svg>
         {notificationCount > 0 && (
-          <span className="notification-badge">{notificationCount > 99 ? '99+' : notificationCount}</span>
+          <span className={`notification-badge ${isDarkMode ? "" : "notification-badge-light"}`}>{notificationCount > 99 ? '99+' : notificationCount}</span>
         )}
       </button>
 
       {isOpen && (
         <div className="notifications-dropdown">
-          <div className="notifications-header">
+          <div className={`${isDarkMode ? "notifications-header-dark text-white" : "notifications-header-light text-black"}`}>
             <h3>Notifications</h3>
             {notificationCount > 0 && (
               <button className="mark-all-read" onClick={markAllAsRead}>
@@ -284,7 +286,7 @@ function NotificationPage() {
                         {getNotificationIcon(notification.type)}
                       </span>
                     </div>
-                    
+
                     <div className="notification-content">
                       <div className="notification-text">
                         <span>{notification.message}</span>
@@ -299,14 +301,14 @@ function NotificationPage() {
                         {formatTime(notification.timestamp)}
                       </div>
                     </div>
-                    
+
                     {!notification.isRead && <div className="unread-dot"></div>}
                   </div>
                 ))}
-                
+
                 {hasMore && (
-                  <button 
-                    className="load-more-btn" 
+                  <button
+                    className="load-more-btn"
                     onClick={loadMore}
                     disabled={loading}
                   >

@@ -338,7 +338,7 @@ const Feed = () => {
 
     if (refreshing && posts.length === 0) {
         return (
-            <div className="text-white text-center my-5 fs-5 normal-loading-spinner">
+            <div className="text-secondary text-center my-5 fs-5 normal-loading-spinner">
                 Refreshing Feed<span className="dot-flash">.</span><span className="dot-flash">.</span><span className="dot-flash">.</span>
             </div>
         );
@@ -362,7 +362,7 @@ const Feed = () => {
 
     if (!posts.length && !loading) {
         return (
-            <div className="text-white text-center my-5 fs-5">
+            <div className="text-secondary text-center my-5 fs-5">
                 No posts found
                 <div className="mt-3">
                     <button 
