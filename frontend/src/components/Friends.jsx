@@ -93,7 +93,7 @@ const Friends = () => {
     return (
       <div className="friends-list-container">
         <div className="spinner"></div>
-        <p className='text-center'>Loading your friends...</p>
+        <p className={`text-center ${isDarkMode ? "text-white" : "text-black"}`}>Loading your friends...</p>
       </div>
     );
   }

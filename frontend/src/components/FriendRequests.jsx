@@ -90,7 +90,7 @@ const FriendRequests = () => {
       <div className="friend-requests-container">
         <div style={{ textAlign: 'center' }}>
           <div className="spinner"></div>
-          <p>Loading friend requests...</p>
+          <p className={`text-center ${isDarkMode ? "text-white" : "text-black"}`}>Loading friend requests...</p>
         </div>
       </div>
     );
@@ -120,7 +120,7 @@ const FriendRequests = () => {
     <div className="friend-requests-container">
       <div className="header">
         <h2>Friend Requests</h2>
-        <p className={`subtitle ${isDarkMode?"":"subtitle-light"}`}>
+        <p className={`subtitle ${isDarkMode ? "" : "subtitle-light"}`}>
           {friendRequests.length > 0
             ? `You have ${friendRequests.length} pending request${friendRequests.length > 1 ? 's' : ''}`
             : 'No pending requests'

@@ -97,7 +97,7 @@ const FriendSuggestions = () => {
       <div className="suggested-friends-container">
         <div style={{ textAlign: 'center' }}>
           <div className="spinner"></div>
-          <p>Loading suggested friends...</p>
+          <p className={`text-center ${isDarkMode ? "text-white" : "text-black"}`} >Loading suggested friends...</p>
         </div>
       </div>
     );
@@ -121,7 +121,7 @@ const FriendSuggestions = () => {
     <div className="suggested-friends-container">
       <div className="header">
         <h2>People You May Know</h2>
-        <p className={`subtitle ${isDarkMode?"":"subtitle-light"}`}>Connect with friends and expand your network</p>
+        <p className={`subtitle ${isDarkMode ? "" : "subtitle-light"}`}>Connect with friends and expand your network</p>
       </div>
 
       {/* Add additional safety check here */}
