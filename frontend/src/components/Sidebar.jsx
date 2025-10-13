@@ -275,6 +275,21 @@ function Sidebar() {
                   </NavLink>
                 ))}
 
+                {BusinessTools.length > 0 && <hr className={`${textClass} my-2`} />}
+                {BusinessTools.map(({ name, path, icon }) => (
+                  <NavLink
+                    key={name}
+                    to={path}
+                    className={({ isActive }) =>
+                      `d-flex align-items-center gap-2 py-1 px-2 rounded ${textClass} ${isActive ? `${activeBgClass} fw-bold` : ""}`
+                    }
+                    onClick={() => setShowMore(false)}
+                    style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
+                  >
+                    {icon} {name}
+                  </NavLink>
+                ))}
+
                 <hr className={`${textClass} my-2`} />
                 {/* ✅ Logout Button (mobile dropdown) */}
                 <LogoutButton
