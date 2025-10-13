@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import PostCard from "../components/PostCard";
 import CreatePagePost from "../components/CreatePagePost";
 import CreatePageStory from "../components/CreatePageStory";
-import StoryViewer from "../components/StoryView";  
+import StoryViewer from "../components/StoryView";
 import WhatsAppContactButton from "../components/WhatsAppContactButton";
 import useAuthStore from "../store/authStore";
 import '../styles/PageWebView.css';
@@ -17,6 +17,22 @@ import {
   FaUndo,
   FaSave,
   FaArrowLeft,
+  FaThumbsUp,
+  FaUserPlus,
+  FaEnvelope,
+  FaShare,
+  FaEllipsisH,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaClock,
+  FaGlobe,
+  FaStar,
+  FaVideo,
+  FaCalendar,
+  FaInfoCircle,
+  FaAlignLeft,
+  FaChartBar,
+  FaAddressBook
 } from "react-icons/fa";
 
 const PageWebView = () => {
@@ -35,7 +51,7 @@ const PageWebView = () => {
   const [stories, setStories] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [loadingStories, setLoadingStories] = useState(false);
-  const [activeTab, setActiveTab] = useState('posts');
+  const [activeTab, setActiveTab] = useState('home');
   
   // Create content modal states
   const [showCreatePost, setShowCreatePost] = useState(false);
@@ -50,10 +66,10 @@ const PageWebView = () => {
   }, [id]);
 
   useEffect(() => {
-    if (page && activeTab === 'posts') {
+    if (page && (activeTab === 'home' || activeTab === 'posts')) {
       fetchPagePosts();
-    } else if (page && activeTab === 'stories') {
-      fetchPageStories();
+    } else if (page && activeTab === 'reviews') {
+      // Fetch reviews if you have an endpoint
     }
   }, [page, activeTab]);
 
@@ -63,14 +79,8 @@ const PageWebView = () => {
       const res = await axiosInstance.get(`/pages/${id}`);
       if (res?.data?.success) {
         const pageData = res.data.page;
-        console.log('📄 Page Data Received:', pageData);
-        console.log('👤 Current User ID:', authUser?.id);
-        console.log('🏠 Page Owner ID:', pageData.owner?.id || pageData.owner);
-        console.log('✅ Is Owner from API:', pageData.isOwner);
-        
         setPage(pageData);
         setIsFollowing(pageData.isFollowing || false);
-        
         
         const ownershipCheck = pageData.isOwner || 
                               (authUser && (
@@ -78,7 +88,6 @@ const PageWebView = () => {
                                 pageData.owner?.id === authUser.id
                               ));
         
-        console.log('🔧 Final Ownership Check:', ownershipCheck);
         setIsOwner(ownershipCheck);
       }
     } catch (err) {
@@ -124,14 +133,11 @@ const PageWebView = () => {
     }
   };
 
-  // Function to handle profile picture click for story viewing
   const handleProfilePictureClick = async () => {
     try {
-      console.log('📖 Profile picture clicked, fetching page stories...');
       const res = await axiosInstance.get(`/pages/${id}/stories`);
       
       if (res?.data?.success && res.data.stories?.length > 0) {
-        // Filter active stories
         const now = new Date();
         const activeStories = res.data.stories.filter(story => {
           const expiresAt = new Date(story.expiresAt);
@@ -139,7 +145,6 @@ const PageWebView = () => {
         });
 
         if (activeStories.length > 0) {
-          // Format stories for the story viewer
           const formattedStories = {
             user: {
               id: page.id,
@@ -182,7 +187,6 @@ const PageWebView = () => {
     }
   };
 
-  // Check if page has active stories for profile picture indicator
   const hasActiveStories = () => {
     if (!stories || stories.length === 0) return false;
     
@@ -202,7 +206,6 @@ const PageWebView = () => {
       
       if (res?.data?.success) {
         setIsFollowing(!isFollowing);
-        
         toast.success(isFollowing ? "Unfollowed page" : "Following page");
       }
     } catch (err) {
@@ -218,7 +221,6 @@ const PageWebView = () => {
   };
 
   const handleCreatePost = () => {
-    console.log('🚀 Create Post Clicked - Is Owner:', isOwner);
     if (!isOwner) {
       toast.error("You don't have permission to create posts for this page");
       return;
@@ -227,7 +229,6 @@ const PageWebView = () => {
   };
 
   const handleCreateStory = () => {
-    console.log('📖 Create Story Clicked - Is Owner:', isOwner);
     if (!isOwner) {
       toast.error("You don't have permission to create stories for this page");
       return;
@@ -238,22 +239,18 @@ const PageWebView = () => {
   const handlePostCreated = (newPost) => {
     setPosts(prev => [newPost, ...prev]);
     setShowCreatePost(false);
-    setActiveTab('posts');
     toast.success("Page post created successfully!");
   };
 
   const handleStoryCreated = (newStory) => {
     setStories(prev => [newStory, ...prev]);
     setShowCreateStory(false);
-    setActiveTab('stories');
     toast.success("Page story created successfully!");
   };
 
-  // Story management functions
   const handleStoryDelete = (storyId) => {
     setStories(prev => prev.filter(story => story._id !== storyId));
     
-    // Update story viewer if open
     if (pageStories) {
       const updatedStories = pageStories.stories.filter(story => story._id !== storyId);
       if (updatedStories.length === 0) {
@@ -277,7 +274,6 @@ const PageWebView = () => {
       )
     );
 
-    // Update story viewer if open
     if (pageStories) {
       setPageStories(prev => ({
         ...prev,
@@ -333,27 +329,11 @@ const PageWebView = () => {
     }
   };
 
-  const handleGoBack = () => {
-    // Check if we came from profile page (specifically from pages section)
-    const referrer = document.referrer;
-    const currentOrigin = window.location.origin;
-    
-    // If we have a referrer from the same origin, use browser back
-    if (referrer && referrer.startsWith(currentOrigin)) {
-      navigate(-1);
-    } else {
-      // Otherwise, navigate to profile page with pages tab active
-      navigate('/profile', { state: { activeTab: 'pages' } });
-    }
-  };
-
   if (loading) {
     return (
-      <div className="min-vh-100 d-flex justify-content-center align-items-center">
-        <div className="text-white normal-loading-spinner">
-          Loading page<span className="dot-flash">.</span>
-          <span className="dot-flash">.</span>
-          <span className="dot-flash">.</span>
+      <div className="min-vh-100 d-flex justify-content-center align-items-center" style={{ backgroundColor: "#f0f2f5" }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
         </div>
       </div>
     );
@@ -361,9 +341,9 @@ const PageWebView = () => {
 
   if (!page) {
     return (
-      <div className="min-vh-100 d-flex justify-content-center align-items-center">
+      <div className="min-vh-100 d-flex justify-content-center align-items-center" style={{ backgroundColor: "#f0f2f5" }}>
         <div className="text-center">
-          <h3 className="text-white">Page Not Found</h3>
+          <h3 className="text-dark">Page Not Found</h3>
           <button className="btn btn-primary mt-3" onClick={() => navigate("/")}>
             Go Home
           </button>
@@ -373,440 +353,513 @@ const PageWebView = () => {
   }
 
   return (
-    <div className="min-vh-100" style={{ backgroundColor: "#1a1a1a" }}>
-      {/* Back Button - Clean and Minimal */}
-      <motion.div
-        className="position-fixed"
-        style={{
-          top: "20px",
-          left: "20px",
-          zIndex: 1050,
-        }}
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <button
-          className="btn btn-dark border-0 shadow-sm d-flex align-items-center justify-content-center"
-          onClick={handleGoBack}
-          style={{
-            width: "0px",
-            height: "0px",
-            borderRadius: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.7)",
-            backdropFilter: "blur(0px)",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = "rgba(0, 0, 0, 0)";
-            e.target.style.transform = "scale(1)";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = "rgba(0, 0, 0, 0)";
-            e.target.style.transform = "scale(1)";
-          }}
-          title="Go back"
-        >
-          <FaArrowLeft className="text-white" size={16} />
-        </button>
-      </motion.div>
-
-      {/* Cover Photo Section */}
-      <div className="position-relative">
-        <div
-          className="w-100"
-          style={{
-            height: "300px",
-            backgroundImage: page.coverPhoto 
-              ? `url(${page.coverPhoto})` 
-              : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat"
-          }}
-        >
-          <div className="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-25"></div>
+    <div className="min-vh-100" style={{ backgroundColor: "#f0f2f5" }}>
+      {/* Header Section */}
+      <div className="bg-white shadow-sm">
+        {/* Cover Photo */}
+        <div className="position-relative" style={{ height: "400px" }}>
+          <img
+            src={page.coverPhoto || "https://via.placeholder.com/1200x400/667eea/ffffff?text=Cover+Photo"}
+            alt="Cover"
+            className="w-100 h-100"
+            style={{ objectFit: "cover" }}
+          />
+          
         </div>
 
-        {/* Profile Picture and Basic Info */}
-        <div className="container">
+        {/* Page Info Header */}
+        <div className="container" style={{ marginTop: "-80px", position: "relative" }}>
           <div className="row">
             <div className="col-12">
-              <div className="position-relative" style={{ marginTop: "-80px" }}>
-                <div className="d-flex flex-column flex-md-row align-items-center align-items-md-start gap-4">
-                  {/* Enhanced Profile Picture with Story Ring */}
-                  <motion.div
-                    className="position-relative"
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <div 
-                      className="profile-picture-container position-relative"
-                      onClick={handleProfilePictureClick}
-                      style={{ 
-                        cursor: hasActiveStories() ? 'pointer' : 'default',
-                        borderRadius: '50%',
-                        padding: hasActiveStories() ? '4px' : '0',
-                        background: hasActiveStories() 
-                          ? 'linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)'
-                          : 'transparent'
-                      }}
-                    >
-                      <img
-                        src={page.profilePicture || "/default-page-avatar.png"}
-                        alt={page.pageName}
-                        className="rounded-circle border border-4 border-white shadow-lg"
-                        style={{
-                          width: "160px",
-                          height: "160px",
-                          objectFit: "cover",
-                          backgroundColor: "white"
-                        }}
-                      />
+              <div className="d-flex align-items-center justify-content-between flex-wrap mb-3">
+                {/* Back Button */}
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={() => navigate(-1)}
+                  title="Go back"
+                >
+                  <FaArrowLeft className="text-dark" />
+                </button>
+                {/* Action Buttons */}
+                <div className="d-flex gap-2">
+                  {!isOwner ? (
+                    <>
+                      <button
+                        className={`btn ${isFollowing ? 'btn-secondary' : 'btn-primary'}`}
+                        onClick={handleFollow}
+                      >
+                        <FaThumbsUp className="me-2" />
+                        {isFollowing ? 'Liked' : 'Like'}
+                      </button>
+                      <button className="btn btn-light">
+                        <FaUserPlus className="me-2" />
+                        Follow
+                      </button>
+                      <button className="btn btn-light">
+                        <FaEnvelope className="me-2" />
+                        Message
+                      </button>
+                      <button className="btn btn-light">
+                        <FaShare className="me-2" />
+                        Share
+                      </button>
+                      <button className="btn btn-light">
+                        <FaEllipsisH />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button className="btn btn-light" onClick={() => setShowEditProfile(true)}>
+                        <FaEdit className="me-2" />
+                        Edit Page
+                      </button>
                       
-                      {/* Story indicator */}
-                      {hasActiveStories() && (
-                        <div
-                          className="story-indicator position-absolute"
-                          style={{
-                            bottom: '10px',
-                            right: '10px',
-                            background: '#1877f2',
-                            color: 'white',
-                            borderRadius: '50%',
-                            width: '30px',
-                            height: '30px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            border: '3px solid white',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-                          }}
-                        >
-                          📖
-                        </div>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="d-flex align-items-end justify-content-between flex-wrap">
+                {/* Profile Picture */}
+                <div className="d-flex align-items-end gap-3">
+                  <div 
+                    className="position-relative"
+                    onClick={handleProfilePictureClick}
+                    style={{ 
+                      cursor: hasActiveStories() ? 'pointer' : 'default',
+                    }}
+                  >
+                    <img
+                      src={page.profilePicture || "/default-page-avatar.png"}
+                      alt={page.pageName}
+                      className="rounded-circle border border-5 border-white"
+                      style={{
+                        width: "168px",
+                        height: "168px",
+                        objectFit: "cover",
+                        backgroundColor: "white"
+                      }}
+                    />
+                    {hasActiveStories() && (
+                      <div
+                        className="position-absolute"
+                        style={{
+                          bottom: '10px',
+                          right: '10px',
+                          background: '#1877f2',
+                          color: 'white',
+                          borderRadius: '50%',
+                          width: '36px',
+                          height: '36px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: '4px solid white'
+                        }}
+                      >
+                        <FaImage size={16} />
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Page Name & Stats */}
+                  <div className="mb-3">
+                    <div className="d-flex align-items-center gap-2">
+                      <h1 className="mb-0 text-dark" style={{ fontSize: "32px", fontWeight: "700" }}>
+                        {page.pageName}
+                      </h1>
+                    
+                    </div>
+                    <div className="text-secondary mt-1">
+                      {page.category && (
+                        <span className="me-3">{page.category.charAt(0).toUpperCase() + page.category.slice(1)}</span>
                       )}
                     </div>
-                  </motion.div>
-
-                  {/* Page Info */}
-                  <div className="text-center text-md-start flex-grow-1 mt-3">
-                    <motion.h1 
-                      className="text-white fw-bold mb-2"
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.1 }}
-                    >
-                      {page.pageName}
-                    </motion.h1>
-                    
-                    {page.username && (
-                      <motion.p 
-                        className="text-info fs-5 mb-2"
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                      >
-                        @{page.username}
-                      </motion.p>
-                    )}
-
-                    <motion.div 
-                      className="d-flex justify-content-center justify-content-md-start align-items-center gap-4 mb-3"
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.3 }}
-                    >
-                      <div className="text-center">
-                        <div className="text-white fw-bold fs-4">{page.followersCount || page.followers?.length || 0}</div>
-                        <div className="text-white-50 small">Followers</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-white fw-bold fs-4">{page.postsCount || page.posts?.length || 0}</div>
-                        <div className="text-white-50 small">Posts</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-white fw-bold fs-4">{stories.length}</div>
-                        <div className="text-white-50 small">Stories</div>
-                      </div>
-                    </motion.div>
-
-                    {/* Action Buttons - Enhanced with WhatsApp Contact */}
-                    <motion.div 
-                      className="d-flex justify-content-center justify-content-md-start gap-2 flex-wrap"
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.4 }}
-                    >
-                      {!isOwner && (
-                        <>
-                          {/* Follow Button */}
-                          <button
-                            className={`btn ${isFollowing ? 'btn-outline-secondary' : 'btn-primary'} px-4`}
-                            onClick={handleFollow}
-                          >
-                            
-                            {isFollowing ? 'Following' : 'Follow'}
-                          </button>
-                          
-                          {/* WhatsApp Contact Button - Only show for non-owners if page has phone */}
-                          {page.phone && (
-                            <WhatsAppContactButton 
-                              pageId={id} 
-                              pageName={page.pageName}
-                              className="me-2"
-                              size="md"
-                            />
-                          )}
-                        </>
-                      )}
-                      
-                      {/* About Button */}
-                      {/* <button
-                        className="btn btn-outline-light px-4"
-                        onClick={() => setShowAbout(true)}
-                      >
-                        
-                        👤 About
-                      </button> */}
-
-                      {/* Owner-only buttons */}
-                      {isOwner && (
-                        <>
-                          <button
-                            className="btn btn-success px-3"
-                            onClick={handleCreatePost}
-                            title="Create Post"
-                          >
-                            
-                             + Create Post
-                          </button>
-                          
-                          <button
-                            className="btn btn-info px-3"
-                            onClick={handleCreateStory}
-                            title="Create Story"
-                          >
-                            
-                           + Create Story
-                          </button>
-                          
-                          <button
-                            className="btn btn-outline-success px-3"
-                            onClick={() => setShowEditProfile(true)}
-                          >
-                            
-                            Edit
-                          </button>
-                        </>
-                      )}
-                    </motion.div>
+                    <div className="d-flex gap-3 mt-2 text-dark">
+                      <span>
+                        <FaThumbsUp className="me-1" /> 
+                        <strong>{page.followersCount || 0}</strong> likes
+                      </span>
+                      <span>
+                        <FaUserPlus className="me-1" />
+                        <strong>{page.followersCount || 0}</strong> followers
+                      </span>
+                      <span>
+                        <FaMapMarkerAlt className="me-1" />
+                        <strong>{page.postsCount || 0}</strong> Posts
+                      </span>
+                    </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Navigation Tabs */}
+              <div className="border-top mt-3">
+                <ul className="nav nav-tabs border-0" style={{ marginLeft: "0" }}>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link ${activeTab === 'home' ? 'active' : ''} border-0`}
+                      onClick={() => setActiveTab('home')}
+                      style={{ 
+                        color: activeTab === 'home' ? '#1877f2' : '#4a5568',
+                        borderBottom: activeTab === 'home' ? '3px solid #1877f2' : 'none',
+                        fontWeight: '600'
+                      }}
+                    >
+                      Home
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link ${activeTab === 'about' ? 'active' : ''} border-0`}
+                      onClick={() => setActiveTab('about')}
+                      style={{ 
+                        color: activeTab === 'about' ? '#1877f2' : '#4a5568',
+                        borderBottom: activeTab === 'about' ? '3px solid #1877f2' : 'none',
+                        fontWeight: '600'
+                      }}
+                    >
+                      About
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link ${activeTab === 'posts' ? 'active' : ''} border-0`}
+                      onClick={() => setActiveTab('posts')}
+                      style={{ 
+                        color: activeTab === 'posts' ? '#1877f2' : '#4a5568',
+                        borderBottom: activeTab === 'posts' ? '3px solid #1877f2' : 'none',
+                        fontWeight: '600'
+                      }}
+                    >
+                      Posts
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link ${activeTab === 'photos' ? 'active' : ''} border-0`}
+                      onClick={() => setActiveTab('photos')}
+                      style={{ 
+                        color: activeTab === 'photos' ? '#1877f2' : '#4a5568',
+                        borderBottom: activeTab === 'photos' ? '3px solid #1877f2' : 'none',
+                        fontWeight: '600'
+                      }}
+                    >
+                      Photos
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link ${activeTab === 'videos' ? 'active' : ''} border-0`}
+                      onClick={() => setActiveTab('videos')}
+                      style={{ 
+                        color: activeTab === 'videos' ? '#1877f2' : '#4a5568',
+                        borderBottom: activeTab === 'videos' ? '3px solid #1877f2' : 'none',
+                        fontWeight: '600'
+                      }}
+                    >
+                      Videos
+                    </button>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Content Tabs */}
+      {/* Main Content */}
       <div className="container py-4">
         <div className="row">
-          <div className="col-12">
-            {/* Tab Navigation */}
-            <ul className="nav nav-pills mb-4 justify-content-center">
-              <li className="nav-item">
-                <button
-                  className={`nav-link ${activeTab === 'posts' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('posts')}
-                >
-                  
-                  Posts ({posts.length})
-                </button>
-              </li>
-              <li className="nav-item">
-                <button
-                  className={`nav-link ${activeTab === 'stories' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('stories')}
-                >
-                  
-                  Stories ({stories.length})
-                </button>
-              </li>
-              <li className="nav-item">
-                <button
-                  className={`nav-link ${activeTab === 'about' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('about')}
-                >
-                  
-                  About
-                </button>
-              </li>
-            </ul>
+          {/* Left Sidebar - About Section */}
+          <div className="col-lg-5 col-xl-4 mb-4">
+            <div className="card border-0 shadow-sm mb-3">
+              <div className="card-body">
+                <h5 className="card-title fw-bold text-dark mb-3">About</h5>
+                <p className="text-secondary mb-3">
+                  {page.description || "No description available"}
+                </p>
+                <button className={`nav-link ${activeTab === 'about' ? 'active' : ''} btn btn-light w-100`} 
+                        onClick={() => setActiveTab('about')}>
+                See more</button>
+              </div>
+            </div>
 
-            {/* Tab Content */}
-            <div className="tab-content">
-              {/* Posts Tab */}
-              {activeTab === 'posts' && (
-                <div className="tab-pane fade show active">
-                  {loadingPosts ? (
-                    <div className="text-center py-5">
-                      <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Loading posts...</span>
+            {/* Contact Info Card */}
+            <div className="card border-0 shadow-sm mb-3">
+              <div className="card-body">
+                <h6 className="fw-bold text-dark mb-3">Contact Info</h6>
+                
+                {page.address && (
+                  <div className="d-flex align-items-start mb-3">
+                    <FaMapMarkerAlt className="mt-1 me-3 text-secondary" />
+                    <div>
+                      <div className="text-secondary small">Address</div>
+                      <div className="text-dark">{page.address}</div>
+                    </div>
+                  </div>
+                )}
+
+                {page.phone && (
+                  <div className="d-flex align-items-start mb-3">
+                    <FaPhone className="mt-1 me-3 text-secondary" />
+                    <div className="flex-grow-1">
+                      <div className="text-secondary small">Phone</div>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <span className="text-dark">{page.phone}</span>
+                        {!isOwner && (
+                          <WhatsAppContactButton 
+                            pageId={id} 
+                            pageName={page.pageName}
+                            size="sm"
+                          />
+                        )}
                       </div>
                     </div>
-                  ) : posts.length > 0 ? (
-                    <div className="row">
-                      {posts.map((post) => (
-                        <div key={post._id || post.id} className="col-12 mb-4">
-                          <PostCard
-                            post={post}
-                            isUserPost={isOwner}
-                            onLikeUpdate={updatePostLike}
-                            onDeletePost={handleDeletePost}
-                            onReportPost={reportPost}
-                            disableNavigation={false}
-                          />
-                        </div>
-                      ))}
+                  </div>
+                )}
+
+                {page.email && (
+                  <div className="d-flex align-items-start mb-3">
+                    <FaEnvelope className="mt-1 me-3 text-secondary" />
+                    <div>
+                      <div className="text-secondary small">Email</div>
+                      <div className="text-dark">{page.email}</div>
                     </div>
-                  ) : (
-                    <div className="text-center py-5">
-                      <i className="fas fa-images text-white-50" style={{ fontSize: "4rem" }}></i>
-                      <h5 className="text-white mt-3">No posts yet</h5>
-                      <p className="text-white-50">
+                  </div>
+                )}
+
+                {page.website && (
+                  <div className="d-flex align-items-start">
+                    <FaGlobe className="mt-1 me-3 text-secondary" />
+                    <div>
+                      <div className="text-secondary small">Website</div>
+                      <a href={page.website} target="_blank" rel="noopener noreferrer" className="text-primary">
+                        {page.website}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Reviews Card 
+            <div className="card border-0 shadow-sm mb-3">
+              <div className="card-body">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <h6 className="fw-bold text-dark mb-0">Reviews</h6>
+                  <div className="text-warning">
+                    <FaStar /> <strong>4.7</strong> <span className="text-secondary">(3)</span>
+                  </div>
+                </div>
+                */}
+                {/* Sample Review 1 
+                <div className="mb-3 pb-3 border-bottom">
+                  <div className="d-flex gap-2 mb-2">
+                    <img
+                      src="https://via.placeholder.com/40"
+                      alt="Reviewer"
+                      className="rounded-circle"
+                      style={{ width: "40px", height: "40px" }}
+                    />
+                    <div className="flex-grow-1">
+                      <div className="d-flex justify-content-between">
+                        <div>
+                          <strong className="text-dark">Priya Sharma</strong>
+                          <span className="badge bg-success ms-2" style={{ fontSize: "10px" }}>✓</span>
+                        </div>
+                      </div>
+                      <div className="text-warning small">
+                        <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
+                      </div>
+                      <div className="text-secondary small">1 week ago</div>
+                    </div>
+                  </div>
+                  <p className="mb-0 small text-dark">
+                    Excellent service and innovative solutions. TechCorp helped transform our business operations completely. Highly recommended!
+                  </p>
+                </div>
+
+                {/* Sample Review 2 
+                <div className="mb-3">
+                  <div className="d-flex gap-2 mb-2">
+                    <img
+                      src="https://via.placeholder.com/40"
+                      alt="Reviewer"
+                      className="rounded-circle"
+                      style={{ width: "40px", height: "40px" }}
+                    />
+                    <div className="flex-grow-1">
+                      <div className="d-flex justify-content-between">
+                        <div>
+                          <strong className="text-dark">Rajesh Kumar</strong>
+                          <span className="badge bg-success ms-2" style={{ fontSize: "10px" }}>✓</span>
+                        </div>
+                      </div>
+                      <div className="text-warning small">
+                        <FaStar /><FaStar /><FaStar /><FaStar />
+                      </div>
+                      <div className="text-secondary small">2 weeks ago</div>
+                    </div>
+                  </div>
+                  <p className="mb-0 small text-dark">
+                    Outstanding technical support and cutting-edge technology. The team is professional and delivers on time.
+                  </p>
+                </div>
+
+                <button className="btn btn-light w-100 mt-2">See all 3 reviews</button>
+              </div>
+            </div>
+                  */}
+            {/* Get in Touch Card */}
+            <div className="card border-0 shadow-sm" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
+              <div className="card-body text-white">
+                <h5 className="fw-bold mb-2">Get in Touch</h5>
+                <p className="mb-3">Ready to transform your business? Contact us today!</p>
+                <WhatsAppContactButton
+                        className="btn btn-light w-100"
+                        pageId={page.id}
+                        pageName={page.pageName}
+                        size="sm"
+                      />
+              </div>
+            </div>
+          </div>
+
+          {/* Right Content - Posts Feed */}
+          <div className="col-lg-7 col-xl-8">
+            {/* Create Post Card - Only for owners */}
+            {isOwner && activeTab === 'home' && (
+              <div className="card border-0 shadow-sm mb-3">
+                <div className="card-body">
+                  <div className="d-flex gap-2">
+                    <img
+                      src={page.profilePicture || "/default-page-avatar.png"}
+                      alt={page.pageName}
+                      className="rounded-circle"
+                      style={{ width: "40px", height: "40px", objectFit: "cover" }}
+                    />
+                    <button 
+                      className="btn btn-light w-100 text-start"
+                      onClick={handleCreatePost}
+                      style={{ borderRadius: "20px", backgroundColor: "#f0f2f5" }}
+                    >
+                      What's on your mind?
+                    </button>
+                  </div>
+                  <hr />
+                  <div className="d-flex justify-content-around">
+                    <button className="btn btn-light flex-grow-1 me-1" onClick={handleCreateStory}>
+                      <FaVideo className="text-danger me-2" />
+                      Story
+                    </button>
+                    <button className="btn btn-light flex-grow-1 mx-1" onClick={handleCreatePost}>
+                      <FaImage className="text-success me-2" />
+                      Photo/Video
+                    </button>
+                    <button className="btn btn-light flex-grow-1 ms-1">
+                      <FaCalendar className="text-primary me-2" />
+                      Event
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Posts List */}
+            {(activeTab === 'home' || activeTab === 'posts') && (
+              <>
+                {loadingPosts ? (
+                  <div className="text-center py-5">
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Loading posts...</span>
+                    </div>
+                  </div>
+                ) : posts.length > 0 ? (
+                  <>
+                    {posts.map((post) => (
+                      <div key={post._id || post.id} className="mb-3">
+                        <PostCard
+                          post={post}
+                          isUserPost={isOwner}
+                          onLikeUpdate={updatePostLike}
+                          onDeletePost={handleDeletePost}
+                          onReportPost={reportPost}
+                          disableNavigation={false}
+                        />
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <div className="card border-0 shadow-sm">
+                    <div className="card-body text-center py-5">
+                      <FaImage size={64} className="text-secondary mb-3" />
+                      <h5 className="text-dark">No posts yet</h5>
+                      <p className="text-secondary">
                         {isOwner ? "Start sharing content by creating your first post!" : "This page hasn't posted anything yet."}
                       </p>
                       {isOwner && (
                         <button className="btn btn-primary mt-3" onClick={handleCreatePost}>
-                          
-                           + Create First Post
+                          Create First Post
                         </button>
                       )}
                     </div>
-                  )}
-                </div>
-              )}
+                  </div>
+                )}
+              </>
+            )}
 
-              {/* Stories Tab */}
-              {activeTab === 'stories' && (
-                <div className="tab-pane fade show active">
-                  {loadingStories ? (
-                    <div className="text-center py-5">
-                      <div className="spinner-border text-primary" role="status">
-                        <span className="visually-hidden">Loading stories...</span>
-                      </div>
-                    </div>
-                  ) : stories.length > 0 ? (
-                    <div className="row g-3">
-                      {stories.map((story) => (
-                        <div key={story._id || story.id} className="col-md-6 col-lg-4">
-                          <div className="card bg-dark border-secondary h-100">
-                            <div className="card-body">
-                              {story.media ? (
-                                <img
-                                  src={story.media}
-                                  alt="Story"
-                                  className="img-fluid rounded mb-3"
-                                  style={{ height: "200px", objectFit: "cover", width: "100%" }}
-                                />
-                              ) : (
-                                <div 
-                                  className="d-flex align-items-center justify-content-center rounded mb-3"
-                                  style={{
-                                    height: "200px",
-                                    background: "linear-gradient(45deg,#405de6,#5851db,#833ab4,#c13584)"
-                                  }}
-                                >
-                                  <p className="text-white text-center mb-0">
-                                    {story.content}
-                                  </p>
-                                </div>
-                              )}
-                              {story.caption && (
-                                <p className="text-white small">{story.caption}</p>
-                              )}
-                              <small className="text-muted">
-                                {new Date(story.createdAt).toLocaleDateString()} • 
-                                {story.viewCount || 0} views
-                              </small>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-5">
-                      
-                      <h5 className="text-white mt-3">No stories yet</h5>
-                      <p className="text-white-50">
-                        {isOwner ? "Share quick updates with your followers!" : "This page hasn't shared any stories yet."}
-                      </p>
-                      {isOwner && (
-                        <button className="btn btn-info mt-3" onClick={handleCreateStory}>
-                          
-                           + Create First Story
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+            {/* About Tab Content */}
+            {activeTab === 'about' && (
+              <AboutTabContent page={page} isOwner={isOwner} pageId={id} />
+            )}
 
-              {/* About Tab */}
-              {activeTab === 'about' && (
-                <AboutSection page={page} isOwner={isOwner} pageId={id} />
-              )}
+            {/* Reviews Tab Content */}
+            {activeTab === 'reviews' && (
+              <ReviewsTabContent page={page} />
+            )}
+
+            {/* Photos Tab Content */}
+            {activeTab === 'photos' && (
+              <PhotosTabContent posts={posts} />
+            )}
+
+            {/* Videos Tab Content */}
+            {activeTab === 'videos' && (
+              <VideosTabContent posts={posts} />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Create Post Modal */}
+      {showCreatePost && (
+        <div
+          className="modal show d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div className="modal-content border-0 shadow">
+              <div className="modal-header border-bottom">
+                <h5 className="modal-title fw-bold text-dark">Create Post</h5>
+                <button
+                  className="btn-close"
+                  onClick={() => setShowCreatePost(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <CreatePagePost
+                  pageId={id}
+                  pageData={page}
+                  onPostCreated={handlePostCreated}
+                  onCancel={() => setShowCreatePost(false)}
+                  isModal={true}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
-     {/* Create Post Modal */}
-{showCreatePost && (
-  <div
-    className="modal show d-block"
-    style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
-  >
-    <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-      <div className="modal-content border rounded-3 shadow-sm">
-        
-        {/* Header */}
-        <div className="modal-header bg-light border-0">
-          <h5 className="modal-title text-dark fw-semibold">
-            Create Page Post
-          </h5>
-          <button
-            className="btn-close"
-            onClick={() => setShowCreatePost(false)}
-          ></button>
-        </div>
+      )}
 
-        {/* Body */}
-        <div className="modal-body bg-white text-dark">
-          <div className="mb-3">
-            <small className="text-muted">
-              Share an update, photo, or video with your followers
-            </small>
-          </div>
-
-          <CreatePagePost
-            pageId={id}
-            pageData={page}
-            onPostCreated={handlePostCreated}
-            onCancel={() => setShowCreatePost(false)}
-            isModal={true}
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-
-
-      {/* Create Story Modal */}
       {showCreateStory && (
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}>
           <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -847,14 +900,6 @@ const PageWebView = () => {
         />
       )}
 
-      {/* About Modal */}
-      <AboutModal 
-        show={showAbout}
-        onClose={() => setShowAbout(false)}
-        page={page}
-        isOwner={isOwner}
-      />
-
       {/* Edit Profile Modal */}
       {isOwner && (
         <EditProfileModal 
@@ -864,127 +909,92 @@ const PageWebView = () => {
           onUpdate={handleEditProfileUpdate}
         />
       )}
-
-      {/* Custom Styles */}
-      <style jsx>{`
-        .profile-picture-container:hover {
-          transform: scale(1.02);
-          transition: transform 0.2s ease;
-        }
-        
-        .story-indicator {
-          animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.1); }
-          100% { transform: scale(1); }
-        }
-      `}</style>
     </div>
   );
 };
 
-// About Section Component - Updated with WhatsApp Contact
-const AboutSection = ({ page, isOwner, pageId }) => (
-  <div className="row">
-    <div className="col-lg-8">
-      <div className="card bg-dark border-secondary mb-4">
-        <div className="card-body">
-          <h5 className="card-title text-white mb-3">
-           
-            Description
-          </h5>
-          <p className="text-white-50 mb-0" style={{ lineHeight: "1.6" }}>
-            {page.description || "No description available"}
-          </p>
-        </div>
+// About Tab Content Component
+const AboutTabContent = ({ page, isOwner, pageId }) => (
+  <div className="card border-0 shadow-sm">
+    <div className="card-body">
+      <h5 className="fw-bold text-dark mb-4">About</h5>
+      
+      <div className="mb-4">
+        <h6 className="fw-bold text-dark mb-2">Overview</h6>
+        <p className="text-secondary">
+          {page.description || "No description available"}
+        </p>
       </div>
-    </div>
-    <div className="col-lg-4">
-      <div className="card bg-dark border-secondary mb-4">
-        <div className="card-body">
-          <h5 className="card-title text-white mb-3">
-            
-            Page Info
-          </h5>
-          
+
+      <div className="mb-4">
+        <h6 className="fw-bold text-dark mb-3">Page Info</h6>
+        
+        {page.category && (
           <div className="mb-3">
-            <strong className="text-white-50">Category:</strong>
-            <div className="text-white">
-              <span className="badge bg-info mt-1">
-                {page.category ? page.category.charAt(0).toUpperCase() + page.category.slice(1) : 'Uncategorized'}
+            <strong className="text-dark">Category:</strong>
+            <div className="mt-1">
+              <span className="badge bg-light text-dark border">
+                {page.category.charAt(0).toUpperCase() + page.category.slice(1)}
               </span>
             </div>
           </div>
+        )}
 
-          {page.phone && (
-            <div className="mb-3">
-              <strong className="text-white-50">Phone:</strong>
-              <div className="text-white d-flex align-items-center justify-content-between">
-                <div>
-                  
-                  {page.phone}
-                </div>
-                {!isOwner && (
-                  <div className= "col-md-6 align-items-center justify-content-betweens">
-                  <WhatsAppContactButton 
-                    pageId={pageId} 
-                    pageName={page.pageName}
-                    size="sm"
-                  />
-                  </div>
-                )}
-              </div>
+        {page.address && (
+          <div className="mb-3">
+            <strong className="text-dark">Address:</strong>
+            <div className="mt-1 text-secondary">
+              <FaMapMarkerAlt className="me-2" />
+              {page.address}
             </div>
-          )}
+          </div>
+        )}
 
-          {page.email && (
-            <div className="mb-3">
-              <strong className="text-white-50">Email:</strong>
-              <div className="text-white">
-                
-                {page.email}
-              </div>
+        {page.phone && (
+          <div className="mb-3">
+            <strong className="text-dark">Phone:</strong>
+            <div className="mt-1 text-secondary d-flex justify-content-between align-items-center">
+              <span>
+                <FaPhone className="me-2" />
+                {page.phone}
+              </span>
+              {!isOwner && (
+                <WhatsAppContactButton 
+                  pageId={pageId} 
+                  pageName={page.pageName}
+                  size="sm"
+                />
+              )}
             </div>
-          )}
+          </div>
+        )}
 
-          {page.address && (
-            <div className="mb-0">
-              <strong className="text-white-50">Address:</strong>
-              <div className="text-white">
-                
-                {page.address}
-              </div>
+        {page.email && (
+          <div className="mb-3">
+            <strong className="text-dark">Email:</strong>
+            <div className="mt-1 text-secondary">
+              <FaEnvelope className="me-2" />
+              {page.email}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Page Owner Card */}
       {page.owner && (
-        <div className="card bg-dark border-secondary">
-          <div className="card-body">
-            <h5 className="card-title text-white mb-3">
-              
-              Page Owner
-            </h5>
-            <div className="d-flex align-items-center">
-              <img
-                src={page.owner.profilePicture || "/default-avatar.png"}
-                alt={`${page.owner.firstName} ${page.owner.lastName}`}
-                className="rounded-circle me-3"
-                style={{ width: "50px", height: "50px", objectFit: "cover" }}
-              />
-              <div>
-                <div className="text-white fw-bold">
-                  {page.owner.firstName} {page.owner.lastName}
-                </div>
-                {page.owner.username && (
-                  <div className="text-info small">@{page.owner.username}</div>
-                )}
+        <div>
+          <h6 className="fw-bold text-dark mb-3">Page Transparency</h6>
+          <div className="d-flex align-items-center p-3 bg-light rounded">
+            <img
+              src={page.owner.profilePicture || "/default-avatar.png"}
+              alt={`${page.owner.firstName} ${page.owner.lastName}`}
+              className="rounded-circle me-3"
+              style={{ width: "48px", height: "48px", objectFit: "cover" }}
+            />
+            <div>
+              <div className="fw-bold text-dark">
+                {page.owner.firstName} {page.owner.lastName}
               </div>
+              <div className="text-secondary small">Page Owner</div>
             </div>
           </div>
         </div>
@@ -993,159 +1003,176 @@ const AboutSection = ({ page, isOwner, pageId }) => (
   </div>
 );
 
-// About Modal Component - Updated with WhatsApp Contact
-import { FaInfoCircle, FaAlignLeft, FaChartBar, FaAddressBook, FaPhone, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
-
-const AboutModal = ({ show, onClose, page, isOwner }) => {
-  if (!show || !page) return null;
-
-  return (
-    <div
-      className="modal fade show d-block"
-      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
-    >
-      <div className="modal-dialog modal-lg modal-dialog-centered">
-        <div className="modal-content border rounded-3 shadow-sm">
-          {/* Header */}
-          <div className="modal-header border-0 bg-light">
-            <h5 className="modal-title d-flex align-items-center text-dark">
-              <FaInfoCircle className="me-2 text-primary" />
-              About {page.pageName}
-            </h5>
-            <button className="btn-close" onClick={onClose}></button>
+// Reviews Tab Content Component
+const ReviewsTabContent = ({ page }) => (
+  <div className="card border-0 shadow-sm">
+    <div className="card-body">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h5 className="fw-bold text-dark mb-1">Reviews</h5>
+          <div className="text-warning">
+            <FaStar /><FaStar /><FaStar /><FaStar className="text-secondary" /><FaStar className="text-secondary" />
+            <span className="ms-2 text-dark"><strong>4.7</strong> out of 5</span>
           </div>
+          <div className="text-secondary small">3 reviews</div>
+        </div>
+        <button className="btn btn-primary">Write a Review</button>
+      </div>
 
-          {/* Body */}
-          <div className="modal-body bg-white">
-            <div className="row g-4">
-              {/* Left column */}
-              <div className="col-md-6">
-                <div className="text-center mb-3">
-                  <img
-                    src={page.profilePicture || "/default-page-avatar.png"}
-                    alt={page.pageName}
-                    className="rounded-circle mb-3"
-                    style={{
-                      width: "120px",
-                      height: "120px",
-                      objectFit: "cover",
-                      border: "3px solid #e0e0e0",
-                    }}
-                  />
-                  <h5 className="text-dark fw-bold">{page.pageName}</h5>
-                  {page.username && (
-                    <p className="text-muted">@{page.username}</p>
-                  )}
+      <hr />
+
+      {/* Review 1 */}
+      <div className="mb-4">
+        <div className="d-flex gap-3 mb-2">
+          <img
+            src="https://via.placeholder.com/48"
+            alt="Reviewer"
+            className="rounded-circle"
+            style={{ width: "48px", height: "48px" }}
+          />
+          <div className="flex-grow-1">
+            <div className="d-flex justify-content-between align-items-start">
+              <div>
+                <strong className="text-dark">Priya Sharma</strong>
+                <span className="badge bg-success ms-2" style={{ fontSize: "10px" }}>✓</span>
+                <div className="text-warning small mt-1">
+                  <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
                 </div>
-              </div>
-
-              {/* Right column */}
-              <div className="col-md-6">
-                <h6 className="text-primary mb-2 d-flex align-items-center">
-                  <FaAlignLeft className="me-2" />
-                  Description
-                </h6>
-                <p className="text-muted mb-4">
-                  {page.description || "No description available"}
-                </p>
-
-                <h6 className="text-primary mb-2 d-flex align-items-center">
-                  <FaChartBar className="me-2" />
-                  Statistics
-                </h6>
-                <div className="row text-center">
-                  <div className="col-6">
-                    <div className="fw-bold fs-5 text-dark">
-                      {page.followersCount || 0}
-                    </div>
-                    <div className="text-muted small">Followers</div>
-                  </div>
-                  <div className="col-6">
-                    <div className="fw-bold fs-5 text-dark">
-                      {page.postsCount || 0}
-                    </div>
-                    <div className="text-muted small">Posts</div>
-                  </div>
-                </div>
+                <div className="text-secondary small">1 week ago</div>
               </div>
             </div>
-
-            <hr className="my-4 text-muted" />
-
-            {/* Contact Details */}
-            <h6 className="text-primary mb-3 d-flex align-items-center">
-              <FaAddressBook className="me-2" />
-              Contact Details
-            </h6>
-            <div className="row g-3">
-              <div className="col-md-6">
-                <strong className="text-muted">Category:</strong>
-                <div>
-                  <span className="badge bg-primary-subtle text-dark border">
-                    {page.category
-                      ? page.category.charAt(0).toUpperCase() +
-                        page.category.slice(1)
-                      : "Uncategorized"}
-                  </span>
-                </div>
-              </div>
-
-              {page.phone && (
-                <div className="col-md-6">
-                  <strong className="text-muted">Phone:</strong>
-                  <div className="d-flex align-items-center justify-content-between text-dark">
-                    <div>
-                      <FaPhone className="me-2 text-secondary" />
-                      {page.phone}
-                    </div>
-                    {!isOwner && (
-                      <div className= "col-md-6 align-items-center justify-content-betweens">
-                      <WhatsAppContactButton
-                        pageId={page.id}
-                        pageName={page.pageName}
-                        size="sm"
-                      />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {page.email && (
-                <div className="col-md-6">
-                  <strong className="text-muted">Email:</strong>
-                  <div className="text-dark">
-                    <FaEnvelope className="me-2 text-secondary" />
-                    {page.email}
-                  </div>
-                </div>
-              )}
-
-              {page.address && (
-                <div className="col-12">
-                  <strong className="text-muted">Address:</strong>
-                  <div className="text-dark">
-                    <FaMapMarkerAlt className="me-2 text-secondary" />
-                    {page.address}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="modal-footer bg-light border-0">
-            <button className="btn btn-outline-secondary" onClick={onClose}>
-              Close
-            </button>
+            <p className="mt-2 mb-0 text-dark">
+              Excellent service and innovative solutions. TechCorp helped transform our business operations completely. Highly recommended!
+            </p>
           </div>
         </div>
+      </div>
+
+      {/* Review 2 */}
+      <div className="mb-4">
+        <div className="d-flex gap-3 mb-2">
+          <img
+            src="https://via.placeholder.com/48"
+            alt="Reviewer"
+            className="rounded-circle"
+            style={{ width: "48px", height: "48px" }}
+          />
+          <div className="flex-grow-1">
+            <div className="d-flex justify-content-between align-items-start">
+              <div>
+                <strong className="text-dark">Rajesh Kumar</strong>
+                <span className="badge bg-success ms-2" style={{ fontSize: "10px" }}>✓</span>
+                <div className="text-warning small mt-1">
+                  <FaStar /><FaStar /><FaStar /><FaStar />
+                </div>
+                <div className="text-secondary small">2 weeks ago</div>
+              </div>
+            </div>
+            <p className="mt-2 mb-0 text-dark">
+              Outstanding technical support and cutting-edge technology. The team is professional and delivers on time.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Review 3 */}
+      <div className="mb-4">
+        <div className="d-flex gap-3 mb-2">
+          <img
+            src="https://via.placeholder.com/48"
+            alt="Reviewer"
+            className="rounded-circle"
+            style={{ width: "48px", height: "48px" }}
+          />
+          <div className="flex-grow-1">
+            <div className="d-flex justify-content-between align-items-start">
+              <div>
+                <strong className="text-dark">Amit Patel</strong>
+                <span className="badge bg-success ms-2" style={{ fontSize: "10px" }}>✓</span>
+                <div className="text-warning small mt-1">
+                  <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
+                </div>
+                <div className="text-secondary small">1 month ago</div>
+              </div>
+            </div>
+            <p className="mt-2 mb-0 text-dark">
+              Great experience working with TechCorp Solutions. Their innovative approach and dedication to excellence is commendable.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// Photos Tab Content Component
+const PhotosTabContent = ({ posts }) => {
+  const photoPosts = posts.filter(post => post.image || post.media);
+  
+  return (
+    <div className="card border-0 shadow-sm">
+      <div className="card-body">
+        <h5 className="fw-bold text-dark mb-4">Photos</h5>
+        {photoPosts.length > 0 ? (
+          <div className="row g-2">
+            {photoPosts.map((post, index) => (
+              <div key={post._id || post.id} className="col-4">
+                <div className="ratio ratio-1x1">
+                  <img
+                    src={post.image || post.media}
+                    alt={`Photo ${index + 1}`}
+                    className="rounded"
+                    style={{ objectFit: "cover", cursor: "pointer" }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-5">
+            <FaImage size={64} className="text-secondary mb-3" />
+            <p className="text-secondary">No photos available</p>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-
+// Videos Tab Content Component
+const VideosTabContent = ({ posts }) => {
+  const videoPosts = posts.filter(post => post.video);
+  
+  return (
+    <div className="card border-0 shadow-sm">
+      <div className="card-body">
+        <h5 className="fw-bold text-dark mb-4">Videos</h5>
+        {videoPosts.length > 0 ? (
+          <div className="row g-3">
+            {videoPosts.map((post) => (
+              <div key={post._id || post.id} className="col-12">
+                <video
+                  src={post.video}
+                  controls
+                  className="w-100 rounded"
+                  style={{ maxHeight: "400px" }}
+                />
+                {post.content && (
+                  <p className="mt-2 text-dark">{post.content}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-5">
+            <FaVideo size={64} className="text-secondary mb-3" />
+            <p className="text-secondary">No videos available</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 // Edit Profile Modal Component
 const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
@@ -1243,34 +1270,31 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
   return (
     <div
       className="modal fade show d-block"
-      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
     >
       <div className="modal-dialog modal-lg modal-dialog-centered">
-        <div className="modal-content border rounded-3 shadow-sm">
-          {/* Header */}
-          <div className="modal-header bg-light border-0">
-            <h5 className="modal-title d-flex align-items-center text-dark">
-              <FaEdit className="me-2 text-success" />
+        <div className="modal-content border-0 shadow">
+          <div className="modal-header border-bottom">
+            <h5 className="modal-title fw-bold text-dark">
+              <FaEdit className="me-2" />
               Edit Page Profile
             </h5>
             <button className="btn-close" onClick={onClose}></button>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit}>
-            <div className="modal-body bg-white">
-              <div className="alert alert-info bg-info bg-opacity-10 border border-info border-opacity-25 mb-4">
+            <div className="modal-body">
+              <div className="alert alert-info mb-4">
                 <small className="d-flex align-items-center">
-                  <FaInfoCircle className="me-2 text-info" />
-                  Update your page's visual appearance and description. Images
-                  should be under 5MB.
+                  <FaInfoCircle className="me-2" />
+                  Update your page's visual appearance and description. Images should be under 5MB.
                 </small>
               </div>
 
               {/* Cover Photo */}
               <div className="mb-4">
-                <label className="form-label fw-semibold">
-                  <FaImage className="me-2 text-secondary" />
+                <label className="form-label fw-semibold text-dark">
+                  <FaImage className="me-2" />
                   Cover Photo
                 </label>
                 <div className="row align-items-center">
@@ -1281,8 +1305,8 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
                       accept="image/*"
                       onChange={(e) => handleImageChange(e, "cover")}
                     />
-                    <small className="text-muted">
-                      Recommended: 1200x300px or similar wide format
+                    <small className="text-secondary">
+                      Recommended: 1200x400px or similar wide format
                     </small>
                   </div>
                   <div className="col-md-4">
@@ -1291,12 +1315,8 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
                         <img
                           src={coverPreview}
                           alt="Cover Preview"
-                          className="rounded"
-                          style={{
-                            width: "100%",
-                            height: "60px",
-                            objectFit: "cover",
-                          }}
+                          className="rounded w-100"
+                          style={{ height: "60px", objectFit: "cover" }}
                         />
                         {coverImageFile && (
                           <span className="badge bg-success position-absolute top-0 end-0">
@@ -1311,8 +1331,8 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
 
               {/* Profile Picture */}
               <div className="mb-4">
-                <label className="form-label fw-semibold">
-                  <FaUserCircle className="me-2 text-secondary" />
+                <label className="form-label fw-semibold text-dark">
+                  <FaUserCircle className="me-2" />
                   Profile Picture
                 </label>
                 <div className="row align-items-center">
@@ -1323,22 +1343,18 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
                       accept="image/*"
                       onChange={(e) => handleImageChange(e, "profile")}
                     />
-                    <small className="text-muted">
+                    <small className="text-secondary">
                       Recommended: Square image (500x500px or similar)
                     </small>
                   </div>
                   <div className="col-md-4">
                     {profilePreview && (
-                      <div className="position-relative">
+                      <div className="position-relative text-center">
                         <img
                           src={profilePreview}
                           alt="Profile Preview"
                           className="rounded-circle"
-                          style={{
-                            width: "80px",
-                            height: "80px",
-                            objectFit: "cover",
-                          }}
+                          style={{ width: "80px", height: "80px", objectFit: "cover" }}
                         />
                         {profileImageFile && (
                           <span className="badge bg-success position-absolute top-0 end-0">
@@ -1353,8 +1369,8 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
 
               {/* Description */}
               <div className="mb-4">
-                <label className="form-label fw-semibold">
-                  <FaAlignLeft className="me-2 text-secondary" />
+                <label className="form-label fw-semibold text-dark">
+                  <FaAlignLeft className="me-2" />
                   Page Description <span className="text-danger">*</span>
                 </label>
                 <textarea
@@ -1371,14 +1387,13 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
                   required
                   maxLength={500}
                 />
-                <small className="text-muted">
+                <small className="text-secondary">
                   {formData.description.length}/500 characters
                 </small>
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="modal-footer bg-light border-0">
+            <div className="modal-footer border-top">
               <button
                 type="button"
                 className="btn btn-outline-secondary"
@@ -1389,14 +1404,14 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
               </button>
               <button
                 type="button"
-                className="btn btn-outline-dark"
+                className="btn btn-secondary"
                 onClick={onClose}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="btn btn-success"
+                className="btn btn-primary"
                 disabled={loading}
               >
                 {loading ? (
@@ -1418,6 +1433,5 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
     </div>
   );
 };
-
 
 export default PageWebView;
