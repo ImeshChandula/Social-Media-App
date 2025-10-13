@@ -25,7 +25,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
       } catch (error) {
         res = await axiosInstance.get("/pages/my");
       }
-      
+
       if (res?.data?.success) {
         setPages(res.data.pages || []);
       }
@@ -45,7 +45,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
       } catch (error) {
         res = await axiosInstance.post(`/pages/${pageId}/publish`);
       }
-      
+
       if (res?.data?.success) {
         toast.success("Page published successfully");
         fetchUserPages();
@@ -68,7 +68,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
       } catch (error) {
         res = await axiosInstance.post(`/pages/${pageId}/delete`);
       }
-      
+
       if (res?.data?.success) {
         toast.success("Page deleted successfully");
         fetchUserPages();
@@ -94,7 +94,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
       banned: { backgroundColor: '#343a40', color: 'white', padding: '4px 12px', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold' },
       default: { backgroundColor: '#6c757d', color: 'white', padding: '4px 12px', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold' }
     };
-    
+
     switch (status) {
       case "published":
         return <span style={badgeStyles.published}>Published</span>;
@@ -122,7 +122,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
 
   const getStatusMessage = (page) => {
     const status = page.displayStatus || getDisplayStatus(page);
-    
+
     switch (status) {
       case "published":
         return "Your page is live and visible to everyone";
@@ -186,7 +186,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
           Create your first page to start building your brand presence and connecting with your audience.
           Your page will need admin approval before it can be published.
         </p>
-        <button 
+        <button
           style={{
             backgroundColor: '#28a745',
             color: 'white',
@@ -208,10 +208,10 @@ const MyPagesSection = ({ onViewPagePosts }) => {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <div style={{ alignItems: 'center' }}>
-          <h5 style={{ color: '#E4E8EDFF', marginBottom: '0.25rem', alignItems: 'center'}}>My Pages</h5>
+          <h5 style={{ color: '#E4E8EDFF', marginBottom: '0.25rem', alignItems: 'center' }}>My Pages</h5>
           <p style={{ color: '#ACB6C0FF', marginBottom: '0' }}>Manage your pages and track their performance</p>
         </div>
-        <button 
+        <button
           style={{
             backgroundColor: '#28a745',
             color: 'white',
@@ -232,7 +232,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
           const pageId = getPageId(page);
           const status = page.displayStatus || getDisplayStatus(page);
           const statusMessage = getStatusMessage(page);
-          
+
           return (
             <div key={pageId}>
               <motion.div
@@ -255,9 +255,9 @@ const MyPagesSection = ({ onViewPagePosts }) => {
                   <img
                     src={page.profilePicture || "/default-page-avatar.png"}
                     alt={page.pageName}
-                    style={{ 
-                      width: '60px', 
-                      height: '60px', 
+                    style={{
+                      width: '60px',
+                      height: '60px',
                       objectFit: 'cover',
                       borderRadius: '50%',
                       border: '2px solid #e9ecef',
@@ -278,7 +278,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
                 </div>
 
                 {/* Status Message */}
-                <div style={{ 
+                <div style={{
                   marginBottom: '1rem',
                   padding: '0.75rem',
                   borderRadius: '5px',
@@ -347,7 +347,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
                       View Page
                     </button>
                   )}
-                  
+
                   {/* Posts Management Button - For published pages */}
                   {status === 'published' && (
                     <button
@@ -367,7 +367,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
                       Posts
                     </button>
                   )}
-                  
+
                   {/* Publish Button - Only for approved but unpublished pages */}
                   {canPublish(page) && (
                     <button
@@ -432,12 +432,12 @@ const MyPagesSection = ({ onViewPagePosts }) => {
 
                 {/* Additional Info for Rejected Pages */}
                 {status === 'rejected' && page.reviewNote && (
-                  <div style={{ 
-                    marginTop: '1rem', 
-                    padding: '0.75rem', 
-                    borderRadius: '5px', 
-                    backgroundColor: '#f8d7da', 
-                    border: '1px solid #f5c6cb' 
+                  <div style={{
+                    marginTop: '1rem',
+                    padding: '0.75rem',
+                    borderRadius: '5px',
+                    backgroundColor: '#f8d7da',
+                    border: '1px solid #f5c6cb'
                   }}>
                     <small style={{ color: '#721c24' }}>
                       <strong>Admin Feedback:</strong> {page.reviewNote}
@@ -451,7 +451,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
       </div>
 
       {/* Modals */}
-      <CreatePageModal 
+      <CreatePageModal
         show={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onPageCreated={(newPage) => {
@@ -460,12 +460,12 @@ const MyPagesSection = ({ onViewPagePosts }) => {
         }}
       />
 
-      <EditPageModal 
+      <EditPageModal
         show={showEditModal}
         onClose={() => setShowEditModal(false)}
         page={selectedPage}
         onPageUpdated={(updatedPage) => {
-          setPages(prev => prev.map(p => 
+          setPages(prev => prev.map(p =>
             getPageId(p) === getPageId(updatedPage) ? updatedPage : p
           ));
           setShowEditModal(false);
@@ -519,7 +519,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
       } catch (error) {
         res = await axiosInstance.get("/pages/categories/list");
       }
-      
+
       if (res?.data?.success) {
         setCategories(res.data.categories || []);
       }
@@ -540,11 +540,11 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
       }
 
       setImageFile(file);
-      
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
-        setFormData(prev => ({...prev, profilePicture: reader.result}));
+        setFormData(prev => ({ ...prev, profilePicture: reader.result }));
       };
       reader.readAsDataURL(file);
     }
@@ -584,12 +584,12 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     console.log("Form data being sent:", {
       ...formData,
       profilePicture: formData.profilePicture ? "Base64 data present" : "Missing"
     });
-    
+
     if (!validateForm()) {
       return;
     }
@@ -597,7 +597,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
     setLoading(true);
     try {
       const res = await axiosInstance.post("/pages", formData);
-      
+
       if (res?.data?.success) {
         toast.success("Page submitted for admin approval successfully!");
         onPageCreated(res.data.page);
@@ -656,7 +656,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
           <h5 style={{ color: '#495057', margin: 0 }}>
             Create New Page
           </h5>
-          <button 
+          <button
             style={{
               background: 'none',
               border: 'none',
@@ -669,7 +669,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
             ×
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit}>
           <div style={{ padding: '1.5rem' }}>
             {loadingCategories ? (
@@ -746,12 +746,12 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                           borderRadius: '0.25rem'
                         }}
                         value={formData.pageName}
-                        onChange={(e) => setFormData(prev => ({...prev, pageName: e.target.value}))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, pageName: e.target.value }))}
                         placeholder="Enter page name"
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>Username (Optional)</label>
                       <div style={{ display: 'flex' }}>
@@ -771,7 +771,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                             borderRadius: '0 0.25rem 0.25rem 0'
                           }}
                           value={formData.username}
-                          onChange={(e) => setFormData(prev => ({...prev, username: e.target.value}))}
+                          onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
                           placeholder="optional-username"
                         />
                       </div>
@@ -792,7 +792,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                       }}
                       rows="3"
                       value={formData.description}
-                      onChange={(e) => setFormData(prev => ({...prev, description: e.target.value}))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                       placeholder="Tell people what your page is about..."
                       required
                     ></textarea>
@@ -812,7 +812,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                           backgroundColor: 'white'
                         }}
                         value={formData.category}
-                        onChange={(e) => setFormData(prev => ({...prev, category: e.target.value}))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                         required
                       >
                         <option value="">Choose category</option>
@@ -837,7 +837,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                           borderRadius: '0.25rem'
                         }}
                         value={formData.phone}
-                        onChange={(e) => setFormData(prev => ({...prev, phone: e.target.value}))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                         placeholder="+1 (555) 123-4567"
                         required
                       />
@@ -858,7 +858,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                           borderRadius: '0.25rem'
                         }}
                         value={formData.email}
-                        onChange={(e) => setFormData(prev => ({...prev, email: e.target.value}))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                         placeholder="contact@example.com"
                         required
                       />
@@ -877,7 +877,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                           borderRadius: '0.25rem'
                         }}
                         value={formData.address}
-                        onChange={(e) => setFormData(prev => ({...prev, address: e.target.value}))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                         placeholder="123 Business Street, City, State"
                         required
                       />
@@ -895,8 +895,8 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
             justifyContent: 'flex-end',
             gap: '0.5rem'
           }}>
-            <button 
-              type="button" 
+            <button
+              type="button"
               style={{
                 backgroundColor: '#6c757d',
                 color: 'white',
@@ -909,8 +909,8 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
             >
               Cancel
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               style={{
                 backgroundColor: loading ? '#6c757d' : '#28a745',
                 color: 'white',
@@ -969,7 +969,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
       } catch (error) {
         res = await axiosInstance.get("/pages/categories/list");
       }
-      
+
       if (res?.data?.success) {
         setCategories(res.data.categories || []);
       }
@@ -983,7 +983,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.pageName || !formData.description || !formData.category) {
       toast.error("Please fill in all required fields");
       return;
@@ -991,7 +991,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
 
     setLoading(true);
     const pageId = page?.id || page?._id;
-    
+
     try {
       let res;
       try {
@@ -999,9 +999,9 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
       } catch (error) {
         res = await axiosInstance.patch(`/pages/${pageId}`, formData);
       }
-      
+
       if (res?.data?.success) {
-        const message = res.data.needsApproval 
+        const message = res.data.needsApproval
           ? "Page updated successfully. Contact details changes are pending admin approval."
           : "Page updated successfully";
         toast.success(message);
@@ -1050,7 +1050,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
           <h5 style={{ color: '#495057', margin: 0 }}>
             Edit Page
           </h5>
-          <button 
+          <button
             style={{
               background: 'none',
               border: 'none',
@@ -1063,7 +1063,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
             ×
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit}>
           <div style={{ padding: '1.5rem' }}>
             {loadingCategories ? (
@@ -1104,12 +1104,12 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                           color: isPending ? '#6c757d' : '#495057'
                         }}
                         value={formData.pageName}
-                        onChange={(e) => setFormData(prev => ({...prev, pageName: e.target.value}))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, pageName: e.target.value }))}
                         required
                         disabled={isPending}
                       />
                     </div>
-                    
+
                     <div>
                       <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>Username</label>
                       <div style={{ display: 'flex' }}>
@@ -1131,7 +1131,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                             color: isPending ? '#6c757d' : '#495057'
                           }}
                           value={formData.username}
-                          onChange={(e) => setFormData(prev => ({...prev, username: e.target.value}))}
+                          onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
                           disabled={isPending}
                         />
                       </div>
@@ -1154,7 +1154,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                       }}
                       rows="3"
                       value={formData.description}
-                      onChange={(e) => setFormData(prev => ({...prev, description: e.target.value}))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                       required
                       disabled={isPending}
                     ></textarea>
@@ -1175,7 +1175,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                           color: isPending ? '#6c757d' : '#495057'
                         }}
                         value={formData.category}
-                        onChange={(e) => setFormData(prev => ({...prev, category: e.target.value}))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                         required
                         disabled={isPending}
                       >
@@ -1201,7 +1201,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                           color: isPending ? '#6c757d' : '#495057'
                         }}
                         value={formData.phone}
-                        onChange={(e) => setFormData(prev => ({...prev, phone: e.target.value}))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                         disabled={isPending}
                       />
                       {formData.phone !== page.phone && (
@@ -1226,7 +1226,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                           color: isPending ? '#6c757d' : '#495057'
                         }}
                         value={formData.email}
-                        onChange={(e) => setFormData(prev => ({...prev, email: e.target.value}))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                         disabled={isPending}
                       />
                       {formData.email !== page.email && (
@@ -1249,7 +1249,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                           color: isPending ? '#6c757d' : '#495057'
                         }}
                         value={formData.address}
-                        onChange={(e) => setFormData(prev => ({...prev, address: e.target.value}))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                         disabled={isPending}
                       />
                       {formData.address !== page.address && (
@@ -1271,8 +1271,8 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
             justifyContent: 'flex-end',
             gap: '0.5rem'
           }}>
-            <button 
-              type="button" 
+            <button
+              type="button"
               style={{
                 backgroundColor: '#6c757d',
                 color: 'white',
@@ -1285,8 +1285,8 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
             >
               Cancel
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               style={{
                 backgroundColor: (loading || isPending) ? '#6c757d' : '#28a745',
                 color: 'white',

@@ -35,7 +35,7 @@ const badge = (variant = "default") => {
   const variants = {
     default: "bg-gray-900 text-gray-400",
     success: "bg-emerald-900 text-emerald-400",
-    warning: "bg-amber-900 text-amber-400", 
+    warning: "bg-amber-900 text-amber-400",
     danger: "bg-red-900 text-red-400",
     info: "bg-blue-900 text-blue-400"
   };
@@ -606,13 +606,13 @@ const PageDetailView = ({ show, onClose, pageId }) => {
         setPage((prev) =>
           prev
             ? {
-                ...prev,
-                isFollowing,
-                followersCount: Math.max(
-                  0,
-                  (prev.followersCount || 0) + (isFollowing ? 1 : -1)
-                ),
-              }
+              ...prev,
+              isFollowing,
+              followersCount: Math.max(
+                0,
+                (prev.followersCount || 0) + (isFollowing ? 1 : -1)
+              ),
+            }
             : prev
         );
       }
@@ -1119,7 +1119,7 @@ const PageManagement = () => {
   };
 
   return (
-<div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900/20 to-purple-900/20 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900/20 to-purple-900/20 p-6">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className={cx(card, "p-8")}>

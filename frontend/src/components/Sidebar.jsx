@@ -11,6 +11,7 @@ import {
   FaEllipsisH,
   FaSun,
   FaMoon,
+  FaChartLine,
 } from "react-icons/fa";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { MdContactSupport } from "react-icons/md";
@@ -50,6 +51,10 @@ function Sidebar() {
     ...(authUser.role !== "user"
       ? [{ name: "Dashboard", path: "/dashboard", icon: <TbLayoutDashboardFilled /> }]
       : []),
+  ];
+
+  const BusinessTools = [
+    { name: "Business Page", path: "/business-page", icon: <FaChartLine /> },
   ];
 
   const shortcuts = [
@@ -126,6 +131,28 @@ function Sidebar() {
           <li className="nav-item mb-2">
             <LogoutButton className={`${hoverClass} ${textClass}`} />
           </li>
+        </ul>
+
+        {/* Business Tools */}
+        <h6 className={`text-uppercase px-2 ${textClass} mb-3 border-bottom ${borderClass}`} style={{ fontSize: "0.9rem" }}>
+          Business Tools
+        </h6>
+        <ul className="nav flex-column mb-4">
+          {BusinessTools.map(({ name, path, icon }) => (
+            <li className="nav-item mb-2" key={name}>
+              <NavLink
+                to={path}
+                className={({ isActive }) =>
+                  `d-flex align-items-center gap-2 py-1 px-2 rounded ${hoverClass} ${textClass} ${isActive ? `${activeBgClass} fw-bold` : ""
+                  }`
+                }
+                onClick={() => setShowMore(false)}
+                style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
+              >
+                {icon} {name}
+              </NavLink>
+            </li>
+          ))}
         </ul>
 
         {/* Shortcuts */}
