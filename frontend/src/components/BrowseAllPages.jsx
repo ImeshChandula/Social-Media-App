@@ -207,7 +207,7 @@ const BrowseAllPages = () => {
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
-          <div className="text-muted mt-3">Loading pages...</div>
+          <div className="text-secondary mt-3">Loading pages...</div>
         </div>
       ) : pages.length === 0 ? (
         <div className="text-center py-5">

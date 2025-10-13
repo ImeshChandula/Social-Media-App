@@ -286,6 +286,7 @@ function ProfilePage() {
 
                 ❤️ Favorites
               </button>
+              {/* 
               <button
                 className={`btn ${activeTab === 'pages' ? "btn-primary" : "btn-outline-primary"}`}
                 onClick={() => handleTabChange('pages')}
@@ -293,6 +294,7 @@ function ProfilePage() {
 
                 My Pages
               </button>
+              */}
             </div>
           </div>
 
