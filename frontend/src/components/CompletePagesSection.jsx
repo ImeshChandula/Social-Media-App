@@ -5,69 +5,93 @@ import BrowseAllPages from "./BrowseAllPages";
 import PagePostsManagement from "./PagePostsManagement";
 
 const CompletePagesSection = ({ onViewPagePosts }) => {
-  const [activeView, setActiveView] = useState('my-pages'); // 'my-pages', 'browse-all', 'create-page'
+  const [activeView, setActiveView] = useState("my-pages"); // 'my-pages', 'browse-all'
   const [selectedPage, setSelectedPage] = useState(null);
   const [showPagePosts, setShowPagePosts] = useState(false);
 
-  // Handle page posts viewing
+  // ===== Handle page posts viewing =====
   const handleViewPagePosts = (page) => {
     setSelectedPage(page);
     setShowPagePosts(true);
-    // Call parent callback if provided
-    if (onViewPagePosts) {
-      onViewPagePosts(page);
-    }
+    if (onViewPagePosts) onViewPagePosts(page);
   };
 
-  // Handle navigation back from page posts
+  // ===== Back navigation =====
   const handleBackToPages = () => {
     setShowPagePosts(false);
     setSelectedPage(null);
   };
 
-  // If showing page posts, render the page posts component
+  // ===== Render Section Based on Active View =====
+  const renderSection = () => {
+    switch (activeView) {
+      case "my-pages":
+        return <MyPagesSection onViewPagePosts={handleViewPagePosts} />;
+      case "browse-all":
+        return <BrowseAllPages />;
+      default:
+        return <MyPagesSection onViewPagePosts={handleViewPagePosts} />;
+    }
+  };
+
+  // ===== Show Page Posts (Overrides Other Views) =====
   if (showPagePosts && selectedPage) {
     return (
-      <div>
-        <div className="mb-4">
+      <div className="container-fluid py-4">
+        <div className="mb-4 d-flex align-items-center gap-2">
           <button
-            className="btn btn-outline-secondary"
+            className="btn btn-outline-secondary d-flex align-items-center gap-2"
             onClick={handleBackToPages}
           >
-            
-            Back to My Pages
+            <i className="bi bi-arrow-left"></i> Back to My Pages
           </button>
+          <h5 className="mb-0 fw-semibold">{selectedPage.pageName}</h5>
         </div>
-        <PagePostsManagement
-          pageId={selectedPage.id || selectedPage._id}
-          pageName={selectedPage.pageName}
-          isOwner={true}
-        />
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <PagePostsManagement
+            pageId={selectedPage.id || selectedPage._id}
+            pageName={selectedPage.pageName}
+            isOwner={true}
+          />
+        </motion.div>
       </div>
     );
   }
 
+  // ===== Main Page View (Navigation + Animated Content) =====
   return (
-    <div>
-      {/* Navigation Header */}
-      <div className="mb-4">
-        <div className="d-flex justify-content-center flex-wrap gap-2">
+    <div className="py-4 py-md-0">
+      {/* === Navigation Buttons === */}
+      <div className="text-center mb-4">
+        <div className="d-flex justify-content-center flex-wrap gap-2 pt-5 pt-md-0 mt-5 mt-md-0">
           <button
-            className={`btn ${activeView === 'my-pages' ? 'btn-primary' : 'btn-outline-primary'}`}
-            onClick={() => setActiveView('my-pages')}
+            className={`btn rounded-pill px-4 ${activeView === "my-pages"
+              ? "btn-primary text-white"
+              : "btn-outline-primary"
+              }`}
+            onClick={() => setActiveView("my-pages")}
           >
             My Pages
           </button>
+
           <button
-            className={`btn ${activeView === 'browse-all' ? 'btn-primary' : 'btn-outline-primary'}`}
-            onClick={() => setActiveView('browse-all')}
+            className={`btn rounded-pill px-4 ${activeView === "browse-all"
+              ? "btn-primary text-white"
+              : "btn-outline-primary"
+              }`}
+            onClick={() => setActiveView("browse-all")}
           >
             Browse All Pages
           </button>
         </div>
       </div>
 
-      {/* Content Area */}
+      {/* === Animated Section Content === */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeView}
@@ -76,13 +100,7 @@ const CompletePagesSection = ({ onViewPagePosts }) => {
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
         >
-          {activeView === 'my-pages' && (
-            <MyPagesSection onViewPagePosts={handleViewPagePosts} />
-          )}
-          
-          {activeView === 'browse-all' && (
-            <BrowseAllPages />
-          )}
+          {renderSection()}
         </motion.div>
       </AnimatePresence>
     </div>
