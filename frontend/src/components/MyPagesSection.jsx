@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
@@ -19,13 +19,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
   const fetchUserPages = async () => {
     setLoading(true);
     try {
-      let res;
-      try {
-        res = await axiosInstance.get("/pages/my-pages");
-      } catch (error) {
-        res = await axiosInstance.get("/pages/my");
-      }
-
+      const res = await axiosInstance.get("/pages/my-pages");
       if (res?.data?.success) {
         setPages(res.data.pages || []);
       }
@@ -39,13 +33,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
 
   const handlePublish = async (pageId) => {
     try {
-      let res;
-      try {
-        res = await axiosInstance.put(`/pages/${pageId}/publish`);
-      } catch (error) {
-        res = await axiosInstance.post(`/pages/${pageId}/publish`);
-      }
-
+      const res = await axiosInstance.put(`/pages/${pageId}/publish`);
       if (res?.data?.success) {
         toast.success("Page published successfully");
         fetchUserPages();
@@ -62,13 +50,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
     }
 
     try {
-      let res;
-      try {
-        res = await axiosInstance.delete(`/pages/${pageId}`);
-      } catch (error) {
-        res = await axiosInstance.post(`/pages/${pageId}/delete`);
-      }
-
+      const res = await axiosInstance.delete(`/pages/${pageId}`);
       if (res?.data?.success) {
         toast.success("Page deleted successfully");
         fetchUserPages();
@@ -80,35 +62,39 @@ const MyPagesSection = ({ onViewPagePosts }) => {
   };
 
   const handleViewPage = (page) => {
-    const pageId = getPageId(page);
+    const pageId = page.id || page._id;
     navigate(`/page/${pageId}`);
   };
 
   const getStatusBadge = (page) => {
-    const status = page.displayStatus || getDisplayStatus(page);
-    const badgeStyles = {
-      published: { backgroundColor: '#28a745', color: 'white', padding: '4px 12px', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold' },
-      approved: { backgroundColor: '#17a2b8', color: 'white', padding: '4px 12px', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold' },
-      pending: { backgroundColor: '#ffc107', color: '#212529', padding: '4px 12px', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold' },
-      rejected: { backgroundColor: '#dc3545', color: 'white', padding: '4px 12px', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold' },
-      banned: { backgroundColor: '#343a40', color: 'white', padding: '4px 12px', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold' },
-      default: { backgroundColor: '#6c757d', color: 'white', padding: '4px 12px', borderRadius: '16px', fontSize: '12px', fontWeight: 'bold' }
+    const status = getDisplayStatus(page);
+    const styles = {
+      published: { backgroundColor: '#28a745', color: 'white' },
+      approved: { backgroundColor: '#17a2b8', color: 'white' },
+      pending: { backgroundColor: '#ffc107', color: '#212529' },
+      rejected: { backgroundColor: '#dc3545', color: 'white' },
+      banned: { backgroundColor: '#343a40', color: 'white' },
+      default: { backgroundColor: '#6c757d', color: 'white' }
+    };
+    
+    const badgeStyle = {
+      ...styles[status] || styles.default,
+      padding: '4px 12px',
+      borderRadius: '16px',
+      fontSize: '12px',
+      fontWeight: 'bold'
     };
 
-    switch (status) {
-      case "published":
-        return <span style={badgeStyles.published}>Published</span>;
-      case "approved":
-        return <span style={badgeStyles.approved}>Approved - Ready to Publish</span>;
-      case "pending":
-        return <span style={badgeStyles.pending}>Pending Admin Approval</span>;
-      case "rejected":
-        return <span style={badgeStyles.rejected}>Rejected by Admin</span>;
-      case "banned":
-        return <span style={badgeStyles.banned}>Banned</span>;
-      default:
-        return <span style={badgeStyles.default}>Draft</span>;
-    }
+    const labels = {
+      published: "Published",
+      approved: "Approved - Ready to Publish",
+      pending: "Pending Admin Approval",
+      rejected: "Rejected by Admin",
+      banned: "Banned",
+      default: "Draft"
+    };
+    
+    return <span style={badgeStyle}>{labels[status] || labels.default}</span>;
   };
 
   const getDisplayStatus = (page) => {
@@ -121,22 +107,17 @@ const MyPagesSection = ({ onViewPagePosts }) => {
   };
 
   const getStatusMessage = (page) => {
-    const status = page.displayStatus || getDisplayStatus(page);
-
-    switch (status) {
-      case "published":
-        return "Your page is live and visible to everyone";
-      case "approved":
-        return "Your page has been approved by admin. You can now publish it!";
-      case "pending":
-        return "Your page is under admin review. You'll be notified once it's approved.";
-      case "rejected":
-        return page.reviewNote || "Your page was rejected by admin. Please check the feedback and make necessary changes.";
-      case "banned":
-        return page.banReason || "This page has been banned by admin.";
-      default:
-        return "Complete your page setup and submit for approval";
-    }
+    const status = getDisplayStatus(page);
+    const messages = {
+      published: "Your page is live and visible to everyone",
+      approved: "Your page has been approved by admin. You can now publish it!",
+      pending: "Your page is under admin review. You'll be notified once it's approved.",
+      rejected: page.reviewNote || "Your page was rejected by admin. Please check the feedback and make necessary changes.",
+      banned: page.banReason || "This page has been banned by admin.",
+      default: "Complete your page setup and submit for approval"
+    };
+    
+    return messages[status] || messages.default;
   };
 
   const canPublish = (page) => {
@@ -147,71 +128,46 @@ const MyPagesSection = ({ onViewPagePosts }) => {
     return !page.isBanned && page.approvalStatus !== 'pending';
   };
 
-  const getPageId = (page) => page?.id || page?._id;
-
-  const statusIconStyle = (status) => {
-    const baseStyle = { marginRight: '4px' };
-    switch (status) {
-      case 'published': return { ...baseStyle, color: '#28a745' };
-      case 'approved': return { ...baseStyle, color: '#17a2b8' };
-      case 'pending': return { ...baseStyle, color: '#ffc107' };
-      case 'rejected': return { ...baseStyle, color: '#dc3545' };
-      case 'banned': return { ...baseStyle, color: '#343a40' };
-      default: return { ...baseStyle, color: '#6c757d' };
-    }
-  };
-
-  if (loading) {
-    return (
-      <div style={{ textAlign: 'center', padding: '3rem 0', color: '#495057' }}>
-        <div>
-          Loading your pages...
-        </div>
+  const content = loading ? (
+    <div style={{ textAlign: 'center', padding: '3rem 0', color: '#495057' }}>
+      Loading your pages...
+    </div>
+  ) : pages.length === 0 ? (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      style={{ textAlign: 'center', padding: '3rem 0' }}
+    >
+      <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ fontSize: '3rem', color: '#adb5bd' }}>📄</div>
       </div>
-    );
-  }
-
-  if (pages.length === 0) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        style={{ textAlign: 'center', padding: '3rem 0' }}
+      <h5 style={{ color: '#495057', marginBottom: '1rem' }}>No Pages Yet</h5>
+      <p style={{ color: '#6c757d', marginBottom: '1.5rem' }}>
+        Create your first page to start building your brand presence and connecting with your audience.
+        Your page will need admin approval before it can be published.
+      </p>
+      <button 
+        style={{
+          backgroundColor: '#28a745',
+          color: 'white',
+          border: 'none',
+          padding: '10px 20px',
+          borderRadius: '5px',
+          cursor: 'pointer'
+        }}
+        onClick={() => setShowCreateModal(true)}
       >
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ fontSize: '3rem', color: '#adb5bd' }}>📄</div>
-        </div>
-        <h5 style={{ color: '#495057', marginBottom: '1rem' }}>No Pages Yet</h5>
-        <p style={{ color: '#6c757d', marginBottom: '1.5rem' }}>
-          Create your first page to start building your brand presence and connecting with your audience.
-          Your page will need admin approval before it can be published.
-        </p>
-        <button
-          style={{
-            backgroundColor: '#28a745',
-            color: 'white',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '5px',
-            cursor: 'pointer'
-          }}
-          onClick={() => setShowCreateModal(true)}
-        >
-          Create Your First Page
-        </button>
-      </motion.div>
-    );
-  }
-
-  return (
+        Create Your First Page
+      </button>
+    </motion.div>
+  ) : (
     <div>
-      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <div style={{ alignItems: 'center' }}>
-          <h5 style={{ color: '#E4E8EDFF', marginBottom: '0.25rem', alignItems: 'center' }}>My Pages</h5>
+        <div>
+          <h5 style={{ color: '#E4E8EDFF', marginBottom: '0.25rem' }}>My Pages</h5>
           <p style={{ color: '#ACB6C0FF', marginBottom: '0' }}>Manage your pages and track their performance</p>
         </div>
-        <button
+        <button 
           style={{
             backgroundColor: '#28a745',
             color: 'white',
@@ -226,110 +182,103 @@ const MyPagesSection = ({ onViewPagePosts }) => {
         </button>
       </div>
 
-      {/* Pages Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
         {pages.map((page, index) => {
-          const pageId = getPageId(page);
-          const status = page.displayStatus || getDisplayStatus(page);
-          const statusMessage = getStatusMessage(page);
-
+          const pageId = page.id || page._id;
+          const status = getDisplayStatus(page);
+          
           return (
-            <div key={pageId}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                style={{
-                  backgroundColor: 'white',
-                  border: '1px solid #dee2e6',
-                  borderRadius: '10px',
-                  padding: '1.5rem',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}
-              >
-                {/* Page Header */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                  <img
-                    src={page.profilePicture || "/default-page-avatar.png"}
-                    alt={page.pageName}
-                    style={{
-                      width: '60px',
-                      height: '60px',
-                      objectFit: 'cover',
-                      borderRadius: '50%',
-                      border: '2px solid #e9ecef',
-                      marginRight: '1rem'
-                    }}
-                  />
-                  <div style={{ flexGrow: 1, minWidth: 0 }}>
-                    <h6 style={{ color: '#495057', fontWeight: 'bold', marginBottom: '0.25rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {page.pageName}
-                    </h6>
-                    {page.username && (
-                      <p style={{ color: '#17a2b8', marginBottom: '0.25rem', fontSize: '0.875rem' }}>@{page.username}</p>
-                    )}
-                    <div style={{ marginBottom: '0.5rem' }}>
-                      {getStatusBadge(page)}
-                    </div>
+            <motion.div
+              key={pageId}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              style={{
+                backgroundColor: 'white',
+                border: '1px solid #dee2e6',
+                borderRadius: '10px',
+                padding: '1.5rem',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                <img
+                  src={page.profilePicture || "/default-page-avatar.png"}
+                  alt={page.pageName}
+                  style={{ 
+                    width: '60px', 
+                    height: '60px', 
+                    objectFit: 'cover',
+                    borderRadius: '50%',
+                    border: '2px solid #e9ecef',
+                    marginRight: '1rem'
+                  }}
+                />
+                <div style={{ flexGrow: 1, minWidth: 0 }}>
+                  <h6 style={{ color: '#495057', fontWeight: 'bold', marginBottom: '0.25rem' }}>
+                    {page.pageName}
+                  </h6>
+                  {page.username && (
+                    <p style={{ color: '#17a2b8', marginBottom: '0.25rem', fontSize: '0.875rem' }}>
+                      @{page.username}
+                    </p>
+                  )}
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    {getStatusBadge(page)}
                   </div>
                 </div>
+              </div>
 
-                {/* Status Message */}
-                <div style={{
-                  marginBottom: '1rem',
-                  padding: '0.75rem',
-                  borderRadius: '5px',
-                  backgroundColor: '#f8f9fa',
-                  border: '1px solid #e9ecef'
-                }}>
-                  <small style={{ color: '#6c757d', display: 'block' }}>
-                    <span style={statusIconStyle(status)}>●</span>
-                    {statusMessage}
-                  </small>
-                </div>
+              <div style={{ 
+                marginBottom: '1rem',
+                padding: '0.75rem',
+                borderRadius: '5px',
+                backgroundColor: '#f8f9fa',
+                border: '1px solid #e9ecef'
+              }}>
+                <small style={{ color: '#6c757d' }}>
+                  {getStatusMessage(page)}
+                </small>
+              </div>
 
-                {/* Page Description */}
-                <p style={{
-                  color: '#6c757d',
-                  fontSize: '0.875rem',
-                  marginBottom: '1rem',
-                  flexGrow: 1,
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden'
-                }}>
-                  {page.description || "No description available"}
-                </p>
+              <p style={{
+                color: '#6c757d',
+                fontSize: '0.875rem',
+                marginBottom: '1rem',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden'
+              }}>
+                {page.description || "No description available"}
+              </p>
 
-                {/* Page Stats */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  textAlign: 'center',
-                  marginBottom: '1rem',
-                  padding: '0.75rem',
-                  borderRadius: '5px',
-                  backgroundColor: '#f8f9fa'
-                }}>
-                  <div>
-                    <div style={{ color: '#495057', fontWeight: 'bold' }}>{page.followersCount || page.followers?.length || 0}</div>
-                    <div style={{ color: '#6c757d', fontSize: '0.75rem' }}>Followers</div>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginBottom: '1rem',
+                padding: '0.75rem',
+                borderRadius: '5px',
+                backgroundColor: '#f8f9fa'
+              }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ color: '#495057', fontWeight: 'bold' }}>
+                    {page.followersCount || page.followers?.length || 0}
                   </div>
-                  <div style={{ borderLeft: '1px solid #dee2e6', margin: '0 1rem' }}></div>
-                  <div>
-                    <div style={{ color: '#495057', fontWeight: 'bold' }}>{page.postsCount || page.posts?.length || 0}</div>
-                    <div style={{ color: '#6c757d', fontSize: '0.75rem' }}>Posts</div>
-                  </div>
+                  <div style={{ color: '#6c757d', fontSize: '0.75rem' }}>Followers</div>
                 </div>
+                <div style={{ borderLeft: '1px solid #dee2e6', margin: '0 1rem' }}></div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ color: '#495057', fontWeight: 'bold' }}>
+                    {page.postsCount || page.posts?.length || 0}
+                  </div>
+                  <div style={{ color: '#6c757d', fontSize: '0.75rem' }}>Posts</div>
+                </div>
+              </div>
 
-                {/* Action Buttons */}
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  {/* View Page Button - Only for published pages */}
-                  {status === 'published' && (
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {status === 'published' && (
+                  <>
                     <button
                       style={{
                         backgroundColor: 'transparent',
@@ -342,14 +291,9 @@ const MyPagesSection = ({ onViewPagePosts }) => {
                         fontSize: '0.875rem'
                       }}
                       onClick={() => handleViewPage(page)}
-                      title="View Page Webpage"
                     >
                       View Page
                     </button>
-                  )}
-
-                  {/* Posts Management Button - For published pages */}
-                  {status === 'published' && (
                     <button
                       style={{
                         backgroundColor: 'transparent',
@@ -361,117 +305,118 @@ const MyPagesSection = ({ onViewPagePosts }) => {
                         flex: 1,
                         fontSize: '0.875rem'
                       }}
-                      onClick={() => handleViewPage(page)}
-                      title="Manage Posts"
+                      onClick={() => onViewPagePosts && onViewPagePosts(page)}
                     >
                       Posts
                     </button>
-                  )}
-
-                  {/* Publish Button - Only for approved but unpublished pages */}
-                  {canPublish(page) && (
-                    <button
-                      style={{
-                        backgroundColor: '#28a745',
-                        color: 'white',
-                        border: 'none',
-                        padding: '6px 12px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        flex: 1,
-                        fontSize: '0.875rem'
-                      }}
-                      onClick={() => handlePublish(pageId)}
-                      title="Publish Page"
-                    >
-                      Publish Now
-                    </button>
-                  )}
-
-                  {/* Edit Button */}
-                  {canEdit(page) && (
-                    <button
-                      style={{
-                        backgroundColor: 'transparent',
-                        color: '#6c757d',
-                        border: '1px solid #6c757d',
-                        padding: '6px 12px',
-                        borderRadius: '4px',
-                        cursor: status === 'pending' ? 'not-allowed' : 'pointer',
-                        opacity: status === 'pending' ? 0.6 : 1
-                      }}
-                      onClick={() => {
-                        setSelectedPage(page);
-                        setShowEditModal(true);
-                      }}
-                      title="Edit Page"
-                      disabled={status === 'pending'}
-                    >
-                      Edit
-                    </button>
-                  )}
-
-                  {/* Delete Button */}
-                  {status !== 'banned' && (
-                    <button
-                      style={{
-                        backgroundColor: 'transparent',
-                        color: '#dc3545',
-                        border: '1px solid #dc3545',
-                        padding: '6px 12px',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                      }}
-                      onClick={() => handleDelete(pageId)}
-                      title="Delete Page"
-                    >
-                      Delete
-                    </button>
-                  )}
-                </div>
-
-                {/* Additional Info for Rejected Pages */}
-                {status === 'rejected' && page.reviewNote && (
-                  <div style={{
-                    marginTop: '1rem',
-                    padding: '0.75rem',
-                    borderRadius: '5px',
-                    backgroundColor: '#f8d7da',
-                    border: '1px solid #f5c6cb'
-                  }}>
-                    <small style={{ color: '#721c24' }}>
-                      <strong>Admin Feedback:</strong> {page.reviewNote}
-                    </small>
-                  </div>
+                  </>
                 )}
-              </motion.div>
-            </div>
+                
+                {canPublish(page) && (
+                  <button
+                    style={{
+                      backgroundColor: '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      padding: '6px 12px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      flex: 1,
+                      fontSize: '0.875rem'
+                    }}
+                    onClick={() => handlePublish(pageId)}
+                  >
+                    Publish Now
+                  </button>
+                )}
+
+                {canEdit(page) && (
+                  <button
+                    style={{
+                      backgroundColor: 'transparent',
+                      color: '#6c757d',
+                      border: '1px solid #6c757d',
+                      padding: '6px 12px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.875rem'
+                    }}
+                    onClick={() => {
+                      setSelectedPage(page);
+                      setShowEditModal(true);
+                    }}
+                  >
+                    Edit
+                  </button>
+                )}
+
+                {status !== 'banned' && (
+                  <button
+                    style={{
+                      backgroundColor: 'transparent',
+                      color: '#dc3545',
+                      border: '1px solid #dc3545',
+                      padding: '6px 12px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '0.875rem'
+                    }}
+                    onClick={() => handleDelete(pageId)}
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+
+              {status === 'rejected' && page.reviewNote && (
+                <div style={{ 
+                  marginTop: '1rem', 
+                  padding: '0.75rem', 
+                  borderRadius: '5px', 
+                  backgroundColor: '#f8d7da', 
+                  border: '1px solid #f5c6cb' 
+                }}>
+                  <small style={{ color: '#721c24' }}>
+                    <strong>Admin Feedback:</strong> {page.reviewNote}
+                  </small>
+                </div>
+              )}
+            </motion.div>
           );
         })}
       </div>
+    </div>
+  );
 
-      {/* Modals */}
-      <CreatePageModal
+  return (
+    <>
+      {content}
+      <CreatePageModal 
         show={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onPageCreated={(newPage) => {
           setPages(prev => [newPage, ...prev]);
           setShowCreateModal(false);
+          toast.success("Page created and submitted for approval!");
         }}
       />
 
-      <EditPageModal
+      <EditPageModal 
         show={showEditModal}
-        onClose={() => setShowEditModal(false)}
+        onClose={() => {
+          setShowEditModal(false);
+          setSelectedPage(null);
+        }}
         page={selectedPage}
         onPageUpdated={(updatedPage) => {
-          setPages(prev => prev.map(p =>
-            getPageId(p) === getPageId(updatedPage) ? updatedPage : p
+          setPages(prev => prev.map(p => 
+            (p.id || p._id) === (updatedPage.id || updatedPage._id) ? updatedPage : p
           ));
           setShowEditModal(false);
+          setSelectedPage(null);
         }}
       />
-    </div>
+    </>
   );
 };
 
@@ -488,38 +433,34 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
   });
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [loadingCategories, setLoadingCategories] = useState(true);
-  const [imageFile, setImageFile] = useState(null);
+  const [loadingCategories, setLoadingCategories] = useState(false);
   const [imagePreview, setImagePreview] = useState("");
 
   useEffect(() => {
     if (show) {
       fetchCategories();
-      setFormData({
-        pageName: "",
-        username: "",
-        description: "",
-        category: "",
-        phone: "",
-        email: "",
-        address: "",
-        profilePicture: ""
-      });
-      setImageFile(null);
-      setImagePreview("");
+      resetForm();
     }
   }, [show]);
+
+  const resetForm = () => {
+    setFormData({
+      pageName: "",
+      username: "",
+      description: "",
+      category: "",
+      phone: "",
+      email: "",
+      address: "",
+      profilePicture: ""
+    });
+    setImagePreview("");
+  };
 
   const fetchCategories = async () => {
     setLoadingCategories(true);
     try {
-      let res;
-      try {
-        res = await axiosInstance.get("/pages/categories");
-      } catch (error) {
-        res = await axiosInstance.get("/pages/categories/list");
-      }
-
+      const res = await axiosInstance.get("/pages/categories");
       if (res?.data?.success) {
         setCategories(res.data.categories || []);
       }
@@ -533,91 +474,71 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size should be less than 5MB");
-        return;
-      }
+    if (!file) return;
 
-      setImageFile(file);
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setFormData(prev => ({ ...prev, profilePicture: reader.result }));
-      };
-      reader.readAsDataURL(file);
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB");
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result;
+      setImagePreview(base64String);
+      setFormData(prev => ({ ...prev, profilePicture: base64String }));
+    };
+    reader.onerror = () => {
+      toast.error("Failed to read image file");
+    };
+    reader.readAsDataURL(file);
   };
 
   const validateForm = () => {
-    if (!formData.pageName.trim()) {
-      toast.error("Page name is required");
+    const errors = [];
+    
+    if (!formData.pageName.trim()) errors.push("Page name is required");
+    if (!formData.description.trim()) errors.push("Description is required");
+    if (!formData.category) errors.push("Category is required");
+    if (!formData.phone.trim()) errors.push("Phone number is required");
+    if (!formData.email.trim()) errors.push("Email address is required");
+    if (!formData.address.trim()) errors.push("Business address is required");
+    if (!formData.profilePicture) errors.push("Profile image is required");
+    
+    if (errors.length > 0) {
+      toast.error(errors[0]);
       return false;
     }
-    if (!formData.description.trim()) {
-      toast.error("Description is required");
-      return false;
-    }
-    if (!formData.category) {
-      toast.error("Category is required");
-      return false;
-    }
-    if (!formData.phone.trim()) {
-      toast.error("Phone number is required");
-      return false;
-    }
-    if (!formData.email.trim()) {
-      toast.error("Email address is required");
-      return false;
-    }
-    if (!formData.address.trim()) {
-      toast.error("Business address is required");
-      return false;
-    }
-    if (!formData.profilePicture) {
-      toast.error("Profile image is required");
-      return false;
-    }
+    
     return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    console.log("Form data being sent:", {
-      ...formData,
-      profilePicture: formData.profilePicture ? "Base64 data present" : "Missing"
-    });
-
-    if (!validateForm()) {
-      return;
-    }
+    
+    if (!validateForm()) return;
 
     setLoading(true);
     try {
-      const res = await axiosInstance.post("/pages", formData);
+      const submitData = {
+        ...formData,
+        pageName: formData.pageName.trim(),
+        username: formData.username.trim(),
+        description: formData.description.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim(),
+        address: formData.address.trim()
+      };
 
+      const res = await axiosInstance.post("/pages", submitData);
+      
       if (res?.data?.success) {
-        toast.success("Page submitted for admin approval successfully!");
         onPageCreated(res.data.page);
-        setFormData({
-          pageName: "",
-          username: "",
-          description: "",
-          category: "",
-          phone: "",
-          email: "",
-          address: "",
-          profilePicture: ""
-        });
-        setImageFile(null);
-        setImagePreview("");
+        resetForm();
       }
     } catch (err) {
       console.error('Error creating page:', err);
-      console.error('Server response:', err.response?.data);
-      toast.error(err.response?.data?.message || "Failed to create page");
+      const errorMessage = err.response?.data?.message || "Failed to create page";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -639,7 +560,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
       zIndex: 1050
     }}>
       <div style={{
-        backgroundColor: 'white',
+        backgroundColor: '#858688FF',
         borderRadius: '10px',
         width: '90%',
         maxWidth: '800px',
@@ -653,10 +574,8 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-          <h5 style={{ color: '#495057', margin: 0 }}>
-            Create New Page
-          </h5>
-          <button
+          <h5 style={{ color: '#495057', margin: 0 }}>Create New Page</h5>
+          <button 
             style={{
               background: 'none',
               border: 'none',
@@ -669,72 +588,51 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
             ×
           </button>
         </div>
-
+        
         <form onSubmit={handleSubmit}>
           <div style={{ padding: '1.5rem' }}>
             {loadingCategories ? (
-              <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <div style={{ color: '#6c757d' }}>
-                  Loading categories...
-                </div>
+              <div style={{ textAlign: 'center', padding: '2rem', color: '#6c757d' }}>
+                Loading data...
               </div>
             ) : (
               <>
-                <div style={{
-                  backgroundColor: '#d1ecf1',
-                  border: '1px solid #bee5eb',
-                  borderRadius: '5px',
-                  padding: '0.75rem',
-                  marginBottom: '1.5rem',
-                  fontSize: '0.875rem'
-                }}>
-                  All fields marked with <span style={{ color: '#dc3545' }}>*</span> are required. Your page will be submitted for admin approval and cannot be published until approved.
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-                  {/* Profile Image Upload */}
+                <div style={{ display: 'grid', gap: '1rem' }}>
                   <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>
-                      Profile Image <span style={{ color: '#dc3545' }}>*</span>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                      Profile Picture <span style={{ color: '#dc3545' }}>*</span>
                     </label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem', alignItems: 'center' }}>
-                      <div>
-                        <input
-                          type="file"
-                          style={{
-                            width: '100%',
-                            padding: '0.375rem 0.75rem',
-                            border: '1px solid #ced4da',
-                            borderRadius: '0.25rem',
-                            backgroundColor: 'white'
-                          }}
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          required
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '1rem',
+                      marginBottom: '1rem'
+                    }}>
+                      {imagePreview && (
+                        <img 
+                          src={imagePreview}
+                          alt="Preview" 
+                          style={{ 
+                            width: '80px', 
+                            height: '80px', 
+                            borderRadius: '50%', 
+                            objectFit: 'cover',
+                            border: '1px solid #dee2e6'
+                          }} 
                         />
-                        <small style={{ color: '#6c757d' }}>Max file size: 5MB. Supported: JPG, PNG, GIF</small>
-                      </div>
-                      <div>
-                        {imagePreview && (
-                          <img
-                            src={imagePreview}
-                            alt="Preview"
-                            style={{
-                              width: '80px',
-                              height: '80px',
-                              objectFit: 'cover',
-                              borderRadius: '50%',
-                              border: '2px solid #e9ecef'
-                            }}
-                          />
-                        )}
-                      </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        style={{ flex: 1 }}
+                      />
                     </div>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                         Page Name <span style={{ color: '#dc3545' }}>*</span>
                       </label>
                       <input
@@ -748,12 +646,13 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                         value={formData.pageName}
                         onChange={(e) => setFormData(prev => ({ ...prev, pageName: e.target.value }))}
                         placeholder="Enter page name"
-                        required
                       />
                     </div>
-
+                    
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>Username (Optional)</label>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                        Username
+                      </label>
                       <div style={{ display: 'flex' }}>
                         <span style={{
                           padding: '0.375rem 0.75rem',
@@ -779,7 +678,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                       Description <span style={{ color: '#dc3545' }}>*</span>
                     </label>
                     <textarea
@@ -787,20 +686,18 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                         width: '100%',
                         padding: '0.375rem 0.75rem',
                         border: '1px solid #ced4da',
-                        borderRadius: '0.25rem',
-                        resize: 'vertical'
+                        borderRadius: '0.25rem'
                       }}
                       rows="3"
                       value={formData.description}
                       onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Tell people what your page is about..."
-                      required
-                    ></textarea>
+                      placeholder="Describe your page"
+                    />
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                         Category <span style={{ color: '#dc3545' }}>*</span>
                       </label>
                       <select
@@ -808,24 +705,22 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                           width: '100%',
                           padding: '0.375rem 0.75rem',
                           border: '1px solid #ced4da',
-                          borderRadius: '0.25rem',
-                          backgroundColor: 'white'
+                          borderRadius: '0.25rem'
                         }}
                         value={formData.category}
                         onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                        required
                       >
                         <option value="">Choose category</option>
-                        {categories.map((category) => (
-                          <option key={category} value={category}>
-                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                        {categories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat.charAt(0).toUpperCase() + cat.slice(1)}
                           </option>
                         ))}
                       </select>
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                         Phone Number <span style={{ color: '#dc3545' }}>*</span>
                       </label>
                       <input
@@ -839,14 +734,13 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                         value={formData.phone}
                         onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                         placeholder="+1 (555) 123-4567"
-                        required
                       />
                     </div>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                         Email Address <span style={{ color: '#dc3545' }}>*</span>
                       </label>
                       <input
@@ -860,12 +754,11 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                         value={formData.email}
                         onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                         placeholder="contact@example.com"
-                        required
                       />
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                         Business Address <span style={{ color: '#dc3545' }}>*</span>
                       </label>
                       <input
@@ -878,8 +771,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                         }}
                         value={formData.address}
                         onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                        placeholder="123 Business Street, City, State"
-                        required
+                        placeholder="123 Business Street, City"
                       />
                     </div>
                   </div>
@@ -895,8 +787,8 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
             justifyContent: 'flex-end',
             gap: '0.5rem'
           }}>
-            <button
-              type="button"
+            <button 
+              type="button" 
               style={{
                 backgroundColor: '#6c757d',
                 color: 'white',
@@ -909,8 +801,8 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
             >
               Cancel
             </button>
-            <button
-              type="submit"
+            <button 
+              type="submit" 
               style={{
                 backgroundColor: loading ? '#6c757d' : '#28a745',
                 color: 'white',
@@ -939,11 +831,11 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
     category: "",
     phone: "",
     email: "",
-    address: "",
+    address: ""
   });
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(false);
 
   useEffect(() => {
     if (show && page) {
@@ -954,7 +846,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
         category: page.category || "",
         phone: page.phone || "",
         email: page.email || "",
-        address: page.address || "",
+        address: page.address || ""
       });
       fetchCategories();
     }
@@ -963,13 +855,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
   const fetchCategories = async () => {
     setLoadingCategories(true);
     try {
-      let res;
-      try {
-        res = await axiosInstance.get("/pages/categories");
-      } catch (error) {
-        res = await axiosInstance.get("/pages/categories/list");
-      }
-
+      const res = await axiosInstance.get("/pages/categories");
       if (res?.data?.success) {
         setCategories(res.data.categories || []);
       }
@@ -983,7 +869,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
     if (!formData.pageName || !formData.description || !formData.category) {
       toast.error("Please fill in all required fields");
       return;
@@ -991,18 +877,23 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
 
     setLoading(true);
     const pageId = page?.id || page?._id;
-
+    
     try {
-      let res;
-      try {
-        res = await axiosInstance.put(`/pages/${pageId}`, formData);
-      } catch (error) {
-        res = await axiosInstance.patch(`/pages/${pageId}`, formData);
-      }
+      const submitData = {
+        ...formData,
+        pageName: formData.pageName.trim(),
+        username: formData.username.trim(),
+        description: formData.description.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim(),
+        address: formData.address.trim()
+      };
 
+      const res = await axiosInstance.put(`/pages/${pageId}`, submitData);
+      
       if (res?.data?.success) {
-        const message = res.data.needsApproval
-          ? "Page updated successfully. Contact details changes are pending admin approval."
+        const message = res.data.needsApproval 
+          ? "Page updated. Contact details changes are pending admin approval."
           : "Page updated successfully";
         toast.success(message);
         onPageUpdated(res.data.page);
@@ -1018,6 +909,10 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
   if (!show || !page) return null;
 
   const isPending = page.approvalStatus === 'pending';
+  const hasContactChanges = 
+    formData.phone !== page.phone || 
+    formData.email !== page.email || 
+    formData.address !== page.address;
 
   return (
     <div style={{
@@ -1047,10 +942,8 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-          <h5 style={{ color: '#495057', margin: 0 }}>
-            Edit Page
-          </h5>
-          <button
+          <h5 style={{ color: '#495057', margin: 0 }}>Edit Page</h5>
+          <button 
             style={{
               background: 'none',
               border: 'none',
@@ -1063,14 +956,12 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
             ×
           </button>
         </div>
-
+        
         <form onSubmit={handleSubmit}>
           <div style={{ padding: '1.5rem' }}>
             {loadingCategories ? (
-              <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <div style={{ color: '#6c757d' }}>
-                  Loading data...
-                </div>
+              <div style={{ textAlign: 'center', padding: '2rem', color: '#6c757d' }}>
+                Loading data...
               </div>
             ) : (
               <>
@@ -1083,14 +974,27 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                     marginBottom: '1.5rem',
                     fontSize: '0.875rem'
                   }}>
-                    This page is currently under admin review. Editing is disabled until review is complete.
+                    This page is under admin review. Editing is disabled until review is complete.
                   </div>
                 )}
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+                {hasContactChanges && !isPending && (
+                  <div style={{
+                    backgroundColor: '#fff3cd',
+                    border: '1px solid #ffecb5',
+                    borderRadius: '5px',
+                    padding: '0.75rem',
+                    marginBottom: '1.5rem',
+                    fontSize: '0.875rem'
+                  }}>
+                    Contact detail changes require admin approval.
+                  </div>
+                )}
+
+                <div style={{ display: 'grid', gap: '1rem' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                         Page Name <span style={{ color: '#dc3545' }}>*</span>
                       </label>
                       <input
@@ -1100,18 +1004,18 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                           padding: '0.375rem 0.75rem',
                           border: '1px solid #ced4da',
                           borderRadius: '0.25rem',
-                          backgroundColor: isPending ? '#f8f9fa' : 'white',
-                          color: isPending ? '#6c757d' : '#495057'
+                          backgroundColor: isPending ? '#f8f9fa' : 'white'
                         }}
                         value={formData.pageName}
                         onChange={(e) => setFormData(prev => ({ ...prev, pageName: e.target.value }))}
-                        required
                         disabled={isPending}
                       />
                     </div>
-
+                    
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>Username</label>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                        Username
+                      </label>
                       <div style={{ display: 'flex' }}>
                         <span style={{
                           padding: '0.375rem 0.75rem',
@@ -1127,8 +1031,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                             padding: '0.375rem 0.75rem',
                             border: '1px solid #ced4da',
                             borderRadius: '0 0.25rem 0.25rem 0',
-                            backgroundColor: isPending ? '#f8f9fa' : 'white',
-                            color: isPending ? '#6c757d' : '#495057'
+                            backgroundColor: isPending ? '#f8f9fa' : 'white'
                           }}
                           value={formData.username}
                           onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
@@ -1139,7 +1042,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                       Description <span style={{ color: '#dc3545' }}>*</span>
                     </label>
                     <textarea
@@ -1148,21 +1051,18 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                         padding: '0.375rem 0.75rem',
                         border: '1px solid #ced4da',
                         borderRadius: '0.25rem',
-                        resize: 'vertical',
-                        backgroundColor: isPending ? '#f8f9fa' : 'white',
-                        color: isPending ? '#6c757d' : '#495057'
+                        backgroundColor: isPending ? '#f8f9fa' : 'white'
                       }}
                       rows="3"
                       value={formData.description}
                       onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                      required
                       disabled={isPending}
-                    ></textarea>
+                    />
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                         Category <span style={{ color: '#dc3545' }}>*</span>
                       </label>
                       <select
@@ -1171,25 +1071,25 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                           padding: '0.375rem 0.75rem',
                           border: '1px solid #ced4da',
                           borderRadius: '0.25rem',
-                          backgroundColor: isPending ? '#f8f9fa' : 'white',
-                          color: isPending ? '#6c757d' : '#495057'
+                          backgroundColor: isPending ? '#020B14FF' : 'white'
                         }}
                         value={formData.category}
                         onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                        required
                         disabled={isPending}
                       >
                         <option value="">Choose category</option>
-                        {categories.map((category) => (
-                          <option key={category} value={category}>
-                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                        {categories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat.charAt(0).toUpperCase() + cat.slice(1)}
                           </option>
                         ))}
                       </select>
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>Phone Number</label>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                        Phone Number
+                      </label>
                       <input
                         type="tel"
                         style={{
@@ -1197,24 +1097,20 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                           padding: '0.375rem 0.75rem',
                           border: '1px solid #ced4da',
                           borderRadius: '0.25rem',
-                          backgroundColor: isPending ? '#f8f9fa' : 'white',
-                          color: isPending ? '#6c757d' : '#495057'
+                          backgroundColor: isPending ? '#f8f9fa' : 'white'
                         }}
                         value={formData.phone}
                         onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                         disabled={isPending}
                       />
-                      {formData.phone !== page.phone && (
-                        <small style={{ color: '#ffc107', display: 'block', marginTop: '0.25rem' }}>
-                          Contact changes require admin approval
-                        </small>
-                      )}
                     </div>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>Email Address</label>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                        Email Address
+                      </label>
                       <input
                         type="email"
                         style={{
@@ -1222,22 +1118,18 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                           padding: '0.375rem 0.75rem',
                           border: '1px solid #ced4da',
                           borderRadius: '0.25rem',
-                          backgroundColor: isPending ? '#f8f9fa' : 'white',
-                          color: isPending ? '#6c757d' : '#495057'
+                          backgroundColor: isPending ? '#f8f9fa' : 'white'
                         }}
                         value={formData.email}
                         onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                         disabled={isPending}
                       />
-                      {formData.email !== page.email && (
-                        <small style={{ color: '#ffc107', display: 'block', marginTop: '0.25rem' }}>
-                          Contact changes require admin approval
-                        </small>
-                      )}
                     </div>
 
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: '#495057' }}>Business Address</label>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                        Business Address
+                      </label>
                       <input
                         type="text"
                         style={{
@@ -1245,18 +1137,12 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                           padding: '0.375rem 0.75rem',
                           border: '1px solid #ced4da',
                           borderRadius: '0.25rem',
-                          backgroundColor: isPending ? '#f8f9fa' : 'white',
-                          color: isPending ? '#6c757d' : '#495057'
+                          backgroundColor: isPending ? '#f8f9fa' : 'white'
                         }}
                         value={formData.address}
                         onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                         disabled={isPending}
                       />
-                      {formData.address !== page.address && (
-                        <small style={{ color: '#ffc107', display: 'block', marginTop: '0.25rem' }}>
-                          Contact changes require admin approval
-                        </small>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -1271,8 +1157,8 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
             justifyContent: 'flex-end',
             gap: '0.5rem'
           }}>
-            <button
-              type="button"
+            <button 
+              type="button" 
               style={{
                 backgroundColor: '#6c757d',
                 color: 'white',
@@ -1285,8 +1171,8 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
             >
               Cancel
             </button>
-            <button
-              type="submit"
+            <button 
+              type="submit" 
               style={{
                 backgroundColor: (loading || isPending) ? '#6c757d' : '#28a745',
                 color: 'white',
