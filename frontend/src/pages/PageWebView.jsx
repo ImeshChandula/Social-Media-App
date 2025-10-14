@@ -389,22 +389,11 @@ const PageWebView = () => {
                         onClick={handleFollow}
                       >
                         <FaThumbsUp className="me-2" />
-                        {isFollowing ? 'Liked' : 'Like'}
-                      </button>
-                      <button className="btn btn-light">
-                        <FaUserPlus className="me-2" />
-                        Follow
-                      </button>
-                      <button className="btn btn-light">
-                        <FaEnvelope className="me-2" />
-                        Message
+                        {isFollowing ? 'Followed' : 'Follow'}
                       </button>
                       <button className="btn btn-light">
                         <FaShare className="me-2" />
                         Share
-                      </button>
-                      <button className="btn btn-light">
-                        <FaEllipsisH />
                       </button>
                     </>
                   ) : (
