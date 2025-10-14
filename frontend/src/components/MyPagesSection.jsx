@@ -814,7 +814,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
               }}
               disabled={loading}
             >
-              {loading ? 'Submitting...' : 'Submit for Approval'}
+              {loading ? 'Submitting...' : 'Create and Publish'}
             </button>
           </div>
         </form>
