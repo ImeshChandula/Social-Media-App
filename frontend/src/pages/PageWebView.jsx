@@ -465,12 +465,12 @@ const PageWebView = () => {
                     </div>
                     <div className="d-flex gap-3 mt-2 text-dark">
                       <span>
-                        <FaThumbsUp className="me-1" /> 
-                        <strong>{page.followersCount || 0}</strong> likes
+                        < FaUserPlus className="me-1" /> 
+                        <strong>{page.followersCount || 0}</strong> Followers
                       </span>
                       <span>
-                        <FaUserPlus className="me-1" />
-                        <strong>{page.followersCount || 0}</strong> followers
+                        <FaThumbsUp className="me-1" />
+                        <strong>{stories.length || 0}</strong> Stories
                       </span>
                       <span>
                         <FaMapMarkerAlt className="me-1" />
