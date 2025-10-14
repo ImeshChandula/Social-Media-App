@@ -1,8 +1,20 @@
-// PageCreationModal.jsx
 import React, { useState, useEffect } from 'react';
-import { axiosInstance } from '../lib/axios';
-import toast from 'react-hot-toast';
 
+// Simulated axios instance for demo
+const axiosInstance = {
+  get: async () => ({ data: { success: true, categories: ['business', 'education', 'entertainment', 'technology', 'lifestyle'] }}),
+  post: async (url, data) => ({ data: { success: true, page: data }})
+};
+
+// Simulated toast for demo
+const toast = {
+  error: (msg) => console.log('Error:', msg),
+  success: (msg) => console.log('Success:', msg)
+};
+
+// ============================================
+// PAGE CREATION MODAL COMPONENT (CLEANED)
+// ============================================
 const PageCreationModal = ({ show, onClose, onPageCreated }) => {
   const [formData, setFormData] = useState({
     pageName: '',
@@ -17,13 +29,24 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
   const [loading, setLoading] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(true);
 
+  // Fetch categories when modal opens
   useEffect(() => {
     if (show) {
       fetchCategories();
     }
   }, [show]);
 
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && show) onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [show, onClose]);
+
   const fetchCategories = async () => {
+    setLoadingCategories(true);
     try {
       const res = await axiosInstance.get('/pages/categories');
       if (res.data.success) {
@@ -39,10 +62,19 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      pageName: '',
+      username: '',
+      description: '',
+      category: '',
+      phone: '',
+      email: '',
+      address: ''
+    });
   };
 
   const handleSubmit = async () => {
@@ -57,22 +89,20 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
       if (res.data.success) {
         toast.success('Page created successfully!');
         onPageCreated(res.data.page);
+        resetForm();
         onClose();
-        setFormData({
-          pageName: '',
-          username: '',
-          description: '',
-          category: '',
-          phone: '',
-          email: '',
-          address: ''
-        });
       }
     } catch (error) {
       console.error('Error creating page:', error);
       toast.error(error.response?.data?.message || 'Failed to create page');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
     }
   };
 
@@ -86,65 +116,66 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
         zIndex: 1050,
         backdropFilter: 'blur(5px)'
       }}
+      onClick={handleBackdropClick}
     >
-      <div className="w-100 h-100 overflow-auto">
-        <div className="container py-3">
+      <div className="w-100 h-100 overflow-auto p-3">
+        <div className="container">
           <div className="row justify-content-center">
-            <div className="col-11 col-md-8 col-lg-6">
-              <div className="bg-white rounded shadow border">
+            <div className="col-12 col-md-8 col-lg-6">
+              <div className="bg-white rounded shadow-lg border">
                 {/* Header */}
                 <div className="d-flex justify-content-between align-items-center p-4 border-bottom">
-                  <h4 className="text-dark mb-0">
+                  <h4 className="mb-0 fw-bold">
                     <i className="fas fa-plus-circle text-primary me-2"></i>
                     Create New Page
                   </h4>
                   <button 
                     type="button" 
-                    className="btn btn-outline-secondary btn-sm rounded-pill"
+                    className="btn-close"
                     onClick={onClose}
-                    style={{ width: '40px', height: '40px' }}
-                  >
-                    <i className="fas fa-times"></i>
-                  </button>
+                    aria-label="Close"
+                  ></button>
                 </div>
                 
                 {/* Body */}
                 <div className="p-4">
                   {loadingCategories ? (
                     <div className="text-center py-5">
-                      <div className="spinner-border text-primary mb-3" role="status"></div>
+                      <div className="spinner-border text-primary mb-3" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
                       <p className="text-muted">Loading categories...</p>
                     </div>
                   ) : (
                     <div>
                       {/* Basic Info */}
                       <div className="mb-4">
-                        <h6 className="text-primary mb-3">
+                        <h6 className="text-primary mb-3 fw-semibold">
                           <i className="fas fa-info-circle me-2"></i>
                           Basic Information
                         </h6>
                         
                         <div className="mb-3">
-                          <label className="form-label text-dark">
+                          <label className="form-label">
                             Page Name <span className="text-danger">*</span>
                           </label>
                           <input
                             type="text"
-                            className="form-control bg-light text-dark border rounded"
+                            className="form-control"
                             name="pageName"
                             value={formData.pageName}
                             onChange={handleInputChange}
-                            placeholder="Enter an awesome page name"
+                            placeholder="Enter page name"
                           />
                         </div>
 
                         <div className="mb-3">
-                          <label className="form-label text-dark">Username</label>
+                          <label className="form-label">Username</label>
                           <div className="input-group">
-                            <span className="input-group-text bg-light text-dark border">@</span>
+                            <span className="input-group-text">@</span>
                             <input
                               type="text"
-                              className="form-control bg-light text-dark border rounded-end"
+                              className="form-control"
                               name="username"
                               value={formData.username}
                               onChange={handleInputChange}
@@ -154,11 +185,11 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
                         </div>
 
                         <div className="mb-3">
-                          <label className="form-label text-dark">
+                          <label className="form-label">
                             Description <span className="text-danger">*</span>
                           </label>
                           <textarea
-                            className="form-control bg-light text-dark border rounded"
+                            className="form-control"
                             name="description"
                             value={formData.description}
                             onChange={handleInputChange}
@@ -168,11 +199,11 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
                         </div>
 
                         <div className="mb-3">
-                          <label className="form-label text-dark">
+                          <label className="form-label">
                             Category <span className="text-danger">*</span>
                           </label>
                           <select
-                            className="form-select bg-light text-dark border rounded"
+                            className="form-select"
                             name="category"
                             value={formData.category}
                             onChange={handleInputChange}
@@ -189,17 +220,17 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
 
                       {/* Contact Info */}
                       <div className="mb-4">
-                        <h6 className="text-info mb-3">
+                        <h6 className="text-secondary mb-3 fw-semibold">
                           <i className="fas fa-address-book me-2"></i>
                           Contact Information (Optional)
                         </h6>
                         
                         <div className="row g-3">
                           <div className="col-md-6">
-                            <label className="form-label text-dark">Phone</label>
+                            <label className="form-label">Phone</label>
                             <input
                               type="tel"
-                              className="form-control bg-light text-dark border rounded"
+                              className="form-control"
                               name="phone"
                               value={formData.phone}
                               onChange={handleInputChange}
@@ -207,10 +238,10 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
                             />
                           </div>
                           <div className="col-md-6">
-                            <label className="form-label text-dark">Email</label>
+                            <label className="form-label">Email</label>
                             <input
                               type="email"
-                              className="form-control bg-light text-dark border rounded"
+                              className="form-control"
                               name="email"
                               value={formData.email}
                               onChange={handleInputChange}
@@ -220,10 +251,10 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
                         </div>
 
                         <div className="mt-3">
-                          <label className="form-label text-dark">Address</label>
+                          <label className="form-label">Address</label>
                           <input
                             type="text"
-                            className="form-control bg-light text-dark border rounded"
+                            className="form-control"
                             name="address"
                             value={formData.address}
                             onChange={handleInputChange}
@@ -236,29 +267,36 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
                 </div>
                 
                 {/* Footer */}
-                <div className="p-4 border-top d-flex justify-content-end gap-2">
-                  <button 
-                    type="button" 
-                    className="btn btn-outline-secondary rounded px-4"
-                    onClick={onClose}
-                    disabled={loading}
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    type="button" 
-                    className="btn btn-primary rounded px-4"
-                    onClick={handleSubmit}
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                    ) : (
-                      <i className="fas fa-save me-2"></i>
-                    )}
-                    Create Page
-                  </button>
-                </div>
+                {!loadingCategories && (
+                  <div className="p-4 border-top d-flex justify-content-end gap-2">
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary"
+                      onClick={onClose}
+                      disabled={loading}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn btn-primary"
+                      onClick={handleSubmit}
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2"></span>
+                          Creating...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-check me-2"></i>
+                          Create Page
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -268,4 +306,54 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
   );
 };
 
-export default PageCreationModal;
+// ============================================
+// PARENT COMPONENT EXAMPLE (HOW TO USE IT)
+// ============================================
+const PageManagement = () => {
+  const [showModal, setShowModal] = useState(false);
+  const [pages, setPages] = useState([]);
+
+  const handlePageCreated = (newPage) => {
+    setPages(prev => [...prev, newPage]);
+    console.log('New page created:', newPage);
+  };
+
+  return (
+    <div className="container mt-5">
+      <div className="text-center">
+        <h2 className="mb-4">Page Management</h2>
+        
+        {/* THIS IS THE BUTTON THAT OPENS THE MODAL */}
+        <button 
+          className="btn btn-primary btn-lg"
+          onClick={() => setShowModal(true)}
+        >
+          <i className="fas fa-plus-circle me-2"></i>
+          Create Your First Page
+        </button>
+
+        {pages.length > 0 && (
+          <div className="mt-4">
+            <h5>Created Pages:</h5>
+            <ul className="list-group mt-3">
+              {pages.map((page, index) => (
+                <li key={index} className="list-group-item">
+                  <strong>{page.pageName}</strong> - {page.category}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* THE MODAL COMPONENT */}
+      <PageCreationModal 
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        onPageCreated={handlePageCreated}
+      />
+    </div>
+  );
+};
+
+export default PageManagement;

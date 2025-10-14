@@ -24,8 +24,10 @@ class Page {
 
         // Status and verification
         this.isVerified = data.isVerified || false;
-        this.isPublished = data.isPublished !== undefined ? data.isPublished : true;
-        this.approvalStatus = data.approvalStatus || 'pending'; // pending, approved, rejected
+        //this.isPublished = data.isPublished !== undefined ? data.isPublished : true;
+        this.isPublished = data.isPublished !== undefined ? data.isPublished : false; // Default to false for admin approval workflow
+        //this.approvalStatus = data.approvalStatus || 'pending'; // pending, approved, rejected
+        this.approvalStatus = data.approvalStatus || 'approved'; // Default to approved for immediate publishing
         this.submittedForApproval = data.submittedForApproval || false;
         this.submittedAt = data.submittedAt || null;
         this.publishedAt = data.publishedAt || null;

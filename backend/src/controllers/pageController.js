@@ -112,10 +112,14 @@ const createPage = async(req, res) => {
             profilePicture: profilePictureUrl,
             followers: [],
             posts: [],
-            isPublished: false, // Not published until admin approval and user publishes
-            approvalStatus: 'pending', // Pending admin approval
-            submittedForApproval: true,
-            submittedAt: new Date().toISOString()
+            //isPublished: false, // Not published until admin approval and user publishes
+            isPublished: true, // Publish immediatly after creation
+            //approvalStatus: 'pending', // Pending admin approval
+            approvalStatus: 'approved', // Auto-approved
+            //submittedForApproval: true,
+            submittedForApproval: false, // No need for approval
+            //submittedAt: new Date().toISOString()
+            publishedAt: new Date().toISOString() // Set published date now
         };
 
         console.log('Creating page with data:', {
@@ -295,13 +299,21 @@ const publishPage = async(req, res) => {
             });
         }
 
-        // Check if page is approved by admin
-        if (page.approvalStatus !== 'approved') {
+        // Check if page is already published
+        if (page.isPublished) {
             return res.status(400).json({
                 success: false,
-                message: 'Page must be approved by admin before publishing'
+                message: 'Page is already published'
             });
         }
+
+        // // Check if page is approved by admin
+        // if (page.approvalStatus !== 'approved') {
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: 'Page must be approved by admin before publishing'
+        //     });
+        // }
 
         // Validate that all required fields are filled
         if (!page.pageName || !page.description || !page.category || !page.phone || !page.email || !page.address || !page.profilePicture) {
@@ -313,6 +325,7 @@ const publishPage = async(req, res) => {
 
         const updatedPage = await PageService.updateById(pageId, {
             isPublished: true,
+            approvalStatus: 'approved', // Auto-approve on publish
             publishedAt: new Date().toISOString()
         });
 
