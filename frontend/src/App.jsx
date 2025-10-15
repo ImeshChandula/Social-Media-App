@@ -114,17 +114,6 @@ const App = () => {
             }
           />
 
-          {/* FIXED: Move PageWebView route BEFORE the catch-all route */}
-          <Route
-            path="/page/:id"
-            element={
-              authUser && authUser.accountStatus === "active" ? (
-                <PageWebView />
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
 
           <Route
             path="/dashboard/*"

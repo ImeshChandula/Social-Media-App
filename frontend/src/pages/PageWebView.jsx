@@ -45,18 +45,18 @@ const PageWebView = () => {
   const [showAbout, setShowAbout] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
-  
+
   // Content states
   const [posts, setPosts] = useState([]);
   const [stories, setStories] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [loadingStories, setLoadingStories] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
-  
+
   // Create content modal states
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showCreateStory, setShowCreateStory] = useState(false);
-  
+
   // Story viewer states
   const [showStoryViewer, setShowStoryViewer] = useState(false);
   const [pageStories, setPageStories] = useState(null);
@@ -81,13 +81,13 @@ const PageWebView = () => {
         const pageData = res.data.page;
         setPage(pageData);
         setIsFollowing(pageData.isFollowing || false);
-        
-        const ownershipCheck = pageData.isOwner || 
-                              (authUser && (
-                                pageData.owner === authUser.id || 
-                                pageData.owner?.id === authUser.id
-                              ));
-        
+
+        const ownershipCheck = pageData.isOwner ||
+          (authUser && (
+            pageData.owner === authUser.id ||
+            pageData.owner?.id === authUser.id
+          ));
+
         setIsOwner(ownershipCheck);
       }
     } catch (err) {
@@ -136,7 +136,7 @@ const PageWebView = () => {
   const handleProfilePictureClick = async () => {
     try {
       const res = await axiosInstance.get(`/pages/${id}/stories`);
-      
+
       if (res?.data?.success && res.data.stories?.length > 0) {
         const now = new Date();
         const activeStories = res.data.stories.filter(story => {
@@ -189,7 +189,7 @@ const PageWebView = () => {
 
   const hasActiveStories = () => {
     if (!stories || stories.length === 0) return false;
-    
+
     const now = new Date();
     return stories.some(story => {
       const expiresAt = new Date(story.expiresAt);
@@ -199,11 +199,11 @@ const PageWebView = () => {
 
   const handleFollow = async () => {
     if (!page) return;
-    
+
     try {
       const endpoint = isFollowing ? 'unfollow' : 'follow';
       const res = await axiosInstance.post(`/pages/${id}/${endpoint}`);
-      
+
       if (res?.data?.success) {
         setIsFollowing(!isFollowing);
         toast.success(isFollowing ? "Unfollowed page" : "Following page");
@@ -250,7 +250,7 @@ const PageWebView = () => {
 
   const handleStoryDelete = (storyId) => {
     setStories(prev => prev.filter(story => story._id !== storyId));
-    
+
     if (pageStories) {
       const updatedStories = pageStories.stories.filter(story => story._id !== storyId);
       if (updatedStories.length === 0) {
@@ -263,7 +263,7 @@ const PageWebView = () => {
         }));
       }
     }
-    
+
     toast.success('Story deleted successfully');
   };
 
@@ -292,13 +292,13 @@ const PageWebView = () => {
   };
 
   const updatePostLike = (postId, isLiked, likeCount) => {
-    setPosts(prevPosts => 
+    setPosts(prevPosts =>
       prevPosts.map(post => {
         const currentPostId = post._id || post.id;
         if (currentPostId === postId) {
-          return { 
-            ...post, 
-            isLiked, 
+          return {
+            ...post,
+            isLiked,
             likeCount: Math.max(0, likeCount)
           };
         }
@@ -318,7 +318,7 @@ const PageWebView = () => {
           const currentPostId = post._id || post.id;
           return currentPostId !== postId;
         }));
-        
+
         toast.success("Post reported successfully");
         return { success: true, message: "Post reported successfully" };
       }
@@ -364,7 +364,7 @@ const PageWebView = () => {
             className="w-100 h-100"
             style={{ objectFit: "cover" }}
           />
-          
+
         </div>
 
         {/* Page Info Header */}
@@ -402,7 +402,7 @@ const PageWebView = () => {
                         <FaEdit className="me-2" />
                         Edit Page
                       </button>
-                      
+
                     </>
                   )}
                 </div>
@@ -410,17 +410,17 @@ const PageWebView = () => {
               <div className="d-flex align-items-end justify-content-between flex-wrap">
                 {/* Profile Picture */}
                 <div className="d-flex align-items-end gap-3">
-                  <div 
+                  <div
                     className="position-relative"
                     onClick={handleProfilePictureClick}
-                    style={{ 
+                    style={{
                       cursor: hasActiveStories() ? 'pointer' : 'default',
                     }}
                   >
                     <img
                       src={page.profilePicture || "/default-page-avatar.png"}
                       alt={page.pageName}
-                      className="rounded-circle border border-5 border-white"
+                      className="rounded-circle border-5 border-white"
                       style={{
                         width: "168px",
                         height: "168px",
@@ -449,14 +449,14 @@ const PageWebView = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Page Name & Stats */}
                   <div className="mb-3">
                     <div className="d-flex align-items-center gap-2">
                       <h1 className="mb-0 text-dark" style={{ fontSize: "32px", fontWeight: "700" }}>
                         {page.pageName}
                       </h1>
-                    
+
                     </div>
                     <div className="text-secondary mt-1">
                       {page.category && (
@@ -465,7 +465,7 @@ const PageWebView = () => {
                     </div>
                     <div className="d-flex gap-3 mt-2 text-dark">
                       <span>
-                        < FaUserPlus className="me-1" /> 
+                        < FaUserPlus className="me-1" />
                         <strong>{page.followersCount || 0}</strong> Followers
                       </span>
                       <span>
@@ -488,7 +488,7 @@ const PageWebView = () => {
                     <button
                       className={`nav-link ${activeTab === 'home' ? 'active' : ''} border-0`}
                       onClick={() => setActiveTab('home')}
-                      style={{ 
+                      style={{
                         color: activeTab === 'home' ? '#1877f2' : '#4a5568',
                         borderBottom: activeTab === 'home' ? '3px solid #1877f2' : 'none',
                         fontWeight: '600'
@@ -501,7 +501,7 @@ const PageWebView = () => {
                     <button
                       className={`nav-link ${activeTab === 'about' ? 'active' : ''} border-0`}
                       onClick={() => setActiveTab('about')}
-                      style={{ 
+                      style={{
                         color: activeTab === 'about' ? '#1877f2' : '#4a5568',
                         borderBottom: activeTab === 'about' ? '3px solid #1877f2' : 'none',
                         fontWeight: '600'
@@ -514,7 +514,7 @@ const PageWebView = () => {
                     <button
                       className={`nav-link ${activeTab === 'posts' ? 'active' : ''} border-0`}
                       onClick={() => setActiveTab('posts')}
-                      style={{ 
+                      style={{
                         color: activeTab === 'posts' ? '#1877f2' : '#4a5568',
                         borderBottom: activeTab === 'posts' ? '3px solid #1877f2' : 'none',
                         fontWeight: '600'
@@ -527,7 +527,7 @@ const PageWebView = () => {
                     <button
                       className={`nav-link ${activeTab === 'photos' ? 'active' : ''} border-0`}
                       onClick={() => setActiveTab('photos')}
-                      style={{ 
+                      style={{
                         color: activeTab === 'photos' ? '#1877f2' : '#4a5568',
                         borderBottom: activeTab === 'photos' ? '3px solid #1877f2' : 'none',
                         fontWeight: '600'
@@ -540,7 +540,7 @@ const PageWebView = () => {
                     <button
                       className={`nav-link ${activeTab === 'videos' ? 'active' : ''} border-0`}
                       onClick={() => setActiveTab('videos')}
-                      style={{ 
+                      style={{
                         color: activeTab === 'videos' ? '#1877f2' : '#4a5568',
                         borderBottom: activeTab === 'videos' ? '3px solid #1877f2' : 'none',
                         fontWeight: '600'
@@ -567,9 +567,9 @@ const PageWebView = () => {
                 <p className="text-secondary mb-3">
                   {page.description || "No description available"}
                 </p>
-                <button className={`nav-link ${activeTab === 'about' ? 'active' : ''} btn btn-light w-100`} 
-                        onClick={() => setActiveTab('about')}>
-                See more</button>
+                <button className={`nav-link ${activeTab === 'about' ? 'active' : ''} btn btn-light w-100`}
+                  onClick={() => setActiveTab('about')}>
+                  See more</button>
               </div>
             </div>
 
@@ -577,7 +577,7 @@ const PageWebView = () => {
             <div className="card border-0 shadow-sm mb-3">
               <div className="card-body">
                 <h6 className="fw-bold text-dark mb-3">Contact Info</h6>
-                
+
                 {page.address && (
                   <div className="d-flex align-items-start mb-3">
                     <FaMapMarkerAlt className="mt-1 me-3 text-secondary" />
@@ -596,8 +596,8 @@ const PageWebView = () => {
                       <div className="d-flex justify-content-between align-items-center">
                         <span className="text-dark">{page.phone}</span>
                         {!isOwner && (
-                          <WhatsAppContactButton 
-                            pageId={id} 
+                          <WhatsAppContactButton
+                            pageId={id}
                             pageName={page.pageName}
                             size="sm"
                           />
@@ -641,7 +641,7 @@ const PageWebView = () => {
                   </div>
                 </div>
                 */}
-                {/* Sample Review 1 
+            {/* Sample Review 1 
                 <div className="mb-3 pb-3 border-bottom">
                   <div className="d-flex gap-2 mb-2">
                     <img
@@ -705,11 +705,11 @@ const PageWebView = () => {
                 <h5 className="fw-bold mb-2">Get in Touch</h5>
                 <p className="mb-3">Ready to transform your business? Contact us today!</p>
                 <WhatsAppContactButton
-                        className="btn btn-light w-100"
-                        pageId={page.id}
-                        pageName={page.pageName}
-                        size="sm"
-                      />
+                  className="btn btn-light w-100"
+                  pageId={page.id}
+                  pageName={page.pageName}
+                  size="sm"
+                />
               </div>
             </div>
           </div>
@@ -727,7 +727,7 @@ const PageWebView = () => {
                       className="rounded-circle"
                       style={{ width: "40px", height: "40px", objectFit: "cover" }}
                     />
-                    <button 
+                    <button
                       className="btn btn-light w-100 text-start"
                       onClick={handleCreatePost}
                       style={{ borderRadius: "20px", backgroundColor: "#f0f2f5" }}
@@ -855,8 +855,8 @@ const PageWebView = () => {
             <div className="modal-content bg-dark text-white border-secondary">
               <div className="modal-header border-secondary">
                 <h5 className="modal-title">Create Page Story</h5>
-                <button 
-                  className="btn-close btn-close-white" 
+                <button
+                  className="btn-close btn-close-white"
                   onClick={() => setShowCreateStory(false)}
                 ></button>
               </div>
@@ -891,7 +891,7 @@ const PageWebView = () => {
 
       {/* Edit Profile Modal */}
       {isOwner && (
-        <EditProfileModal 
+        <EditProfileModal
           show={showEditProfile}
           onClose={() => setShowEditProfile(false)}
           page={page}
@@ -907,7 +907,7 @@ const AboutTabContent = ({ page, isOwner, pageId }) => (
   <div className="card border-0 shadow-sm">
     <div className="card-body">
       <h5 className="fw-bold text-dark mb-4">About</h5>
-      
+
       <div className="mb-4">
         <h6 className="fw-bold text-dark mb-2">Overview</h6>
         <p className="text-secondary">
@@ -917,7 +917,7 @@ const AboutTabContent = ({ page, isOwner, pageId }) => (
 
       <div className="mb-4">
         <h6 className="fw-bold text-dark mb-3">Page Info</h6>
-        
+
         {page.category && (
           <div className="mb-3">
             <strong className="text-dark">Category:</strong>
@@ -948,8 +948,8 @@ const AboutTabContent = ({ page, isOwner, pageId }) => (
                 {page.phone}
               </span>
               {!isOwner && (
-                <WhatsAppContactButton 
-                  pageId={pageId} 
+                <WhatsAppContactButton
+                  pageId={pageId}
                   pageName={page.pageName}
                   size="sm"
                 />
@@ -1097,7 +1097,7 @@ const ReviewsTabContent = ({ page }) => (
 // Photos Tab Content Component
 const PhotosTabContent = ({ posts }) => {
   const photoPosts = posts.filter(post => post.image || post.media);
-  
+
   return (
     <div className="card border-0 shadow-sm">
       <div className="card-body">
@@ -1131,7 +1131,7 @@ const PhotosTabContent = ({ posts }) => {
 // Videos Tab Content Component
 const VideosTabContent = ({ posts }) => {
   const videoPosts = posts.filter(post => post.video);
-  
+
   return (
     <div className="card border-0 shadow-sm">
       <div className="card-body">
