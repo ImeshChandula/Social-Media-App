@@ -178,14 +178,19 @@ function Sidebar() {
         </ul>
       </div>
 
-      {/* Mobile Topbar */}
+      {/* Mobile Topbar (Header) */}
       <div
         className={`mobile-topbar ${bgClass} ${textClass} d-flex d-md-none flex-column fixed-top w-100 py-2`}
         style={{ zIndex: 999 }}
       >
         {/* Logo, Search and Theme Toggle */}
-        <div className="d-flex justify-content-between align-items-center px-3 mb-2">
-          <FiBold size={28} color="#1ecb73" className="cursor-pointer" onClick={() => navigate("/")} />
+        <div className="d-flex justify-content-between align-items-center px-3">
+          <FiBold
+            size={28}
+            color="#1ecb73"
+            className="cursor-pointer"
+            onClick={() => navigate("/")}
+          />
           <div className="d-flex align-items-center gap-2">
             {/* Theme Toggle */}
             <button
@@ -208,68 +213,48 @@ function Sidebar() {
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Navigation Tabs */}
-        <div className="d-flex justify-content-around px-2">
-          {["Home", "Business Center", "Profile", "Notification"].map((label) => {
-            const item = navItems.find((i) => i.name === label);
-            if (!item) return null;
-            return (
-              <NavLink
-                key={item.name}
-                to={item.path}
-                className={({ isActive }) =>
-                  `${textClass} d-flex flex-column align-items-center py-2 px-1 rounded ${isActive ? `${activeBgClass} ${textClass} fw-bold` : textClass}`
-                }
-                style={{ fontSize: "1.15rem", textDecoration: "none", width: "10%" }}
-              >
-                {item.icon}
-
-                {/* 
-                <small style={{ fontSize: "0.8rem" }}>{item.name}</small>
-                */}
-
-              </NavLink>
-            );
-          })}
-
-          {/* More Dropdown */}
-          <div className="position-relative" ref={moreRef}>
-            <button
-              className={`bg-transparent border-0 ${textClass} d-flex flex-column align-items-center py-2 px-1`}
-              onClick={() => setShowMore((prev) => !prev)}
-              style={{ fontSize: "1rem" }}
+      {/* Mobile Bottom Navigation */}
+      <div
+        className={`mobile-bottom-nav ${bgClass} ${textClass} d-flex d-md-none justify-content-around align-items-center fixed-bottom py-2 border-top ${borderClass}`}
+        style={{ zIndex: 999 }}
+      >
+        {["Home", "Business Center", "Profile", "Notification"].map((label) => {
+          const item = navItems.find((i) => i.name === label);
+          if (!item) return null;
+          return (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              className={({ isActive }) =>
+                `${textClass} d-flex flex-column align-items-center px-2 ${isActive ? `${activeBgClass} fw-bold` : textClass}`
+              }
+              style={{ fontSize: "1.2rem", textDecoration: "none" }}
             >
-              <FaEllipsisH />
+              {item.icon}
+            </NavLink>
+          );
+        })}
 
-              {/* 
-              <small style={{ fontSize: "0.8rem" }}>More</small>
-              */}
+        {/* More Dropdown */}
+        <div className="position-relative" ref={moreRef}>
+          <button
+            className={`bg-transparent border-0 ${textClass} d-flex flex-column align-items-center px-2`}
+            onClick={() => setShowMore((prev) => !prev)}
+            style={{ fontSize: "1.2rem" }}
+          >
+            <FaEllipsisH />
+          </button>
 
-            </button>
-            {showMore && (
-              <div
-                className={`position-absolute ${bgClass} ${textClass} rounded ${shadowClass} p-2`}
-                style={{ top: "100%", right: 0, zIndex: 1000, minWidth: "160px" }}
-              >
-                {navItems
-                  .filter((item) => !["Home", "Business Center", "Profile", "Notification"].includes(item.name))
-                  .map(({ name, path, icon }) => (
-                    <NavLink
-                      key={name}
-                      to={path}
-                      className={({ isActive }) =>
-                        `d-flex align-items-center gap-2 py-1 px-2 rounded ${textClass} ${isActive ? `${activeBgClass} fw-bold` : ""}`
-                      }
-                      onClick={() => setShowMore(false)}
-                      style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
-                    >
-                      {icon} {name}
-                    </NavLink>
-                  ))}
-
-                {shortcuts.length > 0 && <hr className={`${textClass} my-2`} />}
-                {shortcuts.map(({ name, path, icon }) => (
+          {showMore && (
+            <div
+              className={`position-absolute ${bgClass} ${textClass} rounded ${shadowClass} p-2`}
+              style={{ bottom: "100%", right: 0, zIndex: 1000, minWidth: "160px" }}
+            >
+              {navItems
+                .filter((item) => !["Home", "Business Center", "Profile", "Notification"].includes(item.name))
+                .map(({ name, path, icon }) => (
                   <NavLink
                     key={name}
                     to={path}
@@ -283,30 +268,40 @@ function Sidebar() {
                   </NavLink>
                 ))}
 
-                {BusinessTools.length > 0 && <hr className={`${textClass} my-2`} />}
-                {BusinessTools.map(({ name, path, icon }) => (
-                  <NavLink
-                    key={name}
-                    to={path}
-                    className={({ isActive }) =>
-                      `d-flex align-items-center gap-2 py-1 px-2 rounded ${textClass} ${isActive ? `${activeBgClass} fw-bold` : ""}`
-                    }
-                    onClick={() => setShowMore(false)}
-                    style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
-                  >
-                    {icon} {name}
-                  </NavLink>
-                ))}
+              {shortcuts.length > 0 && <hr className={`${textClass} my-2`} />}
+              {shortcuts.map(({ name, path, icon }) => (
+                <NavLink
+                  key={name}
+                  to={path}
+                  className={({ isActive }) =>
+                    `d-flex align-items-center gap-2 py-1 px-2 rounded ${textClass} ${isActive ? `${activeBgClass} fw-bold` : ""}`
+                  }
+                  onClick={() => setShowMore(false)}
+                  style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
+                >
+                  {icon} {name}
+                </NavLink>
+              ))}
 
-                <hr className={`${textClass} my-2`} />
-                {/* ✅ Logout Button (mobile dropdown) */}
-                <LogoutButton
-                  className={textClass}
-                  onAfterLogout={() => setShowMore(false)}
-                />
-              </div>
-            )}
-          </div>
+              {BusinessTools.length > 0 && <hr className={`${textClass} my-2`} />}
+              {BusinessTools.map(({ name, path, icon }) => (
+                <NavLink
+                  key={name}
+                  to={path}
+                  className={({ isActive }) =>
+                    `d-flex align-items-center gap-2 py-1 px-2 rounded ${textClass} ${isActive ? `${activeBgClass} fw-bold` : ""}`
+                  }
+                  onClick={() => setShowMore(false)}
+                  style={{ fontSize: "1rem", whiteSpace: "nowrap", textDecoration: "none" }}
+                >
+                  {icon} {name}
+                </NavLink>
+              ))}
+
+              <hr className={`${textClass} my-2`} />
+              <LogoutButton className={textClass} onAfterLogout={() => setShowMore(false)} />
+            </div>
+          )}
         </div>
       </div>
     </>
