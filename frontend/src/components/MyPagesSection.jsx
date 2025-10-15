@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
+import useThemeStore from "../store/themeStore";
 
 const MyPagesSection = ({ onViewPagePosts }) => {
   const [pages, setPages] = useState([]);
@@ -11,6 +12,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedPage, setSelectedPage] = useState(null);
   const navigate = useNavigate();
+  const { isDarkMode } = useThemeStore();
 
   useEffect(() => {
     fetchUserPages();
@@ -76,7 +78,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
       banned: { backgroundColor: '#343a40', color: 'white' },
       default: { backgroundColor: '#6c757d', color: 'white' }
     };
-    
+
     const badgeStyle = {
       ...styles[status] || styles.default,
       padding: '4px 12px',
@@ -93,7 +95,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
       banned: "Banned",
       default: "Draft"
     };
-    
+
     return <span style={badgeStyle}>{labels[status] || labels.default}</span>;
   };
 
@@ -116,7 +118,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
       banned: page.banReason || "This page has been banned by admin.",
       default: "Complete your page setup and submit for approval"
     };
-    
+
     return messages[status] || messages.default;
   };
 
@@ -146,7 +148,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
         Create your first page to start building your brand presence and connecting with your audience.
         Your page will need admin approval before it can be published.
       </p>
-      <button 
+      <button
         style={{
           backgroundColor: '#28a745',
           color: 'white',
@@ -164,10 +166,10 @@ const MyPagesSection = ({ onViewPagePosts }) => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <div>
-          <h5 style={{ color: '#E4E8EDFF', marginBottom: '0.25rem' }}>My Pages</h5>
-          <p style={{ color: '#ACB6C0FF', marginBottom: '0' }}>Manage your pages and track their performance</p>
+          <h5 className={`mb-1 ${isDarkMode ? "text-white" : "text-black"} `}>My Pages</h5>
+          <p className="text-secondary">Manage your pages and track their performance</p>
         </div>
-        <button 
+        <button
           style={{
             backgroundColor: '#28a745',
             color: 'white',
@@ -186,7 +188,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
         {pages.map((page, index) => {
           const pageId = page.id || page._id;
           const status = getDisplayStatus(page);
-          
+
           return (
             <motion.div
               key={pageId}
@@ -205,9 +207,9 @@ const MyPagesSection = ({ onViewPagePosts }) => {
                 <img
                   src={page.profilePicture || "/default-page-avatar.png"}
                   alt={page.pageName}
-                  style={{ 
-                    width: '60px', 
-                    height: '60px', 
+                  style={{
+                    width: '60px',
+                    height: '60px',
                     objectFit: 'cover',
                     borderRadius: '50%',
                     border: '2px solid #e9ecef',
@@ -229,7 +231,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
                 </div>
               </div>
 
-              <div style={{ 
+              <div style={{
                 marginBottom: '1rem',
                 padding: '0.75rem',
                 borderRadius: '5px',
@@ -311,7 +313,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
                     </button>
                   </>
                 )}
-                
+
                 {canPublish(page) && (
                   <button
                     style={{
@@ -369,12 +371,12 @@ const MyPagesSection = ({ onViewPagePosts }) => {
               </div>
 
               {status === 'rejected' && page.reviewNote && (
-                <div style={{ 
-                  marginTop: '1rem', 
-                  padding: '0.75rem', 
-                  borderRadius: '5px', 
-                  backgroundColor: '#f8d7da', 
-                  border: '1px solid #f5c6cb' 
+                <div style={{
+                  marginTop: '1rem',
+                  padding: '0.75rem',
+                  borderRadius: '5px',
+                  backgroundColor: '#f8d7da',
+                  border: '1px solid #f5c6cb'
                 }}>
                   <small style={{ color: '#721c24' }}>
                     <strong>Admin Feedback:</strong> {page.reviewNote}
@@ -391,7 +393,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
   return (
     <>
       {content}
-      <CreatePageModal 
+      <CreatePageModal
         show={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onPageCreated={(newPage) => {
@@ -401,7 +403,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
         }}
       />
 
-      <EditPageModal 
+      <EditPageModal
         show={showEditModal}
         onClose={() => {
           setShowEditModal(false);
@@ -409,7 +411,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
         }}
         page={selectedPage}
         onPageUpdated={(updatedPage) => {
-          setPages(prev => prev.map(p => 
+          setPages(prev => prev.map(p =>
             (p.id || p._id) === (updatedPage.id || updatedPage._id) ? updatedPage : p
           ));
           setShowEditModal(false);
@@ -495,7 +497,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
 
   const validateForm = () => {
     const errors = [];
-    
+
     if (!formData.pageName.trim()) errors.push("Page name is required");
     if (!formData.description.trim()) errors.push("Description is required");
     if (!formData.category) errors.push("Category is required");
@@ -503,18 +505,18 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
     if (!formData.email.trim()) errors.push("Email address is required");
     if (!formData.address.trim()) errors.push("Business address is required");
     if (!formData.profilePicture) errors.push("Profile image is required");
-    
+
     if (errors.length > 0) {
       toast.error(errors[0]);
       return false;
     }
-    
+
     return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setLoading(true);
@@ -530,7 +532,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
       };
 
       const res = await axiosInstance.post("/pages", submitData);
-      
+
       if (res?.data?.success) {
         onPageCreated(res.data.page);
         resetForm();
@@ -575,7 +577,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
           alignItems: 'center'
         }}>
           <h5 style={{ color: '#495057', margin: 0 }}>Create New Page</h5>
-          <button 
+          <button
             style={{
               background: 'none',
               border: 'none',
@@ -588,7 +590,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
             ×
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit}>
           <div style={{ padding: '1.5rem' }}>
             {loadingCategories ? (
@@ -602,23 +604,23 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                       Profile Picture <span style={{ color: '#dc3545' }}>*</span>
                     </label>
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
                       gap: '1rem',
                       marginBottom: '1rem'
                     }}>
                       {imagePreview && (
-                        <img 
+                        <img
                           src={imagePreview}
-                          alt="Preview" 
-                          style={{ 
-                            width: '80px', 
-                            height: '80px', 
-                            borderRadius: '50%', 
+                          alt="Preview"
+                          style={{
+                            width: '80px',
+                            height: '80px',
+                            borderRadius: '50%',
                             objectFit: 'cover',
                             border: '1px solid #dee2e6'
-                          }} 
+                          }}
                         />
                       )}
                       <input
@@ -648,7 +650,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                         placeholder="Enter page name"
                       />
                     </div>
-                    
+
                     <div>
                       <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                         Username
@@ -787,8 +789,8 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
             justifyContent: 'flex-end',
             gap: '0.5rem'
           }}>
-            <button 
-              type="button" 
+            <button
+              type="button"
               style={{
                 backgroundColor: '#6c757d',
                 color: 'white',
@@ -801,8 +803,8 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
             >
               Cancel
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               style={{
                 backgroundColor: loading ? '#6c757d' : '#28a745',
                 color: 'white',
@@ -869,7 +871,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.pageName || !formData.description || !formData.category) {
       toast.error("Please fill in all required fields");
       return;
@@ -877,7 +879,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
 
     setLoading(true);
     const pageId = page?.id || page?._id;
-    
+
     try {
       const submitData = {
         ...formData,
@@ -890,9 +892,9 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
       };
 
       const res = await axiosInstance.put(`/pages/${pageId}`, submitData);
-      
+
       if (res?.data?.success) {
-        const message = res.data.needsApproval 
+        const message = res.data.needsApproval
           ? "Page updated. Contact details changes are pending admin approval."
           : "Page updated successfully";
         toast.success(message);
@@ -909,9 +911,9 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
   if (!show || !page) return null;
 
   const isPending = page.approvalStatus === 'pending';
-  const hasContactChanges = 
-    formData.phone !== page.phone || 
-    formData.email !== page.email || 
+  const hasContactChanges =
+    formData.phone !== page.phone ||
+    formData.email !== page.email ||
     formData.address !== page.address;
 
   return (
@@ -943,7 +945,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
           alignItems: 'center'
         }}>
           <h5 style={{ color: '#495057', margin: 0 }}>Edit Page</h5>
-          <button 
+          <button
             style={{
               background: 'none',
               border: 'none',
@@ -956,7 +958,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
             ×
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit}>
           <div style={{ padding: '1.5rem' }}>
             {loadingCategories ? (
@@ -1011,7 +1013,7 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
                         disabled={isPending}
                       />
                     </div>
-                    
+
                     <div>
                       <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                         Username
@@ -1157,8 +1159,8 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
             justifyContent: 'flex-end',
             gap: '0.5rem'
           }}>
-            <button 
-              type="button" 
+            <button
+              type="button"
               style={{
                 backgroundColor: '#6c757d',
                 color: 'white',
@@ -1171,8 +1173,8 @@ const EditPageModal = ({ show, onClose, page, onPageUpdated }) => {
             >
               Cancel
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               style={{
                 backgroundColor: (loading || isPending) ? '#6c757d' : '#28a745',
                 color: 'white',
