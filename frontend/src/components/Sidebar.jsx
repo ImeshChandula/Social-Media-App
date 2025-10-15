@@ -211,7 +211,7 @@ function Sidebar() {
 
         {/* Navigation Tabs */}
         <div className="d-flex justify-content-around px-2">
-          {["Home", "Members", "Profile", "Notification"].map((label) => {
+          {["Home", "Business Center", "Profile", "Notification"].map((label) => {
             const item = navItems.find((i) => i.name === label);
             if (!item) return null;
             return (
@@ -221,10 +221,14 @@ function Sidebar() {
                 className={({ isActive }) =>
                   `${textClass} d-flex flex-column align-items-center py-2 px-1 rounded ${isActive ? `${activeBgClass} ${textClass} fw-bold` : textClass}`
                 }
-                style={{ fontSize: "1rem", textDecoration: "none" }}
+                style={{ fontSize: "1.15rem", textDecoration: "none", width: "10%" }}
               >
                 {item.icon}
+
+                {/* 
                 <small style={{ fontSize: "0.8rem" }}>{item.name}</small>
+                */}
+
               </NavLink>
             );
           })}
@@ -237,7 +241,11 @@ function Sidebar() {
               style={{ fontSize: "1rem" }}
             >
               <FaEllipsisH />
+
+              {/* 
               <small style={{ fontSize: "0.8rem" }}>More</small>
+              */}
+
             </button>
             {showMore && (
               <div
@@ -245,7 +253,7 @@ function Sidebar() {
                 style={{ top: "100%", right: 0, zIndex: 1000, minWidth: "160px" }}
               >
                 {navItems
-                  .filter((item) => !["Home", "Members", "Profile", "Notification"].includes(item.name))
+                  .filter((item) => !["Home", "Business Center", "Profile", "Notification"].includes(item.name))
                   .map(({ name, path, icon }) => (
                     <NavLink
                       key={name}
