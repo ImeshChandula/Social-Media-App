@@ -185,12 +185,19 @@ function Sidebar() {
       >
         {/* Logo, Search and Theme Toggle */}
         <div className="d-flex justify-content-between align-items-center px-3">
-          <FiBold
-            size={28}
-            color="#1ecb73"
-            className="cursor-pointer"
-            onClick={() => navigate("/")}
-          />
+
+          <div className="d-flex align-items-center">
+            <FiBold
+              size={28}
+              color="#1ecb73"
+              className="cursor-pointer"
+              onClick={() => navigate("/")}
+            />
+            <h5 className={`mb-0 fw-bold ${isDarkMode ? "text-white" : "text-black"}`} style={{ letterSpacing: "2px", marginTop: "3px" }}>
+              uzads
+            </h5>
+          </div>
+
           <div className="d-flex align-items-center gap-2">
             {/* Theme Toggle */}
             <button
@@ -230,7 +237,7 @@ function Sidebar() {
               className={({ isActive }) =>
                 `${textClass} d-flex flex-column align-items-center px-2 ${isActive ? `${activeBgClass} fw-bold` : textClass}`
               }
-              style={{ fontSize: "1.5rem", textDecoration: "none",borderRadius:"8px", padding:"6px" }}
+              style={{ fontSize: "1.5rem", textDecoration: "none", borderRadius: "8px", padding: "6px" }}
             >
               {item.icon}
             </NavLink>
