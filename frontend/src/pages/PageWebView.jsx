@@ -34,6 +34,7 @@ import {
   FaChartBar,
   FaAddressBook
 } from "react-icons/fa";
+import useThemeStore from "../store/themeStore";
 
 const PageWebView = () => {
   const { id } = useParams();
@@ -45,6 +46,7 @@ const PageWebView = () => {
   const [showAbout, setShowAbout] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const { isDarkMode } = useThemeStore();
 
   // Content states
   const [posts, setPosts] = useState([]);
@@ -331,7 +333,7 @@ const PageWebView = () => {
 
   if (loading) {
     return (
-      <div className="min-vh-100 d-flex justify-content-center align-items-center" style={{ backgroundColor: "#f0f2f5" }}>
+      <div className="min-vh-100 d-flex justify-content-center align-items-center">
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
@@ -341,9 +343,9 @@ const PageWebView = () => {
 
   if (!page) {
     return (
-      <div className="min-vh-100 d-flex justify-content-center align-items-center" style={{ backgroundColor: "#f0f2f5" }}>
+      <div className="min-vh-100 d-flex justify-content-center align-items-center">
         <div className="text-center">
-          <h3 className="text-dark">Page Not Found</h3>
+          <h3 className={`${isDarkMode ? "text-white" : "text-black"}`}>Page Not Found</h3>
           <button className="btn btn-primary mt-3" onClick={() => navigate("/")}>
             Go Home
           </button>
@@ -353,16 +355,16 @@ const PageWebView = () => {
   }
 
   return (
-    <div className="min-vh-100" style={{ backgroundColor: "#f0f2f5" }}>
+    <div className="min-vh-100">
       {/* Header Section */}
-      <div className="bg-white shadow-sm">
+      <div className="shadow-sm">
         {/* Cover Photo */}
         <div className="position-relative" style={{ height: "400px" }}>
           <img
             src={page.coverPhoto || "https://via.placeholder.com/1200x400/667eea/ffffff?text=Cover+Photo"}
             alt="Cover"
             className="w-100 h-100"
-            style={{ objectFit: "cover" }}
+            style={{ objectFit: "cover", borderRadius: "10px" }}
           />
 
         </div>
@@ -453,7 +455,7 @@ const PageWebView = () => {
                   {/* Page Name & Stats */}
                   <div className="mb-3">
                     <div className="d-flex align-items-center gap-2">
-                      <h1 className="mb-0 text-dark" style={{ fontSize: "32px", fontWeight: "700" }}>
+                      <h1 className={`mb-0 ${isDarkMode ? "text-white" : "text-black"}`} style={{ fontSize: "32px", fontWeight: "700" }}>
                         {page.pageName}
                       </h1>
 
@@ -464,18 +466,22 @@ const PageWebView = () => {
                       )}
                     </div>
                     <div className="d-flex gap-3 mt-2 text-dark">
-                      <span>
+
+                      <span className={`mb-0 ${isDarkMode ? "text-white" : "text-black"}`}>
                         < FaUserPlus className="me-1" />
                         <strong>{page.followersCount || 0}</strong> Followers
                       </span>
-                      <span>
+
+                      <span className={`mb-0 ${isDarkMode ? "text-white" : "text-black"}`}>
                         <FaThumbsUp className="me-1" />
                         <strong>{stories.length || 0}</strong> Stories
                       </span>
-                      <span>
+
+                      <span className={`mb-0 ${isDarkMode ? "text-white" : "text-black"}`}>
                         <FaMapMarkerAlt className="me-1" />
                         <strong>{page.postsCount || 0}</strong> Posts
                       </span>
+
                     </div>
                   </div>
                 </div>

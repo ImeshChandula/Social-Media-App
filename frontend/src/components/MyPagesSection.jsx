@@ -65,7 +65,7 @@ const MyPagesSection = ({ onViewPagePosts }) => {
 
   const handleViewPage = (page) => {
     const pageId = page.id || page._id;
-    navigate(`/page/${pageId}`);
+    navigate(`/business-page/${pageId}`);
   };
 
   const getStatusBadge = (page) => {

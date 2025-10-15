@@ -82,7 +82,7 @@ const MainLayout = () => {
               <Route path="/stories/:id" element={<StoryView />} />
               <Route path="/favorites" element={<Favorites />} />
               <Route path="/activity-logs" element={<ActivityLogsPage />} />
-              <Route path="/page/:id" element={<PageWebView />} />
+              <Route path="/business-page/:id" element={<PageWebView />} />
             </Routes>
           </div>
         </div>
