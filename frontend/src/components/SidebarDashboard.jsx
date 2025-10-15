@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
-import { FaFacebookF, FaBars, FaTimes, FaSignOutAlt, FaFlag } from "react-icons/fa";
+import { FaBars, FaTimes, FaSignOutAlt, FaFlag } from "react-icons/fa";
 import { FaUsersGear } from "react-icons/fa6";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import { BsFileEarmarkPostFill, BsActivity } from "react-icons/bs";
 import { TbCategoryFilled } from "react-icons/tb";
 import { FaFacebookMessenger } from "react-icons/fa6";
 import { IoTicketSharp } from "react-icons/io5";
+import { FiBold } from "react-icons/fi";
 import { SiMarketo } from "react-icons/si";
 import { MdPages } from "react-icons/md"; // Add this import
 import styles from "../styles/DashboardStyle";
@@ -16,36 +17,36 @@ const SidebarDashboard = ({ collapsed, setCollapsed }) => {
     const [mobileVisible, setMobileVisible] = useState(false);
     const { authUser, logout } = useAuthStore();
 
-const shortcuts = [
-    ...(authUser.role === "super_admin" ? [
-      { name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> },
-      { name: "Activity Management", path: "/dashboard/activitymanagement", icon: <BsActivity /> }
-    ] : []),
-    { name: "Page Management", path: "/dashboard/pagemanagement", icon: <MdPages /> },
-    { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
-    { name: "Manage Categories", path: "/dashboard/job-category", icon: <TbCategoryFilled /> },
-    { name: "Manage Marketplace", path: "/dashboard/manage-marketplace", icon: <SiMarketo /> },
-    { name: "Messages", path: "/dashboard/mails", icon: <FaFacebookMessenger /> },
-    { name: "Tickets / Appeals", path: "/dashboard/tickets", icon: <IoTicketSharp /> },
-    { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
-];
-    
+    const shortcuts = [
+        ...(authUser.role === "super_admin" ? [
+            { name: "Manage Users", path: "/dashboard/users", icon: <FaUsersGear /> },
+            { name: "Activity Management", path: "/dashboard/activitymanagement", icon: <BsActivity /> }
+        ] : []),
+        { name: "Page Management", path: "/dashboard/pagemanagement", icon: <MdPages /> },
+        { name: "Manage Posts", path: "/dashboard/posts", icon: <BsFileEarmarkPostFill /> },
+        { name: "Manage Categories", path: "/dashboard/job-category", icon: <TbCategoryFilled /> },
+        { name: "Manage Marketplace", path: "/dashboard/manage-marketplace", icon: <SiMarketo /> },
+        { name: "Messages", path: "/dashboard/mails", icon: <FaFacebookMessenger /> },
+        { name: "Tickets / Appeals", path: "/dashboard/tickets", icon: <IoTicketSharp /> },
+        { name: "Back to Home", path: "/", icon: <IoMdArrowRoundBack /> },
+    ];
+
     const handleResize = () => {
         if (window.innerWidth >= 768) {
-          setMobileVisible(false);
+            setMobileVisible(false);
         }
     };
-    
+
     useEffect(() => {
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
     }, []);
-    
+
     const toggleSidebar = () => {
         if (window.innerWidth < 768) {
-          setMobileVisible(!mobileVisible);
+            setMobileVisible(!mobileVisible);
         } else {
-          setCollapsed(!collapsed);
+            setCollapsed(!collapsed);
         }
     };
 
@@ -56,13 +57,13 @@ const shortcuts = [
             console.error("Logout failed:", error);
         }
     };
-    
+
     const closeMobileSidebar = () => {
         if (window.innerWidth < 768) {
-          setMobileVisible(false);
+            setMobileVisible(false);
         }
     };
-    
+
     const sidebarWidth = collapsed ? "80px" : "250px";
 
     // Custom NavLink component that handles the active state for tabs within Users page
@@ -75,20 +76,19 @@ const shortcuts = [
                     // Check if we're on the users page and this is the users link
                     const isUsersPage = window.location.pathname.includes('/dashboard/users');
                     const isUsersLink = to === '/dashboard/users';
-                    
+
                     // Check if we're on the pagemanagement page and this is the pagemanagement link
                     const isPageManagementPage = window.location.pathname.includes('/dashboard/pagemanagement');
                     const isPageManagementLink = to === '/dashboard/pagemanagement';
-                    
+
                     // If we're on users page and this is the users link, show as active
                     // If we're on pagemanagement page and this is the pagemanagement link, show as active
-                    const shouldBeActive = isActive || 
-                                         (isUsersPage && isUsersLink) || 
-                                         (isPageManagementPage && isPageManagementLink);
-                    
-                    return `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${
-                        shouldBeActive ? "bg-dark text-white fw-bold" : "text-white"
-                    }`;
+                    const shouldBeActive = isActive ||
+                        (isUsersPage && isUsersLink) ||
+                        (isPageManagementPage && isPageManagementLink);
+
+                    return `nav-link d-flex align-items-center gap-3 px-2 py-2 rounded ${shouldBeActive ? "bg-dark text-white fw-bold" : "text-white"
+                        }`;
                 }}
                 style={{ fontSize: "1rem" }}
             >
@@ -123,9 +123,8 @@ const shortcuts = [
 
             {/* Sidebar */}
             <div
-                className={`bg-black text-white p-3 flex-column position-fixed top-0 ${
-                    mobileVisible ? "d-flex" : "d-none"
-                } d-md-flex`}
+                className={`bg-black text-white p-3 flex-column position-fixed top-0 ${mobileVisible ? "d-flex" : "d-none"
+                    } d-md-flex`}
                 style={{
                     width: sidebarWidth,
                     height: "100vh",
@@ -136,10 +135,10 @@ const shortcuts = [
             >
                 {/* Logo and Search */}
                 <div className="d-flex align-items-center mb-4">
-                    <FaFacebookF size={28} color="#1ecb73" className="me-3" />
+                    <FiBold size={28} color="#1ecb73" className="me-3" />
                     {!collapsed && (
                         <div className="d-flex align-items-center bg-secondary rounded px-2 py-1 flex-grow-1">
-                            <h5>Facebook</h5>
+                            <h5>Buzads</h5>
                         </div>
                     )}
                 </div>
@@ -163,7 +162,7 @@ const shortcuts = [
                                     />
                                 </li>
                             ))}
-                            
+
                             {/* Logout */}
                             <li className="nav-item mb-2">
                                 <button
@@ -194,7 +193,7 @@ const shortcuts = [
                                 />
                             </li>
                         ))}
-                        
+
                         {/* Logout (collapsed) */}
                         <li className="nav-item mb-2" title="Logout">
                             <button

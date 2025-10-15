@@ -6,13 +6,13 @@ import {
   FaVideo,
   FaUserCircle,
   FaBell,
-  FaFacebookF,
   FaSearch,
   FaEllipsisH,
   FaSun,
   FaMoon,
   FaChartLine,
 } from "react-icons/fa";
+import { FiBold } from "react-icons/fi";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { MdContactSupport } from "react-icons/md";
 import { FaShoppingBag } from "react-icons/fa";
@@ -83,7 +83,7 @@ function Sidebar() {
       >
         {/* Logo, Search and Theme Toggle */}
         <div className="d-flex align-items-center mb-4 justify-content-between">
-          <FaFacebookF
+          <FiBold
             size={28}
             color="#1ecb73"
             className="me-3 cursor-pointer"
@@ -185,7 +185,7 @@ function Sidebar() {
       >
         {/* Logo, Search and Theme Toggle */}
         <div className="d-flex justify-content-between align-items-center px-3 mb-2">
-          <FaFacebookF size={28} color="#1ecb73" className="cursor-pointer" onClick={() => navigate("/")} />
+          <FiBold size={28} color="#1ecb73" className="cursor-pointer" onClick={() => navigate("/")} />
           <div className="d-flex align-items-center gap-2">
             {/* Theme Toggle */}
             <button

@@ -76,7 +76,7 @@ const Register = () => {
     <div style={RegisterStyle.container}>
       <div style={RegisterStyle.formBox}>
         <div style={RegisterStyle.header}>
-          <h1 style={RegisterStyle.title}>facebook</h1>
+          <h1 style={RegisterStyle.title}>Buzads</h1>
           <p style={RegisterStyle.subtitle}>Create a new account</p>
         </div>
 
@@ -155,7 +155,7 @@ const Register = () => {
                 ...RegisterStyle.input,
                 ...(focusedInputs.email ? RegisterStyle.inputFocus : {})
               }}
-            className="placeholder-gray-400"
+              className="placeholder-gray-400"
             />
           </div>
 

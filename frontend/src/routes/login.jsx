@@ -58,7 +58,7 @@ const Login = () => {
   return (
     <div style={LoginStyle.page}>
       <div style={LoginStyle.header}>
-        <h1 style={LoginStyle.title}>facebook</h1>
+        <h1 style={LoginStyle.title}>Buzads</h1>
         <p style={LoginStyle.subtitle}>Connect with friends and the world around you.</p>
       </div>
 

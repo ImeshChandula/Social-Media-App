@@ -32,9 +32,8 @@ const MainLayout = () => {
 
   return (
     <div
-      className={`container-fluid vh-100 overflow-hidden ${
-        isDarkMode ? "" : "bg-gray-100 text-black"
-      }`}
+      className={`container-fluid vh-100 overflow-hidden ${isDarkMode ? "" : "bg-gray-100 text-black"
+        }`}
     >
       <div className="row h-100">
         {/* Sidebar */}
@@ -48,12 +47,11 @@ const MainLayout = () => {
         {/* Main Content Area */}
         <div className="col d-flex flex-column" style={{ height: "100vh" }}>
           <div
-            className={`top-nav-bar border-b py-2 px-4 d-none d-lg-flex justify-content-between items-center ${
-              isDarkMode ? "border-gray-700" : "border-gray-300"
-            }`}
+            className={`top-nav-bar border-b py-2 px-4 d-none d-lg-flex justify-content-between items-center ${isDarkMode ? "border-gray-700" : "border-gray-300"
+              }`}
           >
             <div className="flex items-center gap-3">
-              <h5 className="mb-0 px-4 font-semibold">Facebook</h5>
+              <h5 className="mb-0 px-4 font-semibold fw-bold">Buzads</h5>
             </div>
             <div className="flex items-center gap-3">
               <NotificationPage />
