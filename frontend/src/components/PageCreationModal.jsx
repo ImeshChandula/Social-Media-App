@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 
 // Simulated axios instance for demo
 const axiosInstance = {
-  get: async () => ({ data: { success: true, categories: ['business', 'education', 'entertainment', 'technology', 'lifestyle'] }}),
-  post: async (url, data) => ({ data: { success: true, page: data }})
+  get: async () => ({ data: { success: true, categories: ['business', 'education', 'entertainment', 'technology', 'lifestyle'] } }),
+  post: async (url, data) => ({ data: { success: true, page: data } })
 };
 
 // Simulated toast for demo
@@ -109,10 +109,10 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
   if (!show) return null;
 
   return (
-    <div 
-      className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" 
-      style={{ 
-        backgroundColor: 'rgba(0,0,0,0.5)', 
+    <div
+      className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+      style={{
+        backgroundColor: 'rgba(0,0,0,0.5)',
         zIndex: 1050,
         backdropFilter: 'blur(5px)'
       }}
@@ -129,14 +129,14 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
                     <i className="fas fa-plus-circle text-primary me-2"></i>
                     Create New Page
                   </h4>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="btn-close"
                     onClick={onClose}
                     aria-label="Close"
                   ></button>
                 </div>
-                
+
                 {/* Body */}
                 <div className="p-4">
                   {loadingCategories ? (
@@ -154,7 +154,7 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
                           <i className="fas fa-info-circle me-2"></i>
                           Basic Information
                         </h6>
-                        
+
                         <div className="mb-3">
                           <label className="form-label">
                             Page Name <span className="text-danger">*</span>
@@ -224,7 +224,7 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
                           <i className="fas fa-address-book me-2"></i>
                           Contact Information (Optional)
                         </h6>
-                        
+
                         <div className="row g-3">
                           <div className="col-md-6">
                             <label className="form-label">Phone</label>
@@ -265,20 +265,20 @@ const PageCreationModal = ({ show, onClose, onPageCreated }) => {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Footer */}
                 {!loadingCategories && (
                   <div className="p-4 border-top d-flex justify-content-end gap-2">
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="btn btn-secondary"
                       onClick={onClose}
                       disabled={loading}
                     >
                       Cancel
                     </button>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="btn btn-primary"
                       onClick={handleSubmit}
                       disabled={loading}
@@ -322,9 +322,9 @@ const PageManagement = () => {
     <div className="container mt-5">
       <div className="text-center">
         <h2 className="mb-4">Page Management</h2>
-        
+
         {/* THIS IS THE BUTTON THAT OPENS THE MODAL */}
-        <button 
+        <button
           className="btn btn-primary btn-lg"
           onClick={() => setShowModal(true)}
         >
@@ -347,7 +347,7 @@ const PageManagement = () => {
       </div>
 
       {/* THE MODAL COMPONENT */}
-      <PageCreationModal 
+      <PageCreationModal
         show={showModal}
         onClose={() => setShowModal(false)}
         onPageCreated={handlePageCreated}
