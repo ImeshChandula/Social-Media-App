@@ -69,12 +69,12 @@ const Feed = () => {
 
             if (res.data.success) {
                 const newPosts = res.data.posts || [];
-                
+
                 console.log(`[DEBUG] Received ${newPosts.length} posts from API`);
 
                 setPosts(prev => {
                     let finalPosts;
-                    
+
                     if (pageNumber === 1 || refresh) {
                         console.log(`[DEBUG] Replacing all posts with ${newPosts.length} new posts`);
                         finalPosts = newPosts;
@@ -89,7 +89,7 @@ const Feed = () => {
                     finalPosts = finalPosts.map(post => {
                         const postId = post._id || post.id;
                         const pendingUpdate = pendingLikeUpdates.get(postId);
-                        
+
                         if (pendingUpdate) {
                             console.log(`[DEBUG] Applying pending like update for post ${postId}:`, pendingUpdate);
                             return {
@@ -98,7 +98,7 @@ const Feed = () => {
                                 likeCount: pendingUpdate.likeCount
                             };
                         }
-                        
+
                         // Ensure likeCount is properly set
                         return {
                             ...post,
@@ -150,7 +150,7 @@ const Feed = () => {
             isLiked,
             likeCount
         });
-        
+
         // Store this update as pending to preserve it during refreshes
         setPendingLikeUpdates(prev => {
             const newMap = new Map(prev);
@@ -166,14 +166,14 @@ const Feed = () => {
                 return newMap;
             });
         }, 2000);
-        
+
         setPosts(prevPosts => {
             const updatedPosts = prevPosts.map(post => {
                 const currentPostId = post._id || post.id;
                 if (currentPostId === postId) {
-                    const updatedPost = { 
-                        ...post, 
-                        isLiked, 
+                    const updatedPost = {
+                        ...post,
+                        isLiked,
                         likeCount: Math.max(0, likeCount)
                     };
                     console.log(`[DEBUG] Updated post ${postId}:`, {
@@ -194,16 +194,16 @@ const Feed = () => {
     const reportPost = async (postId, reason) => {
         try {
             console.log(`[DEBUG] Reporting post ${postId} with reason:`, reason);
-            
+
             // Check if post is already being reported
             if (pendingReports.has(postId)) {
                 toast.error("Report is already in progress for this post");
                 return { success: false, message: "Report already pending" };
             }
-            
+
             // Add to pending reports
             setPendingReports(prev => new Set(prev).add(postId));
-            
+
             // Validate reason
             if (!reason || reason.trim() === '') {
                 setPendingReports(prev => {
@@ -221,28 +221,28 @@ const Feed = () => {
 
             if (response.data.success) {
                 console.log(`[DEBUG] Post ${postId} reported successfully`);
-                
+
                 // Remove the reported post from the feed immediately for better UX
                 setPosts(prevPosts => prevPosts.filter(post => {
                     const currentPostId = post._id || post.id;
                     return currentPostId !== postId;
                 }));
-                
+
                 toast.success("Post reported successfully. It has been removed from your feed.");
-                
-                return { 
-                    success: true, 
+
+                return {
+                    success: true,
                     message: "Post reported successfully",
-                    reportId: response.data.reportId 
+                    reportId: response.data.reportId
                 };
             } else {
                 throw new Error(response.data.message || "Failed to report post");
             }
         } catch (error) {
             console.error(`[DEBUG] Report post error for ${postId}:`, error);
-            
+
             let errorMessage = "Failed to report post";
-            
+
             if (error.response?.status === 400) {
                 errorMessage = error.response.data.message || "You have already reported this post";
             } else if (error.response?.status === 404) {
@@ -252,12 +252,12 @@ const Feed = () => {
             } else if (error.message) {
                 errorMessage = error.message;
             }
-            
+
             toast.error(errorMessage);
-            
-            return { 
-                success: false, 
-                message: errorMessage 
+
+            return {
+                success: false,
+                message: errorMessage
             };
         } finally {
             // Remove from pending reports
@@ -349,7 +349,7 @@ const Feed = () => {
             <div className="text-danger text-center my-5 fs-5">
                 Error loading feed: {error}
                 <div className="mt-3">
-                    <button 
+                    <button
                         className="btn btn-outline-primary btn-sm"
                         onClick={() => fetchFeed(true)}
                     >
@@ -365,7 +365,7 @@ const Feed = () => {
             <div className="text-secondary text-center my-5 fs-5">
                 No posts found
                 <div className="mt-3">
-                    <button 
+                    <button
                         className="btn btn-outline-primary btn-sm"
                         onClick={() => fetchFeed(true)}
                     >
@@ -378,9 +378,9 @@ const Feed = () => {
 
     return (
         <div className="container my-4">
-            {/* Feed Type Selector */}
+            {/* Feed Type Selector (Responsive & Scrollable) */}
             <div className="d-flex justify-content-center mb-4">
-                <div className="btn-group" role="group">
+                <div className="btn-group d-none d-md-inline-flex" role="group">
                     <button
                         type="button"
                         className={`btn ${feedType === 'engagement' ? 'btn-primary' : 'btn-outline-primary'}`}
@@ -405,6 +405,36 @@ const Feed = () => {
                     >
                         Trending
                     </button>
+                </div>
+
+                {/* Mobile Scrollable Buttons */}
+                <div className="d-md-none w-100 overflow-auto">
+                    <div className="d-flex flex-nowrap justify-content-start gap-2 px-2">
+                        <button
+                            type="button"
+                            className={`btn btn-sm ${feedType === 'engagement' ? 'btn-primary' : 'btn-outline-primary'}`}
+                            onClick={() => changeFeedType('engagement')}
+                            disabled={loading || refreshing}
+                        >
+                            For You
+                        </button>
+                        <button
+                            type="button"
+                            className={`btn btn-sm ${feedType === 'recency' ? 'btn-primary' : 'btn-outline-primary'}`}
+                            onClick={() => changeFeedType('recency')}
+                            disabled={loading || refreshing}
+                        >
+                            Recent
+                        </button>
+                        <button
+                            type="button"
+                            className={`btn btn-sm ${feedType === 'trending' ? 'btn-primary' : 'btn-outline-primary'}`}
+                            onClick={() => changeFeedType('trending')}
+                            disabled={loading || refreshing}
+                        >
+                            Trending
+                        </button>
+                    </div>
                 </div>
             </div>
 
