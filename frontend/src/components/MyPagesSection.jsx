@@ -437,6 +437,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
   const [loading, setLoading] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [imagePreview, setImagePreview] = useState("");
+  const { isDarkMode } = useThemeStore();
 
   useEffect(() => {
     if (show) {
@@ -549,26 +550,29 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
   if (!show) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1050
-    }}>
-      <div style={{
-        backgroundColor: '#858688FF',
-        borderRadius: '10px',
-        width: '90%',
-        maxWidth: '800px',
-        maxHeight: '90vh',
-        overflow: 'auto'
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1050,
+        color: '#000'
       }}>
+      <div
+        className={`${isDarkMode ? "bg-dark text-white" : "bg-light text-black"}`}
+        style={{
+          borderRadius: '10px',
+          width: '90%',
+          maxWidth: '800px',
+          maxHeight: '90vh',
+          overflow: 'auto'
+        }}>
         <div style={{
           padding: '1.5rem',
           borderBottom: '1px solid #dee2e6',
@@ -576,15 +580,17 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-          <h5 style={{ color: '#495057', margin: 0 }}>Create New Page</h5>
+          <h5 className={`m-0 fw-bold not-last-of-type:${isDarkMode ? "text-white" : "text-black"}`} >
+            Create New Page
+          </h5>
           <button
             style={{
               background: 'none',
               border: 'none',
               fontSize: '1.5rem',
               cursor: 'pointer',
-              color: '#6c757d'
             }}
+            className={`text-${isDarkMode ? "white" : "black"}`}
             onClick={onClose}
           >
             ×
@@ -594,7 +600,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
         <form onSubmit={handleSubmit}>
           <div style={{ padding: '1.5rem' }}>
             {loadingCategories ? (
-              <div style={{ textAlign: 'center', padding: '2rem', color: '#6c757d' }}>
+              <div style={{ textAlign: 'center', padding: '2rem' }} className="text-secondary">
                 Loading data...
               </div>
             ) : (
@@ -658,7 +664,6 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                       <div style={{ display: 'flex' }}>
                         <span style={{
                           padding: '0.375rem 0.75rem',
-                          backgroundColor: '#e9ecef',
                           border: '1px solid #ced4da',
                           borderRight: 'none',
                           borderRadius: '0.25rem 0 0 0.25rem'
@@ -709,6 +714,7 @@ const CreatePageModal = ({ show, onClose, onPageCreated }) => {
                           border: '1px solid #ced4da',
                           borderRadius: '0.25rem'
                         }}
+                        className={`${isDarkMode ? "bg-dark text-white" : "bg-white text-black"}`}
                         value={formData.category}
                         onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                       >
