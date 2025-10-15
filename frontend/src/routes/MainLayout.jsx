@@ -73,7 +73,7 @@ const MainLayout = () => {
               <Route path="/create-story" element={<CreateStory />} />
               <Route path="/stories" element={<Stories />} />
               <Route path="/stories/:id" element={<StoriesPopup />} />
-              <Route path="/market" element={<MarketPlace />} />
+              <Route path="/business-center" element={<MarketPlace />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/business-page" element={<CompletePagesSection />} />
               <Route path="/notifications" element={<NotificationForMobile />} />

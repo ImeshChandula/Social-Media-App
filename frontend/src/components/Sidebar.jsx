@@ -48,6 +48,7 @@ function Sidebar() {
     { name: "Videos", path: "/videos", icon: <FaVideo /> },
     { name: "Profile", path: "/profile", icon: <FaUserCircle /> },
     { name: "Notification", path: "/notifications", icon: <FaBell />, className: "d-lg-none" },
+    { name: "Business Center", path: "/business-center", icon: <FaShoppingBag /> },
     ...(authUser.role !== "user"
       ? [{ name: "Dashboard", path: "/dashboard", icon: <TbLayoutDashboardFilled /> }]
       : []),
@@ -59,7 +60,6 @@ function Sidebar() {
 
   const shortcuts = [
     { name: "Contact us", path: "/contact", icon: <MdContactSupport /> },
-    { name: "Market Place", path: "/market", icon: <FaShoppingBag /> },
   ];
 
   // Theme classes
