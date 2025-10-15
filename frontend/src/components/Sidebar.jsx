@@ -230,7 +230,7 @@ function Sidebar() {
               className={({ isActive }) =>
                 `${textClass} d-flex flex-column align-items-center px-2 ${isActive ? `${activeBgClass} fw-bold` : textClass}`
               }
-              style={{ fontSize: "1.2rem", textDecoration: "none" }}
+              style={{ fontSize: "1.5rem", textDecoration: "none",borderRadius:"8px", padding:"6px" }}
             >
               {item.icon}
             </NavLink>
