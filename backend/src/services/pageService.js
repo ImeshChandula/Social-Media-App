@@ -14,6 +14,13 @@ class PageService {
             pageData.createdAt = new Date().toISOString();
             pageData.updatedAt = new Date().toISOString();
             
+            //Initialize roles structure with owner as mainAdmin
+            pageData.roles = {
+                mainAdmin: pageData.owner,
+                admins: [],
+                moderators: []
+            };
+
             const docRef = await this.collection.add(pageData);
             return new Page(docRef.id, pageData);
         } catch (error) {

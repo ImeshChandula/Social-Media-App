@@ -1,3 +1,4 @@
+
 class Page {
     constructor(id, data) {
         this.id = id;
@@ -9,9 +10,15 @@ class Page {
         this.profilePicture = data.profilePicture || '';
         this.owner = data.owner;
 
+        // Role management
+        this.roles = data.roles || {
+            mainAdmin: data.owner, // Owner is automatically main admin
+            admins: [],
+            moderators: []
+        };
+
         this.admins = data.admins || [];
         this.followers = data.followers || [];
-        //this.followersCount = data.followersCount || 0;
 
         // Contact details (required for business pages)
         this.phone = data.phone || '';
@@ -20,14 +27,11 @@ class Page {
 
         // Posts
         this.posts = data.posts || [];
-        //this.postsCount = data.postsCount || 0;
 
         // Status and verification
         this.isVerified = data.isVerified || false;
-        //this.isPublished = data.isPublished !== undefined ? data.isPublished : true;
-        this.isPublished = data.isPublished !== undefined ? data.isPublished : false; // Default to false for admin approval workflow
-        //this.approvalStatus = data.approvalStatus || 'pending'; // pending, approved, rejected
-        this.approvalStatus = data.approvalStatus || 'approved'; // Default to approved for immediate publishing
+        this.isPublished = data.isPublished !== undefined ? data.isPublished : false;
+        this.approvalStatus = data.approvalStatus || 'approved';
         this.submittedForApproval = data.submittedForApproval || false;
         this.submittedAt = data.submittedAt || null;
         this.publishedAt = data.publishedAt || null;
@@ -36,7 +40,6 @@ class Page {
         this.reviewNote = data.reviewNote || '';
         this.reviewedBy = data.reviewedBy || null;
         this.reviewedAt = data.reviewedAt || null;
-
 
         // Ban status fields
         this.isBanned = data.isBanned || false;
@@ -68,6 +71,54 @@ class Page {
         if (!this.isPublished && this.approvalStatus === 'rejected') return 'rejected';
         if (this.isPublished && this.approvalStatus === 'approved') return 'published';
         return 'draft';
+    }
+
+    // Role permission helper methods
+    isMainAdmin(userId) {
+        return this.roles.mainAdmin === userId;
+    }
+
+    isAdmin(userId) {
+        return this.roles.admins.includes(userId);
+    }
+
+    isModerator(userId) {
+        return this.roles.moderators.some(mod => mod.userId === userId);
+    }
+
+    hasAdminPrivileges(userId) {
+        return this.isMainAdmin(userId) || this.isAdmin(userId);
+    }
+
+    getModeratorPermissions(userId) {
+        const moderator = this.roles.moderators.find(mod => mod.userId === userId);
+        return moderator ? moderator.permissions : null;
+    }
+
+    canPerformAction(userId, action) {
+        // Main admin and admins can do everything
+        if (this.hasAdminPrivileges(userId)) {
+            return true;
+        }
+
+        // Check moderator permissions
+        const permissions = this.getModeratorPermissions(userId);
+        if (!permissions) {
+            return false;
+        }
+
+        switch (action) {
+            case 'createContent':
+                return permissions.createContent;
+            case 'updateContent':
+                return permissions.updateContent;
+            case 'deleteContent':
+                return permissions.deleteContent;
+            case 'updateProfile':
+                return permissions.updateProfile;
+            default:
+                return false;
+        }
     }
 }
 

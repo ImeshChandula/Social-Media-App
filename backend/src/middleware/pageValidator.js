@@ -195,6 +195,77 @@ const validatePageProfile = (req, res, next) => {
     next();
 };
 
+// Validation schemas for role management
+const roleValidators = {
+    addAdmin: Joi.object({
+        userId: Joi.string().required().messages({
+            'string.empty': 'User ID is required',
+            'any.required': 'User ID is required'
+        })
+    }),
+
+    addModerator: Joi.object({
+        userId: Joi.string().required().messages({
+            'string.empty': 'User ID is required',
+            'any.required': 'User ID is required'
+        }),
+        permissions: Joi.object({
+            createContent: Joi.boolean().optional(),
+            updateContent: Joi.boolean().optional(),
+            deleteContent: Joi.boolean().optional(),
+            updateProfile: Joi.boolean().optional()
+        }).required().messages({
+            'any.required': 'Permissions object is required'
+        })
+    }),
+
+    updateModeratorPermissions: Joi.object({
+        permissions: Joi.object({
+            createContent: Joi.boolean().optional(),
+            updateContent: Joi.boolean().optional(),
+            deleteContent: Joi.boolean().optional(),
+            updateProfile: Joi.boolean().optional()
+        }).required().min(1).messages({
+            'any.required': 'Permissions object is required',
+            'object.min': 'At least one permission must be specified'
+        })
+    })
+};
+
+// Validation middleware functions
+const validateAddAdmin = (req, res, next) => {
+    const { error } = roleValidators.addAdmin.validate(req.body);
+    if (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.details[0].message
+        });
+    }
+    next();
+};
+
+const validateAddModerator = (req, res, next) => {
+    const { error } = roleValidators.addModerator.validate(req.body);
+    if (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.details[0].message
+        });
+    }
+    next();
+};
+
+const validateUpdateModeratorPermissions = (req, res, next) => {
+    const { error } = roleValidators.updateModeratorPermissions.validate(req.body);
+    if (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.details[0].message
+        });
+    }
+    next();
+};
+
 module.exports = {
     pageValidators,
     validatePage,
@@ -203,5 +274,9 @@ module.exports = {
     validatePageBan,
     validatePageProfile,
     updatePageProfileValidator,
-    getValidPageCategories
+    getValidPageCategories,
+    roleValidators,
+    validateAddAdmin,
+    validateAddModerator,
+    validateUpdateModeratorPermissions
 };

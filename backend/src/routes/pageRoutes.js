@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pageController = require('../controllers/pageController');
 const { authenticateUser, authorizeRoles, checkAccountStatus } = require('../middleware/authMiddleware');
-const { validatePage, validatePageQuery, validateAdminReview, validatePageBan, validatePageProfile } = require('../middleware/pageValidator');
+const { validatePage, validatePageQuery, validateAdminReview, validatePageBan, validatePageProfile, validateAddAdmin, validateAddModerator, validateUpdateModeratorPermissions } = require('../middleware/pageValidator');
 const { validatePost, validateStory } = require('../middleware/validator'); // Add these validators
 
 // Page management routes (existing)
@@ -36,6 +36,38 @@ router.get('/my-pages', authenticateUser, checkAccountStatus, pageController.get
 // @desc   Get all page categories
 // @access Public (anyone can view page categories)
 router.get('/categories', pageController.getPageCategories);
+
+// ============ ROLE MANAGEMENT ROUTES ============
+
+// @route  GET /api/pages/:pageId/roles
+// @desc   Get all roles (admins and moderators) for a page
+// @access Private (only admins and moderators can view)
+router.get('/:pageId/roles', authenticateUser, checkAccountStatus, pageController.getPageRoles);
+
+// @route  POST /api/pages/:pageId/admins
+// @desc   Add an admin to a page
+// @access Private (only Main Admin and Admins can add admins)
+router.post('/:pageId/admins', authenticateUser, checkAccountStatus, validateAddAdmin, pageController.addAdmin);
+
+// @route  DELETE /api/pages/:pageId/admins/:userId
+// @desc   Remove an admin from a page
+// @access Private (only Main Admin can remove admins)
+router.delete('/:pageId/admins/:userId', authenticateUser, checkAccountStatus, pageController.removeAdmin);
+
+// @route  POST /api/pages/:pageId/moderators
+// @desc   Add a moderator to a page with specific permissions
+// @access Private (only Main Admin and Admins can add moderators)
+router.post('/:pageId/moderators', authenticateUser, checkAccountStatus, validateAddModerator, pageController.addModerator);
+
+// @route  DELETE /api/pages/:pageId/moderators/:userId
+// @desc   Remove a moderator from a page
+// @access Private (only Main Admin and Admins can remove moderators)
+router.delete('/:pageId/moderators/:userId', authenticateUser, checkAccountStatus, pageController.removeModerator);
+
+// @route  PUT /api/pages/:pageId/moderators/:userId/permissions
+// @desc   Update a moderator's permissions
+// @access Private (only Main Admin and Admins can update permissions)
+router.put('/:pageId/moderators/:userId/permissions', authenticateUser, checkAccountStatus, validateUpdateModeratorPermissions, pageController.updateModeratorPermissions);
 
 // NEW PAGE CONTENT ROUTES
 

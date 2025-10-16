@@ -648,7 +648,8 @@ const unfollowPage = async(req, res) => {
     }
 };
 
-//@desc     Update page profile (profile picture, cover photo, description)
+
+//@desc     Update page profile (profile picture, cover photo, description, roles)
 const updatePageProfile = async(req, res) => {
     try {
         const pageId = req.params.id;
@@ -664,11 +665,11 @@ const updatePageProfile = async(req, res) => {
             });
         }
 
-        // Check if user is the owner
-        if (page.owner !== currentUserId) {
+        // Check if user has permission
+        if (!page.hasAdminPrivileges(currentUserId) && !page.canPerformAction(currentUserId, 'updateProfile')) {
             return res.status(403).json({
                 success: false,
-                message: 'You are not authorized to update this page profile'
+                message: 'You do not have permission to update this page profile'
             });
         }
 
@@ -727,6 +728,7 @@ const updatePageProfile = async(req, res) => {
         });
     }
 };
+
 
 //@desc     Delete page
 const deletePage = async(req, res) => {
@@ -1151,7 +1153,8 @@ const getPageForAdmin = async(req, res) => {
     }
 };
 
-// Create post for page
+
+// Create post for page (updated with role-based permissions)
 const createPagePost = async(req, res) => {
     try {
         const { pageId } = req.params;
@@ -1161,7 +1164,7 @@ const createPagePost = async(req, res) => {
         console.log('📄 Creating post for page:', pageId);
         console.log('👤 Current user:', currentUserId);
 
-        // Find the page and verify ownership
+        // Find the page and verify permissions
         const page = await PageService.findById(pageId);
         if (!page) {
             return res.status(404).json({
@@ -1170,15 +1173,12 @@ const createPagePost = async(req, res) => {
             });
         }
 
-        // Check if user is the owner of the page
-        if (page.owner !== currentUserId) {
-            console.log('❌ Ownership check failed:', {
-                pageOwner: page.owner,
-                currentUser: currentUserId
-            });
+        // Check if user has permission to create posts
+        if (!page.hasAdminPrivileges(currentUserId) && !page.canPerformAction(currentUserId, 'createContent')) {
+            console.log('❌ Permission check failed');
             return res.status(403).json({
                 success: false,
-                message: 'You are not authorized to create posts for this page'
+                message: 'You do not have permission to create posts for this page'
             });
         }
 
@@ -1226,20 +1226,18 @@ const createPagePost = async(req, res) => {
             }
         }
 
+        // ✅ FIX: Only include fields that have values (not undefined)
         const postData = {
-            tags,
             mediaType,
-            privacy: privacy || 'public', // Pages typically use public posts
-            location,
-            authorType: 'page' // Mark as page post
+            privacy: privacy || 'public',
+            authorType: 'page'
         };
 
-        // Add category only for video posts
-        if (mediaType === 'video' && category) {
-            postData.category = category;
-        }
-
+        // Only add optional fields if they exist
         if (content !== undefined) postData.content = content;
+        if (tags !== undefined) postData.tags = tags;
+        if (location !== undefined) postData.location = location;
+        if (mediaType === 'video' && category) postData.category = category;
 
         console.log('🚀 Creating post with data:', postData);
 
@@ -1251,7 +1249,7 @@ const createPagePost = async(req, res) => {
             });
         }
 
-        const updateData = { author: pageId }; // Use pageId as author
+        const updateData = { author: pageId };
 
         // Handle media upload if provided
         if (media) {
@@ -1287,7 +1285,8 @@ const createPagePost = async(req, res) => {
     }
 };
 
-// Create story for page 
+
+// Create story for page (updated with role-based permissions)
 const createPageStory = async(req, res) => {
     try {
         const { pageId } = req.params;
@@ -1296,7 +1295,7 @@ const createPageStory = async(req, res) => {
 
         console.log('📖 Creating story for page:', pageId);
 
-        // Find the page and verify ownership
+        // Find the page and verify permissions
         const page = await PageService.findById(pageId);
         if (!page) {
             return res.status(404).json({
@@ -1305,11 +1304,11 @@ const createPageStory = async(req, res) => {
             });
         }
 
-        // Check if user is the owner of the page
-        if (page.owner !== currentUserId) {
+        // Check if user has permission to create stories
+        if (!page.hasAdminPrivileges(currentUserId) && !page.canPerformAction(currentUserId, 'createContent')) {
             return res.status(403).json({
                 success: false,
-                message: 'You are not authorized to create stories for this page'
+                message: 'You do not have permission to create stories for this page'
             });
         }
 
@@ -1328,14 +1327,11 @@ const createPageStory = async(req, res) => {
             });
         }
 
-        // Create story object with timestamp
+        // ✅ FIX: Only include fields that have values (not undefined)
         const storyData = {
-            userId: pageId, // Use pageId as userId for stories
-            authorType: 'page', // Mark as page story
-            content,
-            type,
-            caption,
-            privacy: privacy || 'public', // Pages typically use public stories
+            userId: pageId,
+            authorType: 'page',
+            privacy: privacy || 'public',
             isActive: true,
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
             createdAt: new Date().toISOString(),
@@ -1343,7 +1339,11 @@ const createPageStory = async(req, res) => {
             viewCount: 0
         };
 
-        // Upload media if provided - FIXED: Use handleMediaUpload consistently
+        // Only add optional fields if they exist
+        if (content !== undefined) storyData.content = content;
+        if (type !== undefined) storyData.type = type;
+        if (caption !== undefined) storyData.caption = caption;
+
         if (media) {
             console.log('📸 Processing story media upload...');
             const resultURLs = await uploadImages(media, 'page_post_images');
@@ -1360,16 +1360,15 @@ const createPageStory = async(req, res) => {
             });
         }
 
-        // Add page data to story response
         const populatedStory = {
             ...newStory,
             user: {
                 id: page.id,
-                firstName: '', // Pages don't have first/last names
+                firstName: '',
                 lastName: '',
                 username: page.username || page.pageName,
                 profilePicture: page.profilePicture,
-                pageName: page.pageName, // Add page-specific data
+                pageName: page.pageName,
                 isPage: true
             },
         };
@@ -1591,6 +1590,496 @@ const getPageWhatsAppContact = async(req, res) => {
     }
 };
 
+//@desc     Add admin to page
+const addAdmin = async (req, res) => {
+    try {
+        const { pageId } = req.params;
+        const { userId } = req.body;
+        const currentUserId = req.user.id;
+
+        // Validate userId
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: 'User ID is required'
+            });
+        }
+
+        // Find the page
+        const page = await PageService.findById(pageId);
+        if (!page) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Check if current user has permission (Main Admin or Admin)
+        if (!page.hasAdminPrivileges(currentUserId)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only Main Admin or Admins can add other admins'
+            });
+        }
+
+        // Check if user to be added is following the page
+        if (!page.followers.includes(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'User must be following the page to be added as admin'
+            });
+        }
+
+        // Check if user is already Main Admin
+        if (page.isMainAdmin(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'User is already the Main Admin of this page'
+            });
+        }
+
+        // Check if user is already an admin
+        if (page.isAdmin(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'User is already an admin'
+            });
+        }
+
+        // Remove from moderators if exists
+        const updatedModerators = page.roles.moderators.filter(mod => mod.userId !== userId);
+
+        // Add to admins
+        const updatedAdmins = [...page.roles.admins, userId];
+
+        const updateData = {
+            roles: {
+                ...page.roles,
+                admins: updatedAdmins,
+                moderators: updatedModerators
+            }
+        };
+
+        const updatedPage = await PageService.updateById(pageId, updateData);
+
+        // Get user info for response
+        const user = await UserService.findById(userId);
+
+        res.status(200).json({
+            success: true,
+            message: 'Admin added successfully',
+            admin: user ? {
+                id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                username: user.username,
+                profilePicture: user.profilePicture
+            } : null
+        });
+
+    } catch (error) {
+        console.error('Error adding admin:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
+//@desc     Remove admin from page
+const removeAdmin = async (req, res) => {
+    try {
+        const { pageId, userId } = req.params;
+        const currentUserId = req.user.id;
+
+        // Find the page
+        const page = await PageService.findById(pageId);
+        if (!page) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Only Main Admin can remove admins
+        if (!page.isMainAdmin(currentUserId)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only Main Admin can remove admins'
+            });
+        }
+
+        // Check if user is an admin
+        if (!page.isAdmin(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'User is not an admin'
+            });
+        }
+
+        // Remove from admins
+        const updatedAdmins = page.roles.admins.filter(id => id !== userId);
+
+        const updateData = {
+            roles: {
+                ...page.roles,
+                admins: updatedAdmins
+            }
+        };
+
+        await PageService.updateById(pageId, updateData);
+
+        res.status(200).json({
+            success: true,
+            message: 'Admin removed successfully'
+        });
+
+    } catch (error) {
+        console.error('Error removing admin:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
+//@desc     Add moderator to page
+const addModerator = async (req, res) => {
+    try {
+        const { pageId } = req.params;
+        const { userId, permissions } = req.body;
+        const currentUserId = req.user.id;
+
+        // Validate input
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: 'User ID is required'
+            });
+        }
+
+        if (!permissions || typeof permissions !== 'object') {
+            return res.status(400).json({
+                success: false,
+                message: 'Permissions object is required'
+            });
+        }
+
+        // Find the page
+        const page = await PageService.findById(pageId);
+        if (!page) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Check if current user has permission (Main Admin or Admin)
+        if (!page.hasAdminPrivileges(currentUserId)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only Main Admin or Admins can add moderators'
+            });
+        }
+
+        // Check if user to be added is following the page
+        if (!page.followers.includes(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'User must be following the page to be added as moderator'
+            });
+        }
+
+        // Check if user is Main Admin or Admin
+        if (page.isMainAdmin(userId) || page.isAdmin(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Admins cannot be added as moderators'
+            });
+        }
+
+        // Check if user is already a moderator
+        if (page.isModerator(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'User is already a moderator'
+            });
+        }
+
+        // Create moderator object
+        const moderator = {
+            userId,
+            permissions: {
+                createContent: permissions.createContent || false,
+                updateContent: permissions.updateContent || false,
+                deleteContent: permissions.deleteContent || false,
+                updateProfile: permissions.updateProfile || false
+            },
+            addedBy: currentUserId,
+            addedAt: new Date().toISOString()
+        };
+
+        // Add to moderators
+        const updatedModerators = [...page.roles.moderators, moderator];
+
+        const updateData = {
+            roles: {
+                ...page.roles,
+                moderators: updatedModerators
+            }
+        };
+
+        await PageService.updateById(pageId, updateData);
+
+        // Get user info for response
+        const user = await UserService.findById(userId);
+
+        res.status(200).json({
+            success: true,
+            message: 'Moderator added successfully',
+            moderator: {
+                user: user ? {
+                    id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    username: user.username,
+                    profilePicture: user.profilePicture
+                } : null,
+                permissions: moderator.permissions,
+                addedAt: moderator.addedAt
+            }
+        });
+
+    } catch (error) {
+        console.error('Error adding moderator:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
+//@desc     Remove moderator from page
+const removeModerator = async (req, res) => {
+    try {
+        const { pageId, userId } = req.params;
+        const currentUserId = req.user.id;
+
+        // Find the page
+        const page = await PageService.findById(pageId);
+        if (!page) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Check if current user has permission (Main Admin or Admin)
+        if (!page.hasAdminPrivileges(currentUserId)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only Main Admin or Admins can remove moderators'
+            });
+        }
+
+        // Check if user is a moderator
+        if (!page.isModerator(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'User is not a moderator'
+            });
+        }
+
+        // Remove from moderators
+        const updatedModerators = page.roles.moderators.filter(mod => mod.userId !== userId);
+
+        const updateData = {
+            roles: {
+                ...page.roles,
+                moderators: updatedModerators
+            }
+        };
+
+        await PageService.updateById(pageId, updateData);
+
+        res.status(200).json({
+            success: true,
+            message: 'Moderator removed successfully'
+        });
+
+    } catch (error) {
+        console.error('Error removing moderator:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
+//@desc     Update moderator permissions
+const updateModeratorPermissions = async (req, res) => {
+    try {
+        const { pageId, userId } = req.params;
+        const { permissions } = req.body;
+        const currentUserId = req.user.id;
+
+        // Validate permissions
+        if (!permissions || typeof permissions !== 'object') {
+            return res.status(400).json({
+                success: false,
+                message: 'Permissions object is required'
+            });
+        }
+
+        // Find the page
+        const page = await PageService.findById(pageId);
+        if (!page) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Check if current user has permission (Main Admin or Admin)
+        if (!page.hasAdminPrivileges(currentUserId)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only Main Admin or Admins can update moderator permissions'
+            });
+        }
+
+        // Check if user is a moderator
+        if (!page.isModerator(userId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'User is not a moderator'
+            });
+        }
+
+        // Update moderator permissions
+        const updatedModerators = page.roles.moderators.map(mod => {
+            if (mod.userId === userId) {
+                return {
+                    ...mod,
+                    permissions: {
+                        createContent: permissions.createContent !== undefined ? permissions.createContent : mod.permissions.createContent,
+                        updateContent: permissions.updateContent !== undefined ? permissions.updateContent : mod.permissions.updateContent,
+                        deleteContent: permissions.deleteContent !== undefined ? permissions.deleteContent : mod.permissions.deleteContent,
+                        updateProfile: permissions.updateProfile !== undefined ? permissions.updateProfile : mod.permissions.updateProfile
+                    }
+                };
+            }
+            return mod;
+        });
+
+        const updateData = {
+            roles: {
+                ...page.roles,
+                moderators: updatedModerators
+            }
+        };
+
+        await PageService.updateById(pageId, updateData);
+
+        res.status(200).json({
+            success: true,
+            message: 'Moderator permissions updated successfully',
+            permissions: updatedModerators.find(mod => mod.userId === userId).permissions
+        });
+
+    } catch (error) {
+        console.error('Error updating moderator permissions:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
+//@desc     Get page roles (admins and moderators)
+const getPageRoles = async (req, res) => {
+    try {
+        const { pageId } = req.params;
+        const currentUserId = req.user.id;
+
+        // Find the page
+        const page = await PageService.findById(pageId);
+        if (!page) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Check if user has permission to view roles
+        if (!page.hasAdminPrivileges(currentUserId) && !page.isModerator(currentUserId)) {
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have permission to view page roles'
+            });
+        }
+
+        // Get main admin info
+        const mainAdmin = await UserService.findById(page.roles.mainAdmin);
+
+        // Get admins info
+        const admins = await Promise.all(
+            page.roles.admins.map(async (adminId) => {
+                const user = await UserService.findById(adminId);
+                return user ? {
+                    id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    username: user.username,
+                    profilePicture: user.profilePicture
+                } : null;
+            })
+        );
+
+        // Get moderators info
+        const moderators = await Promise.all(
+            page.roles.moderators.map(async (mod) => {
+                const user = await UserService.findById(mod.userId);
+                return {
+                    user: user ? {
+                        id: user.id,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        username: user.username,
+                        profilePicture: user.profilePicture
+                    } : null,
+                    permissions: mod.permissions,
+                    addedBy: mod.addedBy,
+                    addedAt: mod.addedAt
+                };
+            })
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Page roles retrieved successfully',
+            roles: {
+                mainAdmin: mainAdmin ? {
+                    id: mainAdmin.id,
+                    firstName: mainAdmin.firstName,
+                    lastName: mainAdmin.lastName,
+                    username: mainAdmin.username,
+                    profilePicture: mainAdmin.profilePicture
+                } : null,
+                admins: admins.filter(admin => admin !== null),
+                moderators: moderators.filter(mod => mod.user !== null)
+            }
+        });
+
+    } catch (error) {
+        console.error('Error getting page roles:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
 module.exports = {
     createPage,
     updatePage,
@@ -1613,5 +2102,11 @@ module.exports = {
     createPageStory,
     getPagePosts,
     getPageStories,
-    getPageWhatsAppContact
+    getPageWhatsAppContact,
+    addAdmin,
+    removeAdmin,
+    addModerator,
+    removeModerator,
+    updateModeratorPermissions,
+    getPageRoles
 };
