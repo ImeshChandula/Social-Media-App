@@ -8,6 +8,8 @@ import CreatePagePost from "../components/CreatePagePost";
 import CreatePageStory from "../components/CreatePageStory";
 import StoryViewer from "../components/StoryView";
 import WhatsAppContactButton from "../components/WhatsAppContactButton";
+import ReviewsSection from "../components/ReviewsSection";
+import { StarRatingDisplay } from "../components/StarRating";
 import useAuthStore from "../store/authStore";
 import '../styles/PageWebView.css';
 import {
@@ -70,8 +72,6 @@ const PageWebView = () => {
   useEffect(() => {
     if (page && (activeTab === 'home' || activeTab === 'posts')) {
       fetchPagePosts();
-    } else if (page && activeTab === 'reviews') {
-      // Fetch reviews if you have an endpoint
     }
   }, [page, activeTab]);
 
@@ -366,7 +366,6 @@ const PageWebView = () => {
             className="w-100 h-100"
             style={{ objectFit: "cover", borderRadius: "10px" }}
           />
-
         </div>
 
         {/* Page Info Header */}
@@ -404,7 +403,6 @@ const PageWebView = () => {
                         <FaEdit className="me-2" />
                         Edit Page
                       </button>
-
                     </>
                   )}
                 </div>
@@ -458,7 +456,6 @@ const PageWebView = () => {
                       <h1 className={`mb-0 ${isDarkMode ? "text-white" : "text-black"}`} style={{ fontSize: "32px", fontWeight: "700" }}>
                         {page.pageName}
                       </h1>
-
                     </div>
                     <div className="text-secondary mt-1">
                       {page.category && (
@@ -466,9 +463,8 @@ const PageWebView = () => {
                       )}
                     </div>
                     <div className="d-flex gap-3 mt-2 text-dark">
-
                       <span className={`mb-0 ${isDarkMode ? "text-white" : "text-black"}`}>
-                        < FaUserPlus className="me-1" />
+                        <FaUserPlus className="me-1" />
                         <strong>{page.followersCount || 0}</strong> Followers
                       </span>
 
@@ -481,7 +477,6 @@ const PageWebView = () => {
                         <FaMapMarkerAlt className="me-1" />
                         <strong>{page.postsCount || 0}</strong> Posts
                       </span>
-
                     </div>
                   </div>
                 </div>
@@ -527,6 +522,19 @@ const PageWebView = () => {
                       }}
                     >
                       Posts
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link ${activeTab === 'reviews' ? 'active' : ''} border-0`}
+                      onClick={() => setActiveTab('reviews')}
+                      style={{
+                        color: activeTab === 'reviews' ? '#1877f2' : '#4a5568',
+                        borderBottom: activeTab === 'reviews' ? '3px solid #1877f2' : 'none',
+                        fontWeight: '600'
+                      }}
+                    >
+                      Reviews
                     </button>
                   </li>
                   <li className="nav-item">
@@ -637,17 +645,17 @@ const PageWebView = () => {
               </div>
             </div>
 
-            {/* Reviews Card 
+            {/* Reviews Card - Updated */}
             <div className="card border-0 shadow-sm mb-3">
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <h6 className="fw-bold text-dark mb-0">Reviews</h6>
                   <div className="text-warning">
-                    <FaStar /> <strong>4.7</strong> <span className="text-secondary">(3)</span>
+                    <StarRatingDisplay rating={4.7} size={16} showNumber />
                   </div>
                 </div>
-                */}
-            {/* Sample Review 1 
+                
+                {/* Sample Review Preview */}
                 <div className="mb-3 pb-3 border-bottom">
                   <div className="d-flex gap-2 mb-2">
                     <img
@@ -663,48 +671,24 @@ const PageWebView = () => {
                           <span className="badge bg-success ms-2" style={{ fontSize: "10px" }}>✓</span>
                         </div>
                       </div>
-                      <div className="text-warning small">
-                        <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
-                      </div>
+                      <StarRatingDisplay rating={5} size={12} />
                       <div className="text-secondary small">1 week ago</div>
                     </div>
                   </div>
                   <p className="mb-0 small text-dark">
-                    Excellent service and innovative solutions. TechCorp helped transform our business operations completely. Highly recommended!
+                    Excellent service and innovative solutions...
                   </p>
                 </div>
 
-                {/* Sample Review 2 
-                <div className="mb-3">
-                  <div className="d-flex gap-2 mb-2">
-                    <img
-                      src="https://via.placeholder.com/40"
-                      alt="Reviewer"
-                      className="rounded-circle"
-                      style={{ width: "40px", height: "40px" }}
-                    />
-                    <div className="flex-grow-1">
-                      <div className="d-flex justify-content-between">
-                        <div>
-                          <strong className="text-dark">Rajesh Kumar</strong>
-                          <span className="badge bg-success ms-2" style={{ fontSize: "10px" }}>✓</span>
-                        </div>
-                      </div>
-                      <div className="text-warning small">
-                        <FaStar /><FaStar /><FaStar /><FaStar />
-                      </div>
-                      <div className="text-secondary small">2 weeks ago</div>
-                    </div>
-                  </div>
-                  <p className="mb-0 small text-dark">
-                    Outstanding technical support and cutting-edge technology. The team is professional and delivers on time.
-                  </p>
-                </div>
-
-                <button className="btn btn-light w-100 mt-2">See all 3 reviews</button>
+                <button 
+                  className="btn btn-light w-100"
+                  onClick={() => setActiveTab('reviews')}
+                >
+                  See all reviews
+                </button>
               </div>
             </div>
-                  */}
+
             {/* Get in Touch Card */}
             <div className="card border-0 shadow-sm" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
               <div className="card-body text-white">
@@ -810,7 +794,11 @@ const PageWebView = () => {
 
             {/* Reviews Tab Content */}
             {activeTab === 'reviews' && (
-              <ReviewsTabContent page={page} />
+              <ReviewsSection 
+                pageId={id} 
+                page={page}
+                isOwner={isOwner}
+              />
             )}
 
             {/* Photos Tab Content */}
@@ -994,108 +982,6 @@ const AboutTabContent = ({ page, isOwner, pageId }) => (
           </div>
         </div>
       )}
-    </div>
-  </div>
-);
-
-// Reviews Tab Content Component
-const ReviewsTabContent = ({ page }) => (
-  <div className="card border-0 shadow-sm">
-    <div className="card-body">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h5 className="fw-bold text-dark mb-1">Reviews</h5>
-          <div className="text-warning">
-            <FaStar /><FaStar /><FaStar /><FaStar className="text-secondary" /><FaStar className="text-secondary" />
-            <span className="ms-2 text-dark"><strong>4.7</strong> out of 5</span>
-          </div>
-          <div className="text-secondary small">3 reviews</div>
-        </div>
-        <button className="btn btn-primary">Write a Review</button>
-      </div>
-
-      <hr />
-
-      {/* Review 1 */}
-      <div className="mb-4">
-        <div className="d-flex gap-3 mb-2">
-          <img
-            src="https://via.placeholder.com/48"
-            alt="Reviewer"
-            className="rounded-circle"
-            style={{ width: "48px", height: "48px" }}
-          />
-          <div className="flex-grow-1">
-            <div className="d-flex justify-content-between align-items-start">
-              <div>
-                <strong className="text-dark">Priya Sharma</strong>
-                <span className="badge bg-success ms-2" style={{ fontSize: "10px" }}>✓</span>
-                <div className="text-warning small mt-1">
-                  <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
-                </div>
-                <div className="text-secondary small">1 week ago</div>
-              </div>
-            </div>
-            <p className="mt-2 mb-0 text-dark">
-              Excellent service and innovative solutions. TechCorp helped transform our business operations completely. Highly recommended!
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Review 2 */}
-      <div className="mb-4">
-        <div className="d-flex gap-3 mb-2">
-          <img
-            src="https://via.placeholder.com/48"
-            alt="Reviewer"
-            className="rounded-circle"
-            style={{ width: "48px", height: "48px" }}
-          />
-          <div className="flex-grow-1">
-            <div className="d-flex justify-content-between align-items-start">
-              <div>
-                <strong className="text-dark">Rajesh Kumar</strong>
-                <span className="badge bg-success ms-2" style={{ fontSize: "10px" }}>✓</span>
-                <div className="text-warning small mt-1">
-                  <FaStar /><FaStar /><FaStar /><FaStar />
-                </div>
-                <div className="text-secondary small">2 weeks ago</div>
-              </div>
-            </div>
-            <p className="mt-2 mb-0 text-dark">
-              Outstanding technical support and cutting-edge technology. The team is professional and delivers on time.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Review 3 */}
-      <div className="mb-4">
-        <div className="d-flex gap-3 mb-2">
-          <img
-            src="https://via.placeholder.com/48"
-            alt="Reviewer"
-            className="rounded-circle"
-            style={{ width: "48px", height: "48px" }}
-          />
-          <div className="flex-grow-1">
-            <div className="d-flex justify-content-between align-items-start">
-              <div>
-                <strong className="text-dark">Amit Patel</strong>
-                <span className="badge bg-success ms-2" style={{ fontSize: "10px" }}>✓</span>
-                <div className="text-warning small mt-1">
-                  <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
-                </div>
-                <div className="text-secondary small">1 month ago</div>
-              </div>
-            </div>
-            <p className="mt-2 mb-0 text-dark">
-              Great experience working with TechCorp Solutions. Their innovative approach and dedication to excellence is commendable.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 );
