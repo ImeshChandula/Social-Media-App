@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const pageController = require('../controllers/pageController');
+const pageReviewController = require('../controllers/pageReviewController');
 const { authenticateUser, authorizeRoles, checkAccountStatus } = require('../middleware/authMiddleware');
 const { validatePage, validatePageQuery, validateAdminReview, validatePageBan, validatePageProfile, validateAddAdmin, validateAddModerator, validateUpdateModeratorPermissions } = require('../middleware/pageValidator');
 const { validatePost, validateStory } = require('../middleware/validator'); // Add these validators
+const { validateCreateReview, validateUpdateReview, validateReply } = require('../middleware/pageReviewValidator');
 
 // Page management routes (existing)
 
@@ -37,6 +39,7 @@ router.get('/my-pages', authenticateUser, checkAccountStatus, pageController.get
 // @access Public (anyone can view page categories)
 router.get('/categories', pageController.getPageCategories);
 
+
 // ============ ROLE MANAGEMENT ROUTES ============
 
 // @route  GET /api/pages/:pageId/roles
@@ -68,6 +71,50 @@ router.delete('/:pageId/moderators/:userId', authenticateUser, checkAccountStatu
 // @desc   Update a moderator's permissions
 // @access Private (only Main Admin and Admins can update permissions)
 router.put('/:pageId/moderators/:userId/permissions', authenticateUser, checkAccountStatus, validateUpdateModeratorPermissions, pageController.updateModeratorPermissions);
+
+
+// ============ PAGE REVIEW ROUTES ============
+
+// @route  POST /api/pages/:pageId/reviews
+// @desc   Create a review for a page
+// @access Private (authenticated users can review published pages)
+router.post('/:pageId/reviews', authenticateUser, checkAccountStatus, validateCreateReview, pageReviewController.createPageReview);
+
+// @route  GET /api/pages/:pageId/reviews
+// @desc   Get all reviews for a page
+// @access Public (anyone can view reviews)
+router.get('/:pageId/reviews', pageReviewController.getPageReviews);
+
+// @route  GET /api/pages/:pageId/reviews/:reviewId
+// @desc   Get a specific review
+// @access Public (anyone can view a specific review)
+router.get('/:pageId/reviews/:reviewId', pageReviewController.getReviewById);
+
+// @route  PUT /api/pages/:pageId/reviews/:reviewId
+// @desc   Update a review
+// @access Private (only review owner can update)
+router.put('/:pageId/reviews/:reviewId', authenticateUser, checkAccountStatus, validateUpdateReview, pageReviewController.updatePageReview);
+
+// @route  DELETE /api/pages/:pageId/reviews/:reviewId
+// @desc   Delete a review
+// @access Private (review owner or page admins can delete)
+router.delete('/:pageId/reviews/:reviewId', authenticateUser, checkAccountStatus, pageReviewController.deletePageReview);
+
+// @route  POST /api/pages/:pageId/reviews/:reviewId/reply
+// @desc   Reply to a review
+// @access Private (page admins/moderators with permission can reply)
+router.post('/:pageId/reviews/:reviewId/reply', authenticateUser, checkAccountStatus, validateReply, pageReviewController.replyToReview);
+
+// @route  PUT /api/pages/:pageId/reviews/:reviewId/reply/:replyId
+// @desc   Update a reply
+// @access Private (only reply owner can update)
+router.put('/:pageId/reviews/:reviewId/reply/:replyId', authenticateUser, checkAccountStatus, validateReply, pageReviewController.updateReviewReply);
+
+// @route  DELETE /api/pages/:pageId/reviews/:reviewId/reply/:replyId
+// @desc   Delete a reply
+// @access Private (reply owner or page admins can delete)
+router.delete('/:pageId/reviews/:reviewId/reply/:replyId', authenticateUser, checkAccountStatus, pageReviewController.deleteReviewReply);
+
 
 // NEW PAGE CONTENT ROUTES
 

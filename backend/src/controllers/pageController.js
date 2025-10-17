@@ -1813,7 +1813,8 @@ const addModerator = async (req, res) => {
                 createContent: permissions.createContent || false,
                 updateContent: permissions.updateContent || false,
                 deleteContent: permissions.deleteContent || false,
-                updateProfile: permissions.updateProfile || false
+                updateProfile: permissions.updateProfile || false,
+                replyToReviews: permissions.replyToReviews || false
             },
             addedBy: currentUserId,
             addedAt: new Date().toISOString()
@@ -1965,7 +1966,8 @@ const updateModeratorPermissions = async (req, res) => {
                         createContent: permissions.createContent !== undefined ? permissions.createContent : mod.permissions.createContent,
                         updateContent: permissions.updateContent !== undefined ? permissions.updateContent : mod.permissions.updateContent,
                         deleteContent: permissions.deleteContent !== undefined ? permissions.deleteContent : mod.permissions.deleteContent,
-                        updateProfile: permissions.updateProfile !== undefined ? permissions.updateProfile : mod.permissions.updateProfile
+                        updateProfile: permissions.updateProfile !== undefined ? permissions.updateProfile : mod.permissions.updateProfile,
+                        replyToReviews: permissions.replyToReviews !== undefined ? permissions.replyToReviews : mod.permissions.replyToReviews
                     }
                 };
             }

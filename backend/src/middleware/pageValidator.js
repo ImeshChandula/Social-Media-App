@@ -213,7 +213,8 @@ const roleValidators = {
             createContent: Joi.boolean().optional(),
             updateContent: Joi.boolean().optional(),
             deleteContent: Joi.boolean().optional(),
-            updateProfile: Joi.boolean().optional()
+            updateProfile: Joi.boolean().optional(),
+            replyToReviews: Joi.boolean().optional()
         }).required().messages({
             'any.required': 'Permissions object is required'
         })
@@ -224,7 +225,8 @@ const roleValidators = {
             createContent: Joi.boolean().optional(),
             updateContent: Joi.boolean().optional(),
             deleteContent: Joi.boolean().optional(),
-            updateProfile: Joi.boolean().optional()
+            updateProfile: Joi.boolean().optional(),
+            replyToReviews: Joi.boolean().optional()
         }).required().min(1).messages({
             'any.required': 'Permissions object is required',
             'object.min': 'At least one permission must be specified'

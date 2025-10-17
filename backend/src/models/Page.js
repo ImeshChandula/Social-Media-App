@@ -120,6 +120,22 @@ class Page {
                 return false;
         }
     }
+
+    
+    canReplyToReviews(userId) {
+        // Main admin and admins can reply
+        if (this.hasAdminPrivileges(userId)) {
+            return true;
+        }
+
+        // Check moderator permissions
+        const permissions = this.getModeratorPermissions(userId);
+        if (!permissions) {
+            return false;
+        }
+
+        return permissions.replyToReviews || false;
+    }
 }
 
 module.exports = Page;
