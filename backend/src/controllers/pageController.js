@@ -17,7 +17,7 @@ const categoryService = new CategoryService();
 const VALID_VIDEO_CATEGORIES = ['Music', 'Sports', 'Education', 'Entertainment', 'News'];
 
 // Helper function to get valid page categories
-const getValidPageCategories = async () => {
+const getValidPageCategories = async() => {
     try {
         const categories = await categoryService.findAllActiveByField('pages');
         return categories.map(cat => cat.name.toLowerCase());
@@ -61,7 +61,7 @@ const createPage = async(req, res) => {
 
         // Get valid categories from database
         const validCategories = await getValidPageCategories();
-        
+
         // Validate category
         if (!validCategories.includes(category.toLowerCase())) {
             console.log('Invalid category:', category);
@@ -189,7 +189,7 @@ const updatePage = async(req, res) => {
         if (category !== undefined) {
             // Get valid categories from database
             const validCategories = await getValidPageCategories();
-            
+
             if (!validCategories.includes(category.toLowerCase())) {
                 return res.status(400).json({
                     success: false,
@@ -776,7 +776,7 @@ const getPageCategories = async(req, res) => {
         // Fetch categories from database
         const categories = await categoryService.findAllActiveByField('pages');
         const categoryNames = categories.map(cat => cat.name.toLowerCase());
-        
+
         res.status(200).json({
             success: true,
             categories: categoryNames,
@@ -784,7 +784,7 @@ const getPageCategories = async(req, res) => {
         });
     } catch (error) {
         console.error('Error getting page categories:', error);
-        
+
         // Fallback to hardcoded categories if database fetch fails
         const fallbackCategories = ['education', 'music', 'fashion', 'entertainment'];
         res.status(200).json({
@@ -1591,7 +1591,7 @@ const getPageWhatsAppContact = async(req, res) => {
 };
 
 //@desc     Add admin to page
-const addAdmin = async (req, res) => {
+const addAdmin = async(req, res) => {
     try {
         const { pageId } = req.params;
         const { userId } = req.body;
@@ -1687,7 +1687,7 @@ const addAdmin = async (req, res) => {
 };
 
 //@desc     Remove admin from page
-const removeAdmin = async (req, res) => {
+const removeAdmin = async(req, res) => {
     try {
         const { pageId, userId } = req.params;
         const currentUserId = req.user.id;
@@ -1744,7 +1744,7 @@ const removeAdmin = async (req, res) => {
 };
 
 //@desc     Add moderator to page
-const addModerator = async (req, res) => {
+const addModerator = async(req, res) => {
     try {
         const { pageId } = req.params;
         const { userId, permissions } = req.body;
@@ -1861,7 +1861,7 @@ const addModerator = async (req, res) => {
 };
 
 //@desc     Remove moderator from page
-const removeModerator = async (req, res) => {
+const removeModerator = async(req, res) => {
     try {
         const { pageId, userId } = req.params;
         const currentUserId = req.user.id;
@@ -1918,7 +1918,7 @@ const removeModerator = async (req, res) => {
 };
 
 //@desc     Update moderator permissions
-const updateModeratorPermissions = async (req, res) => {
+const updateModeratorPermissions = async(req, res) => {
     try {
         const { pageId, userId } = req.params;
         const { permissions } = req.body;
@@ -1999,7 +1999,7 @@ const updateModeratorPermissions = async (req, res) => {
 };
 
 //@desc     Get page roles (admins and moderators)
-const getPageRoles = async (req, res) => {
+const getPageRoles = async(req, res) => {
     try {
         const { pageId } = req.params;
         const currentUserId = req.user.id;
@@ -2026,7 +2026,7 @@ const getPageRoles = async (req, res) => {
 
         // Get admins info
         const admins = await Promise.all(
-            page.roles.admins.map(async (adminId) => {
+            page.roles.admins.map(async(adminId) => {
                 const user = await UserService.findById(adminId);
                 return user ? {
                     id: user.id,
@@ -2040,7 +2040,7 @@ const getPageRoles = async (req, res) => {
 
         // Get moderators info
         const moderators = await Promise.all(
-            page.roles.moderators.map(async (mod) => {
+            page.roles.moderators.map(async(mod) => {
                 const user = await UserService.findById(mod.userId);
                 return {
                     user: user ? {
