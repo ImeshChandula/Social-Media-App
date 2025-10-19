@@ -4,11 +4,9 @@ const PostService = require('../services/postService');
 const CategoryService = require('../services/categoryService');
 const pageValidators = require('../middleware/pageValidator');
 const Story = require('../models/Story');
+const ActivityService = require('../services/activityService');
 const { generateWhatsAppURL, generatePageContactMessage } = require('../utils/whatsappHelper');
 const { uploadSingleImage, deleteImages, uploadImages } = require('../storage/firebaseStorage');
-
-// Valid page categories
-//const VALID_PAGE_CATEGORIES = ['education', 'music', 'fashion', 'entertainment'];
 
 // Initialize category service
 const categoryService = new CategoryService();
@@ -35,7 +33,6 @@ const findUserByUsernameOrName = async(searchTerm) => {
 
     try {
         // Use the existing UserService.searchUsers which hits the /users/search endpoint
-        // This is the key call. If the search service doesn't find the user, we can't.
         const users = await UserService.searchUsers(searchTerm, 10);
 
         if (!users || users.length === 0) {
@@ -72,6 +69,7 @@ const findUserByUsernameOrName = async(searchTerm) => {
     }
     return null;
 };
+
 // createPage function
 const createPage = async(req, res) => {
     try {
@@ -79,7 +77,7 @@ const createPage = async(req, res) => {
         console.log('Request body keys:', Object.keys(req.body));
         console.log('Request body:', {
             ...req.body,
-            profilePicture: req.body.profilePicture ? 'Base64 data present (length: ' + req.body.profilePicture.length + ')' : 'MISSING'
+            profilePicture: req.body.profilePicture ? `Base64 data present (length: ${req.body.profilePicture.length})` : 'MISSING'
         });
 
         const { pageName, description, category, phone, email, address, username, profilePicture } = req.body;
@@ -111,7 +109,7 @@ const createPage = async(req, res) => {
             console.log('Invalid category:', category);
             return res.status(400).json({
                 success: false,
-                message: 'Invalid category. Valid categories are: ' + validCategories.join(', ')
+                message: `Invalid category. Valid categories are: ${validCategories.join(', ')}`
             });
         }
 
@@ -138,7 +136,7 @@ const createPage = async(req, res) => {
                 console.error('Profile picture upload failed:', error);
                 return res.status(400).json({
                     success: false,
-                    message: 'Failed to upload profile picture: ' + error.message
+                    message: `Failed to upload profile picture: ${error.message}`
                 });
             }
         }
@@ -156,13 +154,9 @@ const createPage = async(req, res) => {
             profilePicture: profilePictureUrl,
             followers: [],
             posts: [],
-            //isPublished: false, // Not published until admin approval and user publishes
-            isPublished: true, // Publish immediatly after creation
-            //approvalStatus: 'pending', // Pending admin approval
+            isPublished: true, // Publish immediately after creation
             approvalStatus: 'approved', // Auto-approved
-            //submittedForApproval: true,
             submittedForApproval: false, // No need for approval
-            //submittedAt: new Date().toISOString()
             publishedAt: new Date().toISOString() // Set published date now
         };
 
@@ -174,9 +168,14 @@ const createPage = async(req, res) => {
         const newPage = await PageService.createPage(pageData);
         console.log('Page created successfully:', newPage.id);
 
+        // Log page creation activity
+        ActivityService.logActivity(req.user.id, 'page_create', {
+            metadata: { pageId: newPage.id, pageName: newPage.pageName, category: newPage.category }
+        }).catch(err => console.error('Failed to log page_create activity:', err));
+
         res.status(201).json({
             success: true,
-            message: 'Page submitted for admin approval successfully',
+            message: 'Page created successfully',
             page: newPage
         });
 
@@ -185,13 +184,12 @@ const createPage = async(req, res) => {
         console.error('Error stack:', error.stack);
         res.status(500).json({
             success: false,
-            message: 'Server error: ' + error.message
+            message: `Server error: ${error.message}`
         });
     }
 };
 
-
-//@desc     Update page details
+//@desc Update page details
 const updatePage = async(req, res) => {
     try {
         const pageId = req.params.id;
@@ -233,7 +231,6 @@ const updatePage = async(req, res) => {
         if (category !== undefined) {
             // Get valid categories from database
             const validCategories = await getValidPageCategories();
-
             if (!validCategories.includes(category.toLowerCase())) {
                 return res.status(400).json({
                     success: false,
@@ -305,6 +302,11 @@ const updatePage = async(req, res) => {
 
         const updatedPage = await PageService.updateById(pageId, updateData);
 
+        // Log update activity
+        ActivityService.logActivity(req.user.id, 'page_update', {
+            metadata: { pageId: updatedPage.id, fieldsUpdated: Object.keys(updateData) }
+        }).catch(err => console.error('Failed to log page_update activity:', err));
+
         res.status(200).json({
             success: true,
             message: needsApproval ?
@@ -351,14 +353,6 @@ const publishPage = async(req, res) => {
             });
         }
 
-        // // Check if page is approved by admin
-        // if (page.approvalStatus !== 'approved') {
-        //     return res.status(400).json({
-        //         success: false,
-        //         message: 'Page must be approved by admin before publishing'
-        //     });
-        // }
-
         // Validate that all required fields are filled
         if (!page.pageName || !page.description || !page.category || !page.phone || !page.email || !page.address || !page.profilePicture) {
             return res.status(400).json({
@@ -372,6 +366,11 @@ const publishPage = async(req, res) => {
             approvalStatus: 'approved', // Auto-approve on publish
             publishedAt: new Date().toISOString()
         });
+
+        // Log publish activity
+        ActivityService.logActivity(req.user.id, 'page_update', {
+            metadata: { pageId: updatedPage.id, action: 'publish' }
+        }).catch(err => console.error('Failed to log page_publish activity:', err));
 
         res.status(200).json({
             success: true,
@@ -388,11 +387,10 @@ const publishPage = async(req, res) => {
     }
 };
 
-//@desc     Get page by ID (Enhanced for web view)
+//@desc Get page by ID (Enhanced for web view)
 const getPageById = async(req, res) => {
     try {
         const pageId = req.params.id;
-        // FIXED: Replace optional chaining with traditional conditional check
         const currentUserId = req.user && req.user.id ? req.user.id : null;
 
         console.log('🔍 Getting page by ID:', pageId);
@@ -420,7 +418,7 @@ const getPageById = async(req, res) => {
         // Check if user is following this page (only if user is authenticated)
         const isFollowing = currentUserId ? page.followers.includes(currentUserId) : false;
 
-        //Properly calculate ownership
+        // Properly calculate ownership
         const isOwner = currentUserId && page.owner === currentUserId;
 
         console.log('✅ Is Owner Check:', {
@@ -443,7 +441,7 @@ const getPageById = async(req, res) => {
         // Get owner information
         const owner = await UserService.findById(page.owner);
 
-        // FIXED: Replace optional chaining with traditional conditional check
+        // Calculate followers count
         const followersCount = page.followersCount || (page.followers && page.followers.length) || 0;
 
         const pageResponse = {
@@ -458,7 +456,7 @@ const getPageById = async(req, res) => {
             email: page.email,
             address: page.address,
             isFollowing,
-            isOwner, // This is the critical field
+            isOwner,
             followersCount: followersCount,
             postsCount: postsCount,
             isPublished: page.isPublished,
@@ -492,7 +490,7 @@ const getPageById = async(req, res) => {
     }
 };
 
-//@desc     Get current user's pages
+//@desc Get current user's pages
 const getCurrentUserPages = async(req, res) => {
     try {
         const userId = req.user.id;
@@ -540,19 +538,17 @@ const getCurrentUserPages = async(req, res) => {
     }
 };
 
-
-//@desc     Get all pages with filtering
+//@desc Get all pages with filtering
 const getAllPages = async(req, res) => {
     try {
         const { category, search, limit = 20, page = 1 } = req.query;
 
         let pages;
-
         if (search) {
             pages = await PageService.searchPages(search, parseInt(limit));
         } else {
             const filters = {};
-            if (category && VALID_PAGE_CATEGORIES.includes(category.toLowerCase())) {
+            if (category && (await getValidPageCategories()).includes(category.toLowerCase())) {
                 filters.category = category.toLowerCase();
             }
             pages = await PageService.findAll(filters);
@@ -607,7 +603,7 @@ const getAllPages = async(req, res) => {
     }
 };
 
-//@desc     Follow a page
+//@desc Follow a page
 const followPage = async(req, res) => {
     try {
         const pageId = req.params.id;
@@ -637,6 +633,11 @@ const followPage = async(req, res) => {
 
         const updatedPage = await PageService.addFollower(pageId, userId);
 
+        // Log follow activity
+        ActivityService.logActivity(req.user.id, 'page_follow', {
+            metadata: { pageId }
+        }).catch(err => console.error('Failed to log page_follow activity:', err));
+
         res.status(200).json({
             success: true,
             message: 'Page followed successfully',
@@ -653,7 +654,7 @@ const followPage = async(req, res) => {
     }
 };
 
-//@desc     Unfollow a page
+//@desc Unfollow a page
 const unfollowPage = async(req, res) => {
     try {
         const pageId = req.params.id;
@@ -676,6 +677,11 @@ const unfollowPage = async(req, res) => {
 
         const updatedPage = await PageService.removeFollower(pageId, userId);
 
+        // Log unfollow activity
+        ActivityService.logActivity(req.user.id, 'page_unfollow', {
+            metadata: { pageId }
+        }).catch(err => console.error('Failed to log page_unfollow activity:', err));
+
         res.status(200).json({
             success: true,
             message: 'Page unfollowed successfully',
@@ -692,8 +698,7 @@ const unfollowPage = async(req, res) => {
     }
 };
 
-
-//@desc     Update page profile (profile picture, cover photo, description, roles)
+//@desc Update page profile (profile picture, cover photo, description, roles)
 const updatePageProfile = async(req, res) => {
     try {
         const pageId = req.params.id;
@@ -758,6 +763,11 @@ const updatePageProfile = async(req, res) => {
 
         const updatedPage = await PageService.updateById(pageId, updateData);
 
+        // Log profile update activity
+        ActivityService.logActivity(req.user.id, 'page_update', {
+            metadata: { pageId, fieldsUpdated: Object.keys(updateData) }
+        }).catch(err => console.error('Failed to log page_update activity:', err));
+
         res.status(200).json({
             success: true,
             message: 'Page profile updated successfully',
@@ -773,8 +783,7 @@ const updatePageProfile = async(req, res) => {
     }
 };
 
-
-//@desc     Delete page
+//@desc Delete page
 const deletePage = async(req, res) => {
     try {
         const pageId = req.params.id;
@@ -800,6 +809,11 @@ const deletePage = async(req, res) => {
         await deleteImages(page.coverPhoto);
         await PageService.deleteById(pageId);
 
+        // Log deletion activity
+        ActivityService.logActivity(req.user.id, 'page_delete', {
+            metadata: { pageId }
+        }).catch(err => console.error('Failed to log page_delete activity:', err));
+
         res.status(200).json({
             success: true,
             message: 'Page deleted successfully'
@@ -814,7 +828,7 @@ const deletePage = async(req, res) => {
     }
 };
 
-//@desc     Get page categories (Updated to fetch from database)
+//@desc Get page categories (Updated to fetch from database)
 const getPageCategories = async(req, res) => {
     try {
         // Fetch categories from database
@@ -828,7 +842,6 @@ const getPageCategories = async(req, res) => {
         });
     } catch (error) {
         console.error('Error getting page categories:', error);
-
         // Fallback to hardcoded categories if database fetch fails
         const fallbackCategories = ['education', 'music', 'fashion', 'entertainment'];
         res.status(200).json({
@@ -839,10 +852,9 @@ const getPageCategories = async(req, res) => {
     }
 };
 
-
 // Admin functions
 
-//@desc     Get pages pending approval (Admin only)
+//@desc Get pages pending approval (Admin only)
 const getPendingPages = async(req, res) => {
     try {
         if (req.user.role !== 'super_admin' && req.user.role !== 'admin') {
@@ -887,7 +899,7 @@ const getPendingPages = async(req, res) => {
     }
 };
 
-//@desc     Approve page contact details (Admin only)
+//@desc Approve page contact details (Admin only)
 const approvePageContactDetails = async(req, res) => {
     try {
         const pageId = req.params.id;
@@ -923,6 +935,11 @@ const approvePageContactDetails = async(req, res) => {
 
         const updatedPage = await PageService.updateById(pageId, updateData);
 
+        // Log approval activity
+        ActivityService.logActivity(req.user.id, 'page_update', {
+            metadata: { pageId: updatedPage.id, action: 'approve_contact' }
+        }).catch(err => console.error('Failed to log page_approve activity:', err));
+
         res.status(200).json({
             success: true,
             message: 'Page contact details approved successfully',
@@ -938,7 +955,7 @@ const approvePageContactDetails = async(req, res) => {
     }
 };
 
-//@desc     Reject page contact details (Admin only)
+//@desc Reject page contact details (Admin only)
 const rejectPageContactDetails = async(req, res) => {
     try {
         const pageId = req.params.id;
@@ -969,6 +986,11 @@ const rejectPageContactDetails = async(req, res) => {
 
         const updatedPage = await PageService.updateById(pageId, updateData);
 
+        // Log reject activity
+        ActivityService.logActivity(req.user.id, 'page_update', {
+            metadata: { pageId: updatedPage.id, action: 'reject_contact' }
+        }).catch(err => console.error('Failed to log page_reject activity:', err));
+
         res.status(200).json({
             success: true,
             message: 'Page contact details rejected',
@@ -984,7 +1006,7 @@ const rejectPageContactDetails = async(req, res) => {
     }
 };
 
-//@desc     Get all pages for admin management (Super Admin only)
+//@desc Get all pages for admin management (Super Admin only)
 const getAllPagesForAdmin = async(req, res) => {
     try {
         if (req.user.role !== 'super_admin') {
@@ -1064,7 +1086,7 @@ const getAllPagesForAdmin = async(req, res) => {
     }
 };
 
-//@desc     Ban/Unban a page (Super Admin only)
+//@desc Ban/Unban a page (Super Admin only)
 const togglePageBan = async(req, res) => {
     try {
         const pageId = req.params.id;
@@ -1097,6 +1119,11 @@ const togglePageBan = async(req, res) => {
 
         const updatedPage = await PageService.updateById(pageId, updateData);
 
+        // Log ban/unban activity
+        ActivityService.logActivity(req.user.id, 'page_update', {
+            metadata: { pageId: updatedPage.id, action: !currentBanStatus ? 'ban' : 'unban', banReason: updatedPage.banReason }
+        }).catch(err => console.error('Failed to log page_ban activity:', err));
+
         res.status(200).json({
             success: true,
             message: `Page ${!currentBanStatus ? 'banned' : 'unbanned'} successfully`,
@@ -1117,7 +1144,7 @@ const togglePageBan = async(req, res) => {
     }
 };
 
-//@desc     Get page details for admin (Super Admin only)
+//@desc Get page details for admin (Super Admin only)
 const getPageForAdmin = async(req, res) => {
     try {
         const pageId = req.params.id;
@@ -1140,7 +1167,7 @@ const getPageForAdmin = async(req, res) => {
         // Get owner information
         const owner = await UserService.findById(page.owner);
 
-        // Get posts count (if you want to include this)
+        // Get posts count
         let postsCount = 0;
         try {
             const posts = await PostService.findByUserId(pageId);
@@ -1163,7 +1190,7 @@ const getPageForAdmin = async(req, res) => {
             followersCount: page.followersCount,
             postsCount: postsCount,
             isPublished: page.isPublished,
-            isVerified: page.isVerified,
+            isVerified: page.isVerified || false,
             approvalStatus: page.approvalStatus,
             isBanned: page.isBanned || false,
             banReason: page.banReason || null,
@@ -1196,7 +1223,6 @@ const getPageForAdmin = async(req, res) => {
         });
     }
 };
-
 
 // Create post for page (updated with role-based permissions)
 const createPagePost = async(req, res) => {
@@ -1238,14 +1264,14 @@ const createPagePost = async(req, res) => {
         if (!content && !media) {
             return res.status(400).json({
                 success: false,
-                message: "Either content or media is required."
+                message: 'Either content or media is required.'
             });
         }
 
         if (!mediaType) {
             return res.status(400).json({
                 success: false,
-                message: "Media type is required."
+                message: 'Media type is required.'
             });
         }
 
@@ -1254,7 +1280,7 @@ const createPagePost = async(req, res) => {
             if (!category) {
                 return res.status(400).json({
                     success: false,
-                    error: "Category is required for video posts.",
+                    error: 'Category is required for video posts.',
                     validCategories: VALID_VIDEO_CATEGORIES
                 });
             }
@@ -1262,7 +1288,7 @@ const createPagePost = async(req, res) => {
             if (!VALID_VIDEO_CATEGORIES.includes(category)) {
                 return res.status(400).json({
                     success: false,
-                    error: "Invalid category for video post.",
+                    error: 'Invalid category for video post.',
                     receivedCategory: category,
                     validCategories: VALID_VIDEO_CATEGORIES,
                     message: `"${category}" is not allowed. Please select from: ${VALID_VIDEO_CATEGORIES.join(', ')}`
@@ -1270,7 +1296,7 @@ const createPagePost = async(req, res) => {
             }
         }
 
-        // ✅ FIX: Only include fields that have values (not undefined)
+        // Only include fields that have values (not undefined)
         const postData = {
             mediaType,
             privacy: privacy || 'public',
@@ -1289,7 +1315,7 @@ const createPagePost = async(req, res) => {
         if (!newPost) {
             return res.status(400).json({
                 success: false,
-                message: "Failed to create post"
+                message: 'Failed to create post'
             });
         }
 
@@ -1307,15 +1333,20 @@ const createPagePost = async(req, res) => {
         if (!populatedPost) {
             return res.status(400).json({
                 success: false,
-                message: "Failed to update post with media"
+                message: 'Failed to update post with media'
             });
         }
 
         console.log('✅ Page post created successfully:', populatedPost.id);
 
+        // Log page post creation activity
+        ActivityService.logActivity(req.user.id, 'page_post_create', {
+            metadata: { pageId, postId: populatedPost.id }
+        }).catch(err => console.error('Failed to log page_post_create activity:', err));
+
         return res.status(201).json({
             success: true,
-            message: "Page post created successfully",
+            message: 'Page post created successfully',
             post: populatedPost
         });
 
@@ -1328,7 +1359,6 @@ const createPagePost = async(req, res) => {
         });
     }
 };
-
 
 // Create story for page (updated with role-based permissions)
 const createPageStory = async(req, res) => {
@@ -1371,7 +1401,7 @@ const createPageStory = async(req, res) => {
             });
         }
 
-        // ✅ FIX: Only include fields that have values (not undefined)
+        // Only include fields that have values (not undefined)
         const storyData = {
             userId: pageId,
             authorType: 'page',
@@ -1419,6 +1449,11 @@ const createPageStory = async(req, res) => {
 
         console.log('✅ Page story created successfully');
 
+        // Log page story creation as a page_post_create activity
+        ActivityService.logActivity(req.user.id, 'page_post_create', {
+            metadata: { pageId, storyId: populatedStory.id }
+        }).catch(err => console.error('Failed to log page_story activity:', err));
+
         res.status(201).json({
             success: true,
             message: 'Page story created successfully',
@@ -1438,7 +1473,6 @@ const createPageStory = async(req, res) => {
 const getPagePosts = async(req, res) => {
     try {
         const { pageId } = req.params;
-        // FIXED: Replace optional chaining with traditional conditional check
         const currentUserId = req.user && req.user.id ? req.user.id : null;
 
         const page = await PageService.findById(pageId);
@@ -1496,7 +1530,6 @@ const getPagePosts = async(req, res) => {
 const getPageStories = async(req, res) => {
     try {
         const { pageId } = req.params;
-        // FIXED: Replace optional chaining with traditional conditional check
         const currentUserId = req.user && req.user.id ? req.user.id : null;
 
         console.log('📖 Getting page stories for pageId:', pageId);
@@ -1574,7 +1607,7 @@ const getPageStories = async(req, res) => {
     }
 };
 
-//@desc     Get WhatsApp contact URL for page
+//@desc Get WhatsApp contact URL for page
 const getPageWhatsAppContact = async(req, res) => {
     try {
         const pageId = req.params.id;
@@ -1634,7 +1667,7 @@ const getPageWhatsAppContact = async(req, res) => {
     }
 };
 
-//@desc     Add admin to page
+//@desc Add admin to page
 const addAdmin = async(req, res) => {
     try {
         const { pageId } = req.params;
@@ -1719,6 +1752,11 @@ const addAdmin = async(req, res) => {
 
         console.log('✅ Admin added successfully');
 
+        // Log admin addition
+        ActivityService.logActivity(req.user.id, 'page_admin_add', {
+            metadata: { pageId, addedAdminId: userToAdd.id }
+        }).catch(err => console.error('Failed to log page_admin_add activity:', err));
+
         res.status(200).json({
             success: true,
             message: 'Admin added successfully',
@@ -1735,12 +1773,12 @@ const addAdmin = async(req, res) => {
         console.error('❌ Error adding admin:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error: ' + error.message
+            message: `Server error: ${error.message}`
         });
     }
 };
 
-//@desc     Remove admin from page
+//@desc Remove admin from page
 const removeAdmin = async(req, res) => {
     try {
         const { pageId, userId } = req.params;
@@ -1783,6 +1821,11 @@ const removeAdmin = async(req, res) => {
 
         await PageService.updateById(pageId, updateData);
 
+        // Log admin removal
+        ActivityService.logActivity(req.user.id, 'page_admin_remove', {
+            metadata: { pageId, removedAdminId: userId }
+        }).catch(err => console.error('Failed to log page_admin_remove activity:', err));
+
         res.status(200).json({
             success: true,
             message: 'Admin removed successfully'
@@ -1797,7 +1840,7 @@ const removeAdmin = async(req, res) => {
     }
 };
 
-//@desc     Add moderator to page
+//@desc Add moderator to page
 const addModerator = async(req, res) => {
     try {
         const { pageId } = req.params;
@@ -1908,6 +1951,11 @@ const addModerator = async(req, res) => {
 
         console.log('✅ Moderator added successfully');
 
+        // Log moderator addition
+        ActivityService.logActivity(req.user.id, 'page_moderator_add', {
+            metadata: { pageId, addedModeratorId: userToAdd.id }
+        }).catch(err => console.error('Failed to log page_moderator_add activity:', err));
+
         res.status(200).json({
             success: true,
             message: 'Moderator added successfully',
@@ -1928,12 +1976,12 @@ const addModerator = async(req, res) => {
         console.error('❌ Error adding moderator:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error: ' + error.message
+            message: `Server error: ${error.message}`
         });
     }
 };
 
-//@desc     Remove moderator from page
+//@desc Remove moderator from page
 const removeModerator = async(req, res) => {
     try {
         const { pageId, userId } = req.params;
@@ -1976,6 +2024,11 @@ const removeModerator = async(req, res) => {
 
         await PageService.updateById(pageId, updateData);
 
+        // Log moderator removal
+        ActivityService.logActivity(req.user.id, 'page_moderator_remove', {
+            metadata: { pageId, removedModeratorId: userId }
+        }).catch(err => console.error('Failed to log page_moderator_remove activity:', err));
+
         res.status(200).json({
             success: true,
             message: 'Moderator removed successfully'
@@ -1990,7 +2043,7 @@ const removeModerator = async(req, res) => {
     }
 };
 
-//@desc     Update moderator permissions
+//@desc Update moderator permissions
 const updateModeratorPermissions = async(req, res) => {
     try {
         const { pageId, userId } = req.params;
@@ -2056,6 +2109,11 @@ const updateModeratorPermissions = async(req, res) => {
 
         await PageService.updateById(pageId, updateData);
 
+        // Log moderator permissions update
+        ActivityService.logActivity(req.user.id, 'page_moderator_update', {
+            metadata: { pageId, updatedModeratorId: userId, updatedPermissions: permissions }
+        }).catch(err => console.error('Failed to log page_moderator_update activity:', err));
+
         res.status(200).json({
             success: true,
             message: 'Moderator permissions updated successfully',
@@ -2071,7 +2129,7 @@ const updateModeratorPermissions = async(req, res) => {
     }
 };
 
-//@desc     Get page roles (admins and moderators)
+//@desc Get page roles (admins and moderators)
 const getPageRoles = async(req, res) => {
     try {
         const { pageId } = req.params;
@@ -2155,6 +2213,8 @@ const getPageRoles = async(req, res) => {
     }
 };
 
+
+
 module.exports = {
     createPage,
     updatePage,
@@ -2183,5 +2243,6 @@ module.exports = {
     addModerator,
     removeModerator,
     updateModeratorPermissions,
-    getPageRoles
+    getPageRoles,
+    deletePagePost
 };

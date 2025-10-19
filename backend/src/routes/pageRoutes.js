@@ -6,13 +6,15 @@ const { authenticateUser, authorizeRoles, checkAccountStatus } = require('../mid
 const { validatePage, validatePageQuery, validateAdminReview, validatePageBan, validatePageProfile, validateAddAdmin, validateAddModerator, validateUpdateModeratorPermissions } = require('../middleware/pageValidator');
 const { validatePost, validateStory } = require('../middleware/validator'); // Add these validators
 const { validateCreateReview, validateUpdateReview, validateReply } = require('../middleware/pageReviewValidator');
+const activityLogger = require('../middleware/activityLogger');
 
 // Page management routes (existing)
 
 // @route :   POST /api/pages
 // @desc :   Create a new page
 // @access:  Private (only authenticated users can create pages)
-router.post('/', authenticateUser, checkAccountStatus, validatePage, pageController.createPage);
+// Log page creation activities so admins can see them in activity management
+router.post('/', authenticateUser, checkAccountStatus, validatePage, activityLogger.logPageCreate, pageController.createPage);
 
 // @route  PUT /api/pages/:id
 // @desc   Update an existing page  
@@ -137,6 +139,8 @@ router.post('/:pageId/stories', authenticateUser, checkAccountStatus, validateSt
 // @desc   Get all active stories for a specific page
 // @access Public (anyone can view stories from published pages)
 router.get('/:pageId/stories', pageController.getPageStories);
+
+
 
 // Admin routes (existing)
 
