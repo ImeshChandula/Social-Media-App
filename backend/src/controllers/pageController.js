@@ -28,6 +28,50 @@ const getValidPageCategories = async() => {
     }
 };
 
+const findUserByUsernameOrName = async(searchTerm) => {
+    if (!searchTerm || searchTerm.trim().length < 3) return null;
+
+    const normalizedTerm = searchTerm.toLowerCase().trim();
+
+    try {
+        // Use the existing UserService.searchUsers which hits the /users/search endpoint
+        // This is the key call. If the search service doesn't find the user, we can't.
+        const users = await UserService.searchUsers(searchTerm, 10);
+
+        if (!users || users.length === 0) {
+            console.log(`[findUser] No users found for search term: "${searchTerm}"`);
+            return null;
+        }
+
+        // Prioritize exact username match
+        let bestMatch = users.find(u =>
+            u.username && u.username.toLowerCase() === normalizedTerm
+        );
+
+        // If no exact username match, check for exact full name match
+        if (!bestMatch) {
+            bestMatch = users.find(u => {
+                if (!u.firstName || !u.lastName) return false;
+                const fullName = `${u.firstName.toLowerCase()} ${u.lastName.toLowerCase()}`;
+                return fullName === normalizedTerm;
+            });
+        }
+
+        // Fallback to the top result from the search
+        if (!bestMatch) {
+            bestMatch = users[0];
+        }
+
+        if (bestMatch) {
+            console.log(`[findUser] User found: ${bestMatch.username} (ID: ${bestMatch.id})`);
+            return bestMatch;
+        }
+
+    } catch (error) {
+        console.error(`[findUser] User lookup via search failed for term: "${searchTerm}"`, error);
+    }
+    return null;
+};
 // createPage function
 const createPage = async(req, res) => {
     try {
@@ -1597,7 +1641,9 @@ const addAdmin = async(req, res) => {
         const { userId } = req.body;
         const currentUserId = req.user.id;
 
-        // Validate userId
+        console.log('🔵 Add Admin Request:', { pageId, userId, currentUserId });
+
+        // Validate that we have a user ID
         if (!userId) {
             return res.status(400).json({
                 success: false,
@@ -1619,6 +1665,15 @@ const addAdmin = async(req, res) => {
             return res.status(403).json({
                 success: false,
                 message: 'Only Main Admin or Admins can add other admins'
+            });
+        }
+
+        // Check if user to be added exists
+        const userToAdd = await UserService.findById(userId);
+        if (!userToAdd) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
             });
         }
 
@@ -1660,28 +1715,27 @@ const addAdmin = async(req, res) => {
             }
         };
 
-        const updatedPage = await PageService.updateById(pageId, updateData);
+        await PageService.updateById(pageId, updateData);
 
-        // Get user info for response
-        const user = await UserService.findById(userId);
+        console.log('✅ Admin added successfully');
 
         res.status(200).json({
             success: true,
             message: 'Admin added successfully',
-            admin: user ? {
-                id: user.id,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                username: user.username,
-                profilePicture: user.profilePicture
-            } : null
+            admin: {
+                id: userToAdd.id,
+                firstName: userToAdd.firstName,
+                lastName: userToAdd.lastName,
+                username: userToAdd.username,
+                profilePicture: userToAdd.profilePicture
+            }
         });
 
     } catch (error) {
-        console.error('Error adding admin:', error);
+        console.error('❌ Error adding admin:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error'
+            message: 'Server error: ' + error.message
         });
     }
 };
@@ -1750,7 +1804,9 @@ const addModerator = async(req, res) => {
         const { userId, permissions } = req.body;
         const currentUserId = req.user.id;
 
-        // Validate input
+        console.log('🔵 Add Moderator Request:', { pageId, userId, permissions, currentUserId });
+
+        // Validate that we have a user ID
         if (!userId) {
             return res.status(400).json({
                 success: false,
@@ -1762,6 +1818,15 @@ const addModerator = async(req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Permissions object is required'
+            });
+        }
+
+        // Validate at least one permission is true
+        const hasPermission = Object.values(permissions).some(p => p === true);
+        if (!hasPermission) {
+            return res.status(400).json({
+                success: false,
+                message: 'At least one permission must be granted'
             });
         }
 
@@ -1779,6 +1844,15 @@ const addModerator = async(req, res) => {
             return res.status(403).json({
                 success: false,
                 message: 'Only Main Admin or Admins can add moderators'
+            });
+        }
+
+        // Check if user to be added exists
+        const userToAdd = await UserService.findById(userId);
+        if (!userToAdd) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
             });
         }
 
@@ -1808,13 +1882,13 @@ const addModerator = async(req, res) => {
 
         // Create moderator object
         const moderator = {
-            userId,
+            userId: userId,
             permissions: {
-                createContent: permissions.createContent || false,
-                updateContent: permissions.updateContent || false,
-                deleteContent: permissions.deleteContent || false,
-                updateProfile: permissions.updateProfile || false,
-                replyToReviews: permissions.replyToReviews || false
+                createContent: !!permissions.createContent,
+                updateContent: !!permissions.updateContent,
+                deleteContent: !!permissions.deleteContent,
+                updateProfile: !!permissions.updateProfile,
+                replyToReviews: !!permissions.replyToReviews
             },
             addedBy: currentUserId,
             addedAt: new Date().toISOString()
@@ -1832,30 +1906,29 @@ const addModerator = async(req, res) => {
 
         await PageService.updateById(pageId, updateData);
 
-        // Get user info for response
-        const user = await UserService.findById(userId);
+        console.log('✅ Moderator added successfully');
 
         res.status(200).json({
             success: true,
             message: 'Moderator added successfully',
             moderator: {
-                user: user ? {
-                    id: user.id,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    username: user.username,
-                    profilePicture: user.profilePicture
-                } : null,
+                user: {
+                    id: userToAdd.id,
+                    firstName: userToAdd.firstName,
+                    lastName: userToAdd.lastName,
+                    username: userToAdd.username,
+                    profilePicture: userToAdd.profilePicture
+                },
                 permissions: moderator.permissions,
                 addedAt: moderator.addedAt
             }
         });
 
     } catch (error) {
-        console.error('Error adding moderator:', error);
+        console.error('❌ Error adding moderator:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error'
+            message: 'Server error: ' + error.message
         });
     }
 };

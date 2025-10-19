@@ -22,6 +22,7 @@ import Favorites from "../components/Favorites";
 import ActivityLogsPage from "../components/ActivityLogDashboard";
 import CompletePagesSection from "../components/CompletePagesSection";
 import PageWebView from "../pages/PageWebView";
+import ManageRole from "../components/ManageRolesModal";
 
 const MainLayout = () => {
   const { checkAuth } = useAuthStore();
@@ -83,6 +84,7 @@ const MainLayout = () => {
               <Route path="/favorites" element={<Favorites />} />
               <Route path="/activity-logs" element={<ActivityLogsPage />} />
               <Route path="/business-page/:id" element={<PageWebView />} />
+              <Route path="/ManageRolesModal" element={<ManageRole />} />
             </Routes>
           </div>
         </div>

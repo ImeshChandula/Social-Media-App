@@ -32,15 +32,13 @@ import {
   FaInfoCircle,
   FaAlignLeft,
   FaUserFriends,
-  FaTrash
+  FaTrash,
+  FaGlobe
 } from "react-icons/fa";
 import useThemeStore from "../store/themeStore";
+import ManageRolesModal from "../components/ManageRolesModal"; // <-- Imported ManageRolesModal
 
-// =========================================================================
-// Helper Components (Defined outside PageWebView for clarity and performance)
-// =========================================================================
-
-// About Tab Content Component (omitted for brevity, assume correct)
+// About Tab Content Component
 const AboutTabContent = ({ page, isOwner, pageId, pageRoles }) => (
   <div className="card border-0 shadow-sm">
     <div className="card-body">
@@ -126,7 +124,7 @@ const AboutTabContent = ({ page, isOwner, pageId, pageRoles }) => (
           </div>
         </div>
       )}
-      {/* Conditionally render roles based on pageRoles prop */}
+
       {pageRoles && pageRoles.mainAdmin && (
         <>
           <div className="mt-4">
@@ -187,7 +185,7 @@ const AboutTabContent = ({ page, isOwner, pageId, pageRoles }) => (
   </div>
 );
 
-// Photos Tab Content Component (omitted for brevity, assume correct)
+// Photos Tab Content Component
 const PhotosTabContent = ({ posts }) => {
   const photoPosts = posts.filter(post => post.mediaType === 'image' && post.media && post.media.length > 0);
 
@@ -201,7 +199,7 @@ const PhotosTabContent = ({ posts }) => {
               <div key={post._id || post.id} className="col-4">
                 <div className="ratio ratio-1x1">
                   <img
-                    src={post.media[0]} // Assuming media is an array of URLs, take the first one
+                    src={post.media[0]}
                     alt={`Photo ${index + 1}`}
                     className="rounded"
                     style={{ objectFit: "cover", cursor: "pointer" }}
@@ -221,7 +219,7 @@ const PhotosTabContent = ({ posts }) => {
   );
 };
 
-// Videos Tab Content Component (omitted for brevity, assume correct)
+// Videos Tab Content Component
 const VideosTabContent = ({ posts }) => {
   const videoPosts = posts.filter(post => post.mediaType === 'video' && post.media && post.media.length > 0);
 
@@ -234,7 +232,7 @@ const VideosTabContent = ({ posts }) => {
             {videoPosts.map((post) => (
               <div key={post._id || post.id} className="col-12">
                 <video
-                  src={post.media[0]} // Assuming media is an array of URLs, take the first one
+                  src={post.media[0]}
                   controls
                   className="w-100 rounded"
                   style={{ maxHeight: "400px" }}
@@ -256,7 +254,7 @@ const VideosTabContent = ({ posts }) => {
   );
 };
 
-// Edit Profile Modal Component (omitted for brevity, assume correct)
+// Edit Profile Modal Component
 const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
   const [formData, setFormData] = useState({
     description: "",
@@ -373,7 +371,6 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
                 </small>
               </div>
 
-              {/* Cover Photo */}
               <div className="mb-4">
                 <label className="form-label fw-semibold text-dark">
                   <FaImage className="me-2" />
@@ -411,7 +408,6 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
                 </div>
               </div>
 
-              {/* Profile Picture */}
               <div className="mb-4">
                 <label className="form-label fw-semibold text-dark">
                   <FaUserCircle className="me-2" />
@@ -449,7 +445,6 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
                 </div>
               </div>
 
-              {/* Description */}
               <div className="mb-4">
                 <label className="form-label fw-semibold text-dark">
                   <FaAlignLeft className="me-2" />
@@ -516,389 +511,6 @@ const EditProfileModal = ({ show, onClose, page, onUpdate }) => {
   );
 };
 
-// Manage Roles Modal Component (RESTORED SIMPLE INPUTS)
-const ManageRolesModal = ({ show, onClose, pageId, roles, onUpdate, isMainAdmin }) => {
-  const [localRoles, setLocalRoles] = useState(roles);
-  const [loading, setLoading] = useState(false);
-  const [newAdminUsername, setNewAdminUsername] = useState('');
-  const [newModUsername, setNewModUsername] = useState('');
-  const [newModPermissions, setNewModPermissions] = useState({
-    createContent: false,
-    updateContent: false,
-    deleteContent: false,
-    updateProfile: false,
-    replyToReviews: false,
-  });
-
-  useEffect(() => {
-    setLocalRoles(roles);
-  }, [roles]);
-
-  const validateUsername = (username) => {
-    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
-    return usernameRegex.test(username);
-  };
-
-  const handleAddAdmin = async () => {
-    if (!newAdminUsername.trim()) {
-      toast.error('Username is required');
-      return;
-    }
-    if (!validateUsername(newAdminUsername)) {
-      toast.error('Username must be 3-20 characters long and contain only letters, numbers, or underscores');
-      return;
-    }
-    setLoading(true);
-    let userId = null;
-    try {
-      // 1. Fetch user ID by username (Required by current API design)
-      let userRes;
-      try {
-        // Use a generic search endpoint
-        userRes = await axiosInstance.get(`/users/username/${newAdminUsername}`);
-      } catch (userErr) {
-        // Catch 404 from the user lookup endpoint directly
-        if (userErr.response && userErr.response.status === 404) {
-          throw new Error('User not found with that username. Please check the username.'); 
-        }
-        throw userErr; // Re-throw other errors
-      }
-
-      if (!userRes?.data?.success || !userRes.data.user) {
-        throw new Error('User lookup failed. The user may not exist.');
-      }
-      
-      userId = userRes.data.user.id || userRes.data.user._id;
-      if (!userId) {
-        throw new Error('Invalid user data received from the server.');
-      }
-
-      // 2. Add admin
-      const res = await axiosInstance.post(`/pages/${pageId}/admins`, { userId });
-      if (res?.data?.success) {
-        toast.success('Admin added successfully');
-        setNewAdminUsername('');
-        onUpdate(); // Trigger parent to re-fetch roles
-      } else {
-        throw new Error(res?.data?.message || 'Failed to add admin');
-      }
-    } catch (err) {
-      console.error('Error adding admin:', err);
-      
-      const errorMessage = err.response?.data?.message || 
-                           err.message || 
-                           'Failed to add admin (Server error)';
-                           
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRemoveAdmin = async (userId) => {
-    if (!userId) {
-      toast.error('Invalid user ID');
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await axiosInstance.delete(`/pages/${pageId}/admins/${userId}`);
-      if (res?.data?.success) {
-        toast.success('Admin removed successfully');
-        onUpdate(); // Trigger parent to re-fetch roles
-      } else {
-        throw new Error(res?.data?.message || 'Failed to remove admin');
-      }
-    } catch (err) {
-      console.error('Error removing admin:', err);
-      const errorMessage = err.response?.data?.message || 'Failed to remove admin';
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAddModerator = async () => {
-    if (!newModUsername.trim()) {
-      toast.error('Username is required');
-      return;
-    }
-    if (!validateUsername(newModUsername)) {
-      toast.error('Username must be 3-20 characters long and contain only letters, numbers, or underscores');
-      return;
-    }
-    if (!Object.values(newModPermissions).some(perm => perm)) {
-      toast.error('At least one permission must be selected for the moderator');
-      return;
-    }
-    setLoading(true);
-    let userId = null;
-    try {
-      // 1. Fetch user ID by username (Required by current API design)
-      let userRes;
-      try {
-        userRes = await axiosInstance.get(`/users/username/${newModUsername}`);
-      } catch (userErr) {
-        // Catch 404 from the user lookup endpoint directly
-        if (userErr.response && userErr.response.status === 404) {
-          throw new Error('User not found with that username. Please check the username.'); 
-        }
-        throw userErr; // Re-throw other errors
-      }
-
-      if (!userRes?.data?.success || !userRes.data.user) {
-        throw new Error('User lookup failed. The user may not exist.');
-      }
-      
-      userId = userRes.data.user.id || userRes.data.user._id;
-      if (!userId) {
-        throw new Error('Invalid user data received from the server.');
-      }
-
-      // 2. Add moderator
-      const res = await axiosInstance.post(`/pages/${pageId}/moderators`, { userId, permissions: newModPermissions });
-      if (res?.data?.success) {
-        toast.success('Moderator added successfully');
-        setNewModUsername('');
-        setNewModPermissions({
-          createContent: false,
-          updateContent: false,
-          deleteContent: false,
-          updateProfile: false,
-          replyToReviews: false,
-        });
-        onUpdate(); // Trigger parent to re-fetch roles
-      } else {
-        throw new Error(res?.data?.message || 'Failed to add moderator');
-      }
-    } catch (err) {
-      console.error('Error adding moderator:', err);
-      
-      const errorMessage = err.response?.data?.message || 
-                           err.message || 
-                           'Failed to add moderator (Server error)';
-                           
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpdatePermission = async (userId, permission, value) => {
-    if (!userId) {
-      toast.error('Invalid user ID');
-      return;
-    }
-    const mod = localRoles.moderators.find(m => m.user.id === userId);
-    if (!mod) {
-      toast.error('Moderator not found');
-      return;
-    }
-    const currentPermissions = { ...mod.permissions };
-    const newPermissions = { ...currentPermissions, [permission]: value };
-
-    // Optimistic update
-    setLocalRoles(prev => ({
-      ...prev,
-      moderators: prev.moderators.map(m =>
-        m.user.id === userId ? { ...m, permissions: newPermissions } : m
-      ),
-    }));
-
-    try {
-      const res = await axiosInstance.put(`/pages/${pageId}/moderators/${userId}/permissions`, { permissions: newPermissions });
-      if (res?.data?.success) {
-        toast.success('Permission updated successfully');
-        onUpdate(); 
-      } else {
-        throw new Error(res?.data?.message || 'Failed to update permission');
-      }
-    } catch (err) {
-      console.error('Error updating permission:', err);
-      // Revert optimistic update on error
-      setLocalRoles(prev => ({
-        ...prev,
-        moderators: prev.moderators.map(m =>
-          m.user.id === userId ? { ...m, permissions: currentPermissions } : m
-        ),
-      }));
-      const errorMessage = err.response?.data?.message || 'Failed to update permission';
-      toast.error(errorMessage);
-    }
-  };
-
-  const permissionKeys = ['createContent', 'updateContent', 'deleteContent', 'updateProfile', 'replyToReviews'];
-
-  if (!show || !localRoles) return null;
-
-  return (
-    <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-      <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div className="modal-content border-0 shadow">
-          <div className="modal-header border-bottom">
-            <h5 className="modal-title fw-bold text-dark">
-              <FaUserFriends className="me-2" />
-              Manage Page Roles
-            </h5>
-            <button type="button" className="btn-close" onClick={onClose}></button>
-          </div>
-          <div className="modal-body">
-            {loading && (
-              <div className="text-center mb-3">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-              </div>
-            )}
-            {/* Main Admin */}
-            {localRoles.mainAdmin && (
-            <div className="mb-4">
-              <h6 className="fw-bold text-dark mb-3">Main Admin (Owner)</h6>
-              <div className="d-flex align-items-center p-3 bg-light rounded">
-                <img
-                  src={localRoles.mainAdmin.profilePicture || "/default-avatar.png"}
-                  alt={`${localRoles.mainAdmin.firstName} ${localRoles.mainAdmin.lastName}`}
-                  className="rounded-circle me-3"
-                  style={{ width: "48px", height: "48px", objectFit: "cover" }}
-                />
-                <div>
-                  <div className="fw-bold text-dark">
-                    {localRoles.mainAdmin.firstName} {localRoles.mainAdmin.lastName}
-                  </div>
-                  <div className="text-secondary small">Cannot be changed</div>
-                </div>
-              </div>
-            </div>
-            )}
-
-            {/* Admins Section */}
-            <div className="mb-4">
-              <h6 className="fw-bold text-dark mb-3">Admins</h6>
-              {localRoles.admins.map(admin => (
-                <div key={admin.id} className="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-2">
-                  <div className="d-flex align-items-center">
-                    <img
-                      src={admin.profilePicture || "/default-avatar.png"}
-                      alt={`${admin.firstName} ${admin.lastName}`}
-                      className="rounded-circle me-3"
-                      style={{ width: "48px", height: "48px", objectFit: "cover" }}
-                    />
-                    <div>
-                      <div className="fw-bold text-dark">
-                        {admin.firstName} {admin.lastName}
-                      </div>
-                      <div className="text-secondary small">@{admin.username}</div>
-                    </div>
-                  </div>
-                  {isMainAdmin && (
-                    <button className="btn btn-sm btn-danger" onClick={() => handleRemoveAdmin(admin.id)} disabled={loading}>
-                      <FaTrash className="me-1" /> Remove
-                    </button>
-                  )}
-                </div>
-              ))}
-              {isMainAdmin && (
-              <div className="mt-3">
-                <h6 className="fw-bold text-dark mb-2">Add New Admin</h6>
-                <div className="input-group">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Enter username to add as admin"
-                      value={newAdminUsername}
-                      onChange={(e) => setNewAdminUsername(e.target.value)}
-                      disabled={loading}
-                    />
-                    <button className="btn btn-primary" onClick={handleAddAdmin} disabled={loading}>
-                      <FaUserPlus className="me-1" /> Add Admin
-                    </button>
-                </div>
-                <small className="text-secondary">Note: User must be a follower of the page.</small>
-              </div>
-              )}
-            </div>
-
-            {/* Moderators Section */}
-            <div>
-              <h6 className="fw-bold text-dark mb-3">Moderators</h6>
-              {localRoles.moderators.map(mod => (
-                <div key={mod.user.id} className="mb-4 p-3 bg-light rounded">
-                  <div className="d-flex align-items-center justify-content-between mb-3">
-                    <div className="d-flex align-items-center">
-                      <img
-                        src={mod.user.profilePicture || "/default-avatar.png"}
-                        alt={`${mod.user.firstName} ${mod.user.lastName}`}
-                        className="rounded-circle me-3"
-                        style={{ width: "48px", height: "48px", objectFit: "cover" }}
-                      />
-                      <div>
-                        <div className="fw-bold text-dark">
-                          {mod.user.firstName} {mod.user.lastName}
-                        </div>
-                        <div className="text-secondary small">@{mod.user.username}</div>
-                      </div>
-                    </div>
-                    {isMainAdmin && (
-                    <button className="btn btn-sm btn-danger" onClick={() => handleRemoveModerator(mod.user.id)} disabled={loading}>
-                      <FaTrash className="me-1" /> Remove
-                    </button>
-                    )}
-                  </div>
-                  <div className="d-flex flex-wrap gap-3">
-                    {permissionKeys.map(perm => (
-                      <div key={perm} className="form-check">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          checked={mod.permissions[perm]}
-                          onChange={(e) => handleUpdatePermission(mod.user.id, perm, e.target.checked)}
-                          id={`${mod.user.id}-${perm}`}
-                          disabled={loading || !isMainAdmin}
-                        />
-                        <label className="form-check-label" htmlFor={`${mod.user.id}-${perm}`}>
-                          {perm.replace(/([A-Z])/g, ' $1').trim().charAt(0).toUpperCase() + perm.replace(/([A-Z])/g, ' $1').trim().slice(1)}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              {isMainAdmin && (
-              <div className="mt-3">
-                <h6 className="fw-bold text-dark mb-2">Add New Moderator</h6>
-                <div className="input-group">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Enter username to add as moderator"
-                      value={newModUsername}
-                      onChange={(e) => setNewModUsername(e.target.value)}
-                      disabled={loading}
-                    />
-                    <button className="btn btn-primary" onClick={handleAddModerator} disabled={loading}>
-                      <FaUserPlus className="me-1" /> Add Moderator
-                    </button>
-                </div>
-                <small className="text-secondary">Note: User must be a follower of the page.</small>
-              </div>
-              )}
-            </div>
-          </div>
-          <div className="modal-footer border-top">
-            <button type="button" className="btn btn-secondary" onClick={onClose} disabled={loading}>
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// =========================================================================
-// PageWebView Component
-// =========================================================================
-
 const PageWebView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -910,34 +522,38 @@ const PageWebView = () => {
   const [isOwner, setIsOwner] = useState(false);
   const { isDarkMode } = useThemeStore();
 
-  // Content states
   const [posts, setPosts] = useState([]);
   const [stories, setStories] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
 
-  // Create content modal states
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showCreateStory, setShowCreateStory] = useState(false);
 
-  // Story viewer states
   const [showStoryViewer, setShowStoryViewer] = useState(false);
   const [pageStories, setPageStories] = useState(null);
 
-  // Roles states
   const [pageRoles, setPageRoles] = useState(null);
   const [showManageRoles, setShowManageRoles] = useState(false);
-  
-  // Helper calculation (will be re-evaluated when pageRoles updates)
-  const isMainAdmin = pageRoles && authUser && pageRoles.mainAdmin?.id === authUser.id;
 
-  // Combined admin/owner check for UI actions
-  const isAdminUser =
-    isOwner ||
-    (pageRoles &&
-      authUser &&
-      (pageRoles.mainAdmin?.id === authUser.id ||
-        pageRoles.admins?.some((admin) => admin.id === authUser.id)));
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
+
+  const timeAgo = (date) => {
+    const now = new Date();
+    const diff = now - new Date(date);
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const weeks = Math.floor(days / 7);
+    if (weeks > 0) return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    return 'Just now';
+  };
 
   const fetchPageRoles = async () => {
     try {
@@ -945,15 +561,30 @@ const PageWebView = () => {
       if (res?.data?.success) {
         const rolesData = res.data.roles;
         setPageRoles(rolesData);
-        
         return rolesData;
       }
     } catch (err) {
-      console.error("Error fetching page roles:", err);
+      if (err.response?.status === 403) {
+        setPageRoles(null);
+      } else {
+        console.error("Error fetching page roles:", err);
+      }
     }
     return null;
   };
 
+  const fetchReviews = async () => {
+      try {
+        const res = await axiosInstance.get(`/pages/${id}/reviews`);
+        if (res?.data?.success) {
+          setReviews(res.data.reviews);
+          setAverageRating(res.data.averageRating || 0);
+          setTotalReviews(res.data.totalReviews || 0);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
   const handleManageRolesClick = async () => {
     await fetchPageRoles();
     setShowManageRoles(true);
@@ -966,19 +597,32 @@ const PageWebView = () => {
   useEffect(() => {
     fetchPageDetails();
     fetchPageStories();
+    // FIX: Call fetchReviews on initial load to populate the reviews state
+    fetchReviews();
   }, [id]);
 
   useEffect(() => {
     if (page && (activeTab === 'home' || activeTab === 'posts')) {
       fetchPagePosts();
     }
+    // Optimization: If activeTab is 'reviews', fetch reviews if they aren't already loaded or refresh.
+    // However, fetchReviews is already called on mount, so this is optional unless a refresh is desired on tab switch.
+    // For now, only the initial load fix is needed based on the user request.
   }, [page, activeTab]);
 
   useEffect(() => {
-    if (page && isOwner && !pageRoles && authUser) {
-        fetchPageRoles();
+    if (page && authUser) {
+      fetchPageRoles();
     }
-  }, [page, isOwner, authUser]);
+  }, [page, authUser]);
+
+  const isMainAdmin = pageRoles && authUser && pageRoles.mainAdmin?.id === authUser.id;
+  const isAdmin = pageRoles && authUser && pageRoles.admins?.some((admin) => admin.id === authUser.id);
+  const currentModerator = pageRoles?.moderators?.find(mod => mod.user?.id === authUser.id);
+  const isModerator = !!currentModerator;
+  const hasRole = isMainAdmin || isAdmin || isModerator;
+  const canCreateContent = isMainAdmin || isAdmin || (currentModerator && currentModerator.permissions?.createContent);
+  const canUpdateProfile = isMainAdmin || isAdmin || (currentModerator && currentModerator.permissions?.updateProfile);
 
   const fetchPageDetails = async () => {
     setLoading(true);
@@ -1128,7 +772,7 @@ const PageWebView = () => {
   };
 
   const handleCreatePost = () => {
-    if (!isAdminUser) {
+    if (!canCreateContent) {
       toast.error("You don't have permission to create posts for this page");
       return;
     }
@@ -1136,7 +780,7 @@ const PageWebView = () => {
   };
 
   const handleCreateStory = () => {
-    if (!isAdminUser) {
+    if (!canCreateContent) {
       toast.error("You don't have permission to create stories for this page");
       return;
     }
@@ -1261,12 +905,9 @@ const PageWebView = () => {
     );
   }
 
-
   return (
     <div className="min-vh-100 mt-5 mt-md-0">
-      {/* Header Section */}
       <div className="shadow-sm">
-        {/* Cover Photo */}
         <div className="position-relative" style={{ height: "400px" }}>
           <img
             src={page.coverPhoto || "https://via.placeholder.com/1200x400/667eea/ffffff?text=Cover+Photo"}
@@ -1276,12 +917,10 @@ const PageWebView = () => {
           />
         </div>
 
-        {/* Page Info Header */}
         <div className="container" style={{ marginTop: "-80px", position: "relative" }}>
           <div className="row">
             <div className="col-12">
               <div className="d-flex align-items-center justify-content-between flex-wrap mb-3">
-                {/* Back Button */}
                 <button
                   className="btn btn-outline-secondary"
                   onClick={() => navigate(-1)}
@@ -1289,9 +928,8 @@ const PageWebView = () => {
                 >
                   <FaArrowLeft className="text-dark" />
                 </button>
-                {/* Action Buttons */}
                 <div className="d-flex gap-2">
-                  {!isAdminUser ? (
+                  {!hasRole ? (
                     <>
                       <button
                         className={`btn ${isFollowing ? 'btn-secondary' : 'btn-primary'}`}
@@ -1307,24 +945,26 @@ const PageWebView = () => {
                     </>
                   ) : (
                     <>
-                      <button className="btn btn-light" onClick={() => setShowEditProfile(true)}>
-                        <FaEdit className="me-2" />
-                        Edit Page
-                      </button>
-                      {/* Manage Roles button for Owner & Admin */}
-                      <button
-                        className="btn btn-light"
-                        onClick={handleManageRolesClick}
-                      >
-                        <FaUserFriends className="me-2" />
-                        Manage Roles
-                      </button>
+                      {canUpdateProfile && (
+                        <button className="btn btn-light" onClick={() => setShowEditProfile(true)}>
+                          <FaEdit className="me-2" />
+                          Edit Page
+                        </button>
+                      )}
+                      {(isMainAdmin || isAdmin) && (
+                        <button
+                          className="btn btn-light"
+                          onClick={handleManageRolesClick}
+                        >
+                          <FaUserFriends className="me-2" />
+                          Manage Roles
+                        </button>
+                      )}
                     </>
                   )}
                 </div>
               </div>
               <div className="d-flex align-items-end justify-content-between flex-wrap">
-                {/* Profile Picture */}
                 <div className="d-flex align-items-end gap-3">
                   <div
                     className="position-relative"
@@ -1366,7 +1006,6 @@ const PageWebView = () => {
                     )}
                   </div>
 
-                  {/* Page Name & Stats */}
                   <div className="mb-3">
                     <div className="d-flex align-items-center gap-2">
                       <h1 className={`mb-0 ${isDarkMode ? "text-white" : "text-black"}`} style={{ fontSize: "32px", fontWeight: "700" }}>
@@ -1398,7 +1037,6 @@ const PageWebView = () => {
                 </div>
               </div>
 
-              {/* Navigation Tabs */}
               <div className="border-top mt-3">
                 <ul className="nav nav-tabs border-0" style={{ marginLeft: "0" }}>
                   <li className="nav-item">
@@ -1486,10 +1124,8 @@ const PageWebView = () => {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="container py-4">
         <div className="row">
-          {/* Left Sidebar - About Section (Summary) */}
           <div className="col-lg-5 col-xl-4 mb-4">
             <div className="card border-0 shadow-sm mb-3">
               <div className="card-body">
@@ -1497,14 +1133,11 @@ const PageWebView = () => {
                 <p className="text-secondary mb-3">
                   {page.description || "No description available"}
                 </p>
-                {/* Roles Summary - Only show if roles are loaded */}
                 {pageRoles && pageRoles.mainAdmin && (
                   <>
                     <h6 className="fw-bold mt-3 text-dark">Main Admin</h6>
                     <p className="text-secondary mb-2">
-                      {pageRoles.mainAdmin?.username ||
-                        pageRoles.mainAdmin?.email ||
-                        "Unknown"}
+                      {pageRoles.mainAdmin?.firstName} {pageRoles.mainAdmin?.lastName}
                     </p>
 
                     <h6 className="fw-bold mt-3 text-dark">Admins</h6>
@@ -1515,7 +1148,7 @@ const PageWebView = () => {
                             key={admin.id}
                             className="list-group-item small text-dark"
                           >
-                            {admin.username || admin.email || `${admin.firstName} ${admin.lastName}`}
+                            {admin.firstName} {admin.lastName}
                           </li>
                         ))}
                       </ul>
@@ -1531,7 +1164,7 @@ const PageWebView = () => {
                             key={mod.user.id}
                             className="list-group-item small text-dark"
                           >
-                            {mod.user.username || mod.user.email || `${mod.user.firstName} ${mod.user.lastName}`}
+                            {mod.user.firstName} {mod.user.lastName}
                           </li>
                         ))}
                       </ul>
@@ -1546,7 +1179,6 @@ const PageWebView = () => {
               </div>
             </div>
 
-            {/* Contact Info Card */}
             <div className="card border-0 shadow-sm mb-3">
               <div className="card-body">
                 <h6 className="fw-bold text-dark mb-3">Contact Info</h6>
@@ -1604,40 +1236,43 @@ const PageWebView = () => {
               </div>
             </div>
 
-            {/* Reviews Card - Updated */}
             <div className="card border-0 shadow-sm mb-3">
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <h6 className="fw-bold text-dark mb-0">Reviews</h6>
                   <div className="text-warning">
-                    <StarRatingDisplay rating={4.7} size={16} showNumber />
+                    <StarRatingDisplay rating={averageRating} size={16} showNumber />
                   </div>
                 </div>
 
-                {/* Sample Review Preview */}
-                <div className="mb-3 pb-3 border-bottom">
-                  <div className="d-flex gap-2 mb-2">
-                    <img
-                      src="https://via.placeholder.com/40"
-                      alt="Reviewer"
-                      className="rounded-circle"
-                      style={{ width: "40px", height: "40px" }}
-                    />
-                    <div className="flex-grow-1">
-                      <div className="d-flex justify-content-between">
-                        <div>
-                          <strong className="text-dark">Priya Sharma</strong>
-                          <span className="badge bg-success ms-2" style={{ fontSize: "10px" }}>✓</span>
+                {reviews.length > 0 ? (
+                  <div className="mb-3 pb-3 border-bottom">
+                    <div className="d-flex gap-2 mb-2">
+                      <img
+                        src={reviews[0].user?.profilePicture || "https://via.placeholder.com/40"}
+                        alt="Reviewer"
+                        className="rounded-circle"
+                        style={{ width: "40px", height: "40px" }}
+                      />
+                      <div className="flex-grow-1">
+                        <div className="d-flex justify-content-between">
+                          <div>
+                            <strong className="text-dark">
+                              {reviews[0].user?.firstName} {reviews[0].user?.lastName}
+                            </strong>
+                          </div>
                         </div>
+                        <StarRatingDisplay rating={reviews[0].rating} size={12} />
+                        <div className="text-secondary small">{timeAgo(reviews[0].createdAt)}</div>
                       </div>
-                      <StarRatingDisplay rating={5} size={12} />
-                      <div className="text-secondary small">1 week ago</div>
                     </div>
+                    <p className="mb-0 small text-dark">
+                      {reviews[0].content?.substring(0, 50) + '...'}
+                    </p>
                   </div>
-                  <p className="mb-0 small text-dark">
-                    Excellent service and innovative solutions...
-                  </p>
-                </div>
+                ) : (
+                  <p className="text-secondary mb-3">No reviews yet</p>
+                )}
 
                 <button
                   className="btn btn-light w-100"
@@ -1648,7 +1283,6 @@ const PageWebView = () => {
               </div>
             </div>
 
-            {/* Get in Touch Card */}
             <div className="card border-0 shadow-sm" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
               <div className="card-body text-white">
                 <h5 className="fw-bold mb-2">Get in Touch</h5>
@@ -1663,10 +1297,8 @@ const PageWebView = () => {
             </div>
           </div>
 
-          {/* Right Content - Posts Feed */}
           <div className="col-lg-7 col-xl-8">
-            {/* Create Post Card - Only for owners/admins */}
-            {isAdminUser && activeTab === 'home' && (
+            {canCreateContent && activeTab === 'home' && (
               <div className="card border-0 shadow-sm mb-3">
                 <div className="card-body">
                   <div className="d-flex gap-2">
@@ -1703,7 +1335,6 @@ const PageWebView = () => {
               </div>
             )}
 
-            {/* Posts List */}
             {(activeTab === 'home' || activeTab === 'posts') && (
               <>
                 {loadingPosts ? (
@@ -1733,9 +1364,9 @@ const PageWebView = () => {
                       <FaImage size={64} className="text-secondary mb-3" />
                       <h5 className="text-dark">No posts yet</h5>
                       <p className="text-secondary">
-                        {isAdminUser ? "Start sharing content by creating your first post!" : "This page hasn't posted anything yet."}
+                        {canCreateContent ? "Start sharing content by creating your first post!" : "This page hasn't posted anything yet."}
                       </p>
-                      {isAdminUser && (
+                      {canCreateContent && (
                         <button className="btn btn-primary mt-3" onClick={handleCreatePost}>
                           Create First Post
                         </button>
@@ -1746,12 +1377,10 @@ const PageWebView = () => {
               </>
             )}
 
-            {/* About Tab Content */}
             {activeTab === 'about' && (
               <AboutTabContent page={page} isOwner={isOwner} pageId={id} pageRoles={pageRoles} />
             )}
 
-            {/* Reviews Tab Content */}
             {activeTab === 'reviews' && (
               <ReviewsSection
                 pageId={id}
@@ -1760,12 +1389,10 @@ const PageWebView = () => {
               />
             )}
 
-            {/* Photos Tab Content */}
             {activeTab === 'photos' && (
               <PhotosTabContent posts={posts} />
             )}
 
-            {/* Videos Tab Content */}
             {activeTab === 'videos' && (
               <VideosTabContent posts={posts} />
             )}
@@ -1773,7 +1400,6 @@ const PageWebView = () => {
         </div>
       </div>
 
-      {/* Create Post Modal (omitted for brevity, assume correct)*/}
       {showCreatePost && (
         <div
           className="modal show d-block"
@@ -1803,7 +1429,6 @@ const PageWebView = () => {
         </div>
       )}
 
-      {/* Create Story Modal (omitted for brevity, assume correct)*/}
       {showCreateStory && (
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}>
           <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -1830,7 +1455,6 @@ const PageWebView = () => {
         </div>
       )}
 
-      {/* Story Viewer Modal (omitted for brevity, assume correct)*/}
       {showStoryViewer && pageStories && (
         <StoryViewer
           userStories={pageStories}
@@ -1845,7 +1469,6 @@ const PageWebView = () => {
         />
       )}
 
-      {/* Edit Profile Modal */}
       {showEditProfile && (
         <EditProfileModal
           show={showEditProfile}
@@ -1855,7 +1478,6 @@ const PageWebView = () => {
         />
       )}
 
-      {/* Manage Roles Modal */}
       {showManageRoles && pageRoles ? (
         <ManageRolesModal
           show={showManageRoles}
@@ -1866,7 +1488,6 @@ const PageWebView = () => {
           isMainAdmin={isMainAdmin}
         />
       ) : showManageRoles && !pageRoles ? (
-        // Loading state for Manage Roles Modal
         <div
           className="modal show d-block"
           style={{ backgroundColor: "rgba(0,0,0,0.5)" }}

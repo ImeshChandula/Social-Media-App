@@ -354,6 +354,7 @@ const Card = ({ children }) => (
 // Page Details Modal Component
 const PageDetailsModal = ({ show, onClose, pageId }) => {
   const [pageDetails, setPageDetails] = useState(null);
+  const [pageRoles, setPageRoles] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -365,13 +366,20 @@ const PageDetailsModal = ({ show, onClose, pageId }) => {
   const fetchPageDetails = async () => {
     setLoading(true);
     try {
-      const res = await axiosInstance.get(`/pages/admin/${pageId}`);
-      if (res.data.success) {
-        setPageDetails(res.data.page);
+      const [pageRes, rolesRes] = await Promise.all([
+        axiosInstance.get(`/pages/admin/${pageId}`),
+        axiosInstance.get(`/pages/${pageId}/roles`)
+      ]);
+
+      if (pageRes.data.success) {
+        setPageDetails(pageRes.data.page);
+      }
+      if (rolesRes.data.success) {
+        setPageRoles(rolesRes.data.roles);
       }
     } catch (error) {
-      console.error('Error fetching page details:', error);
-      toast.error('Failed to load page details');
+      console.error('Error fetching page details and roles:', error);
+      toast.error('Failed to load page details and roles');
     } finally {
       setLoading(false);
     }
@@ -384,160 +392,402 @@ const PageDetailsModal = ({ show, onClose, pageId }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      style={styles.modalBackdrop}
+      style={{
+        ...styles.modalBackdrop,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1050,
+      }}
       onClick={onClose}
+      role="dialog"
+      aria-labelledby="page-details-modal-title"
     >
       <motion.div
         initial={{ scale: 0.8, y: 50 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.8, y: 50 }}
-        style={styles.modalDialog('lg')}
+        style={{
+          ...styles.modalDialog('lg'),
+          maxWidth: '800px',
+          width: '90%',
+          margin: 'auto',
+          backgroundColor: '#fff',
+          borderRadius: '0.25rem',
+          boxShadow: '0 0.5rem 1rem rgba(0,0,0,0.15)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div style={styles.modalContent}>
-          <div style={styles.modalHeader}>
-            <h5 style={styles.modalTitle}>Page Details</h5>
-            <button style={styles.modalClose} onClick={onClose}>×</button>
+          <div style={{
+            ...styles.modalHeader,
+            position: 'sticky',
+            top: 0,
+            backgroundColor: '#fff',
+            zIndex: 1,
+            borderBottom: `1px solid ${theme.colors.border}`,
+          }}>
+            <h5 style={{ ...styles.modalTitle, fontSize: '1.25rem' }} id="page-details-modal-title">
+              Page Details
+            </h5>
+            <button style={styles.modalClose} onClick={onClose} aria-label="Close modal">
+              ×
+            </button>
           </div>
-          <div style={styles.modalBody}>
+          <div style={{
+            ...styles.modalBody,
+            maxHeight: '70vh',
+            overflowY: 'auto',
+            scrollBehavior: 'smooth',
+            padding: theme.spacing.lg,
+          }}>
             {loading ? (
-              <div style={styles.emptyState}>Loading page details...</div>
+              <div style={styles.emptyState}>
+                <div style={{
+                  border: '4px solid rgba(0, 0, 0, 0.1)',
+                  borderTop: `4px solid ${theme.colors.primary}`,
+                  borderRadius: '50%',
+                  width: '24px',
+                  height: '24px',
+                  animation: 'spin 1s linear infinite',
+                  margin: '0 auto 1rem',
+                }}></div>
+                Loading page details...
+              </div>
             ) : pageDetails ? (
-              <div style={styles.row}>
-                <div style={styles.col}>
-                  <div style={styles.infoCard}>
-                    <h6 style={{ color: theme.colors.primary, marginBottom: theme.spacing.md }}>Basic Information</h6>
+              <div style={{ ...styles.row, flexWrap: 'wrap', gap: theme.spacing.md }}>
+                <div style={{ ...styles.col, flex: '1 1 45%', minWidth: '300px' }}>
+                  <motion.div
+                    style={{
+                      ...styles.infoCard,
+                      boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                    }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <h6 style={{ color: theme.colors.primary, marginBottom: theme.spacing.md, fontWeight: 600 }}>
+                      Basic Information
+                    </h6>
                     <div style={{ marginBottom: theme.spacing.md }}>
-                      <small style={{ color: theme.colors.textSecondary }}>Page Name</small>
-                      <p style={{ fontWeight: "bold" }}>{pageDetails.pageName}</p>
+                      <small style={{ color: theme.colors.textSecondary, display: 'block' }}>Page Name</small>
+                      <p style={{ fontWeight: 'bold' }}>{pageDetails.pageName}</p>
                     </div>
                     {pageDetails.username && (
                       <div style={{ marginBottom: theme.spacing.md }}>
-                        <small style={{ color: theme.colors.textSecondary }}>Username</small>
+                        <small style={{ color: theme.colors.textSecondary, display: 'block' }}>Username</small>
                         <p>{pageDetails.username}</p>
                       </div>
                     )}
                     <div style={{ marginBottom: theme.spacing.md }}>
-                      <small style={{ color: theme.colors.textSecondary }}>Category</small>
+                      <small style={{ color: theme.colors.textSecondary, display: 'block' }}>Category</small>
                       <p>{pageDetails.category?.charAt(0).toUpperCase() + pageDetails.category?.slice(1)}</p>
                     </div>
                     {pageDetails.description && (
                       <div style={{ marginBottom: theme.spacing.md }}>
-                        <small style={{ color: theme.colors.textSecondary }}>Description</small>
+                        <small style={{ color: theme.colors.textSecondary, display: 'block' }}>Description</small>
                         <p>{pageDetails.description}</p>
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 </div>
-                <div style={styles.col}>
-                  <div style={styles.infoCard}>
-                    <h6 style={{ color: theme.colors.secondary, marginBottom: theme.spacing.md }}>Status & Metrics</h6>
-                    <div style={styles.row}>
-                      <div style={{ width: "50%" }}>
-                        <div style={{ textAlign: "center" }}>
-                          <div style={{ color: theme.colors.primary, fontSize: "1.5rem" }}>{pageDetails.followersCount || 0}</div>
-                          <small style={{ color: theme.colors.textSecondary }}>Followers</small>
+                <div style={{ ...styles.col, flex: '1 1 45%', minWidth: '300px' }}>
+                  <motion.div
+                    style={{
+                      ...styles.infoCard,
+                      boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                    }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <h6 style={{ color: theme.colors.secondary, marginBottom: theme.spacing.md, fontWeight: 600 }}>
+                      Status & Metrics
+                    </h6>
+                    <div style={{ ...styles.row, justifyContent: 'space-around' }}>
+                      <div style={{ width: '50%', textAlign: 'center' }}>
+                        <div style={{ color: theme.colors.primary, fontSize: '1.5rem', fontWeight: 'bold' }}>
+                          {pageDetails.followersCount || 0}
                         </div>
+                        <small style={{ color: theme.colors.textSecondary }}>Followers</small>
                       </div>
-                      <div style={{ width: "50%" }}>
-                        <div style={{ textAlign: "center" }}>
-                          <div style={{ color: theme.colors.warning, fontSize: "1.5rem" }}>{pageDetails.postsCount || 0}</div>
-                          <small style={{ color: theme.colors.textSecondary }}>Posts</small>
+                      <div style={{ width: '50%', textAlign: 'center' }}>
+                        <div style={{ color: theme.colors.warning, fontSize: '1.5rem', fontWeight: 'bold' }}>
+                          {pageDetails.postsCount || 0}
                         </div>
+                        <small style={{ color: theme.colors.textSecondary }}>Posts</small>
                       </div>
                     </div>
                     <hr style={{ margin: `${theme.spacing.md} 0`, borderColor: theme.colors.border }} />
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: theme.spacing.sm, marginBottom: theme.spacing.md }}>
-                      {pageDetails.isPublished ? (
-                        <Badge variant="success">Published</Badge>
-                      ) : (
-                        <Badge variant="warning">Draft</Badge>
-                      )}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: theme.spacing.sm, marginBottom: theme.spacing.md }}>
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.3 }}>
+                        {pageDetails.isPublished ? (
+                          <Badge variant="success">Published</Badge>
+                        ) : (
+                          <Badge variant="warning">Draft</Badge>
+                        )}
+                      </motion.div>
                       {pageDetails.isBanned && (
-                        <Badge variant="danger">Banned</Badge>
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.35 }}>
+                          <Badge variant="danger">Banned</Badge>
+                        </motion.div>
                       )}
                       {pageDetails.isVerified && (
-                        <Badge variant="info">Verified</Badge>
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.4 }}>
+                          <Badge variant="info">Verified</Badge>
+                        </motion.div>
                       )}
-                      <Badge variant={pageDetails.approvalStatus === 'approved' ? 'success' : pageDetails.approvalStatus === 'pending' ? 'info' : pageDetails.approvalStatus === 'rejected' ? 'danger' : 'secondary'}>
-                        {pageDetails.approvalStatus?.charAt(0).toUpperCase() + pageDetails.approvalStatus?.slice(1)}
-                      </Badge>
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.45 }}>
+                        <Badge
+                          variant={
+                            pageDetails.approvalStatus === 'approved'
+                              ? 'success'
+                              : pageDetails.approvalStatus === 'pending'
+                              ? 'info'
+                              : pageDetails.approvalStatus === 'rejected'
+                              ? 'danger'
+                              : 'secondary'
+                          }
+                        >
+                          {pageDetails.approvalStatus?.charAt(0).toUpperCase() + pageDetails.approvalStatus?.slice(1)}
+                        </Badge>
+                      </motion.div>
                     </div>
                     <div>
-                      <small style={{ color: theme.colors.textSecondary }}>Created</small>
-                      <p>{new Date(pageDetails.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                      <small style={{ color: theme.colors.textSecondary, display: 'block' }}>Created</small>
+                      <p>
+                        {new Date(pageDetails.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </p>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
                 {(pageDetails.phone || pageDetails.email || pageDetails.address) && (
-                  <div style={{ width: "100%" }}>
-                    <div style={styles.infoCard}>
-                      <h6 style={{ color: theme.colors.warning, marginBottom: theme.spacing.md }}>Contact Information</h6>
-                      <div style={styles.row}>
+                  <div style={{ width: '100%' }}>
+                    <motion.div
+                      style={{
+                        ...styles.infoCard,
+                        boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                      }}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      <h6 style={{ color: theme.colors.warning, marginBottom: theme.spacing.md, fontWeight: 600 }}>
+                        Contact Information
+                      </h6>
+                      <div style={{ ...styles.row, gap: theme.spacing.md }}>
                         {pageDetails.phone && (
-                          <div style={{ flex: "1" }}>
-                            <small style={{ color: theme.colors.textSecondary }}>Phone</small>
+                          <div style={{ flex: '1' }}>
+                            <small style={{ color: theme.colors.textSecondary, display: 'block' }}>Phone</small>
                             <p>{pageDetails.phone}</p>
                           </div>
                         )}
                         {pageDetails.email && (
-                          <div style={{ flex: "1" }}>
-                            <small style={{ color: theme.colors.textSecondary }}>Email</small>
+                          <div style={{ flex: '1' }}>
+                            <small style={{ color: theme.colors.textSecondary, display: 'block' }}>Email</small>
                             <p>{pageDetails.email}</p>
                           </div>
                         )}
                         {pageDetails.address && (
-                          <div style={{ flex: "1" }}>
-                            <small style={{ color: theme.colors.textSecondary }}>Address</small>
+                          <div style={{ flex: '1' }}>
+                            <small style={{ color: theme.colors.textSecondary, display: 'block' }}>Address</small>
                             <p>{pageDetails.address}</p>
                           </div>
                         )}
                       </div>
-                    </div>
+                    </motion.div>
                   </div>
                 )}
                 {pageDetails.isBanned && (
-                  <div style={{ width: "100%" }}>
-                    <div style={{ ...styles.infoCard, backgroundColor: 'rgba(220,38,38,0.1)', border: `1px solid rgba(220,38,38,0.25)` }}>
-                      <h6 style={{ color: theme.colors.danger, marginBottom: theme.spacing.md }}>Ban Information</h6>
-                      <div style={styles.row}>
-                        <div style={{ flex: "1" }}>
-                          <small style={{ color: theme.colors.textSecondary }}>Ban Reason</small>
+                  <div style={{ width: '100%' }}>
+                    <motion.div
+                      style={{
+                        ...styles.infoCard,
+                        backgroundColor: 'rgba(220,38,38,0.1)',
+                        border: `1px solid rgba(220,38,38,0.25)`,
+                        boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                      }}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 }}
+                    >
+                      <h6 style={{ color: theme.colors.danger, marginBottom: theme.spacing.md, fontWeight: 600 }}>
+                        Ban Information
+                      </h6>
+                      <div style={{ ...styles.row, gap: theme.spacing.md }}>
+                        <div style={{ flex: '1' }}>
+                          <small style={{ color: theme.colors.textSecondary, display: 'block' }}>Ban Reason</small>
                           <p>{pageDetails.banReason || 'No reason provided'}</p>
                         </div>
-                        <div style={{ flex: "1" }}>
-                          <small style={{ color: theme.colors.textSecondary }}>Banned On</small>
+                        <div style={{ flex: '1' }}>
+                          <small style={{ color: theme.colors.textSecondary, display: 'block' }}>Banned On</small>
                           <p>{pageDetails.bannedAt ? new Date(pageDetails.bannedAt).toLocaleDateString() : 'Unknown'}</p>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   </div>
                 )}
                 {pageDetails.owner && (
-                  <div style={{ width: "100%" }}>
-                    <div style={styles.infoCard}>
-                      <h6 style={{ color: theme.colors.info, marginBottom: theme.spacing.md }}>Owner Information</h6>
-                      <div style={styles.row}>
-                        <div style={{ flex: "1" }}>
-                          <small style={{ color: theme.colors.textSecondary }}>Name</small>
-                          <p style={{ fontWeight: "bold" }}>{pageDetails.owner.firstName} {pageDetails.owner.lastName}</p>
+                  <div style={{ width: '100%' }}>
+                    <motion.div
+                      style={{
+                        ...styles.infoCard,
+                        boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                      }}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                    >
+                      <h6 style={{ color: theme.colors.info, marginBottom: theme.spacing.md, fontWeight: 600 }}>
+                        Owner Information
+                      </h6>
+                      <div style={{ ...styles.row, gap: theme.spacing.md }}>
+                        <div style={{ flex: '1' }}>
+                          <small style={{ color: theme.colors.textSecondary, display: 'block' }}>Name</small>
+                          <p style={{ fontWeight: 'bold' }}>{pageDetails.owner.firstName} {pageDetails.owner.lastName}</p>
                         </div>
-                        <div style={{ flex: "1" }}>
-                          <small style={{ color: theme.colors.textSecondary }}>Username</small>
+                        <div style={{ flex: '1' }}>
+                          <small style={{ color: theme.colors.textSecondary, display: 'block' }}>Username</small>
                           <p>{pageDetails.owner.username}</p>
                         </div>
-                        <div style={{ flex: "1" }}>
-                          <small style={{ color: theme.colors.textSecondary }}>Email</small>
+                        <div style={{ flex: '1' }}>
+                          <small style={{ color: theme.colors.textSecondary, display: 'block' }}>Email</small>
                           <p>{pageDetails.owner.email}</p>
                         </div>
                         {pageDetails.owner.phone && (
-                          <div style={{ flex: "1" }}>
-                            <small style={{ color: theme.colors.textSecondary }}>Phone</small>
+                          <div style={{ flex: '1' }}>
+                            <small style={{ color: theme.colors.textSecondary, display: 'block' }}>Phone</small>
                             <p>{pageDetails.owner.phone}</p>
                           </div>
                         )}
                       </div>
-                    </div>
+                    </motion.div>
+                  </div>
+                )}
+                {pageRoles && (
+                  <div style={{ width: '100%' }}>
+                    <motion.div
+                      style={{
+                        ...styles.infoCard,
+                        boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                      }}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.6 }}
+                    >
+                      <h6 style={{ color: theme.colors.primary, marginBottom: theme.spacing.md, fontWeight: 600 }}>
+                        Page Roles
+                      </h6>
+                      {/* Main Admin Section */}
+                      {pageRoles.mainAdmin && (
+                        <div style={{ marginBottom: theme.spacing.lg }}>
+                          <h6 style={{ color: theme.colors.textSecondary, marginBottom: theme.spacing.sm, fontSize: '0.9rem' }}>
+                            Main Admin
+                          </h6>
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            {pageRoles.mainAdmin.profilePicture && (
+                              <img
+                                src={pageRoles.mainAdmin.profilePicture}
+                                alt={`${pageRoles.mainAdmin.firstName} ${pageRoles.mainAdmin.lastName}`}
+                                style={{ width: 40, height: 40, borderRadius: '50%', marginRight: theme.spacing.md }}
+                              />
+                            )}
+                            <div>
+                              <p style={{ fontWeight: 'bold' }}>{pageRoles.mainAdmin.firstName} {pageRoles.mainAdmin.lastName}</p>
+                              <small style={{ color: theme.colors.textSecondary, display: 'block' }}>
+                                @{pageRoles.mainAdmin.username}
+                              </small>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {/* Admins Section */}
+                      {pageRoles.admins && pageRoles.admins.length > 0 && (
+                        <div style={{ marginBottom: theme.spacing.lg }}>
+                          <h6 style={{ color: theme.colors.textSecondary, marginBottom: theme.spacing.sm, fontSize: '0.9rem' }}>
+                            Admins ({pageRoles.admins.length})
+                          </h6>
+                          {pageRoles.admins.map((admin, index) => (
+                            <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: theme.spacing.sm }}>
+                              {admin.profilePicture && (
+                                <img
+                                  src={admin.profilePicture}
+                                  alt={`${admin.firstName} ${admin.lastName}`}
+                                  style={{ width: 32, height: 32, borderRadius: '50%', marginRight: theme.spacing.md }}
+                                />
+                              )}
+                              <div>
+                                <p>{admin.firstName} {admin.lastName}</p>
+                                <small style={{ color: theme.colors.textSecondary, display: 'block' }}>
+                                  @{admin.username}
+                                </small>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {/* Moderators Section */}
+                      {pageRoles.moderators && pageRoles.moderators.length > 0 && (
+                        <div>
+                          <h6 style={{ color: theme.colors.textSecondary, marginBottom: theme.spacing.sm, fontSize: '0.9rem' }}>
+                            Moderators ({pageRoles.moderators.length})
+                          </h6>
+                          {pageRoles.moderators.map((mod, index) => (
+                            <div
+                              key={index}
+                              style={{
+                                marginBottom: theme.spacing.md,
+                                borderBottom: `1px solid ${theme.colors.border}`,
+                                paddingBottom: theme.spacing.sm,
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', marginBottom: theme.spacing.sm }}>
+                                {mod.user.profilePicture && (
+                                  <img
+                                    src={mod.user.profilePicture}
+                                    alt={`${mod.user.firstName} ${mod.user.lastName}`}
+                                    style={{ width: 32, height: 32, borderRadius: '50%', marginRight: theme.spacing.md }}
+                                  />
+                                )}
+                                <div>
+                                  <p>{mod.user.firstName} {mod.user.lastName}</p>
+                                  <small style={{ color: theme.colors.textSecondary, display: 'block' }}>
+                                    @{mod.user.username}
+                                  </small>
+                                </div>
+                              </div>
+                              <div style={{ marginBottom: theme.spacing.sm }}>
+                                <small style={{ color: theme.colors.textSecondary, display: 'block' }}>Permissions:</small>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: theme.spacing.sm }}>
+                                  {Object.entries(mod.permissions).map(([key, value]) => (
+                                    value && (
+                                      <Badge key={key} variant="info">
+                                        {key.replace(/([A-Z])/g, ' $1').trim()}
+                                      </Badge>
+                                    )
+                                  ))}
+                                </div>
+                              </div>
+                              <small style={{ color: theme.colors.textSecondary, display: 'block' }}>
+                                Added on: {new Date(mod.addedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                              </small>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </motion.div>
                   </div>
                 )}
               </div>
@@ -553,6 +803,12 @@ const PageDetailsModal = ({ show, onClose, pageId }) => {
     </motion.div>
   );
 };
+
+// Add this to your CSS file or styled-components for the spinner animation
+// @keyframes spin {
+//   0% { transform: rotate(0deg); }
+//   100% { transform: rotate(360deg); }
+// }
 
 // Ban Modal Component
 const BanModal = ({ show, onClose, page, onBanToggle }) => {
