@@ -1,4 +1,4 @@
-// Post table - Updated to support page posts
+
 class Post {
     constructor(id, postData) {
         // Add safety check for postData
@@ -10,6 +10,7 @@ class Post {
         this.id = id;
         this.author = postData.author;
         this.authorType = postData.authorType || 'user'; // 'user' or 'page'
+        this.createdBy = postData.createdBy || null; // Track actual user who created the post (for page posts)
         this.content = postData.content || '';
         this.media = postData.media || [];
         this.mediaType = postData.mediaType || '';

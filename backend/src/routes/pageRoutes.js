@@ -213,4 +213,15 @@ router.post('/:id/unfollow', authenticateUser, checkAccountStatus, pageControlle
 // @access Public (anyone can view the WhatsApp contact URL of a published page)
 router.get('/:id/whatsapp-contact', pageController.getPageWhatsAppContact);
 
+
+// @route  PUT /api/pages/:pageId/posts/:postId
+// @desc   Update a post for a specific page
+// @access Private (Main Admin, Admins, or Moderators with updateContent permission)
+router.put('/:pageId/posts/:postId', authenticateUser, checkAccountStatus, validatePost, pageController.updatePagePost);
+
+// @route  DELETE /api/pages/:pageId/posts/:postId
+// @desc   Delete a post for a specific page
+// @access Private (Main Admin, Admins, or Moderators with deleteContent permission)
+router.delete('/:pageId/posts/:postId', authenticateUser, checkAccountStatus, pageController.deletePagePost);
+
 module.exports = router;

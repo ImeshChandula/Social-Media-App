@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useParams, useNavigate } from "react-router-dom";
@@ -36,7 +34,7 @@ import {
   FaGlobe
 } from "react-icons/fa";
 import useThemeStore from "../store/themeStore";
-import ManageRolesModal from "../components/ManageRolesModal"; // <-- Imported ManageRolesModal
+import ManageRolesModal from "../components/ManageRolesModal";
 
 // About Tab Content Component
 const AboutTabContent = ({ page, isOwner, pageId, pageRoles }) => (
@@ -574,17 +572,18 @@ const PageWebView = () => {
   };
 
   const fetchReviews = async () => {
-      try {
-        const res = await axiosInstance.get(`/pages/${id}/reviews`);
-        if (res?.data?.success) {
-          setReviews(res.data.reviews);
-          setAverageRating(res.data.averageRating || 0);
-          setTotalReviews(res.data.totalReviews || 0);
-        }
-      } catch (err) {
-        console.error(err);
+    try {
+      const res = await axiosInstance.get(`/pages/${id}/reviews`);
+      if (res?.data?.success) {
+        setReviews(res.data.reviews);
+        setAverageRating(res.data.averageRating || 0);
+        setTotalReviews(res.data.totalReviews || 0);
       }
-    };
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleManageRolesClick = async () => {
     await fetchPageRoles();
     setShowManageRoles(true);
@@ -597,7 +596,6 @@ const PageWebView = () => {
   useEffect(() => {
     fetchPageDetails();
     fetchPageStories();
-    // FIX: Call fetchReviews on initial load to populate the reviews state
     fetchReviews();
   }, [id]);
 
@@ -605,9 +603,6 @@ const PageWebView = () => {
     if (page && (activeTab === 'home' || activeTab === 'posts')) {
       fetchPagePosts();
     }
-    // Optimization: If activeTab is 'reviews', fetch reviews if they aren't already loaded or refresh.
-    // However, fetchReviews is already called on mount, so this is optional unless a refresh is desired on tab switch.
-    // For now, only the initial load fix is needed based on the user request.
   }, [page, activeTab]);
 
   useEffect(() => {
@@ -623,6 +618,8 @@ const PageWebView = () => {
   const hasRole = isMainAdmin || isAdmin || isModerator;
   const canCreateContent = isMainAdmin || isAdmin || (currentModerator && currentModerator.permissions?.createContent);
   const canUpdateProfile = isMainAdmin || isAdmin || (currentModerator && currentModerator.permissions?.updateProfile);
+  const canUpdateContent = isMainAdmin || isAdmin || (currentModerator && currentModerator.permissions?.updateContent);
+  const canDeleteContent = isMainAdmin || isAdmin || (currentModerator && currentModerator.permissions?.deleteContent);
 
   const fetchPageDetails = async () => {
     setLoading(true);
@@ -842,6 +839,23 @@ const PageWebView = () => {
     setPosts(prevPosts => prevPosts.filter(post => (post._id || post.id) !== postId));
     setPage(prev => ({ ...prev, postsCount: Math.max(0, prev.postsCount - 1) }));
     toast.success("Post deleted successfully");
+  };
+
+  const handleUpdatePost = (updatedPost) => {
+    setPosts(prevPosts =>
+      prevPosts.map(post => {
+        const currentPostId = post._id || post.id;
+        const updatedPostId = updatedPost._id || updatedPost.id;
+        if (currentPostId === updatedPostId) {
+          return {
+            ...post,
+            ...updatedPost,
+            author: post.author // Preserve author info
+          };
+        }
+        return post;
+      })
+    );
   };
 
   const updatePostLike = (postId, isLiked, likeCount) => {
@@ -1349,9 +1363,14 @@ const PageWebView = () => {
                       <div key={post._id || post.id} className="mb-3">
                         <PostCard
                           post={post}
-                          isUserPost={isOwner}
+                          isUserPost={false}
+                          isPagePost={true}
+                          pageId={id}
+                          canEditPost={canUpdateContent}
+                          canDeletePost={canDeleteContent}
                           onLikeUpdate={updatePostLike}
                           onDeletePost={handleDeletePost}
+                          onUpdatePost={handleUpdatePost}
                           onReportPost={reportPost}
                           disableNavigation={false}
                         />

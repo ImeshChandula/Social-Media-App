@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,6 +13,7 @@ import LikesPopup from "./LikesPopup";
 import PostDropdown from "./PostDropdown";
 import PostLikeButton from "./PostLikeButton";
 import PostComment from "./PostComment";
+import EditPagePost from "./EditPagePost";
 import { axiosInstance } from "../lib/axios";
 import useAuthStore from "../store/authStore";
 import ShareButton from "./ShareButton";
@@ -21,8 +23,13 @@ import "../styles/FavoriteAnimation.css";
 const PostCard = ({
   post,
   isUserPost = false,
+  isPagePost = false,
+  pageId = null,
+  canEditPost = false,
+  canDeletePost = false,
   onLikeUpdate,
   onDeletePost,
+  onUpdatePost,
   onReportPost,
   isBeingReported = false,
   disableNavigation = false,
@@ -42,6 +49,9 @@ const PostCard = ({
   const [showLikesPopup, setShowLikesPopup] = useState(false);
   const [likes, setLikes] = useState([]);
   const [loadingLikes, setLoadingLikes] = useState(false);
+
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Report modal state
   const [showReportModal, setShowReportModal] = useState(false);
@@ -125,6 +135,18 @@ const PostCard = ({
     if (onDeletePost) {
       onDeletePost(postId);
     }
+  };
+
+  const handleEditPost = (post) => {
+    setShowEditModal(true);
+  };
+
+  const handlePostUpdated = (updatedPost) => {
+    if (onUpdatePost) {
+      onUpdatePost(updatedPost);
+    }
+    setShowEditModal(false);
+    toast.success("Post updated successfully");
   };
 
   const handleReportClick = () => {
@@ -305,7 +327,8 @@ const PostCard = ({
           </div>
           
           <div className="d-flex align-items-center gap-2">
-            {!isUserPost && (
+            {/* Show report button for posts that are NOT user's and NOT page posts with edit rights */}
+            {!isUserPost && !(isPagePost && (canEditPost || canDeletePost)) && (
               <button
                 className="btn btn-sm btn-outline-secondary"
                 onClick={handleReportClick}
@@ -322,7 +345,19 @@ const PostCard = ({
               </button>
             )}
             
-            {isUserPost && <PostDropdown postId={postId} onDelete={handleDeletePost} />}
+            {/* Show dropdown for user posts or page posts with permissions */}
+            {(isUserPost || (isPagePost && (canEditPost || canDeletePost))) && (
+              <PostDropdown 
+                post={post}
+                postId={postId}
+                onDelete={handleDeletePost}
+                onEdit={handleEditPost}
+                isPagePost={isPagePost}
+                pageId={pageId}
+                canEdit={isPagePost ? canEditPost : true}
+                canDelete={isPagePost ? canDeletePost : true}
+              />
+            )}
           </div>
         </div>
 
@@ -415,6 +450,33 @@ const PostCard = ({
           loading={loadingLikes}
         />
 
+        {/* Edit Modal for Page Posts */}
+        {showEditModal && isPagePost && (
+          <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+              <div className="modal-content border-0 shadow">
+                <div className="modal-header border-bottom">
+                  <h5 className="modal-title fw-bold text-dark">Edit Post</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowEditModal(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <EditPagePost
+                    pageId={pageId}
+                    post={post}
+                    onPostUpdated={handlePostUpdated}
+                    onCancel={() => setShowEditModal(false)}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Report Modal */}
         {showReportModal && (
           <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
             <div className="modal-dialog modal-dialog-centered">

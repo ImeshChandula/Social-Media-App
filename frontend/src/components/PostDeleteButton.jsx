@@ -1,3 +1,4 @@
+
 import React from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
@@ -6,7 +7,12 @@ import { axiosInstance } from "../lib/axios";
 import { FiTrash2 } from "react-icons/fi";
 import useThemeStore from "../store/themeStore";
 
-const PostDeleteButton = ({ postId, onDeleteSuccess }) => {
+const PostDeleteButton = ({ 
+  postId, 
+  onDeleteSuccess,
+  isPagePost = false,
+  pageId = null
+}) => {
   const MySwal = withReactContent(Swal);
   const { isDarkMode } = useThemeStore();
 
@@ -35,19 +41,27 @@ const PostDeleteButton = ({ postId, onDeleteSuccess }) => {
     if (!result.isConfirmed) return;
 
     try {
-      await axiosInstance.delete(`/posts/delete/${postId}`);
+      // Choose the correct delete endpoint based on post type
+      if (isPagePost && pageId) {
+        await axiosInstance.delete(`/pages/${pageId}/posts/${postId}`);
+      } else {
+        await axiosInstance.delete(`/posts/delete/${postId}`);
+      }
+      
       toast.success("Post deleted successfully!");
       onDeleteSuccess?.(postId);
     } catch (error) {
       console.error("Failed to delete post:", error);
-      toast.error("Failed to delete post. Please try again.");
+      const errorMessage = error.response?.data?.message || "Failed to delete post. Please try again.";
+      toast.error(errorMessage);
     }
   };
 
   return (
     <button
-      className={`dropdown-item d-flex align-items-center gap-2 ${isDarkMode ? "text-red-400 hover:text-red-300" : "text-red-600 hover:text-red-500"
-        }`}
+      className={`dropdown-item d-flex align-items-center gap-2 ${
+        isDarkMode ? "text-red-400 hover:text-red-300" : "text-red-600 hover:text-red-500"
+      }`}
       onClick={handleDelete}
       type="button"
     >

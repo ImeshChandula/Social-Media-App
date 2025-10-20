@@ -1300,7 +1300,8 @@ const createPagePost = async(req, res) => {
         const postData = {
             mediaType,
             privacy: privacy || 'public',
-            authorType: 'page'
+            authorType: 'page',
+            createdBy: currentUserId // Track who actually created the post
         };
 
         // Only add optional fields if they exist
@@ -1601,6 +1602,194 @@ const getPageStories = async(req, res) => {
     } catch (error) {
         console.error('Get page stories error:', error.message);
         return res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
+// Update page post
+const updatePagePost = async(req, res) => {
+    try {
+        const { pageId, postId } = req.params;
+        const { content, media, tags, location, category } = req.body;
+        const currentUserId = req.user.id;
+
+        console.log('📝 Updating post for page:', pageId);
+        console.log('👤 Current user:', currentUserId);
+        console.log('📄 Post ID:', postId);
+
+        // Find the page and verify permissions
+        const page = await PageService.findById(pageId);
+        if (!page) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Find the post
+        const post = await PostService.findById(postId);
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: 'Post not found'
+            });
+        }
+
+        // Verify this is a page post and belongs to this page
+        if (post.authorType !== 'page' || post.author !== pageId) {
+            return res.status(403).json({
+                success: false,
+                message: 'This post does not belong to this page'
+            });
+        }
+
+        // Check if user has permission to update posts
+        if (!page.hasAdminPrivileges(currentUserId) && !page.canPerformAction(currentUserId, 'updateContent')) {
+            console.log('❌ Permission check failed');
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have permission to update posts for this page'
+            });
+        }
+
+        // Prepare update data
+        const updateData = {
+            isEdited: true
+        };
+
+        // Track edit history
+        const editHistory = post.editHistory || [];
+        editHistory.push({
+            editedBy: currentUserId,
+            editedAt: new Date().toISOString(),
+            previousContent: post.content,
+            previousMedia: post.media
+        });
+        updateData.editHistory = editHistory;
+
+        // Update only provided fields
+        if (content !== undefined) updateData.content = content;
+        if (tags !== undefined) updateData.tags = tags;
+        if (location !== undefined) updateData.location = location;
+        if (category !== undefined) updateData.category = category;
+
+        // Handle media update
+        if (media !== undefined) {
+            if (media === null || media.length === 0) {
+                // Delete old media if new media is null/empty
+                if (post.media && post.media.length > 0) {
+                    await deleteImages(post.media);
+                }
+                updateData.media = [];
+            } else {
+                // Upload new media
+                const resultURLs = await uploadImages(media, 'page_post_images');
+                
+                // Delete old media
+                if (post.media && post.media.length > 0) {
+                    await deleteImages(post.media);
+                }
+                
+                updateData.media = resultURLs;
+            }
+        }
+
+        const updatedPost = await PostService.updateById(postId, updateData);
+
+        console.log('✅ Page post updated successfully:', updatedPost.id);
+
+        // Log page post update activity
+        ActivityService.logActivity(req.user.id, 'page_post_update', {
+            metadata: { pageId, postId: updatedPost.id }
+        }).catch(err => console.error('Failed to log page_post_update activity:', err));
+
+        return res.status(200).json({
+            success: true,
+            message: 'Page post updated successfully',
+            post: updatedPost
+        });
+
+    } catch (error) {
+        console.error('Page post update error:', error.message);
+        console.error('Stack trace:', error.stack);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
+// Delete page post
+const deletePagePost = async(req, res) => {
+    try {
+        const { pageId, postId } = req.params;
+        const currentUserId = req.user.id;
+
+        console.log('🗑️ Deleting post for page:', pageId);
+        console.log('👤 Current user:', currentUserId);
+        console.log('📄 Post ID:', postId);
+
+        // Find the page and verify permissions
+        const page = await PageService.findById(pageId);
+        if (!page) {
+            return res.status(404).json({
+                success: false,
+                message: 'Page not found'
+            });
+        }
+
+        // Find the post
+        const post = await PostService.findById(postId);
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: 'Post not found'
+            });
+        }
+
+        // Verify this is a page post and belongs to this page
+        if (post.authorType !== 'page' || post.author !== pageId) {
+            return res.status(403).json({
+                success: false,
+                message: 'This post does not belong to this page'
+            });
+        }
+
+        // Check if user has permission to delete posts
+        if (!page.hasAdminPrivileges(currentUserId) && !page.canPerformAction(currentUserId, 'deleteContent')) {
+            console.log('❌ Permission check failed');
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have permission to delete posts for this page'
+            });
+        }
+
+        // Delete media files if they exist
+        if (post.media && post.media.length > 0) {
+            await deleteImages(post.media);
+        }
+
+        // Delete the post
+        await PostService.deleteById(postId);
+
+        console.log('✅ Page post deleted successfully');
+
+        // Log page post deletion activity
+        ActivityService.logActivity(req.user.id, 'page_post_delete', {
+            metadata: { pageId, postId }
+        }).catch(err => console.error('Failed to log page_post_delete activity:', err));
+
+        return res.status(200).json({
+            success: true,
+            message: 'Page post deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Page post deletion error:', error.message);
+        console.error('Stack trace:', error.stack);
+        res.status(500).json({
             success: false,
             message: 'Server error'
         });
@@ -2237,12 +2426,13 @@ module.exports = {
     createPageStory,
     getPagePosts,
     getPageStories,
+    updatePagePost,
+    deletePagePost,
     getPageWhatsAppContact,
     addAdmin,
     removeAdmin,
     addModerator,
     removeModerator,
     updateModeratorPermissions,
-    getPageRoles,
-    deletePagePost
+    getPageRoles
 };
