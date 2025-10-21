@@ -547,7 +547,7 @@ const Feed = () => {
                 <div key={post._id || post.id || index} id={`post-${post._id || post.id}`}>
                     <PostCard
                         post={post}
-                        isUserPost={post.authorType !== 'page'}
+                        isUserPost={false}
                         isPagePost={post.authorType === 'page'}
                         pageId={post.author?.id}
                         disableNavigation={true}
