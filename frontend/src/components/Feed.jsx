@@ -416,51 +416,6 @@ const Feed = () => {
         );
     }
 
-    const fetchPageDetails = async () => {
-        setLoading(true);
-        try {
-            const res = await axiosInstance.get(`/pages/${id}`);
-            if (res?.data?.success) {
-                const pageData = res.data.page;
-                setPage(pageData);
-                setIsFollowing(pageData.isFollowing || false);
-
-                const ownershipCheck = pageData.isOwner ||
-                    (authUser && (
-                        pageData.owner === authUser.id ||
-                        pageData.owner?.id === authUser.id
-                    ));
-
-                setIsOwner(ownershipCheck);
-            }
-        } catch (err) {
-            console.error('Error fetching page:', err);
-            if (err.response?.status === 404) {
-                toast.error("Page not found");
-                navigate("/profile");
-            } else {
-                toast.error("Failed to load page");
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchPagePosts = async () => {
-        setLoadingPosts(true);
-        try {
-            const res = await axiosInstance.get(`/pages/${id}/posts`);
-            if (res?.data?.success) {
-                setPosts(res.data.posts || []);
-            }
-        } catch (err) {
-            console.error('Error fetching page posts:', err);
-            toast.error("Failed to load page posts");
-        } finally {
-            setLoadingPosts(false);
-        }
-    };
-
     return (
         <div className="container my-4">
             {/* Feed Type Selector (Responsive & Scrollable) */}
