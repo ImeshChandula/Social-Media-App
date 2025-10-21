@@ -9,7 +9,7 @@ const useAuthStore = create((set) => ({
     isSigningUp: false,
     isUpdating: false,
 
-    checkAuth: async() => {
+    checkAuth: async () => {
         try {
             const res = await axiosInstance.get("/auth/checkCurrent");
 
@@ -23,7 +23,7 @@ const useAuthStore = create((set) => ({
         }
     },
 
-    login: async(data) => {
+    login: async (data) => {
         set({ isLoggingIn: true });
 
         try {
@@ -47,22 +47,22 @@ const useAuthStore = create((set) => ({
         }
     },
 
-    register: async(data) => {
-        set({ isSigningUp: true});
+    register: async (data) => {
+        set({ isSigningUp: true });
 
         try {
             const res = await axiosInstance.post("/auth/register", data);
 
             if (res.data && res.data.newUser && res.data.success) {
-                set({ authUser: res.data.newUser})
+                set({ authUser: res.data.newUser })
                 toast.success(res.data.message);
                 return res.data;
             } else {
                 throw new Error("Invalid response from server");
             }
         } catch (error) {
-            const errorMessage = error.response?.data?.message || 
-                               "Failed to create account. Please try again.";
+            const errorMessage = error.response?.data?.message ||
+                "Failed to create account. Please try again.";
             toast.error(errorMessage);
             throw error;
         } finally {
