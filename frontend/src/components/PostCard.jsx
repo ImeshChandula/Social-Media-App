@@ -42,8 +42,8 @@ const PostCard = ({
   const mediaArray = Array.isArray(post.media)
     ? post.media
     : post.media
-    ? [post.media]
-    : [];
+      ? [post.media]
+      : [];
 
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [showComments, setShowComments] = useState(false);
@@ -92,14 +92,14 @@ const PostCard = ({
   // Get display name for author
   const getAuthorDisplayName = () => {
     if (isPostFromPage) {
-      return post.author?.pageName || post.author?.username || "Unknown Page";
+      return post.author?.pageName || "Unknown Page";
     }
-    return post.author?.username || "Unknown";
+    return `${post.author.firstName || ''} ${post.author.lastName || ''}` || "Unknown";
   };
 
   // Get author profile picture with fallback
   const getAuthorProfilePicture = () => {
-    return post.author?.profilePicture || "/default-avatar.png";
+    return post.author?.profilePicture;
   };
 
   useEffect(() => {
@@ -116,7 +116,7 @@ const PostCard = ({
 
   const handleNavigateToProfile = () => {
     if (disableNavigation) return;
-    
+
     // If it's a page post, navigate to page
     if (isPostFromPage) {
       const pageId = post.author?.id || post.author?._id;
@@ -125,7 +125,7 @@ const PostCard = ({
       }
       return;
     }
-    
+
     // Otherwise navigate to user profile
     const authorId = post.author?.id || post.author?._id;
     const currentUserId = authUser?._id || authUser?.id;
@@ -206,7 +206,7 @@ const PostCard = ({
         toast.success("Post reported successfully");
         setShowReportModal(false);
         setReportReason("");
-        
+
         if (onReportPost) {
           onReportPost(postId, reportReason);
         }
@@ -215,7 +215,7 @@ const PostCard = ({
       }
     } catch (error) {
       console.error("Report submission error:", error);
-      
+
       if (error.response?.data?.message) {
         toast.error(error.response.data.message);
       } else if (error.response?.status === 400) {
@@ -413,7 +413,7 @@ const PostCard = ({
         />
         {post.category && (
           <div className="position-absolute top-0 end-0 m-2">
-            <span 
+            <span
               className={`badge ${getCategoryBadgeClass(post.category)} cursor-pointer`}
               onClick={() => handleCategoryClick(post.category)}
               title={`View more ${post.category} videos`}
@@ -481,7 +481,7 @@ const PostCard = ({
                   {post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}
                 </small>
                 {post.mediaType === 'video' && post.category && (
-                  <span 
+                  <span
                     className={`badge ${getCategoryBadgeClass(post.category)} badge-sm cursor-pointer`}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -496,7 +496,7 @@ const PostCard = ({
               </div>
             </div>
           </div>
-          
+
           <div className="d-flex align-items-center gap-2">
             {/* Show report button for posts that are NOT user's and NOT page posts with edit rights */}
             {!isUserPost && !(isPagePost && (canEditPost || canDeletePost)) && (
@@ -515,10 +515,10 @@ const PostCard = ({
                 )}
               </button>
             )}
-            
+
             {/* Show dropdown for user posts or page posts with permissions */}
             {(isUserPost || (isPagePost && (canEditPost || canDeletePost))) && (
-              <PostDropdown 
+              <PostDropdown
                 post={post}
                 postId={postId}
                 onDelete={handleDeletePost}
@@ -534,7 +534,7 @@ const PostCard = ({
 
         <div className="card-body p-4">
           {post.content && <p className="mb-3">{post.content}</p>}
-          
+
           {post.location && (
             <div className="mb-3">
               <small className="text-muted">
@@ -542,17 +542,17 @@ const PostCard = ({
               </small>
             </div>
           )}
-          
+
           {/* Render media based on type */}
           {mediaArray.length > 0 && (
             <div className="text-center">
               {post.mediaType === 'video' ? renderVideo() : renderMediaGrid()}
             </div>
           )}
-          
+
           {post.mediaType === 'video' && post.category && (
             <div className="mt-3 d-flex align-items-center justify-content-between">
-              <div 
+              <div
                 className="d-flex align-items-center gap-2 cursor-pointer"
                 onClick={() => handleCategoryClick(post.category)}
               >
@@ -616,7 +616,7 @@ const PostCard = ({
         </div>
 
         {showComments && <PostComment postId={postId} />}
-        
+
         <LikesPopup
           show={showLikesPopup}
           onClose={() => setShowLikesPopup(false)}
@@ -667,15 +667,15 @@ const PostCard = ({
                     disabled={reportSubmitting}
                   ></button>
                 </div>
-                
+
                 <div className="modal-body">
                   <p className="text-muted mb-3">
                     Help us understand what's wrong with this post. Your report will be reviewed by our team.
                   </p>
-                  
+
                   <div className="mb-3">
                     <label className="form-label">Reason for reporting:</label>
-                    
+
                     {reportReasons.map((reason) => (
                       <div key={reason} className="form-check">
                         <input
@@ -701,25 +701,25 @@ const PostCard = ({
                       className="form-control"
                       rows="3"
                       placeholder="Please describe why you're reporting this post..."
-                      value={reportReason.startsWith('Spam') || 
-                             reportReason.startsWith('Inappropriate') || 
-                             reportReason.startsWith('Harassment') || 
-                             reportReason.startsWith('False') || 
-                             reportReason.startsWith('Copyright') || 
-                             reportReason.startsWith('Violence') || 
-                             reportReason.startsWith('Hate') || 
-                             reportReason === 'Other' ? '' : reportReason}
+                      value={reportReason.startsWith('Spam') ||
+                        reportReason.startsWith('Inappropriate') ||
+                        reportReason.startsWith('Harassment') ||
+                        reportReason.startsWith('False') ||
+                        reportReason.startsWith('Copyright') ||
+                        reportReason.startsWith('Violence') ||
+                        reportReason.startsWith('Hate') ||
+                        reportReason === 'Other' ? '' : reportReason}
                       onChange={(e) => setReportReason(e.target.value)}
                       disabled={reportSubmitting || reportReasons.includes(reportReason)}
                     />
                   </div>
 
                   <div className="alert alert-warning small">
-                    <strong>Note:</strong> False reports may result in account restrictions. 
+                    <strong>Note:</strong> False reports may result in account restrictions.
                     Only report content that violates our community guidelines.
                   </div>
                 </div>
-                
+
                 <div className="modal-footer">
                   <button
                     type="button"
@@ -755,11 +755,11 @@ const PostCard = ({
 
         {/* Lightbox Modal for viewing all images */}
         {showLightbox && mediaArray.length > 0 && (
-          <div 
-            className="modal show d-block" 
-            style={{ 
-              backgroundColor: 'rgba(0,0,0,0.95)', 
-              zIndex: 9999 
+          <div
+            className="modal show d-block"
+            style={{
+              backgroundColor: 'rgba(0,0,0,0.95)',
+              zIndex: 9999
             }}
             onClick={() => setShowLightbox(false)}
           >
@@ -772,8 +772,8 @@ const PostCard = ({
                     onClick={() => setShowLightbox(false)}
                   ></button>
                 </div>
-                
-                <div 
+
+                <div
                   className="modal-body d-flex align-items-center justify-content-center position-relative"
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -811,7 +811,7 @@ const PostCard = ({
                   )}
 
                   {/* Image counter */}
-                  <div 
+                  <div
                     className="position-absolute bottom-0 start-50 translate-middle-x mb-3 bg-dark bg-opacity-75 text-white px-3 py-2 rounded"
                     style={{ zIndex: 10 }}
                   >
