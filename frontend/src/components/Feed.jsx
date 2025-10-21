@@ -67,6 +67,25 @@ const Feed = () => {
 
             console.log(`[DEBUG] Feed API response:`, res.data);
 
+            console.log(`[DEBUG] Feed API response:`, {
+                success: res.data.success,
+                postCount: res.data.posts?.length,
+                posts: res.data.posts?.map(p => ({
+                    id: p._id || p.id,
+                    authorType: p.authorType,
+                    author: p.author ? {
+                        id: p.author.id,
+                        pageName: p.author.pageName,
+                        username: p.author.username,
+                        isPage: p.author.isPage,
+                        owner: p.author.owner ? {
+                            firstName: p.author.owner.firstName,
+                            lastName: p.author.owner.lastName
+                        } : null
+                    } : null
+                }))
+            });
+
             if (res.data.success) {
                 const newPosts = res.data.posts || [];
 
@@ -85,15 +104,35 @@ const Feed = () => {
                         finalPosts = [...prev, ...uniqueNewPosts];
                     }
 
-                    // Apply any pending like updates to preserve recent changes
+                    // Apply any pending like updates and ensure author displayName
                     finalPosts = finalPosts.map(post => {
-                        const postId = post._id || post.id;
+                        let updatedPost = { ...post };
+
+                        // Ensure consistent author data for page posts
+                        if (post.authorType === 'page' && post.author) {
+                            updatedPost.author = {
+                                ...post.author,
+                                displayName: post.author.pageName || post.author.username || post.author.firstName || "Unknown Page",
+                                firstName: post.author.pageName || post.author.username || post.author.firstName || "Unknown Page",
+                                lastName: '',
+                                isPage: true
+                            };
+                        } else if (post.author) {
+                            // For user posts, ensure displayName
+                            updatedPost.author = {
+                                ...post.author,
+                                displayName: `${post.author.firstName || ''} ${post.author.lastName || ''}`.trim() || post.author.username || "Unknown User",
+                                isPage: false
+                            };
+                        }
+
+                        const postId = updatedPost._id || updatedPost.id;
                         const pendingUpdate = pendingLikeUpdates.get(postId);
 
                         if (pendingUpdate) {
                             console.log(`[DEBUG] Applying pending like update for post ${postId}:`, pendingUpdate);
-                            return {
-                                ...post,
+                            updatedPost = {
+                                ...updatedPost,
                                 isLiked: pendingUpdate.isLiked,
                                 likeCount: pendingUpdate.likeCount
                             };
@@ -101,9 +140,9 @@ const Feed = () => {
 
                         // Ensure likeCount is properly set
                         return {
-                            ...post,
-                            likeCount: post.likeCount || 0,
-                            isLiked: post.isLiked || false
+                            ...updatedPost,
+                            likeCount: updatedPost.likeCount || 0,
+                            isLiked: updatedPost.isLiked || false
                         };
                     });
 
@@ -323,7 +362,8 @@ const Feed = () => {
             firstPostLikeData: posts[0] ? {
                 postId: posts[0]._id || posts[0].id,
                 isLiked: posts[0].isLiked,
-                likeCount: posts[0].likeCount
+                likeCount: posts[0].likeCount,
+                author: posts[0].author
             } : 'No posts'
         });
     }, [posts, pendingLikeUpdates, pendingReports]);
@@ -375,6 +415,51 @@ const Feed = () => {
             </div>
         );
     }
+
+    const fetchPageDetails = async () => {
+        setLoading(true);
+        try {
+            const res = await axiosInstance.get(`/pages/${id}`);
+            if (res?.data?.success) {
+                const pageData = res.data.page;
+                setPage(pageData);
+                setIsFollowing(pageData.isFollowing || false);
+
+                const ownershipCheck = pageData.isOwner ||
+                    (authUser && (
+                        pageData.owner === authUser.id ||
+                        pageData.owner?.id === authUser.id
+                    ));
+
+                setIsOwner(ownershipCheck);
+            }
+        } catch (err) {
+            console.error('Error fetching page:', err);
+            if (err.response?.status === 404) {
+                toast.error("Page not found");
+                navigate("/profile");
+            } else {
+                toast.error("Failed to load page");
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchPagePosts = async () => {
+        setLoadingPosts(true);
+        try {
+            const res = await axiosInstance.get(`/pages/${id}/posts`);
+            if (res?.data?.success) {
+                setPosts(res.data.posts || []);
+            }
+        } catch (err) {
+            console.error('Error fetching page posts:', err);
+            toast.error("Failed to load page posts");
+        } finally {
+            setLoadingPosts(false);
+        }
+    };
 
     return (
         <div className="container my-4">
@@ -458,12 +543,13 @@ const Feed = () => {
                 </div>
             )}
 
-            {/* Posts */}
             {posts.map((post, index) => (
                 <div key={post._id || post.id || index} id={`post-${post._id || post.id}`}>
                     <PostCard
                         post={post}
-                        isUserPost={post.isUserPost}
+                        isUserPost={post.authorType !== 'page'}
+                        isPagePost={post.authorType === 'page'}
+                        pageId={post.author?.id}
                         disableNavigation={true}
                         onLikeUpdate={updatePostLike}
                         onDeletePost={handleDeletePost}

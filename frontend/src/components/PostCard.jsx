@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -37,7 +36,8 @@ const PostCard = ({
   const navigate = useNavigate();
   const { authUser } = useAuthStore();
   const postId = post._id || post.id;
-
+  const isAuthor = isUserPost || (isPagePost && (canEditPost || canDeletePost));
+  
   const mediaArray = Array.isArray(post.media)
     ? post.media
     : post.media
@@ -81,6 +81,24 @@ const PostCard = ({
   const [burstHearts, setBurstHearts] = useState([]);
   const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
 
+  // Helper function to get display name
+  const getDisplayName = (post) => {
+    if (!post.author) return "Unknown";
+    
+    // Check if it's a page post
+    if (post.authorType === 'page' || post.author.isPage) {
+        return post.author.pageName || post.author.username || "Unknown Page";
+    }
+    
+    // For user posts, show username
+    return post.author.username || "Unknown";
+};
+
+  // Helper function to check if post is from a page
+  const isPostFromPage = () => {
+    return post.authorType === 'page' || post.author?.isPage || isPagePost;
+  };
+
   useEffect(() => {
     setCurrentMediaIndex(0);
   }, [postId]);
@@ -96,9 +114,14 @@ const PostCard = ({
   const handleNavigateToProfile = () => {
     if (disableNavigation) return;
     const authorId = post.author?.id || post.author?._id;
-    const currentUserId = authUser?._id || authUser?.id;
     if (!authorId) return;
-    navigate(authorId === currentUserId ? "/profile" : `/profile/${authorId}`);
+
+    if (isPostFromPage()) {
+      navigate(`/pages/${authorId}`);
+    } else {
+      const currentUserId = authUser?._id || authUser?.id;
+      navigate(authorId === currentUserId ? "/profile" : `/profile/${authorId}`);
+    }
   };
 
   const handleCategoryClick = (category) => {
@@ -137,9 +160,50 @@ const PostCard = ({
     }
   };
 
-  const handleEditPost = (post) => {
-    setShowEditModal(true);
-  };
+  const fetchPageDetails = async () => {
+      setLoading(true);
+      try {
+        const res = await axiosInstance.get(`/pages/${id}`);
+        if (res?.data?.success) {
+          const pageData = res.data.page;
+          setPage(pageData);
+          setIsFollowing(pageData.isFollowing || false);
+  
+          const ownershipCheck = pageData.isOwner ||
+            (authUser && (
+              pageData.owner === authUser.id ||
+              pageData.owner?.id === authUser.id
+            ));
+  
+          setIsOwner(ownershipCheck);
+        }
+      } catch (err) {
+        console.error('Error fetching page:', err);
+        if (err.response?.status === 404) {
+          toast.error("Page not found");
+          navigate("/profile");
+        } else {
+          toast.error("Failed to load page");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    const fetchPagePosts = async () => {
+      setLoadingPosts(true);
+      try {
+        const res = await axiosInstance.get(`/pages/${id}/posts`);
+        if (res?.data?.success) {
+          setPosts(res.data.posts || []);
+        }
+      } catch (err) {
+        console.error('Error fetching page posts:', err);
+        toast.error("Failed to load page posts");
+      } finally {
+        setLoadingPosts(false);
+      }
+    };
 
   const handlePostUpdated = (updatedPost) => {
     if (onUpdatePost) {
@@ -298,16 +362,19 @@ const PostCard = ({
             style={{ cursor: disableNavigation ? "default" : "pointer" }}
           >
             <img
-              src={post.author?.profilePicture || "/default-avatar.png"}
-              alt="Profile"
-              className="rounded-circle"
+              src={post.author?.profilePicture || (isPostFromPage() ? "/default-page-avatar.png" : "/default-avatar.png")}
+              alt={isPostFromPage() ? "Page Profile" : "Profile"}
+              className={isPostFromPage() ? "rounded-3" : "rounded-circle"}
               style={{ width: 50, height: 50, objectFit: "cover" }}
               onError={(e) => {
-                e.target.src = "/default-avatar.png";
+                e.target.src = isPostFromPage() ? "/default-page-avatar.png" : "/default-avatar.png";
               }}
             />
             <div className="flex-grow-1 text-start">
-              <h6 className="mb-0 fw-bold">{post.author?.username || "Unknown"}</h6>
+              <h6 className="mb-0 fw-bold">
+                {getDisplayName(post)}
+                {isPostFromPage() && <span className="ms-2 badge bg-primary">Page</span>}
+              </h6>
               <div className="d-flex align-items-center gap-2">
                 <small className="text-muted">
                   {post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}
@@ -327,8 +394,8 @@ const PostCard = ({
           </div>
           
           <div className="d-flex align-items-center gap-2">
-            {/* Show report button for posts that are NOT user's and NOT page posts with edit rights */}
-            {!isUserPost && !(isPagePost && (canEditPost || canDeletePost)) && (
+            {/* Show report button for non-author posts */}
+            {!isAuthor && (
               <button
                 className="btn btn-sm btn-outline-secondary"
                 onClick={handleReportClick}
@@ -345,13 +412,13 @@ const PostCard = ({
               </button>
             )}
             
-            {/* Show dropdown for user posts or page posts with permissions */}
-            {(isUserPost || (isPagePost && (canEditPost || canDeletePost))) && (
+            {/* Show dropdown for authors */}
+            {isAuthor && (
               <PostDropdown 
                 post={post}
                 postId={postId}
                 onDelete={handleDeletePost}
-                onEdit={handleEditPost}
+                onEdit={() => setShowEditModal(true)}
                 isPagePost={isPagePost}
                 pageId={pageId}
                 canEdit={isPagePost ? canEditPost : true}

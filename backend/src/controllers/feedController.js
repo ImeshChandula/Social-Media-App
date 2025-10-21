@@ -10,48 +10,85 @@ const UserActivityService = require('../services/userActivityService');
 const feedAlgorithm = new FeedAlgorithm();
 
 // Enhanced feed with page posts and stories support
-const getAllPostsInFeed = async (req, res) => {
+// Enhanced feed with page posts and stories support
+const getAllPostsInFeed = async(req, res) => {
     try {
         const user = await UserService.findById(req.user.id);
         const userFriends = user.friends || [];
-        
+
         // Get pages the user follows
         const followedPages = await getUserFollowedPages(req.user.id);
         const pageIds = followedPages.map(page => page.id);
-        
+
         // Get user posts
         const userPosts = await PostService.findForFeed(req.user.id, userFriends);
-        
+
+        // Get page posts from followed pages
+        // Get page posts from followed pages
         // Get page posts from followed pages
         let pagePosts = [];
         for (const pageId of pageIds) {
             try {
                 const posts = await PostService.findByUserId(pageId);
-                const pagePostsWithPageData = await Promise.all(posts.map(async (post) => {
-                    const pageData = await PageService.findById(pageId);
+                const pageData = await PageService.findById(pageId);
+
+                if (!pageData) {
+                    console.error(`[ERROR] Page not found for pageId: ${pageId}`);
+                    continue; // Skip this page if not found
+                }
+
+                // Fetch page owner details
+                let owner = null;
+                if (pageData.owner) {
+                    try {
+                        owner = await UserService.findById(pageData.owner);
+                    } catch (error) {
+                        console.error(`[ERROR] Failed to fetch owner for page ${pageId}:`, error.message);
+                    }
+                }
+
+                const pagePostsWithPageData = posts.map(post => {
+                    // Ensure post has a valid ID
+                    if (!post._id && !post.id) {
+                        console.warn(`[WARN] Post missing ID for page ${pageId}:`, post);
+                        return null;
+                    }
+
+                    // Robust fallback for pageName and profilePicture
+                    const pageName = pageData.pageName && pageData.pageName.trim() ? pageData.pageName : (pageData.username && pageData.username.trim() ? pageData.username : "Unknown Page");
+                    const profilePicture = pageData.profilePicture && pageData.profilePicture.trim() ? pageData.profilePicture : "/default-page-avatar.png";
+
                     return {
                         ...post,
                         author: {
                             id: pageData.id,
-                            username: pageData.username || pageData.pageName,
-                            firstName: '',
+                            firstName: pageName,
                             lastName: '',
-                            profilePicture: pageData.profilePicture,
-                            pageName: pageData.pageName,
-                            isPage: true
+                            pageName: pageName,
+                            profilePicture: profilePicture,
+                            username: pageData.username || pageName,
+                            isPage: true,
+                            owner: owner ? {
+                                id: owner.id,
+                                firstName: owner.firstName || '',
+                                lastName: owner.lastName || '',
+                                username: owner.username || `user_${owner.id}`,
+                                profilePicture: owner.profilePicture || "/default-avatar.png"
+                            } : null
                         },
                         authorType: 'page'
                     };
-                }));
+                }).filter(post => post !== null); // Remove null posts
+
                 pagePosts = [...pagePosts, ...pagePostsWithPageData];
             } catch (error) {
-                console.error(`Error fetching posts for page ${pageId}:`, error);
+                console.error(`[ERROR] Failed to fetch posts for page ${pageId}:`, error.message);
             }
         }
-        
+
         // Combine user and page posts
         const allPosts = [...userPosts, ...pagePosts];
-        
+
         if (!allPosts.length) {
             return res.status(200).json({
                 success: true,
@@ -60,15 +97,42 @@ const getAllPostsInFeed = async (req, res) => {
             });
         }
 
-        // Populate author data for user posts
-        const populatedPosts = await populateAuthor(allPosts);
+        // Populate author data for user posts ONLY (not page posts)
+        const populatedPosts = await Promise.all(allPosts.map(async(post) => {
+            // If it's a page post, return as is (already has author data)
+            if (post.authorType === 'page') {
+                return post;
+            }
+
+            // For user posts, populate the author
+            try {
+                const author = await UserService.findById(post.author);
+                if (author) {
+                    return {
+                        ...post,
+                        author: {
+                            id: author.id,
+                            firstName: author.firstName || '',
+                            lastName: author.lastName || '',
+                            username: author.username || `user_${author.id}`,
+                            profilePicture: author.profilePicture || 'https://via.placeholder.com/40',
+                            isPage: false
+                        }
+                    };
+                }
+                return post;
+            } catch (error) {
+                console.error(`Error populating author for post ${post.id}:`, error);
+                return post;
+            }
+        }));
 
         // Extract algorithm options from query params
         const {
             refresh = 'false',
-            last_seen = '',
-            sort_by = 'engagement',
-            show_trending = 'false'
+                last_seen = '',
+                sort_by = 'engagement',
+                show_trending = 'false'
         } = req.query;
 
         const lastSeenPosts = last_seen ? last_seen.split(',') : [];
@@ -83,14 +147,13 @@ const getAllPostsInFeed = async (req, res) => {
 
         // Apply feed algorithm
         let sortedPosts;
-        
+
         if (show_trending === 'true') {
             sortedPosts = feedAlgorithm.getTrendingPosts(populatedPosts, 6);
         } else {
             sortedPosts = feedAlgorithm.generateFeed(
-                populatedPosts, 
-                req.user.id, 
-                [...userFriends, ...pageIds],
+                populatedPosts,
+                req.user.id, [...userFriends, ...pageIds],
                 algorithmOptions
             );
         }
@@ -106,9 +169,9 @@ const getAllPostsInFeed = async (req, res) => {
         const seenPostIds = paginatedPosts.map(post => post.id);
         await trackSeenPosts(req.user.id, seenPostIds);
 
-        return res.status(200).json({ 
-            success: true, 
-            message: "Fetching posts for feed successfully.", 
+        return res.status(200).json({
+            success: true,
+            message: "Fetching posts for feed successfully.",
             count: paginatedPosts.length,
             totalCount: sortedPosts.length,
             posts: paginatedPosts,
@@ -133,7 +196,7 @@ const getAllPostsInFeed = async (req, res) => {
 };
 
 // Stories feed with comprehensive page stories support
-const getStoriesFeedWithPages = async (req, res) => {
+const getStoriesFeedWithPages = async(req, res) => {
     try {
         const userId = req.user.id;
 
@@ -145,7 +208,7 @@ const getStoriesFeedWithPages = async (req, res) => {
 
         // Get user's friends
         const friendIds = user.friends || [];
-        
+
         // Get pages the user follows
         const followedPages = await getUserFollowedPages(userId);
         const pageIds = followedPages.map(page => page.id);
@@ -198,10 +261,10 @@ const getStoriesFeedWithPages = async (req, res) => {
         const allStories = [...userStories, ...filteredPageStories];
 
         if (!allStories.length) {
-            return res.status(200).json({ 
+            return res.status(200).json({
                 success: true,
-                message: 'No stories found in your feed', 
-                stories: [] 
+                message: 'No stories found in your feed',
+                stories: []
             });
         }
 
@@ -213,10 +276,10 @@ const getStoriesFeedWithPages = async (req, res) => {
         });
 
         if (!activeStories.length) {
-            return res.status(200).json({ 
+            return res.status(200).json({
                 success: true,
-                message: 'No active stories found in your feed', 
-                stories: [] 
+                message: 'No active stories found in your feed',
+                stories: []
             });
         }
 
@@ -263,7 +326,7 @@ const getStoriesFeedWithPages = async (req, res) => {
                 if (page) {
                     pageMap[id] = {
                         id: page.id,
-                        firstName: '',
+                        firstName: page.pageName || page.username || "Unknown Page",
                         lastName: '',
                         username: page.username || page.pageName,
                         profilePicture: page.profilePicture || 'https://via.placeholder.com/40',
@@ -281,13 +344,13 @@ const getStoriesFeedWithPages = async (req, res) => {
         const storiesByAuthor = activeStories.reduce((acc, story) => {
             const storyUserId = story.userId;
             const isPageStory = story.authorType === 'page';
-            
+
             if (!acc[storyUserId]) {
                 acc[storyUserId] = {
                     user: isPageStory ? pageMap[storyUserId] : userMap[storyUserId],
                     stories: []
                 };
-                
+
                 // Fallback if author data not found
                 if (!acc[storyUserId].user) {
                     acc[storyUserId].user = {
@@ -302,7 +365,7 @@ const getStoriesFeedWithPages = async (req, res) => {
                     };
                 }
             }
-            
+
             acc[storyUserId].stories.push({
                 ...story,
                 _id: story.id || story._id,
@@ -339,15 +402,15 @@ const getStoriesFeedWithPages = async (req, res) => {
 
     } catch (error) {
         console.error('Error fetching stories feed:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Server error' 
+            message: 'Server error'
         });
     }
 };
 
 // Helper function to get pages a user follows
-const getUserFollowedPages = async (userId) => {
+const getUserFollowedPages = async(userId) => {
     try {
         const allPages = await PageService.findAll();
         return allPages.filter(page => page.followers && page.followers.includes(userId));
@@ -358,24 +421,24 @@ const getUserFollowedPages = async (userId) => {
 };
 
 // Get user interaction data for personalization
-const getUserInteractionData = async (userId) => {
+const getUserInteractionData = async(userId) => {
     try {
         const interactions = await UserInteractionService.getInteractionHistory(userId);
-        
+
         const formattedInteractions = {};
-        
+
         interactions.forEach(interaction => {
             if (!formattedInteractions[interaction.targetAuthorId]) {
                 formattedInteractions[interaction.targetAuthorId] = { likes: 0, comments: 0 };
             }
-            
+
             if (interaction.type === 'like') {
                 formattedInteractions[interaction.targetAuthorId].likes++;
             } else if (interaction.type === 'comment') {
                 formattedInteractions[interaction.targetAuthorId].comments++;
             }
         });
-        
+
         return formattedInteractions;
     } catch (error) {
         console.error('Error getting user interaction data:', error);
@@ -384,7 +447,7 @@ const getUserInteractionData = async (userId) => {
 };
 
 // Track which posts user has seen for better recommendations
-const trackSeenPosts = async (userId, postIds) => {
+const trackSeenPosts = async(userId, postIds) => {
     try {
         await UserActivityService.trackSeenPosts(userId, postIds);
     } catch (error) {
@@ -393,16 +456,16 @@ const trackSeenPosts = async (userId, postIds) => {
 };
 
 // Get trending posts endpoint
-const getTrendingPosts = async (req, res) => {
+const getTrendingPosts = async(req, res) => {
     try {
         const user = await UserService.findById(req.user.id);
         const followedPages = await getUserFollowedPages(req.user.id);
         const pageIds = followedPages.map(page => page.id);
-        
+
         // Get posts from both users and pages
         const userPosts = await PostService.findForFeed(req.user.id, user.friends);
         let pagePosts = [];
-        
+
         for (const pageId of pageIds) {
             try {
                 const posts = await PostService.findByUserId(pageId);
@@ -411,47 +474,47 @@ const getTrendingPosts = async (req, res) => {
                 console.error(`Error fetching page posts for trending: ${pageId}`, error);
             }
         }
-        
+
         const allPosts = [...userPosts, ...pagePosts];
-        
+
         if (!allPosts.length) {
-            return res.status(200).json({ 
-                success: true, 
-                message: "No posts found for trending", 
+            return res.status(200).json({
+                success: true,
+                message: "No posts found for trending",
                 posts: []
             });
         }
-        
+
         const populatedPosts = await populateAuthor(allPosts);
         const hours = parseInt(req.query.hours) || 6;
         const trendingPosts = feedAlgorithm.getTrendingPosts(populatedPosts, hours);
 
-        return res.status(200).json({ 
-            success: true, 
-            message: "Fetching trending posts successfully.", 
+        return res.status(200).json({
+            success: true,
+            message: "Fetching trending posts successfully.",
             count: trendingPosts.length,
             posts: trendingPosts.slice(0, 20)
         });
     } catch (err) {
         console.error('Get trending posts error:', err.message);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'Server error' 
+        return res.status(500).json({
+            success: false,
+            message: 'Server error'
         });
     }
 };
 
 // Refresh feed endpoint (for pull-to-refresh)
-const refreshFeed = async (req, res) => {
+const refreshFeed = async(req, res) => {
     try {
         await UserActivityService.clearSeenPosts(req.user.id);
         req.query.refresh = 'true';
         return getAllPostsInFeed(req, res);
     } catch (err) {
         console.error('Refresh feed error:', err.message);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'Server error' 
+        return res.status(500).json({
+            success: false,
+            message: 'Server error'
         });
     }
 };
