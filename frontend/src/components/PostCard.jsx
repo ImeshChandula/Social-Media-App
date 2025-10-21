@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -6,7 +7,8 @@ import {
   FaHeart,
   FaPlay,
   FaFlag,
-  FaTimes
+  FaTimes,
+  FaChevronLeft
 } from "react-icons/fa";
 import LikesPopup from "./LikesPopup";
 import PostDropdown from "./PostDropdown";
@@ -36,8 +38,7 @@ const PostCard = ({
   const navigate = useNavigate();
   const { authUser } = useAuthStore();
   const postId = post._id || post.id;
-  const isAuthor = isUserPost || (isPagePost && (canEditPost || canDeletePost));
-  
+
   const mediaArray = Array.isArray(post.media)
     ? post.media
     : post.media
@@ -49,6 +50,10 @@ const PostCard = ({
   const [showLikesPopup, setShowLikesPopup] = useState(false);
   const [likes, setLikes] = useState([]);
   const [loadingLikes, setLoadingLikes] = useState(false);
+
+  // Lightbox state for viewing all images
+  const [showLightbox, setShowLightbox] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   // Edit modal state
   const [showEditModal, setShowEditModal] = useState(false);
@@ -81,22 +86,20 @@ const PostCard = ({
   const [burstHearts, setBurstHearts] = useState([]);
   const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
 
-  // Helper function to get display name
-  const getDisplayName = (post) => {
-    if (!post.author) return "Unknown";
-    
-    // Check if it's a page post
-    if (post.authorType === 'page' || post.author.isPage) {
-        return post.author.pageName || post.author.username || "Unknown Page";
-    }
-    
-    // For user posts, show username
-    return post.author.username || "Unknown";
-};
+  // Determine if this is a page post
+  const isPostFromPage = post.authorType === 'page' || post.author?.isPage;
 
-  // Helper function to check if post is from a page
-  const isPostFromPage = () => {
-    return post.authorType === 'page' || post.author?.isPage || isPagePost;
+  // Get display name for author
+  const getAuthorDisplayName = () => {
+    if (isPostFromPage) {
+      return post.author?.pageName || post.author?.username || "Unknown Page";
+    }
+    return post.author?.username || "Unknown";
+  };
+
+  // Get author profile picture with fallback
+  const getAuthorProfilePicture = () => {
+    return post.author?.profilePicture || "/default-avatar.png";
   };
 
   useEffect(() => {
@@ -113,15 +116,21 @@ const PostCard = ({
 
   const handleNavigateToProfile = () => {
     if (disableNavigation) return;
-    const authorId = post.author?.id || post.author?._id;
-    if (!authorId) return;
-
-    if (isPostFromPage()) {
-      navigate(`/pages/${authorId}`);
-    } else {
-      const currentUserId = authUser?._id || authUser?.id;
-      navigate(authorId === currentUserId ? "/profile" : `/profile/${authorId}`);
+    
+    // If it's a page post, navigate to page
+    if (isPostFromPage) {
+      const pageId = post.author?.id || post.author?._id;
+      if (pageId) {
+        navigate(`/pages/${pageId}`);
+      }
+      return;
     }
+    
+    // Otherwise navigate to user profile
+    const authorId = post.author?.id || post.author?._id;
+    const currentUserId = authUser?._id || authUser?.id;
+    if (!authorId) return;
+    navigate(authorId === currentUserId ? "/profile" : `/profile/${authorId}`);
   };
 
   const handleCategoryClick = (category) => {
@@ -160,50 +169,9 @@ const PostCard = ({
     }
   };
 
-  const fetchPageDetails = async () => {
-      setLoading(true);
-      try {
-        const res = await axiosInstance.get(`/pages/${id}`);
-        if (res?.data?.success) {
-          const pageData = res.data.page;
-          setPage(pageData);
-          setIsFollowing(pageData.isFollowing || false);
-  
-          const ownershipCheck = pageData.isOwner ||
-            (authUser && (
-              pageData.owner === authUser.id ||
-              pageData.owner?.id === authUser.id
-            ));
-  
-          setIsOwner(ownershipCheck);
-        }
-      } catch (err) {
-        console.error('Error fetching page:', err);
-        if (err.response?.status === 404) {
-          toast.error("Page not found");
-          navigate("/profile");
-        } else {
-          toast.error("Failed to load page");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    const fetchPagePosts = async () => {
-      setLoadingPosts(true);
-      try {
-        const res = await axiosInstance.get(`/pages/${id}/posts`);
-        if (res?.data?.success) {
-          setPosts(res.data.posts || []);
-        }
-      } catch (err) {
-        console.error('Error fetching page posts:', err);
-        toast.error("Failed to load page posts");
-      } finally {
-        setLoadingPosts(false);
-      }
-    };
+  const handleEditPost = (post) => {
+    setShowEditModal(true);
+  };
 
   const handlePostUpdated = (updatedPost) => {
     if (onUpdatePost) {
@@ -323,18 +291,126 @@ const PostCard = ({
     return badgeClasses[category] || 'bg-secondary text-white';
   };
 
-  const renderMedia = (url, idx) => {
-    const isVideo = /\.(mp4|webm|ogg)$/i.test(url) || post.mediaType === 'video';
-    const mediaStyles = {
-      width: "100%",
-      height: "clamp(200px, 30vw, 400px)",
-      objectFit: "contain",
-      borderRadius: "0.75rem",
+  // Open lightbox at specific index
+  const openLightbox = (index) => {
+    setLightboxIndex(index);
+    setShowLightbox(true);
+  };
+
+  // Navigate in lightbox
+  const handleLightboxPrev = () => {
+    setLightboxIndex((prev) => (prev === 0 ? mediaArray.length - 1 : prev - 1));
+  };
+
+  const handleLightboxNext = () => {
+    setLightboxIndex((prev) => (prev === mediaArray.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleLightboxKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      setShowLightbox(false);
+    } else if (e.key === 'ArrowLeft') {
+      handleLightboxPrev();
+    } else if (e.key === 'ArrowRight') {
+      handleLightboxNext();
+    }
+  };
+
+  useEffect(() => {
+    if (showLightbox) {
+      window.addEventListener('keydown', handleLightboxKeyDown);
+      return () => window.removeEventListener('keydown', handleLightboxKeyDown);
+    }
+  }, [showLightbox]);
+
+  // Render media grid (for images only)
+  const renderMediaGrid = () => {
+    const images = mediaArray.filter(url => {
+      const isVideo = /\.(mp4|webm|ogg)$/i.test(url) || post.mediaType === 'video';
+      return !isVideo;
+    });
+
+    if (images.length === 0) return null;
+
+    // Show max 4 images in grid
+    const displayImages = images.slice(0, 4);
+    const remainingCount = images.length - 4;
+
+    const getGridClass = () => {
+      if (images.length === 1) return 'single-image';
+      if (images.length === 2) return 'two-images';
+      if (images.length === 3) return 'three-images';
+      return 'four-plus-images';
     };
 
-    return isVideo ? (
-      <div key={idx} className="position-relative">
-        <video src={url} controls className="w-100" style={mediaStyles} />
+    return (
+      <div className={`media-grid ${getGridClass()}`}>
+        {displayImages.map((url, idx) => (
+          <div
+            key={idx}
+            className="media-grid-item"
+            onClick={() => openLightbox(idx)}
+            style={{ cursor: 'pointer', position: 'relative' }}
+          >
+            <img
+              src={url}
+              alt={`Image ${idx + 1}`}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                borderRadius: idx === 0 && images.length === 1 ? '0.75rem' : '0.25rem'
+              }}
+            />
+            {/* Show +X overlay on 4th image if there are more images */}
+            {idx === 3 && remainingCount > 0 && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'rgba(0, 0, 0, 0.6)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontSize: '2rem',
+                  fontWeight: 'bold',
+                  borderRadius: '0.25rem'
+                }}
+              >
+                +{remainingCount}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Render single video
+  const renderVideo = () => {
+    const videos = mediaArray.filter(url => {
+      const isVideo = /\.(mp4|webm|ogg)$/i.test(url) || post.mediaType === 'video';
+      return isVideo;
+    });
+
+    if (videos.length === 0) return null;
+
+    return (
+      <div className="position-relative">
+        <video
+          src={videos[currentMediaIndex] || videos[0]}
+          controls
+          className="w-100"
+          style={{
+            height: "clamp(200px, 30vw, 400px)",
+            objectFit: "contain",
+            borderRadius: "0.75rem",
+          }}
+        />
         {post.category && (
           <div className="position-absolute top-0 end-0 m-2">
             <span 
@@ -346,9 +422,30 @@ const PostCard = ({
             </span>
           </div>
         )}
+        {videos.length > 1 && (
+          <div className="position-absolute bottom-0 start-0 end-0 p-2 text-center">
+            <small className="bg-dark text-white px-2 py-1 rounded">
+              Video {currentMediaIndex + 1} of {videos.length}
+            </small>
+            <div className="d-flex justify-content-center gap-2 mt-2">
+              <button
+                className="btn btn-sm btn-dark"
+                onClick={() => setCurrentMediaIndex(Math.max(0, currentMediaIndex - 1))}
+                disabled={currentMediaIndex === 0}
+              >
+                <FaChevronLeft />
+              </button>
+              <button
+                className="btn btn-sm btn-dark"
+                onClick={() => setCurrentMediaIndex(Math.min(videos.length - 1, currentMediaIndex + 1))}
+                disabled={currentMediaIndex === videos.length - 1}
+              >
+                <FaChevronRight />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-    ) : (
-      <img key={idx} src={url} alt={`media ${idx + 1}`} style={mediaStyles} />
     );
   };
 
@@ -362,18 +459,22 @@ const PostCard = ({
             style={{ cursor: disableNavigation ? "default" : "pointer" }}
           >
             <img
-              src={post.author?.profilePicture || (isPostFromPage() ? "/default-page-avatar.png" : "/default-avatar.png")}
-              alt={isPostFromPage() ? "Page Profile" : "Profile"}
-              className={isPostFromPage() ? "rounded-3" : "rounded-circle"}
+              src={getAuthorProfilePicture()}
+              alt="Profile"
+              className="rounded-circle"
               style={{ width: 50, height: 50, objectFit: "cover" }}
               onError={(e) => {
-                e.target.src = isPostFromPage() ? "/default-page-avatar.png" : "/default-avatar.png";
+                e.target.src = "/default-avatar.png";
               }}
             />
             <div className="flex-grow-1 text-start">
               <h6 className="mb-0 fw-bold">
-                {getDisplayName(post)}
-                {isPostFromPage() && <span className="ms-2 badge bg-primary">Page</span>}
+                {getAuthorDisplayName()}
+                {isPostFromPage && (
+                  <span className="badge bg-info text-white ms-2" style={{ fontSize: '0.7rem' }}>
+                    Page
+                  </span>
+                )}
               </h6>
               <div className="d-flex align-items-center gap-2">
                 <small className="text-muted">
@@ -382,7 +483,10 @@ const PostCard = ({
                 {post.mediaType === 'video' && post.category && (
                   <span 
                     className={`badge ${getCategoryBadgeClass(post.category)} badge-sm cursor-pointer`}
-                    onClick={() => handleCategoryClick(post.category)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCategoryClick(post.category);
+                    }}
                     title={`View more ${post.category} videos`}
                     style={{ fontSize: '0.7rem' }}
                   >
@@ -394,8 +498,8 @@ const PostCard = ({
           </div>
           
           <div className="d-flex align-items-center gap-2">
-            {/* Show report button for non-author posts */}
-            {!isAuthor && (
+            {/* Show report button for posts that are NOT user's and NOT page posts with edit rights */}
+            {!isUserPost && !(isPagePost && (canEditPost || canDeletePost)) && (
               <button
                 className="btn btn-sm btn-outline-secondary"
                 onClick={handleReportClick}
@@ -412,13 +516,13 @@ const PostCard = ({
               </button>
             )}
             
-            {/* Show dropdown for authors */}
-            {isAuthor && (
+            {/* Show dropdown for user posts or page posts with permissions */}
+            {(isUserPost || (isPagePost && (canEditPost || canDeletePost))) && (
               <PostDropdown 
                 post={post}
                 postId={postId}
                 onDelete={handleDeletePost}
-                onEdit={() => setShowEditModal(true)}
+                onEdit={handleEditPost}
                 isPagePost={isPagePost}
                 pageId={pageId}
                 canEdit={isPagePost ? canEditPost : true}
@@ -439,8 +543,11 @@ const PostCard = ({
             </div>
           )}
           
+          {/* Render media based on type */}
           {mediaArray.length > 0 && (
-            <div className="text-center">{renderMedia(mediaArray[currentMediaIndex], currentMediaIndex)}</div>
+            <div className="text-center">
+              {post.mediaType === 'video' ? renderVideo() : renderMediaGrid()}
+            </div>
           )}
           
           {post.mediaType === 'video' && post.category && (
@@ -645,7 +752,123 @@ const PostCard = ({
             </div>
           </div>
         )}
+
+        {/* Lightbox Modal for viewing all images */}
+        {showLightbox && mediaArray.length > 0 && (
+          <div 
+            className="modal show d-block" 
+            style={{ 
+              backgroundColor: 'rgba(0,0,0,0.95)', 
+              zIndex: 9999 
+            }}
+            onClick={() => setShowLightbox(false)}
+          >
+            <div className="modal-dialog modal-fullscreen">
+              <div className="modal-content bg-transparent border-0">
+                <div className="modal-header border-0 position-absolute top-0 end-0 z-3">
+                  <button
+                    type="button"
+                    className="btn-close btn-close-white"
+                    onClick={() => setShowLightbox(false)}
+                  ></button>
+                </div>
+                
+                <div 
+                  className="modal-body d-flex align-items-center justify-content-center position-relative"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Previous button */}
+                  {mediaArray.length > 1 && (
+                    <button
+                      className="btn btn-light position-absolute start-0 ms-3"
+                      style={{ zIndex: 10 }}
+                      onClick={handleLightboxPrev}
+                    >
+                      <FaChevronLeft size={24} />
+                    </button>
+                  )}
+
+                  {/* Current image */}
+                  <img
+                    src={mediaArray[lightboxIndex]}
+                    alt={`Image ${lightboxIndex + 1}`}
+                    style={{
+                      maxWidth: '90%',
+                      maxHeight: '90vh',
+                      objectFit: 'contain'
+                    }}
+                  />
+
+                  {/* Next button */}
+                  {mediaArray.length > 1 && (
+                    <button
+                      className="btn btn-light position-absolute end-0 me-3"
+                      style={{ zIndex: 10 }}
+                      onClick={handleLightboxNext}
+                    >
+                      <FaChevronRight size={24} />
+                    </button>
+                  )}
+
+                  {/* Image counter */}
+                  <div 
+                    className="position-absolute bottom-0 start-50 translate-middle-x mb-3 bg-dark bg-opacity-75 text-white px-3 py-2 rounded"
+                    style={{ zIndex: 10 }}
+                  >
+                    {lightboxIndex + 1} / {mediaArray.length}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      <style jsx>{`
+        .media-grid {
+          display: grid;
+          gap: 4px;
+          border-radius: 0.75rem;
+          overflow: hidden;
+        }
+
+        .single-image {
+          grid-template-columns: 1fr;
+        }
+
+        .two-images {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .three-images {
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: 1fr 1fr;
+        }
+
+        .three-images .media-grid-item:first-child {
+          grid-row: 1 / 3;
+        }
+
+        .four-plus-images {
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: 1fr 1fr;
+        }
+
+        .media-grid-item {
+          position: relative;
+          overflow: hidden;
+          min-height: 200px;
+          max-height: 400px;
+        }
+
+        .single-image .media-grid-item {
+          max-height: 600px;
+        }
+
+        .cursor-pointer {
+          cursor: pointer;
+        }
+      `}</style>
     </div>
   );
 };
