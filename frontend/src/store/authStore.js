@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
+import { clearCookiesForAllDomains } from "../config/domain.config";
 
 const useAuthStore = create((set) => ({
     authUser: null,
@@ -72,11 +73,30 @@ const useAuthStore = create((set) => ({
 
     logout: async () => {
         try {
-            await axiosInstance.post("/auth/logout");
+            try {
+                await axiosInstance.post("/auth/logout");
+            // eslint-disable-next-line no-unused-vars
+            } catch (err) {
+                console.warn('Backend logout failed, proceeding with frontend cleanup');
+            }
+            
+            clearCookiesForAllDomains('jwt');
+
+            localStorage.removeItem('jwt');
+            localStorage.removeItem('authToken');
+            sessionStorage.removeItem('jwt');
+            sessionStorage.removeItem('authToken');
+
             set({ authUser: null });
 
-        } catch (error) {
-            toast.error(error.response.data.message);
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 500);
+        } catch (err) {
+            const errorMsg = err.response?.data?.message || 'Logout failed';
+            toast.error(errorMsg);
+
+            set({ authUser: null });
         }
     },
 }));

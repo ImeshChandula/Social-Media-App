@@ -140,6 +140,7 @@ const logout = async (req, res) => {
 
         removeToken(res);
         res.status(200).json({
+            success: true,
             message: 'Logout successful'
         });
     } catch (error) {
