@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import getCountryOptions from '../store/countryCodes';
 import RegisterStyle from '../styles/RegisterStyle';
 import useAuthStore from '../store/authStore';
+import Buzard from "../assets/buzadsText.jpg";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -76,7 +77,13 @@ const Register = () => {
     <div style={RegisterStyle.container}>
       <div style={RegisterStyle.formBox}>
         <div style={RegisterStyle.header}>
-          <h1 style={RegisterStyle.title}>Buzads</h1>
+          <img
+            src={Buzard}
+            alt="Buzads"
+            className="img-fluid justify-content-center align-items-center m-0 p-0"
+            style={{ height: "90px", width: "100%", objectFit: "contain" }}
+          />
+
           <p style={RegisterStyle.subtitle}>Create a new account</p>
         </div>
 

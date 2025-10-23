@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import toast from 'react-hot-toast';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import LoginStyle from "../styles/LoginStyle";
+import Buzard from "../assets/buzadsText.jpg";
 import SocialButtons from "../components/SocialButtons";
 import useAuthStore from "../store/authStore";
 
@@ -58,7 +59,12 @@ const Login = () => {
   return (
     <div style={LoginStyle.page}>
       <div style={LoginStyle.header}>
-        <h1 style={LoginStyle.title}>Buzads</h1>
+        <img
+          src={Buzard}
+          alt="Buzads"
+          className="img-fluid justify-content-center align-items-center m-0 p-0"
+          style={{ height: "100px", width: "100%", objectFit: "contain" }}
+        />
         <p style={LoginStyle.subtitle}>Connect with friends and the world around you.</p>
       </div>
 
