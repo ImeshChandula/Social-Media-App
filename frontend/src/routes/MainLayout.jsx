@@ -23,6 +23,7 @@ import ActivityLogsPage from "../components/ActivityLogDashboard";
 import CompletePagesSection from "../components/CompletePagesSection";
 import PageWebView from "../pages/PageWebView";
 import ManageRole from "../components/ManageRolesModal";
+import Buzads from "../assets/buzadsText.jpg";
 
 const MainLayout = () => {
   const { checkAuth } = useAuthStore();
@@ -53,7 +54,7 @@ const MainLayout = () => {
               }`}
           >
             <div className="flex items-center gap-3">
-              <h5 className="mb-0 px-4 font-semibold fw-bold">Buzads</h5>
+              <img src={Buzads} alt="Buzads Logo" className="h-15 w-auto" />
             </div>
             <div className="flex items-center gap-3">
               <NotificationPage />

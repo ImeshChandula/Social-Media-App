@@ -7,7 +7,8 @@ import { BsFileEarmarkPostFill, BsActivity } from "react-icons/bs";
 import { TbCategoryFilled } from "react-icons/tb";
 import { FaFacebookMessenger } from "react-icons/fa6";
 import { IoTicketSharp } from "react-icons/io5";
-import { FiBold } from "react-icons/fi";
+import BuzadsLogo from "../assets/buzadsLogo.jpg";
+import BuzadsText from "../assets/buzadsText.jpg";
 import { SiMarketo } from "react-icons/si";
 import { MdPages } from "react-icons/md"; // Add this import
 import styles from "../styles/DashboardStyle";
@@ -134,13 +135,8 @@ const SidebarDashboard = ({ collapsed, setCollapsed }) => {
                 }}
             >
                 {/* Logo and Search */}
-                <div className="d-flex align-items-center mb-4">
-                    <FiBold size={28} color="#1ecb73" className="me-3" />
-                    {!collapsed && (
-                        <div className="d-flex align-items-center bg-secondary rounded px-2 py-1 flex-grow-1">
-                            <h5>Buzads</h5>
-                        </div>
-                    )}
+                <div className="d-flex justify-content-center align-items-center mb-2">
+                    <img src={BuzadsText} alt="Buzads Logo" className="h-12 w-auto" />
                 </div>
 
                 {/* Shortcuts */}

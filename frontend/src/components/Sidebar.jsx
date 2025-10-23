@@ -12,10 +12,11 @@ import {
   FaMoon,
   FaChartLine,
 } from "react-icons/fa";
-import { FiBold } from "react-icons/fi";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { MdContactSupport } from "react-icons/md";
 import { FaShoppingBag } from "react-icons/fa";
+import BuzadsText from "../assets/buzadsText.jpg";
+import BuzadsLogo from "../assets/buzadsLogo.jpg";
 
 import useAuthStore from "../store/authStore";
 import useThemeStore from "../store/themeStore";
@@ -82,13 +83,8 @@ function Sidebar() {
         style={{ width: "250px", height: "100vh", overflowY: "auto", zIndex: 999 }}
       >
         {/* Logo, Search and Theme Toggle */}
-        <div className="d-flex align-items-center mb-4 justify-content-between">
-          <FiBold
-            size={28}
-            color="#1ecb73"
-            className="me-3 cursor-pointer"
-            onClick={() => navigate("/")}
-          />
+        <div className="d-flex align-items-center justify-content-between">
+          <img src={BuzadsLogo} alt="Buzads Logo" className="h-10 w-auto" />
           <div className="d-flex align-items-center gap-2">
             {/* Theme Toggle Button */}
             <button
@@ -109,6 +105,8 @@ function Sidebar() {
             </button>
           </div>
         </div>
+
+        <hr />
 
         {/* Nav Links */}
         <ul className="nav flex-column mb-4">
@@ -187,15 +185,7 @@ function Sidebar() {
         <div className="d-flex justify-content-between align-items-center px-3">
 
           <div className="d-flex align-items-center">
-            <FiBold
-              size={28}
-              color="#1ecb73"
-              className="cursor-pointer"
-              onClick={() => navigate("/")}
-            />
-            <h5 className={`mb-0 fw-bold ${isDarkMode ? "text-white" : "text-black"}`} style={{ letterSpacing: "2px", marginTop: "3px" }}>
-              uzads
-            </h5>
+            <img src={BuzadsText} alt="Buzads Logo" className="h-10 w-auto" />
           </div>
 
           <div className="d-flex align-items-center gap-2">
